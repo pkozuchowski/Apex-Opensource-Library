@@ -67,7 +67,7 @@ public class Collections {
 
 
     /**
-     * @return sObject type of List<SObject> or first record.
+     * @return sObject type of List<SObject> or first record if former is null.
      */
     public static SObjectType getSObjectType(List<SObject> records) {
         SObjectType sObjectType = records.getSObjectType();
@@ -78,71 +78,26 @@ public class Collections {
 
 
     /**
+     * @param valueType Type of single value in a Set ex. String.class
      * @param records List of SObject records from which values are gathered.
      * @param field SObject field from which value is taken.
      * @return Set of gathered values.
      */
-    public static Set<String> getUniqueStringValues(List<SObject> records, SObjectField field) {
-        return getUniqueStringValues(records, '' + field);
-    }
-    public static Set<String> getUniqueStringValues(List<SObject> records, String field) {
-        return mapByStringField(records, field).keySet();
+    public static Object getUniqueValues(Type valueType, List<SObject> records, SObjectField field) {
+        return getUniqueValues(valueType, records, '' + field);
     }
 
-    public static Set<Id> getUniqueIdValues(List<SObject> records, SObjectField field) {
-        return getUniqueIdValues(records, '' + field);
-    }
-    public static Set<Id> getUniqueIdValues(List<SObject> records, String field) {
-        return mapByIdField(records, field).keySet();
+    public static Object getUniqueValues(Type valueType, List<SObject> records, String field) {
+        return mapByFieldToIMap(records, field, getSObjectIMap(valueType, records)).keySet();
     }
 
-    public static Set<Integer> getUniqueIntegerValues(List<SObject> records, SObjectField field) {
-        return getUniqueIntegerValues(records, '' + field);
-    }
-    public static Set<Integer> getUniqueIntegerValues(List<SObject> records, String field) {
-        return mapByIntegerField(records, field).keySet();
-    }
-
-    public static Set<Decimal> getUniqueDecimalValues(List<SObject> records, SObjectField field) {
-        return getUniqueDecimalValues(records, '' + field);
-    }
-    public static Set<Decimal> getUniqueDecimalValues(List<SObject> records, String field) {
-        return mapByDecimalField(records, field).keySet();
-    }
-
-    public static Set<Date> getUniqueDateValues(List<SObject> records, SObjectField field) {
-        return getUniqueDateValues(records, '' + field);
-    }
-    public static Set<Date> getUniqueDateValues(List<SObject> records, String field) {
-        return mapByDateField(records, field).keySet();
-    }
-
-    public static Set<Datetime> getUniqueDatetimeValues(List<SObject> records, SObjectField field) {
-        return getUniqueDatetimeValues(records, '' + field);
-    }
-    public static Set<Datetime> getUniqueDatetimeValues(List<SObject> records, String field) {
-        return mapByDatetimeField(records, field).keySet();
-    }
-
-    public static Set<Boolean> getUniqueBooleanValues(List<SObject> records, SObjectField field) {
-        return getUniqueBooleanValues(records, '' + field);
-    }
-    public static Set<Boolean> getUniqueBooleanValues(List<SObject> records, String field) {
-        return mapByBooleanField(records, field).keySet();
-    }
-
-    public static Set<Object> getUniqueValues(List<SObject> records, SObjectField field) {
-        return getUniqueValues(records, '' + field);
-    }
-    public static Set<Object> getUniqueValues(List<SObject> records, String field) {
-        return mapByField(records, field).keySet();
-    }
-    public static Set<Object> getUniqueValues(List<SObject> records, KeyMapper mapper) {
-        return mapBy(records, mapper).keySet();
+    public static Object getUniqueValues(Type valueType, List<SObject> records, KeyMapper mapper) {
+        return mapByFieldToIMap(records, mapper, getSObjectIMap(valueType, records)).keySet();
     }
 
 
     /**
+     * TODO
      * @param records List of records to return field values from.
      * @param fields List of fields to return values from.
      * @return Set of unique SObject field values of given fields of given records.
@@ -168,91 +123,38 @@ public class Collections {
     }
 
 
-    /** Maps list of SObjects by given String field. */
-    public static Map<String, SObject> mapByStringField(List<SObject> records, SObjectField field) {
-        return mapByStringField(records, '' + field);
-    }
-    public static Map<String, SObject> mapByStringField(List<SObject> records, String field) {
-        return (Map<String, SObject>) mapByField(records, field, getGenericMap(String.class, records));
+    public static Object mapByField(Type keyType, List<SObject> records, SObjectField field) {
+        return mapByField(keyType, records, '' + field);
     }
 
-    public static Map<Id, SObject> mapByIdField(List<SObject> records, SObjectField field) {
-        return mapByIdField(records, '' + field);
-    }
-    public static Map<Id, SObject> mapByIdField(List<SObject> records, String field) {
-        return (Map<Id, SObject>) mapByField(records, field, getGenericMap(Id.class, records));
+    public static Object mapByField(Type keyType, List<SObject> records, String field) {
+        return mapByField(records, field, getSObjectIMap(keyType, records));
     }
 
-    public static Map<Integer, SObject> mapByIntegerField(List<SObject> records, SObjectField field) {
-        return mapByIntegerField(records, '' + field);
-    }
-    public static Map<Integer, SObject> mapByIntegerField(List<SObject> records, String field) {
-        return (Map<Integer, SObject>) mapByField(records, field, getGenericMap(Integer.class, records));
+    private static Object mapByField(List<SObject> records, String field, IMap resultMap) {
+        return mapByFieldToIMap(records, field, resultMap).toMap();
     }
 
-    public static Map<Decimal, SObject> mapByDecimalField(List<SObject> records, SObjectField field) {
-        return mapByDecimalField(records, '' + field);
-    }
-    public static Map<Decimal, SObject> mapByDecimalField(List<SObject> records, String field) {
-        return (Map<Decimal, SObject>) mapByField(records, field, getGenericMap(Decimal.class, records));
+    private static IMap mapByFieldToIMap(List<SObject> records, String field, IMap resultMap) {
+        return mapByFieldToIMap(records, new SObjectFieldKeyMapper(field), resultMap);
     }
 
-    public static Map<Date, SObject> mapByDateField(List<SObject> records, SObjectField field) {
-        return mapByDateField(records, '' + field);
+    private static IMap mapByFieldToIMap(List<SObject> records, KeyMapper mapper, IMap resultMap) {
+        return ((IMap) reduce(records, new ReducerToMapByKeyMapper(mapper), resultMap));
     }
-    public static Map<Date, SObject> mapByDateField(List<SObject> records, String field) {
-        return (Map<Date, SObject>) mapByField(records, field, getGenericMap(Date.class, records));
-    }
-
-    public static Map<Datetime, SObject> mapByDatetimeField(List<SObject> records, SObjectField field) {
-        return mapByDatetimeField(records, '' + field);
-    }
-    public static Map<Datetime, SObject> mapByDatetimeField(List<SObject> records, String field) {
-        return (Map<Datetime, SObject>) mapByField(records, field, getGenericMap(Datetime.class, records));
-    }
-
-    public static Map<Boolean, SObject> mapByBooleanField(List<SObject> records, SObjectField field) {
-        return mapByBooleanField(records, '' + field);
-    }
-    public static Map<Boolean, SObject> mapByBooleanField(List<SObject> records, String field) {
-        return (Map<Boolean, SObject>) mapByField(records, field, getGenericMap(Boolean.class, records));
-    }
-
-    public static Map<Object, SObject> mapByField(List<SObject> records, SObjectField field) {
-        return mapByField(records, '' + field);
-    }
-    public static Map<Object, SObject> mapByField(List<SObject> records, String field) {
-        return (Map<Object, SObject>) mapByField(records, field, getGenericMap(Object.class, records));
-    }
-
-    private static Object mapByField(List<SObject> records, String field, IMap abstractMap) {
-        KeyMapper mapByField = new SObjectFieldKeyMapper(field);
-        Reducer reducer = new ReducerToMapByKeyMapper(mapByField);
-
-        return ((IMap) reduce(records, reducer, abstractMap)).toMap();
-    }
-
-    public class ReducerToMapByKeyMapper implements Reducer {
-        private KeyMapper mapper;
-
-        public ReducerToMapByKeyMapper(KeyMapper mapper) {
-            this.mapper = mapper;
-        }
-
-        public void reduce(Object aggregatedValues, Object item) {
-            IMap abstractMap = (IMap) aggregatedValues;
-            abstractMap.put(mapper.key(item), item);
-        }
-    }
-
 
     /**
-     * @param items - List of items to map
-     * @param mapper - KeyMapper instance which produce map key for given item.
+     * @param keyType Type of result Map key
+     * @param items List of items to map
+     * @param mapper KeyMapper instance which produce map key for given item.
      * @return Map of items where Item is map's value and key is produced by KeyMapper.
      */
-    public static Map<Object, Object> mapBy(List<Object> items, KeyMapper mapper) {
-        return (Map<Object, Object>) ((IMap) reduce(items, new ReducerToMapByKeyMapper(mapper), new MapByObject(new Map<Object, Object>()))).toMap();
+    public static Object mapBy(Type keyType, List<SObject> items, KeyMapper mapper) {
+        IMap iMap = getSObjectIMap(keyType, items);
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            iMap.put(mapper.key(items[i], items[i]));
+        }
+        return iMap.toMap();
     }
 
     /**
@@ -262,21 +164,20 @@ public class Collections {
         Object key(Object item);
     }
 
+
     /**
      * @param items List of items to map
      * @param mapper Mapper instance which produce Map's Key and Value for each collection item.
      * @return Map of items where both key and value are produced by Mapper implementation.
      */
-    public static Map<Object, Object> mapBy(List<Object> items, Mapper mapper) {
-        Map<Object, Object> mappedItems = new Map<Object, Object>();
-
-        for (Integer i = 0, size = items.size(); i < size; ++i) {
-            Object item = items[i];
-            mappedItems.put(mapper.key(item), mapper.value(item));
+    public static Object mapBy(Type keyType, Type objectType, List<Object> items, Mapper mapper) {
+        IMap iMap = getObjectIMap(keyType, objectType);
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            iMap.put(mapper.key(items[i]), mapper.value(items[i]));
         }
-
-        return mappedItems;
+        return iMap.toMap();
     }
+
 
     /**
      * Mapper implementations determine Map's key and value for given object.
@@ -287,71 +188,26 @@ public class Collections {
     }
 
 
-    /**
-     * Groups records by given field
-     * @return Map where field is the key and List of items is the value
-     */
-    public static Map<String, List<SObject>> groupByStringField(List<SObject> records, SObjectField field) {
-        return groupByStringField(records, '' + field);
+    public static Object groupByField(Type keyType, List<SObject> records, SObjectField field) {
+        return groupByField(keyType, records, '' + field);
     }
-    public static Map<String, List<SObject>> groupByStringField(List<SObject> records, String field) {
-        return (Map<String, List<SObject>>) groupByField(records, field, new MapByString(new Map<String, List<SObject>>()));
+    public static Object groupByField(Type keyType, List<SObject> records, String field) {
+        return groupByField(records, field, getSObjectIMap(keyType, records));
     }
 
-    public static Map<Id, List<SObject>> groupByIdField(List<SObject> records, SObjectField field) {
-        return groupByIdField(records, '' + field);
-    }
-    public static Map<Id, List<SObject>> groupByIdField(List<SObject> records, String field) {
-        return (Map<Id, List<SObject>>) groupByField(records, field, new MapById(new Map<Id, List<SObject>>()));
-    }
+    private static Object groupByField(List<SObject> records, String field, IMap mapInstance) {
+        for (Integer i = 0, j = records.size(); i < j; i++) {
+            SObject record = (SObject) records[i];
+            Object key = mapper.key(record);
 
-    public static Map<Integer, List<SObject>> groupByIntegerField(List<SObject> records, SObjectField field) {
-        return groupByIntegerField(records, '' + field);
-    }
-    public static Map<Integer, List<SObject>> groupByIntegerField(List<SObject> records, String field) {
-        return (Map<Integer, List<SObject>>) groupByField(records, field, new MapByInteger(new Map<Integer, List<SObject>>()));
-    }
+            if (!mapInstance.containsKey(key)) {
+                mapInstance.put(key, new List<SObject>());
+            }
 
-    public static Map<Decimal, List<SObject>> groupByDecimalField(List<SObject> records, SObjectField field) {
-        return groupByDecimalField(records, '' + field);
-    }
-    public static Map<Decimal, List<SObject>> groupByDecimalField(List<SObject> records, String field) {
-        return (Map<Decimal, List<SObject>>) groupByField(records, field, new MapByDecimal(new Map<Decimal, List<SObject>>()));
-    }
-
-    public static Map<Date, List<SObject>> groupByDateField(List<SObject> records, SObjectField field) {
-        return groupByDateField(records, '' + field);
-    }
-    public static Map<Date, List<SObject>> groupByDateField(List<SObject> records, String field) {
-        return (Map<Date, List<SObject>>) groupByField(records, field, new MapByDate(new Map<Date, List<SObject>>()));
-    }
-
-    public static Map<Datetime, List<SObject>> groupByDatetimeField(List<SObject> records, SObjectField field) {
-        return groupByDatetimeField(records, '' + field);
-    }
-    public static Map<Datetime, List<SObject>> groupByDatetimeField(List<SObject> records, String field) {
-        return (Map<Datetime, List<SObject>>) groupByField(records, field, new MapByDatetime(new Map<Datetime, List<SObject>>()));
-    }
-
-    public static Map<Boolean, List<SObject>> groupByBooleanField(List<SObject> records, SObjectField field) {
-        return groupByBooleanField(records, '' + field);
-    }
-    public static Map<Boolean, List<SObject>> groupByBooleanField(List<SObject> records, String field) {
-        return (Map<Boolean, List<SObject>>) groupByField(records, field, new MapByBoolean(new Map<Boolean, List<SObject>>()));
-    }
-
-    public static Map<Object, List<SObject>> groupByField(List<SObject> records, SObjectField field) {
-        return groupByField(records, '' + field);
-    }
-    public static Map<Object, List<SObject>> groupByField(List<SObject> records, String field) {
-        return (Map<Object, List<SObject>>) groupByField(records, field, new MapByObject(new Map<Object, List<SObject>>()));
-    }
-
-    private static Object groupByField(List<SObject> records, String field, IMap abstractMap) {
-        KeyMapper mapByField = new SObjectFieldKeyMapper(field);
-        Reducer reducer = new ReducerToGroupByKeyMapper(mapByField);
-
-        return ((IMap) reduce(records, reducer, abstractMap)).toMap();
+            List<SObject> groupedRecords = (List<SObject>) mapInstance.get(key);
+            groupedRecords.add(record);
+        }
+        return iMap.toMap();
     }
 
 
@@ -361,29 +217,12 @@ public class Collections {
      *
      * @return Map where Map's Key is produced by KeyMapper and Map's Value is list of collection items which share the same key.
      */
-    public static Map<Object, List<Object>> groupBy(List<Object> records, KeyMapper keyMapper) {
-        return (Map<Object, List<Object>>) ((IMap) reduce(records, new ReducerToGroupByKeyMapper(keyMapper), new MapByObject(new Map<Object, List<Object>>()))).toMap();
+    public static Object groupBy(Type keyType, List<SObject> records, KeyMapper keyMapper) {
+        return return null;
     }
 
-    public class ReducerToGroupByKeyMapper implements Reducer {
-        private KeyMapper mapper;
-
-        public ReducerToGroupByKeyMapper(KeyMapper mapper) {
-            this.mapper = mapper;
-        }
-
-        public void reduce(Object aggregatedValues, Object item) {
-            IMap mapInstance = (IMap) aggregatedValues;
-            SObject record = (SObject) item;
-            Object key = mapper.key(item);
-
-            if (!mapInstance.containsKey(key)) {
-                mapInstance.put(key, new List<SObject>());
-            }
-
-            List<SObject> groupedRecords = (List<SObject>) mapInstance.get(key);
-            groupedRecords.add(record);
-        }
+    public static Object groupBy(Type keyType, Type objectType, List<Object> records, KeyMapper keyMapper) {
+        return return null;
     }
 
 
@@ -394,28 +233,22 @@ public class Collections {
      * @return Map where Map's key is produced by Mapper's Key() method and Map's value is list of objects
      * created by Mapper's value() method which share the same key.
      */
-    public static Map<Object, List<Object>> groupBy(List<SObject> records, Mapper mapper) {
-        return (Map<Object, List<Object>>) ((IMap) reduce(records, new ReducerToGroupByMapper(mapper), new MapByObject(new Map<Object, List<Object>>()))).toMap();
-    }
-    public class ReducerToGroupByMapper implements Reducer {
-        private Mapper mapper;
+    public static Object groupBy(List<SObject> records, Mapper mapper) {
 
-        public ReducerToGroupByMapper(Mapper mapper) {
-            this.mapper = mapper;
-        }
-
-        public void reduce(Object aggregatedValues, Object item) {
-            IMap mapInstance = (IMap) aggregatedValues;
-            Object key = mapper.key(item);
+        for (Integer i = 0, j = records.size(); i < j; i++) {
+            SObject record = (SObject) records[i];
+            Object key = mapper.key(record);
             Object value = mapper.value(item);
 
             if (!mapInstance.containsKey(key)) {
-                mapInstance.put(key, new List<Object>());
+                mapInstance.put(key, new List<SObject>());
             }
 
-            List<Object> groupedRecords = (List<Object>) mapInstance.get(key);
-            groupedRecords.add(value);
+            List<SObject> groupedRecords = (List<SObject>) mapInstance.get(key);
+            groupedRecords.add(record);
         }
+
+        return iMap.toMap();
     }
 
 
@@ -508,27 +341,18 @@ public class Collections {
      */
     public static List<SObject> filter(List<SObject> records, Filter filter) {
         List<SObject> filtered = getNewListOfTheSameSObjectType(records);
-        return (List<SObject>) reduce(records, new ReducerByFilter(filter), filtered);
+
+        for (Integer i = 0, j = records.size(); i < j; i++) {
+            if (filter.accepts(records[i])) {
+                filtered.add(records[i]);
+            }
+        }
+
+        return filtered;
     }
 
     public interface Filter {
-        Boolean accepts(SObject record);
-    }
-
-    public class ReducerByFilter implements Reducer {
-        private Filter filter;
-        public ReducerByFilter(Filter filter) {
-            this.filter = filter;
-        }
-
-        public void reduce(Object aggregatedValues, Object item) {
-            List<SObject> filteredRecords = (List<SObject>) aggregatedValues;
-            SObject record = (SObject) item;
-
-            if (filter.accepts(record)) {
-                filteredRecords.add(record);
-            }
-        }
+        Boolean accepts(Object record);
     }
 
 
@@ -734,8 +558,22 @@ public class Collections {
      * IMap factory method which returns proper IMap implementation for given keyType parameter
      * and initializes it with empty Map of the same sObject type as given records.
      */
-    private static IMap getGenericMap(Type keyType, List<SObject> records) {
+    private static IMap getSObjectIMap(Type keyType, List<SObject> records) {
         Object sfMap = getNewMapOfTheSameSObjectType(keyType, records);
+
+        if (keyType == Id.class) return new MapById((Map<Id, Object>) sfMap);
+        if (keyType == String.class) return new MapByString((Map<String, Object>) sfMap);
+        if (keyType == Integer.class) return new MapByInteger((Map<Integer, Object>) sfMap);
+        if (keyType == Decimal.class) return new MapByDecimal((Map<Decimal, Object>) sfMap);
+        if (keyType == Date.class) return new MapByDate((Map<Date, Object>) sfMap);
+        if (keyType == Datetime.class) return new MapByDatetime((Map<Datetime, Object>) sfMap);
+        if (keyType == Boolean.class) return new MapByBoolean((Map<Boolean, Object>) sfMap);
+
+        return new MapByObject((Map<Object, Object>) sfMap);
+    }
+
+    private static IMap getObjectIMap(Type keyType, Type objectType) {
+        Object sfMap = Type.forName('Map<' + keyType + ',' + objectType + '>').newInstance();
 
         if (keyType == Id.class) return new MapById((Map<Id, Object>) sfMap);
         if (keyType == String.class) return new MapByString((Map<String, Object>) sfMap);
@@ -758,6 +596,7 @@ public class Collections {
      */
     public interface IMap {
         Object toMap();
+        Object keySet();
         void put(Object key, Object value);
         Object get(Object key);
         Boolean containsKey(Object key);
@@ -781,6 +620,9 @@ public class Collections {
         public Object toMap() {
             return mapInstance;
         }
+        public Object keySet() {
+            return mapInstance.keySet();
+        }
     }
 
     public class MapById implements IMap {
@@ -800,6 +642,9 @@ public class Collections {
         }
         public Object toMap() {
             return mapInstance;
+        }
+        public Object keySet() {
+            return mapInstance.keySet();
         }
     }
 
@@ -821,6 +666,9 @@ public class Collections {
         public Object toMap() {
             return mapInstance;
         }
+        public Object keySet() {
+            return mapInstance.keySet();
+        }
     }
 
     public class MapByInteger implements IMap {
@@ -840,6 +688,9 @@ public class Collections {
         }
         public Object toMap() {
             return mapInstance;
+        }
+        public Object keySet() {
+            return mapInstance.keySet();
         }
     }
 
@@ -861,6 +712,9 @@ public class Collections {
         public Object toMap() {
             return mapInstance;
         }
+        public Object keySet() {
+            return mapInstance.keySet();
+        }
     }
 
     public class MapByDate implements IMap {
@@ -880,6 +734,9 @@ public class Collections {
         }
         public Object toMap() {
             return mapInstance;
+        }
+        public Object keySet() {
+            return mapInstance.keySet();
         }
     }
 
@@ -901,6 +758,9 @@ public class Collections {
         public Object toMap() {
             return mapInstance;
         }
+        public Object keySet() {
+            return mapInstance.keySet();
+        }
     }
 
     public class MapByBoolean implements IMap {
@@ -920,6 +780,9 @@ public class Collections {
         }
         public Object toMap() {
             return mapInstance;
+        }
+        public Object keySet() {
+            return mapInstance.keySet();
         }
     }
 }

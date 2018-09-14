@@ -487,6 +487,30 @@ private class CollectionsTest {
 
     /**
      * @description
+     * Groups list of SObjects by given String field literal.
+     * This results in Map, where keys are the field values and Map's value is a list of records
+     * with the same field value.
+     */
+    @IsTest
+    static void testGroupByStringLiteral() {
+        Map<String, List<Opportunity>> expected = new Map<String, List<Opportunity>>{
+                'Analysis' => new List<Opportunity>{
+                        opportunities[0], opportunities[1], opportunities[2], opportunities[3]
+                },
+                'Deal' => new List<Opportunity>{
+                        opportunities[4], opportunities[5], opportunities[6]
+                },
+                'Support' => new List<Opportunity>{
+                        opportunities[7], opportunities[8], opportunities[9]
+                }
+        };
+        Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collections.groupBy(String.class, opportunities, 'NextStep');
+
+        System.assertEquals(expected, actual);
+    }
+
+    /**
+     * @description
      * Groups list of SObjects by given String field.
      * This results in Map, where keys are the field values and Map's value is a list of records
      * with the same field value.

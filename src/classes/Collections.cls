@@ -92,6 +92,24 @@ public class Collections {
 
 
     /**
+     * @return New empty list of the same SObject type as original.
+     */
+    public static List<Object> newListOfTheSameType(List<Object> original) {
+        List<Object> clone = original.clone();
+        clone.clear();
+
+        return clone;
+    }
+
+    /**
+     * @return New list of given item type.
+     */
+    public static List<Object> newListOfType(Type itemType) {
+        return (List<Object>) Type.forName('List<' + itemType + '>').newInstance();
+    }
+
+
+    /**
      * @param records List of SObject records from which values are gathered.
      * @param field SObject field from which value is taken.
      * @return Set of gathered values.
@@ -158,30 +176,29 @@ public class Collections {
     }
 
     /**
-     * @param keyType Type of result Map key
      * @param items List of SObject records to map
      * @param field SObject Field to map by
-     * @return Map of items where record is map's value and key is field's value.
+     * @return Map of items where record is map's value and field's value is map's key.
+     * Map's key type is derived from field's DisplayType.
      */
     public static Object mapBy(List<SObject> records, SObjectField field) {
         return mapBy(records, new SObjectFieldKeyMapper(field));
     }
 
     /**
-     * @param keyType Type of result Map key
+     * @param keyType Type of returned map's key
      * @param items List of SObject records to map
      * @param field SObject Field API name to map by
-     * @return Map of items where record is map's value and key is field's value.
+     * @return Map of items where record is map's value and field's value is map's key.
      */
     public static Object mapBy(Type keyType, List<SObject> records, String field) {
         return mapBy(records, new SObjectFieldKeyMapper(keyType, field));
     }
 
     /**
-     * @param keyType Type of result Map key
      * @param items List of items to map
      * @param mapper KeyMapper instance which produce map key for given item.
-     * @return Map of items where Item is map's value and key is produced by KeyMapper.
+     * @return Map of items where list item is map's value and key is produced by KeyMapper.
      */
     public static Object mapBy(List<Object> items, KeyMapper mapper) {
         return mapByFieldToIMap(items, mapper, getIMap(mapper.keyType(), items)).toMap();
@@ -324,18 +341,20 @@ public class Collections {
     }
 
     /**
-     * @param records List of items to filter.
+     * @param items List of items to filter.
      * @param filter Filter implementation which for each collection item returns boolean value whether item should
      * be included in the output or not.
      *
      * @return List of items for which filter returned "true".
      */
-    public static List<Object> filter(List<Object> records, Filter filter) {
-        List<Object> filtered = newListOfTheSameType(records);
+    public static List<Object> filter(List<Object> items, Filter filter) {
+        List<Object> filtered = newListOfTheSameType(items);
 
-        for (Integer i = 0, j = records.size(); i < j; i++) {
-            if (filter.accepts(records[i])) {
-                filtered.add(records[i]);
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            Object item = items[i];
+
+            if (filter.accepts(item)) {
+                filtered.add(item);
             }
         }
 
@@ -431,8 +450,7 @@ public class Collections {
         }
 
         comparables.sort();
-        List<Object> sorted = items.clone();
-        sorted.clear();
+        List<Object> sorted = newListOfTheSameType(items);
 
         for (Integer i = 0, size = comparables.size(); i < size; i++) {
             sorted.add(comparables[i].item);
@@ -557,25 +575,6 @@ public class Collections {
         public Type keyType() {
             return keyType;
         }
-    }
-
-
-    /**
-     * @return New empty list of the same SObject type as original.
-     */
-    public static List<Object> newListOfTheSameType(List<Object> original) {
-        List<Object> clone = original.clone();
-        clone.clear();
-
-        return clone;
-    }
-
-
-    /**
-     * @return New empty list of the same SObject type as original.
-     */
-    public static List<Object> newListOfType(Type itemType) {
-        return (List<Object>) Type.forName('List<' + itemType + '>').newInstance();
     }
 
 

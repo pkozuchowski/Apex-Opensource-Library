@@ -604,6 +604,7 @@ public class Collections {
         if (keyType == Date.class) return new MapByDate((Map<Date, Object>) sfMap);
         if (keyType == Datetime.class) return new MapByDatetime((Map<Datetime, Object>) sfMap);
         if (keyType == Boolean.class) return new MapByBoolean((Map<Boolean, Object>) sfMap);
+        if (keyType == Time.class) return new MapByTime((Map<Time, Object>) sfMap);
 
         return new MapByObject((Map<Object, Object>) sfMap);
     }
@@ -799,6 +800,29 @@ public class Collections {
         }
         public Object get(Object key) {
             return mapInstance.get((Boolean) key);
+        }
+        public Object toMap() {
+            return mapInstance;
+        }
+        public Object keySet() {
+            return mapInstance.keySet();
+        }
+    }
+
+    public class MapByTime implements IMap {
+        private Map<Time, Object> mapInstance;
+
+        public MapByTime(Map<Time, Object> mapInstance) {
+            this.mapInstance = mapInstance;
+        }
+        public void put(Object key, Object value) {
+            mapInstance.put((Time) key, (Object) value);
+        }
+        public Boolean containsKey(Object key) {
+            return mapInstance.containsKey((Time) key);
+        }
+        public Object get(Object key) {
+            return mapInstance.get((Time) key);
         }
         public Object toMap() {
             return mapInstance;

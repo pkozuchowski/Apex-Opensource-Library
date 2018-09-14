@@ -232,12 +232,11 @@ private class CollectionsTest {
     * */
     @IsTest
     static void testGetUniqueValuesKeyMapper() {
-        Set<Decimal> expected = new Set<Decimal>();
-        for (Opportunity opp : opportunities) {
-            expected.add(opp.Probability);
-        }
+        Set<Integer> expected = new Set<Integer>{
+                0, 1
+        };
 
-        Set<Decimal> actual = (Set<Decimal>) Collections.getUniqueValues(opportunities, new Collections.SObjectFieldKeyMapper(Decimal.class, 'Probability'));
+        Set<Integer> actual = (Set<Integer>) Collections.getUniqueValues(opportunities, new OpportunitiesByYearsHalfMapper());
         System.assertEquals(expected, actual);
     }
 

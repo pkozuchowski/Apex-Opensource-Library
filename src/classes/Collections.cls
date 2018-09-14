@@ -354,7 +354,7 @@ public class Collections {
         Boolean accepts(Object record);
     }
 
-    public class FieldValueFilter implements Filter {
+    private class FieldValueFilter implements Filter {
         private Object value;
         private String field;
 
@@ -368,7 +368,7 @@ public class Collections {
         }
     }
 
-    public class FieldValuesFilter implements Filter {
+    private class FieldValuesFilter implements Filter {
         private Set<Object> values;
         private String field;
 
@@ -456,7 +456,7 @@ public class Collections {
         Integer compare(Object thisItem, Object otherItem);
     }
 
-    public virtual class ObjectComparable implements Comparable {
+    private virtual class ObjectComparable implements Comparable {
         private Object item;
         private Comparator comparator;
 
@@ -470,7 +470,7 @@ public class Collections {
         }
     }
 
-    public class SObjectFieldComparator implements Comparator {
+    private class SObjectFieldComparator implements Comparator {
         private SObjectField field;
         private Integer direction;
         private Comparator fieldTypeComparator;
@@ -516,14 +516,14 @@ public class Collections {
             Schema.DisplayType.TIME => StringFieldComparatorInstance,
             Schema.DisplayType.URL => StringFieldComparatorInstance
     };
-    public class StringFieldComparator implements Comparator {
+    private class StringFieldComparator implements Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             String s1 = thisItem == null ? '' : '' + thisItem;
             String s2 = otherItem == null ? '' : '' + otherItem;
             return s1.compareTo(s2);
         }
     }
-    public class NumericFieldComparator implements Comparator {
+    private class NumericFieldComparator implements Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             Decimal d1 = thisItem == null ? 0.0 : (Decimal) thisItem;
             Decimal d2 = otherItem == null ? 0.0 : (Decimal) otherItem;
@@ -544,7 +544,7 @@ public class Collections {
     /**
      * Key mapper where key is SObject field.
      */
-    public virtual class SObjectFieldKeyMapper implements KeyMapper {
+    private virtual class SObjectFieldKeyMapper implements KeyMapper {
         private String field;
         private Type keyType;
 

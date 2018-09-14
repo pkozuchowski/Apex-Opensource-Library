@@ -568,66 +568,77 @@ private class CollectionsTest {
     @IsTest
     static void testGroupByFieldByKeyMapper() {
         Map<Integer, List<Opportunity>> expected = new Map<Integer, List<Opportunity>>{
-                10 => new List<Opportunity>{
-                        opportunities[0], opportunities[4], opportunities[8]
+                0 => new List<Opportunity>{
+                        opportunities[0], opportunities[1], opportunities[4], opportunities[5], opportunities[8], opportunities[9]
                 },
-                11 => new List<Opportunity>{
-                        opportunities[1], opportunities[5], opportunities[9]
-                },
-                12 => new List<Opportunity>{
-                        opportunities[2], opportunities[6]
-                },
-                13 => new List<Opportunity>{
-                        opportunities[3], opportunities[7]
+                1 => new List<Opportunity>{
+                        opportunities[2], opportunities[3], opportunities[6], opportunities[7]
                 }
         };
-        Map<Integer, List<Opportunity>> actual = (Map<Integer, List<Opportunity>>) Collections.groupBy(opportunities, new TestGroupByKeyMapper());
+        Map<Integer, List<Opportunity>> actual = (Map<Integer, List<Opportunity>>) Collections.groupBy(opportunities, new OpportunitiesByYearsHalfMapper());
 
 
         System.assertEquals(expected, actual);
     }
 
-    private class TestGroupByKeyMapper implements Collections.KeyMapper {
+    private class OpportunitiesByYearsHalfMapper implements Collections.KeyMapper {
         public Object key(Object item) {
-            return 10 + ((Opportunity) item).FiscalQuarter;
+            Integer quarter = ((Opportunity) item).FiscalQuarter;
+            return quarter <= 1 ? 0 : 1;
         }
         public Type keyType() {
             return Integer.class;
         }
     }
-//
-//    @IsTest
-//    static void testGroupByFieldByMapper() {
-//        Map<Id, List<Opportunity>> expected;
-//        Map<Id, List<Opportunity>> actual = Collections.groupBy(opportunities, Opportunity.AccountId);
-//
-//        System.assertEquals(
-//                new Map<Object, List<Object>>{
-//                        0 => new List<Object>{
-//                                opportunities[0].CreatedDate, opportunities[4].CreatedDate, opportunities[8].CreatedDate
-//                        },
-//                        1 => new List<Object>{
-//                                opportunities[1].CreatedDate, opportunities[5].CreatedDate, opportunities[9].CreatedDate
-//                        },
-//                        2 => new List<Object>{
-//                                opportunities[2].CreatedDate, opportunities[6].CreatedDate
-//                        },
-//                        3 => new List<Object>{
-//                                opportunities[3].CreatedDate, opportunities[7].CreatedDate
-//                        }
-//                },
-//                Collections.groupBy(opportunities, new MapperOpportunityCreatedDateByFiscalQuarter())
-//        );
-//    }
-//    private class MapperOpportunityCreatedDateByFiscalQuarter implements Collections.Mapper {
-//        public Object key(Object item) {
-//            return ((Opportunity) item).FiscalQuarter;
-//        }
-//
-//        public Object value(Object item) {
-//            return ((Opportunity) item).CreatedDate;
-//        }
-//    }
+
+
+    @IsTest
+    static void testGroupByFieldByMapper() {
+        Map<Integer, List<OpportunityWrapper>> expected = new Map<Integer, List<OpportunityWrapper>>{
+                0 => new List<OpportunityWrapper>{
+                        new OpportunityWrapper(opportunities[0]),
+                        new OpportunityWrapper(opportunities[1]),
+                        new OpportunityWrapper(opportunities[4]),
+                        new OpportunityWrapper(opportunities[5]),
+                        new OpportunityWrapper(opportunities[8]),
+                        new OpportunityWrapper(opportunities[9])
+
+                },
+                1 => new List<OpportunityWrapper>{
+                        new OpportunityWrapper(opportunities[2]),
+                        new OpportunityWrapper(opportunities[3]),
+                        new OpportunityWrapper(opportunities[6]),
+                        new OpportunityWrapper(opportunities[7])
+
+                }
+        };
+
+        Map<Integer, List<OpportunityWrapper>> actual = (Map<Integer, List<OpportunityWrapper>>) Collections.groupBy(opportunities, new OppWrapperByHalfYearMapper());
+    }
+
+    private class OppWrapperByHalfYearMapper implements Collections.Mapper {
+        public Type keyType() {
+            return Integer.class;
+        }
+        public Type valueType() {
+            return OpportunityWrapper.class;
+        }
+        public Object key(Object item) {
+            Integer quarter = ((Opportunity) item).FiscalQuarter;
+            return quarter <= 1 ? 0 : 1;
+        }
+        public Object value(Object item) {
+            return new OpportunityWrapper((Opportunity) item);
+        }
+    }
+
+    public class OpportunityWrapper {
+        private Opportunity opportunity;
+
+        public OpportunityWrapper(Opportunity opportunity) {
+            this.opportunity = opportunity;
+        }
+    }
 //
 //    @IsTest
 //    static void whenEmptyOpportunityListIsGrouppedThenEmptyOpportunityByStringMapIsReturned() {

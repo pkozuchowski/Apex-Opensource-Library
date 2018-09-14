@@ -370,7 +370,7 @@ public class Collections {
      * @return List of items for which filter returned "true".
      */
     public static List<SObject> filter(List<SObject> records, Filter filter) {
-        List<SObject> filtered = (List<SObject>) getNewListOfTheSameType(records);
+        List<SObject> filtered = (List<SObject>) newListOfTheSameType(records);
 
         for (Integer i = 0, j = records.size(); i < j; i++) {
             if (filter.accepts(records[i])) {
@@ -395,7 +395,7 @@ public class Collections {
      * @return Subset of records parameter for which UpdateFilter returned "true".
      */
     public static List<SObject> filter(List<SObject> records, Map<Id, SObject> oldRecords, UpdateFilter filter) {
-        List<SObject> filtered = (List<SObject>) getNewListOfTheSameType(records);
+        List<SObject> filtered = (List<SObject>) newListOfTheSameType(records);
 
         for (Integer i = 0, size = records.size(); i < size; ++i) {
             SObject record = records[i];
@@ -572,23 +572,11 @@ public class Collections {
     /**
      * @return New empty list of the same SObject type as original.
      */
-    public static List<Object> getNewListOfTheSameType(List<Object> original) {
+    public static List<Object> newListOfTheSameType(List<Object> original) {
         List<Object> clone = original.clone();
         clone.clear();
 
         return clone;
-    }
-
-
-    /**
-     * @return New empty list of the same SObject type as original.
-     */
-    public static Object getNewMapOfTheSameSObjectType(Type keyType, List<SObject> records) {
-        SObjectType sobjType = getSObjectType(records);
-
-        return Type.forName('Map<' + keyType + ',' +
-                (sobjType == null ? 'SObject' : String.valueOf(sobjType))
-                + '>').newInstance();
     }
 
 

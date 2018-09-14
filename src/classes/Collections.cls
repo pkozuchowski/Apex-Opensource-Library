@@ -537,6 +537,10 @@ public class Collections {
     }
 
 
+    /*
+    * Implementations
+    * */
+
     /**
      * Key mapper where key is SObject field.
      */
@@ -563,7 +567,7 @@ public class Collections {
         }
     }
 
-    public virtual class MapperWithKeyMapper implements Mapper {
+    private class MapperWithKeyMapper implements Mapper {
         private KeyMapper keyMapper;
         private Type valueType;
 

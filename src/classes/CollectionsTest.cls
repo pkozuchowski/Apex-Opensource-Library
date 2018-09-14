@@ -153,7 +153,7 @@ private class CollectionsTest {
             expected.add(opp.AccountId);
         }
 
-        Set<Id> actual = (Set<Id>) Collections.getUniqueValues(Id.class, opportunities, Opportunity.AccountId);
+        Set<Id> actual = (Set<Id>) Collections.getUniqueValues(opportunities, Opportunity.AccountId);
         System.assertEquals(expected, actual);
     }
 
@@ -168,7 +168,7 @@ private class CollectionsTest {
             expected.add(opp.Name);
         }
 
-        Set<String> actual = (Set<String>) Collections.getUniqueValues(String.class, opportunities, Opportunity.Name);
+        Set<String> actual = (Set<String>) Collections.getUniqueValues(opportunities, Opportunity.Name);
         System.assertEquals(expected, actual);
     }
 
@@ -183,7 +183,7 @@ private class CollectionsTest {
             expected.add(opp.FiscalQuarter);
         }
 
-        Set<Integer> actual = (Set<Integer>) Collections.getUniqueValues(Integer.class, opportunities, Opportunity.FiscalQuarter);
+        Set<Integer> actual = (Set<Integer>) Collections.getUniqueValues(opportunities, Opportunity.FiscalQuarter);
         System.assertEquals(expected, actual);
     }
 
@@ -198,7 +198,7 @@ private class CollectionsTest {
             expected.add(opp.Probability);
         }
 
-        Set<Decimal> actual = (Set<Decimal>) Collections.getUniqueValues(Decimal.class, opportunities, Opportunity.Probability);
+        Set<Decimal> actual = (Set<Decimal>) Collections.getUniqueValues(opportunities, Opportunity.Probability);
         System.assertEquals(expected, actual);
     }
 
@@ -213,7 +213,7 @@ private class CollectionsTest {
             expected.add(opp.LastActivityDate);
         }
 
-        Set<Date> actual = (Set<Date>) Collections.getUniqueValues(Date.class, opportunities, Opportunity.LastActivityDate);
+        Set<Date> actual = (Set<Date>) Collections.getUniqueValues(opportunities, Opportunity.LastActivityDate);
         System.assertEquals(expected, actual);
     }
 
@@ -228,7 +228,7 @@ private class CollectionsTest {
             expected.add(opp.CreatedDate);
         }
 
-        Set<Datetime> actual = (Set<Datetime>) Collections.getUniqueValues(Datetime.class, opportunities, Opportunity.CreatedDate);
+        Set<Datetime> actual = (Set<Datetime>) Collections.getUniqueValues(opportunities, Opportunity.CreatedDate);
         System.assertEquals(expected, actual);
     }
 
@@ -243,24 +243,24 @@ private class CollectionsTest {
             expected.add(opp.HasOpenActivity);
         }
 
-        Set<Boolean> actual = (Set<Boolean>) Collections.getUniqueValues(Boolean.class, opportunities, Opportunity.HasOpenActivity);
+        Set<Boolean> actual = (Set<Boolean>) Collections.getUniqueValues(opportunities, Opportunity.HasOpenActivity);
         System.assertEquals(expected, actual);
     }
 
-    /**
-    * @description
-    * Collections.getUniqueValues returns Set of Object values from given field.
-    * */
-    @IsTest
-    static void testGetUniqueValues() {
-        Set<Object> expected = new Set<Object>();
-        for (Opportunity opp : opportunities) {
-            expected.add(opp.Probability);
-        }
-
-        Set<Object> actual = (Set<Object>) Collections.getUniqueValues(Object.class, opportunities, Opportunity.Probability);
-        System.assertEquals(expected, actual);
-    }
+//    /**
+//    * @description
+//    * Collections.getUniqueValues returns Set of Object values from given field.
+//    * */
+//    @IsTest
+//    static void testGetUniqueValues() {
+//        Set<Object> expected = new Set<Object>();
+//        for (Opportunity opp : opportunities) {
+//            expected.add(opp.Probability);
+//        }
+//
+//        Set<Object> actual = (Set<Object>) Collections.getUniqueValues(opportunities, Opportunity.Probability);
+//        System.assertEquals(expected, actual);
+//    }
 
     /**
     * @description
@@ -273,7 +273,7 @@ private class CollectionsTest {
             expected.add(opp.Probability);
         }
 
-        Set<Decimal> actual = (Set<Decimal>) Collections.getUniqueValues(Decimal.class, opportunities, new Collections.SObjectFieldKeyMapper('Probability'));
+        Set<Decimal> actual = (Set<Decimal>) Collections.getUniqueValues(opportunities, new Collections.SObjectFieldKeyMapper(Decimal.class, 'Probability'));
         System.assertEquals(expected, actual);
     }
 
@@ -284,14 +284,17 @@ private class CollectionsTest {
     @IsTest
     static void testGetUniqueValuesMultipleFields() {
         Set<Object> expected = new Set<Object>();
-        for (Opportunity opp : opportunities) {
-            expected.add(opp.Probability);
-            expected.add(opp.CreatedDate);
+        List<SObjectField> fields = new List<SObjectField>{
+                Opportunity.Probability, Opportunity.CreatedDate
+        };
+
+        for (SObjectField field : fields) {
+            for (Opportunity opp : opportunities) {
+                expected.add(opp.get(field));
+            }
         }
 
-        Set<Object> actual = Collections.getUniqueValues(opportunities, new List<SObjectField>{
-                Opportunity.Probability, Opportunity.CreatedDate
-        });
+        Set<Object> actual = Collections.getUniqueValues(opportunities, fields);
         System.assertEquals(
                 JSON.serialize(expected),
                 JSON.serialize(actual)
@@ -310,7 +313,7 @@ private class CollectionsTest {
             expected.put(opp.Id, opp);
         }
 
-        Map<Id, Opportunity> actual = (Map<Id, Opportunity>) Collections.mapByField(Id.class, opportunities, Opportunity.Id);
+        Map<Id, Opportunity> actual = (Map<Id, Opportunity>) Collections.mapBy(opportunities, Opportunity.Id);
         System.assertEquals(expected, actual);
     }
 
@@ -325,7 +328,7 @@ private class CollectionsTest {
             expected.put(opp.Name, opp);
         }
 
-        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collections.mapByField(String.class, opportunities, Opportunity.Name);
+        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collections.mapBy(opportunities, Opportunity.Name);
         System.assertEquals(expected, actual);
     }
 
@@ -340,7 +343,7 @@ private class CollectionsTest {
             expected.put(opp.Probability, opp);
         }
 
-        Map<Decimal, Opportunity> actual = (Map<Decimal, Opportunity>) Collections.mapByField(Decimal.class, opportunities, Opportunity.Probability);
+        Map<Decimal, Opportunity> actual = (Map<Decimal, Opportunity>) Collections.mapBy(opportunities, Opportunity.Probability);
         System.assertEquals(expected, actual);
     }
 
@@ -355,7 +358,7 @@ private class CollectionsTest {
             expected.put(opp.FiscalQuarter, opp);
         }
 
-        Map<Integer, Opportunity> actual = (Map<Integer, Opportunity>) Collections.mapByField(Integer.class, opportunities, Opportunity.FiscalQuarter);
+        Map<Integer, Opportunity> actual = (Map<Integer, Opportunity>) Collections.mapBy(opportunities, Opportunity.FiscalQuarter);
         System.assertEquals(expected, actual);
     }
 
@@ -370,7 +373,7 @@ private class CollectionsTest {
             expected.put(opp.HasOpenActivity, opp);
         }
 
-        Map<Boolean, Opportunity> actual = (Map<Boolean, Opportunity>) Collections.mapByField(Boolean.class, opportunities, Opportunity.HasOpenActivity);
+        Map<Boolean, Opportunity> actual = (Map<Boolean, Opportunity>) Collections.mapBy(opportunities, Opportunity.HasOpenActivity);
         System.assertEquals(expected, actual);
     }
 
@@ -385,7 +388,7 @@ private class CollectionsTest {
             expected.put(opp.LastActivityDate, opp);
         }
 
-        Map<Date, Opportunity> actual = (Map<Date, Opportunity>) Collections.mapByField(Date.class, opportunities, Opportunity.LastActivityDate);
+        Map<Date, Opportunity> actual = (Map<Date, Opportunity>) Collections.mapBy(opportunities, Opportunity.LastActivityDate);
         System.assertEquals(expected, actual);
     }
 
@@ -400,22 +403,7 @@ private class CollectionsTest {
             expected.put(opp.CreatedDate, opp);
         }
 
-        Map<Datetime, Opportunity> actual = (Map<Datetime, Opportunity>) Collections.mapByField(Datetime.class, opportunities, Opportunity.CreatedDate);
-        System.assertEquals(expected, actual);
-    }
-
-    /**
-     * @description
-     * Collections.mapByField maps SObject by given field. Key is object type in this case.
-     */
-    @IsTest
-    static void testMapByField() {
-        Map<Object, Opportunity> expected = new Map<Object, Opportunity>();
-        for (Opportunity opp : opportunities) {
-            expected.put(opp.CreatedDate, opp);
-        }
-
-        Map<Object, Opportunity> actual = (Map<Object, Opportunity>) Collections.mapByField(Object.class, opportunities, Opportunity.CreatedDate);
+        Map<Datetime, Opportunity> actual = (Map<Datetime, Opportunity>) Collections.mapBy(opportunities, Opportunity.CreatedDate);
         System.assertEquals(expected, actual);
     }
 
@@ -430,7 +418,7 @@ private class CollectionsTest {
             expected.put('' + opp.AccountId + opp.FiscalQuarter, opp);
         }
 
-        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collections.mapBy(String.class, opportunities, new MapByAccountIdAndFiscalQuarter());
+        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collections.mapBy(opportunities, new MapByAccountIdAndFiscalQuarter());
         System.assertEquals(expected, actual);
     }
 
@@ -438,6 +426,10 @@ private class CollectionsTest {
         public Object key(Object item) {
             Opportunity opp = (Opportunity) item;
             return '' + opp.AccountId + opp.FiscalQuarter;
+        }
+
+        public Type keyType() {
+            return String.class;
         }
     }
 
@@ -452,8 +444,8 @@ private class CollectionsTest {
             expected.put('' + opp.AccountId + opp.FiscalQuarter, opp.Id);
         }
 
-        Map<String, Id> actual = (Map<String, Id>) Collections.mapBy(String.class, Id.class, opportunities, new TestMapper());
-        System.assertEquals(expected,actual);
+        Map<String, Id> actual = (Map<String, Id>) Collections.mapBy(opportunities, new TestMapper());
+        System.assertEquals(expected, actual);
     }
     private class TestMapper implements Collections.Mapper {
         public Object key(Object item) {
@@ -463,6 +455,14 @@ private class CollectionsTest {
         public Object value(Object item) {
             Opportunity opp = (Opportunity) item;
             return opp.Id;
+        }
+
+        public Type keyType() {
+            return String.class;
+        }
+
+        public Type valueType() {
+            return Id.class;
         }
     }
 //

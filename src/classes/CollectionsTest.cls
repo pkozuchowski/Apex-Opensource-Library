@@ -107,7 +107,9 @@ private class CollectionsTest {
      */
     @IsTest
     static void testCast() {
-        /*TODO*/
+        Map<Id, Account> accountById = (Map<Id, Account>) Collections.cast(new Map<String, SObject>(), Map<Id, Account>.class);
+        Set<String> stringSet = (Set<String>) Collections.cast(new Set<Object>(), Set<String>.class);
+        System.assert(true);
     }
 
 

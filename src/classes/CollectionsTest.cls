@@ -417,23 +417,22 @@ private class CollectionsTest {
      */
     @IsTest
     static void testMapByKeyMapper() {
-        Map<String, Opportunity> expected = new Map<String, Opportunity>();
+        Map<Time, Opportunity> expected = new Map<Time, Opportunity>();
         for (Opportunity opp : opportunities) {
-            expected.put('' + opp.AccountId + opp.FiscalQuarter, opp);
+            expected.put(opp.CreatedDate.time(), opp);
         }
 
-        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collections.mapBy(opportunities, new MapByAccountIdAndFiscalQuarter());
+        Map<Time, Opportunity> actual = (Map<Time, Opportunity>) Collections.mapBy(opportunities, new MapByOpportunityCreateTime());
         System.assertEquals(expected, actual);
     }
 
-    private class MapByAccountIdAndFiscalQuarter implements Collections.KeyMapper {
+    private class MapByOpportunityCreateTime implements Collections.KeyMapper {
         public Object key(Object item) {
-            Opportunity opp = (Opportunity) item;
-            return '' + opp.AccountId + opp.FiscalQuarter;
+            return ((Opportunity) item).CreatedDate.time();
         }
 
         public Type keyType() {
-            return String.class;
+            return Time.class;
         }
     }
 

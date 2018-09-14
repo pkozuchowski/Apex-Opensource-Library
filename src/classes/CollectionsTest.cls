@@ -101,21 +101,14 @@ private class CollectionsTest {
     }
 
 
-//    /**
-//     *@description
-//     * Collections.cast() changes non-covariant types through JSON serialization&deserialization.
-//     */
-//    @IsTest
-//    static void testCast() {
-//        Set<Id> ids = new Set<Id>();
-//        Set<Object> castedToObjects = (Set<Object>) Collections.cast(ids, Set<Object>.class);
-//        Set<String> castedToString = (Set<String>) Collections.cast(ids, Set<String>.class);
-//
-//        Map<Object, SObject> sObjectByObjectMap = (Map<Object, SObject>) Collections.mapByField(opportunities, Opportunity.CreatedDate);
-//        Map<Datetime, Opportunity> opportunitiesByCreatedDate = (Map<Datetime, Opportunity>) Collections.cast(sObjectByObjectMap, Map<Datetime, Opportunity>.class);
-//
-//        System.assertEquals(sObjectByObjectMap.size(), opportunitiesByCreatedDate.size());
-//    }
+    /**
+     *@description
+     * Collections.cast() changes non-covariant types through JSON serialization&deserialization.
+     */
+    @IsTest
+    static void testCast() {
+        /*TODO*/
+    }
 
 
     @IsTest
@@ -124,21 +117,6 @@ private class CollectionsTest {
         Set<Id> actual = (Set<Id>) Collections.cast(null, Set<Id>.class);
 
         System.assertEquals(expected, actual);
-    }
-
-
-    /**
-     *@description
-     * Collections.getSObjectType() returns SObject type of List<SObject> when SOBject is concrete or
-     * SObject of first record when list is generic.
-     */
-    @IsTest
-    static void testGetSObjectType() {
-        System.assertEquals(Account.SObjectType, Collections.getSObjectType(new List<Account>()));
-        System.assertEquals(null, Collections.getSObjectType(new List<SObject>()));
-        System.assertEquals(Account.SObjectType, Collections.getSObjectType(new List<SObject>{
-                new Account()
-        }));
     }
 
 
@@ -247,20 +225,6 @@ private class CollectionsTest {
         System.assertEquals(expected, actual);
     }
 
-//    /**
-//    * @description
-//    * Collections.getUniqueValues returns Set of Object values from given field.
-//    * */
-//    @IsTest
-//    static void testGetUniqueValues() {
-//        Set<Object> expected = new Set<Object>();
-//        for (Opportunity opp : opportunities) {
-//            expected.add(opp.Probability);
-//        }
-//
-//        Set<Object> actual = (Set<Object>) Collections.getUniqueValues(opportunities, Opportunity.Probability);
-//        System.assertEquals(expected, actual);
-//    }
 
     /**
     * @description
@@ -465,186 +429,178 @@ private class CollectionsTest {
             return Id.class;
         }
     }
-//
-//    @IsTest
-//    static void whenEmptyOpportunityListIsMappedThenEmptyOpportunityByStringMapIsReturned() {
-//        Map<String, Opportunity> expected = new Map<String, Opportunity>();
-//        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collections.mapByStringField(new List<Opportunity>(), Opportunity.Name);
-//        System.assertEquals(expected, actual);
-//    }
-//
-//    @IsTest
-//    static void whenEmptySObjectListIsMappedThenEmptySObjectByStringMapIsReturned() {
-//        Map<String, SObject> expected = new Map<String, SObject>();
-//        Map<String, SObject> actual = (Map<String, SObject>) Collections.mapByStringField(new List<SObject>(), Opportunity.Name);
-//        System.assertEquals(expected, actual);
-//    }
-//
-//
-//    /**
-//     * @description
-//     * Groups list of SObjects by given String field.
-//     * This results in Map, where keys are the field values and Map's value is a list of records
-//     * with the same field value.
-//     */
-//    @IsTest
-//    static void testGroupByStringField() {
-//        Map<String, List<Opportunity>> expected = new Map<String, List<Opportunity>>{
-//                'Analysis' => new List<Opportunity>{
-//                        opportunities[0], opportunities[1], opportunities[2], opportunities[3]
-//                },
-//                'Deal' => new List<Opportunity>{
-//                        opportunities[4], opportunities[5], opportunities[6]
-//                },
-//                'Support' => new List<Opportunity>{
-//                        opportunities[7], opportunities[8], opportunities[9]
-//                }
-//        };
-//        Map<String, List<Opportunity>> actual = Collections.groupByStringField(opportunities, Opportunity.NextStep);
-//
-//        System.assertEquals(expected, actual);
-//    }
-//
-//    @IsTest
-//    static void testGroupByIdField() {
-//        System.assertEquals(
-//                new Map<Id, List<Opportunity>>{
-//                        '001000000000000AAA' => new List<Opportunity>{
-//                                opportunities[0], opportunities[3], opportunities[6], opportunities[9]
-//                        },
-//                        '001000000000001AAA' => new List<Opportunity>{
-//                                opportunities[1], opportunities[4], opportunities[7]
-//                        },
-//                        '001000000000002AAA' => new List<Opportunity>{
-//                                opportunities[2], opportunities[5], opportunities[8]
-//                        }
-//                },
-//                Collections.groupByIdField(opportunities, Opportunity.AccountId)
-//        );
-//    }
-//
-//    @IsTest
-//    static void testGroupByIntegerField() {
-//        System.assertEquals(
-//                new Map<Integer, List<Opportunity>>{
-//                        0 => new List<Opportunity>{
-//                                opportunities[0], opportunities[4], opportunities[8]
-//                        },
-//                        1 => new List<Opportunity>{
-//                                opportunities[1], opportunities[5], opportunities[9]
-//                        },
-//                        2 => new List<Opportunity>{
-//                                opportunities[2], opportunities[6]
-//                        },
-//                        3 => new List<Opportunity>{
-//                                opportunities[3], opportunities[7]
-//                        }
-//                },
-//                Collections.groupByIntegerField(opportunities, Opportunity.FiscalQuarter)
-//        );
-//    }
-//
-//    @IsTest
-//    static void testGroupByDecimalField() {
-//        Map<Decimal, List<Opportunity>> expected = new Map<Decimal, List<Opportunity>>();
-//        for (Integer i = 0; i < 10; i++) {
-//            expected.put(1.0 * i / 10, new List<Opportunity>{
-//                    opportunities[i]
-//            });
-//        }
-//
-//        System.assertEquals(expected,
-//                Collections.groupByDecimalField(opportunities, Opportunity.Probability)
-//        );
-//    }
-//
-//    @IsTest
-//    static void testGroupByDateField() {
-//        Map<Date, List<Opportunity>> expected = new Map<Date, List<Opportunity>>();
-//        for (Integer i = 0; i < 10; i++) {
-//            expected.put(opportunities[i].LastActivityDate, new List<Opportunity>{
-//                    opportunities[i]
-//            });
-//        }
-//
-//        System.assertEquals(expected,
-//                Collections.groupByDateField(opportunities, Opportunity.LastActivityDate)
-//        );
-//    }
-//
-//    @IsTest
-//    static void testGroupByDatetimeField() {
-//        Map<Datetime, List<Opportunity>> expected = new Map<Datetime, List<Opportunity>>();
-//        for (Integer i = 0; i < 10; i++) {
-//            expected.put(opportunities[i].CreatedDate, new List<Opportunity>{
-//                    opportunities[i]
-//            });
-//        }
-//
-//        System.assertEquals(expected,
-//                Collections.groupByDatetimeField(opportunities, Opportunity.CreatedDate)
-//        );
-//    }
-//
-//    @IsTest
-//    static void testGroupByBooleanField() {
-//        System.assertEquals(
-//                new Map<Boolean, List<Opportunity>>{
-//                        true => new List<Opportunity>{
-//                                opportunities[0], opportunities[2], opportunities[4], opportunities[6], opportunities[8]
-//                        },
-//                        false => new List<Opportunity>{
-//                                opportunities[1], opportunities[3], opportunities[5], opportunities[7], opportunities[9]
-//                        }
-//                },
-//                Collections.groupByBooleanField(opportunities, Opportunity.HasOpenActivity)
-//        );
-//    }
-//
-//    @IsTest
-//    static void testGroupByField() {
-//        System.assertEquals(
-//                new Map<Object, List<Opportunity>>{
-//                        0 => new List<Opportunity>{
-//                                opportunities[0], opportunities[4], opportunities[8]
-//                        },
-//                        1 => new List<Opportunity>{
-//                                opportunities[1], opportunities[5], opportunities[9]
-//                        },
-//                        2 => new List<Opportunity>{
-//                                opportunities[2], opportunities[6]
-//                        },
-//                        3 => new List<Opportunity>{
-//                                opportunities[3], opportunities[7]
-//                        }
-//                },
-//                Collections.groupByField(opportunities, Opportunity.FiscalQuarter)
-//        );
-//    }
-//
-//    @IsTest
-//    static void testGroupByFieldByKeyMapper() {
-//        System.assertEquals(
-//                new Map<Object, List<Opportunity>>{
-//                        0 => new List<Opportunity>{
-//                                opportunities[0], opportunities[4], opportunities[8]
-//                        },
-//                        1 => new List<Opportunity>{
-//                                opportunities[1], opportunities[5], opportunities[9]
-//                        },
-//                        2 => new List<Opportunity>{
-//                                opportunities[2], opportunities[6]
-//                        },
-//                        3 => new List<Opportunity>{
-//                                opportunities[3], opportunities[7]
-//                        }
-//                },
-//                Collections.groupBy(opportunities, new Collections.SObjectFieldKeyMapper('FiscalQuarter'))
-//        );
-//    }
+
+    @IsTest
+    static void whenEmptyOpportunityListIsMappedThenEmptyOpportunityByStringMapIsReturned() {
+        Map<String, Opportunity> expected = new Map<String, Opportunity>();
+        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collections.mapBy(new List<Opportunity>(), Opportunity.Name);
+        System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void whenEmptySObjectListIsMappedThenEmptySObjectByStringMapIsReturned() {
+        Map<String, SObject> expected = new Map<String, SObject>();
+        Map<String, SObject> actual = (Map<String, SObject>) Collections.mapBy(new List<SObject>(), Opportunity.Name);
+        System.assertEquals(expected, actual);
+    }
+
+
+    /**
+     * @description
+     * Groups list of SObjects by given String field.
+     * This results in Map, where keys are the field values and Map's value is a list of records
+     * with the same field value.
+     */
+    @IsTest
+    static void testGroupByStringField() {
+        Map<String, List<Opportunity>> expected = new Map<String, List<Opportunity>>{
+                'Analysis' => new List<Opportunity>{
+                        opportunities[0], opportunities[1], opportunities[2], opportunities[3]
+                },
+                'Deal' => new List<Opportunity>{
+                        opportunities[4], opportunities[5], opportunities[6]
+                },
+                'Support' => new List<Opportunity>{
+                        opportunities[7], opportunities[8], opportunities[9]
+                }
+        };
+        Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.NextStep);
+
+        System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void testGroupByIdField() {
+        Map<Id, List<Opportunity>> expected = new Map<Id, List<Opportunity>>{
+                '001000000000000AAA' => new List<Opportunity>{
+                        opportunities[0], opportunities[3], opportunities[6], opportunities[9]
+                },
+                '001000000000001AAA' => new List<Opportunity>{
+                        opportunities[1], opportunities[4], opportunities[7]
+                },
+                '001000000000002AAA' => new List<Opportunity>{
+                        opportunities[2], opportunities[5], opportunities[8]
+                }
+        };
+        Map<Id, List<Opportunity>> actual = (Map<Id, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.AccountId);
+
+        System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void testGroupByIntegerField() {
+        Map<Integer, List<Opportunity>> expected = new Map<Integer, List<Opportunity>>{
+                0 => new List<Opportunity>{
+                        opportunities[0], opportunities[4], opportunities[8]
+                },
+                1 => new List<Opportunity>{
+                        opportunities[1], opportunities[5], opportunities[9]
+                },
+                2 => new List<Opportunity>{
+                        opportunities[2], opportunities[6]
+                },
+                3 => new List<Opportunity>{
+                        opportunities[3], opportunities[7]
+                }
+        };
+        Map<Integer, List<Opportunity>> actual = (Map<Integer, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.FiscalQuarter);
+
+        System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void testGroupByDecimalField() {
+        Map<Decimal, List<Opportunity>> expected = new Map<Decimal, List<Opportunity>>();
+        for (Integer i = 0; i < 10; i++) {
+            expected.put(1.0 * i / 10, new List<Opportunity>{
+                    opportunities[i]
+            });
+        }
+        Map<Decimal, List<Opportunity>> actual = (Map<Decimal, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.Probability);
+
+
+        System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void testGroupByDateField() {
+        Map<Date, List<Opportunity>> expected = new Map<Date, List<Opportunity>>();
+        for (Integer i = 0; i < 10; i++) {
+            expected.put(opportunities[i].LastActivityDate, new List<Opportunity>{
+                    opportunities[i]
+            });
+        }
+        Map<Date, List<Opportunity>> actual = (Map<Date, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.LastActivityDate);
+
+
+        System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void testGroupByDatetimeField() {
+        Map<Datetime, List<Opportunity>> expected = new Map<Datetime, List<Opportunity>>();
+        for (Integer i = 0; i < 10; i++) {
+            expected.put(opportunities[i].CreatedDate, new List<Opportunity>{
+                    opportunities[i]
+            });
+        }
+        Map<Datetime, List<Opportunity>> actual = (Map<Datetime, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.CreatedDate);
+
+
+        System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void testGroupByBooleanField() {
+        Map<Boolean, List<Opportunity>> expected = new Map<Boolean, List<Opportunity>>{
+                true => new List<Opportunity>{
+                        opportunities[0], opportunities[2], opportunities[4], opportunities[6], opportunities[8]
+                },
+                false => new List<Opportunity>{
+                        opportunities[1], opportunities[3], opportunities[5], opportunities[7], opportunities[9]
+                }
+        };
+        Map<Boolean, List<Opportunity>> actual = (Map<Boolean, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.HasOpenActivity);
+
+        System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void testGroupByFieldByKeyMapper() {
+        Map<Integer, List<Opportunity>> expected = new Map<Integer, List<Opportunity>>{
+                10 => new List<Opportunity>{
+                        opportunities[0], opportunities[4], opportunities[8]
+                },
+                11 => new List<Opportunity>{
+                        opportunities[1], opportunities[5], opportunities[9]
+                },
+                12 => new List<Opportunity>{
+                        opportunities[2], opportunities[6]
+                },
+                13 => new List<Opportunity>{
+                        opportunities[3], opportunities[7]
+                }
+        };
+        Map<Integer, List<Opportunity>> actual = (Map<Integer, List<Opportunity>>) Collections.groupBy(opportunities, new TestGroupByKeyMapper());
+
+
+        System.assertEquals(expected, actual);
+    }
+
+    private class TestGroupByKeyMapper implements Collections.KeyMapper {
+        public Object key(Object item) {
+            return 10 + ((Opportunity) item).FiscalQuarter;
+        }
+        public Type keyType() {
+            return Integer.class;
+        }
+    }
 //
 //    @IsTest
 //    static void testGroupByFieldByMapper() {
+//        Map<Id, List<Opportunity>> expected;
+//        Map<Id, List<Opportunity>> actual = Collections.groupBy(opportunities, Opportunity.AccountId);
+//
 //        System.assertEquals(
 //                new Map<Object, List<Object>>{
 //                        0 => new List<Object>{

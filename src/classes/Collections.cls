@@ -128,8 +128,10 @@ public class Collections {
         Set<Object> values = new Set<Object>();
 
         for (Integer fieldIndex = 0, fieldSize = fields.size(); fieldIndex < fieldSize; fieldIndex++) {
+            SObjectField field = fields[fieldIndex];
+
             for (Integer i = 0, j = records.size(); i < j; i++) {
-                values.add(records[i].get(fields[fieldIndex]));
+                values.add(records[i].get(field));
             }
         }
 

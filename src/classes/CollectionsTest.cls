@@ -319,6 +319,25 @@ private class CollectionsTest {
 
     /**
      * @description
+     * Collections.mapByStringField maps SObject by given String literal and type.
+     */
+    @IsTest
+    static void testMapByStringLiteral() {
+        List<SObject> records = new List<SObject>();
+        records.add(new Account(Name = 'Test Account'));
+        records.addAll(opportunities);
+
+        Map<String, SObject> expected = new Map<String, SObject>();
+        for (SObject opp : records) {
+            expected.put((String) opp.get('Name'), opp);
+        }
+
+        Map<String, SObject> actual = (Map<String, SObject>) Collections.mapBy(String.class, records, 'Name');
+        System.assertEquals(expected, actual);
+    }
+
+    /**
+     * @description
      * Collections.mapByDecimalField maps SObject by given Decimal field.
      */
     @IsTest

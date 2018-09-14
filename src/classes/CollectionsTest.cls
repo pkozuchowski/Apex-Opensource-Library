@@ -113,6 +113,30 @@ private class CollectionsTest {
     }
 
 
+    /**
+     *@description
+     * Collections.getListItemType() returns type of elements in given list
+     */
+    @IsTest
+    static void testGetListItemType() {
+        System.assertEquals(Account.class, Collections.getListItemType(new List<Account>()));
+
+        List<SObject> records = new List<Opportunity>();
+        System.assertEquals(Opportunity.class, Collections.getListItemType(records));
+    }
+
+    /**
+     *@description
+     * Collections.getType() returns type of collection or any given object.
+     */
+    @IsTest
+    static void testGetType(){
+        System.assertEquals(List<Account>.class, Collections.getType(new List<Account>()));
+
+        List<SObject> records = new List<Opportunity>();
+        System.assertEquals(List<Opportunity>.class, Collections.getType(records));
+    }
+
     @IsTest
     static void whenCastedCollectionIsNullThenBlankInstanceOfTargetTypeIsReturned() {
         Set<Id> expected = new Set<Id>();

@@ -66,33 +66,28 @@ public class Collections {
     }
 
 
-    /**
-     * @return sObject type of List<SObject> or first record if former is null.
-     */
-    public static SObjectType getSObjectType(List<SObject> records) {
-        SObjectType sObjectType = records.getSObjectType();
-        if (sObjectType == null && !records.isEmpty()) sObjectType = records[0].getSObjectType();
-
-        return sObjectType;
+    /*
+    * @return returns Type of given list single element
+    * */
+    public static Type getListItemType(List<Object> o) {
+        return getType(o, 'Invalid conversion from runtime type List<', '> to Date');
     }
 
-
-    /**
-     * KeyMapper implementations determine Map's key for given object.
-     */
-    public interface KeyMapper {
-        Object key(Object item);
-        Type keyType();
+    /*
+    * @return returns Type of given object
+    * */
+    public static Type getType(Object o) {
+        return getType(o, 'Invalid conversion from runtime type ', ' to Date');
     }
 
-    /**
-     * Mapper implementations determine Map's key and value for given object.
-     */
-    public interface Mapper {
-        Type keyType();
-        Type valueType();
-        Object key(Object item);
-        Object value(Object item);
+    private static Type getType(Object o, String open, String close) {
+        try {
+            Date d = (Date) o;
+            return Date.class;
+        } catch (Exception ex) {
+            String typeName = ex.getMessage().substringBetween(open, close);
+            return Type.forName(typeName);
+        }
     }
 
 
@@ -141,6 +136,24 @@ public class Collections {
         return values;
     }
 
+
+    /**
+     * KeyMapper implementations determine Map's key for given object.
+     */
+    public interface KeyMapper {
+        Object key(Object item);
+        Type keyType();
+    }
+
+    /**
+     * Mapper implementations determine Map's key and value for given object.
+     */
+    public interface Mapper {
+        Type keyType();
+        Type valueType();
+        Object key(Object item);
+        Object value(Object item);
+    }
 
     /**
      * @param keyType Type of result Map key
@@ -584,31 +597,6 @@ public class Collections {
         if (keyType == Boolean.class) return new MapByBoolean((Map<Boolean, Object>) sfMap);
 
         return new MapByObject((Map<Object, Object>) sfMap);
-    }
-
-
-    /*
-    * TODO
-    * */
-    public static Type getListItemType(Object o) {
-        return getType(o, 'Invalid conversion from runtime type List<', '> to Date');
-    }
-
-    /*
-    * TODO
-    * */
-    public static Type getType(Object o) {
-        return getType(o, 'Invalid conversion from runtime type ', ' to Date');
-    }
-
-    private static Type getType(Object o, String open, String close) {
-        try {
-            Date d = (Date) o;
-            return Date.class;
-        } catch (Exception ex) {
-            String typeName = ex.getMessage().substringBetween(open, close);
-            return Type.forName(typeName);
-        }
     }
 
     /**

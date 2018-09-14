@@ -230,6 +230,26 @@ private class CollectionsTest {
 
     /**
     * @description
+    * Collections.getUniqueBooleanValues returns Set of Boolean values from given field.
+    * */
+    @IsTest
+    static void testGetUniqueValuesByString() {
+        List<SObject> records = new List<SObject>();
+        records.add(new Account(Name = 'Test Account'));
+        records.addAll(opportunities);
+
+        Set<String> expected = new Set<String>();
+        for (SObject record : records) {
+            expected.add((String) record.get('Name'));
+        }
+
+        Set<String> actual = (Set<String>) Collections.getUniqueValues(String.class, records, 'Name');
+        System.assertEquals(expected, actual);
+    }
+
+
+    /**
+    * @description
     * Collections.getUniqueValues(KeyMapper) returns Set of Object values extracted from object by KeyMapper implementation.
     * */
     @IsTest

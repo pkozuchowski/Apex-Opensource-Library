@@ -77,22 +77,35 @@ public class Collections {
     }
 
 
+
+
+
     /**
-     * @param valueType Type of single value in a Set ex. String.class
      * @param records List of SObject records from which values are gathered.
      * @param field SObject field from which value is taken.
      * @return Set of gathered values.
      */
-    public static Object getUniqueValues(Type valueType, List<SObject> records, SObjectField field) {
-        return getUniqueValues(valueType, records, '' + field);
+    public static Object getUniqueValues(List<SObject> records, SObjectField field) {
+        return getUniqueValues(records, new SObjectFieldKeyMapper(field));
     }
 
+    /**
+     * @param valueType Type of single value in a Set ex. String.class
+     * @param records List of SObject records from which values are gathered
+     * @param field SObject field from which value is taken.
+     * @return Set of gathered values.
+     */
     public static Object getUniqueValues(Type valueType, List<SObject> records, String field) {
-        return mapByFieldToIMap(records, field, getSObjectIMap(valueType, records)).keySet();
+        return getUniqueValues(records, new SObjectFieldKeyMapper(valueType, field));
     }
 
-    public static Object getUniqueValues(Type valueType, List<SObject> records, KeyMapper mapper) {
-        return mapByFieldToIMap(records, mapper, getSObjectIMap(valueType, records)).keySet();
+    /**
+     * @param records List of SObject records from which values are gathered
+     * @param keyMapper KeyMapper implementation which returns value for each record
+     * @return Set of gathered values.
+     */
+    public static Object getUniqueValues(List<SObject> records, KeyMapper keyMapper) {
+        return mapByFieldToIMap(records, keyMapper, getIMap(keyMapper.keyType(), records)).keySet();
     }
 
 
@@ -103,44 +116,42 @@ public class Collections {
      * @return Set of unique SObject field values of given fields of given records.
      */
     public static Set<Object> getUniqueValues(List<SObject> records, List<SObjectField> fields) {
-        return (Set<Object>) reduce(records, new ReducerToSetByFields(fields), new Set<Object>());
-    }
-    public class ReducerToSetByFields implements Reducer {
-        private List<SObjectField> fields;
+        Set<Object> values = new Set<Object>();
 
-        public ReducerToSetByFields(List<SObjectField> fields) {
-            this.fields = fields;
-        }
-
-        public void reduce(Object aggregatedValues, Object item) {
-            Set<Object> values = (Set<Object>) aggregatedValues;
-            SObject record = (SObject) item;
-
-            for (Integer i = 0, j = fields.size(); i < j; i++) {
-                values.add(record.get(fields[i]));
+        for (Integer fieldIndex = 0, fieldSize = fields.size(); fieldIndex < fieldSize; fieldIndex++) {
+            for (Integer i = 0, j = records.size(); i < j; i++) {
+                values.add(records[i].get(fields[fieldIndex]));
             }
         }
+
+        return values;
     }
 
 
-    public static Object mapByField(Type keyType, List<SObject> records, SObjectField field) {
-        return mapByField(keyType, records, '' + field);
+
+
+
+
+
+
+    /**
+     * @param keyType Type of result Map key
+     * @param items List of SObject records to map
+     * @param field SObject Field to map by
+     * @return Map of items where record is map's value and key is field's value.
+     */
+    public static Object mapBy(List<SObject> records, SObjectField field) {
+        return mapBy(records, new SObjectFieldKeyMapper(field));
     }
 
-    public static Object mapByField(Type keyType, List<SObject> records, String field) {
-        return mapByField(records, field, getSObjectIMap(keyType, records));
-    }
-
-    private static Object mapByField(List<SObject> records, String field, IMap resultMap) {
-        return mapByFieldToIMap(records, field, resultMap).toMap();
-    }
-
-    private static IMap mapByFieldToIMap(List<SObject> records, String field, IMap resultMap) {
-        return mapByFieldToIMap(records, new SObjectFieldKeyMapper(field), resultMap);
-    }
-
-    private static IMap mapByFieldToIMap(List<SObject> records, KeyMapper mapper, IMap resultMap) {
-        return ((IMap) reduce(records, new ReducerToMapByKeyMapper(mapper), resultMap));
+    /**
+     * @param keyType Type of result Map key
+     * @param items List of SObject records to map
+     * @param field SObject Field API name to map by
+     * @return Map of items where record is map's value and key is field's value.
+     */
+    public static Object mapBy(Type keyType, List<SObject> records, String field) {
+        return mapBy(records, new SObjectFieldKeyMapper(keyType, field));
     }
 
     /**
@@ -149,12 +160,27 @@ public class Collections {
      * @param mapper KeyMapper instance which produce map key for given item.
      * @return Map of items where Item is map's value and key is produced by KeyMapper.
      */
-    public static Object mapBy(Type keyType, List<SObject> items, KeyMapper mapper) {
-        IMap iMap = getSObjectIMap(keyType, items);
+    public static Object mapBy(List<SObject> records, KeyMapper mapper) {
+        return mapByFieldToIMap(records, mapper, getIMap(mapper.keyType(), records)).toMap();
+    }
+
+    /**
+     * @param keyType Type of result Map key
+     * @param items List of items to map
+     * @param mapper KeyMapper instance which produce map key for given item.
+     * @return Map of items where Item is map's value and key is produced by KeyMapper.
+     */
+    public static Object mapBy(List<Object> items, KeyMapper mapper) {
+        return mapByFieldToIMap(items, mapper, getIMap(mapper.keyType(), getListItemType(items)));
+    }
+
+
+
+    private static IMap mapByFieldToIMap(List<Object> items, KeyMapper mapper, IMap imap) {
         for (Integer i = 0, j = items.size(); i < j; i++) {
-            iMap.put(mapper.key(items[i], items[i]));
+            imap.put(mapper.key(items[i]), items[i]);
         }
-        return iMap.toMap();
+        return imap;
     }
 
     /**
@@ -162,27 +188,31 @@ public class Collections {
      */
     public interface KeyMapper {
         Object key(Object item);
+        Type keyType();
     }
 
 
     /**
+     * @param keyType Type of result Map key ex. String.class
+     * @param valueType Type of result Map key ex. Account.class
      * @param items List of items to map
-     * @param mapper Mapper instance which produce Map's Key and Value for each collection item.
-     * @return Map of items where both key and value are produced by Mapper implementation.
+     * @param mapper KeyMapper instance which produce map key for given item.
+     * @return Map of items where Item is map's value and key is produced by KeyMapper.
      */
-    public static Object mapBy(Type keyType, Type objectType, List<Object> items, Mapper mapper) {
-        IMap iMap = getObjectIMap(keyType, objectType);
+    public static Object mapBy(Type keyType, Type valueType, List<Object> items, Mapper mapper) {
+        IMap iMap = getIMap(keyType, valueType);
         for (Integer i = 0, j = items.size(); i < j; i++) {
             iMap.put(mapper.key(items[i]), mapper.value(items[i]));
         }
         return iMap.toMap();
     }
 
-
     /**
      * Mapper implementations determine Map's key and value for given object.
      */
     public interface Mapper {
+        Type keyType();
+        Type valueType();
         Object key(Object item);
         Object value(Object item);
     }
@@ -192,13 +222,13 @@ public class Collections {
         return groupByField(keyType, records, '' + field);
     }
     public static Object groupByField(Type keyType, List<SObject> records, String field) {
-        return groupByField(records, field, getSObjectIMap(keyType, records));
+        return groupByField(records, field, getIMap(keyType, records));
     }
 
     private static Object groupByField(List<SObject> records, String field, IMap mapInstance) {
         for (Integer i = 0, j = records.size(); i < j; i++) {
             SObject record = (SObject) records[i];
-            Object key = mapper.key(record);
+            Object key = record.get(field);
 
             if (!mapInstance.containsKey(key)) {
                 mapInstance.put(key, new List<SObject>());
@@ -207,7 +237,7 @@ public class Collections {
             List<SObject> groupedRecords = (List<SObject>) mapInstance.get(key);
             groupedRecords.add(record);
         }
-        return iMap.toMap();
+        return mapInstance.toMap();
     }
 
 
@@ -218,11 +248,11 @@ public class Collections {
      * @return Map where Map's Key is produced by KeyMapper and Map's Value is list of collection items which share the same key.
      */
     public static Object groupBy(Type keyType, List<SObject> records, KeyMapper keyMapper) {
-        return return null;
+        return null;
     }
 
     public static Object groupBy(Type keyType, Type objectType, List<Object> records, KeyMapper keyMapper) {
-        return return null;
+        return null;
     }
 
 
@@ -233,23 +263,23 @@ public class Collections {
      * @return Map where Map's key is produced by Mapper's Key() method and Map's value is list of objects
      * created by Mapper's value() method which share the same key.
      */
-    public static Object groupBy(List<SObject> records, Mapper mapper) {
-
-        for (Integer i = 0, j = records.size(); i < j; i++) {
-            SObject record = (SObject) records[i];
-            Object key = mapper.key(record);
-            Object value = mapper.value(item);
-
-            if (!mapInstance.containsKey(key)) {
-                mapInstance.put(key, new List<SObject>());
-            }
-
-            List<SObject> groupedRecords = (List<SObject>) mapInstance.get(key);
-            groupedRecords.add(record);
-        }
-
-        return iMap.toMap();
-    }
+//    public static Object groupBy(List<SObject> records, Mapper mapper) {
+//
+//        for (Integer i = 0, j = records.size(); i < j; i++) {
+//            SObject record = (SObject) records[i];
+//            Object key = mapper.key(record);
+//            Object value = mapper.value(item);
+//
+//            if (!mapInstance.containsKey(key)) {
+//                mapInstance.put(key, new List<SObject>());
+//            }
+//
+//            List<SObject> groupedRecords = (List<SObject>) mapInstance.get(key);
+//            groupedRecords.add(record);
+//        }
+//
+//        return iMap.toMap();
+//    }
 
 
     /**
@@ -302,8 +332,8 @@ public class Collections {
             this.field = field;
         }
 
-        public Boolean accepts(SObject record) {
-            return record.get(field) == this.value;
+        public Boolean accepts(Object record) {
+            return ((SObject) record).get(field) == this.value;
         }
     }
 
@@ -326,8 +356,8 @@ public class Collections {
             this.field = field;
         }
 
-        public Boolean accepts(SObject record) {
-            return values.contains(record.get(field));
+        public Boolean accepts(Object record) {
+            return values.contains(((SObject) record).get(field));
         }
     }
 
@@ -340,7 +370,7 @@ public class Collections {
      * @return List of items for which filter returned "true".
      */
     public static List<SObject> filter(List<SObject> records, Filter filter) {
-        List<SObject> filtered = getNewListOfTheSameSObjectType(records);
+        List<SObject> filtered = (List<SObject>) getNewListOfTheSameType(records);
 
         for (Integer i = 0, j = records.size(); i < j; i++) {
             if (filter.accepts(records[i])) {
@@ -365,7 +395,7 @@ public class Collections {
      * @return Subset of records parameter for which UpdateFilter returned "true".
      */
     public static List<SObject> filter(List<SObject> records, Map<Id, SObject> oldRecords, UpdateFilter filter) {
-        List<SObject> filtered = getNewListOfTheSameSObjectType(records);
+        List<SObject> filtered = (List<SObject>) getNewListOfTheSameType(records);
 
         for (Integer i = 0, size = records.size(); i < size; ++i) {
             SObject record = records[i];
@@ -517,13 +547,24 @@ public class Collections {
      */
     public virtual class SObjectFieldKeyMapper implements KeyMapper {
         private String field;
+        private Type keyType;
 
-        public SObjectFieldKeyMapper(String field) {
+        public SObjectFieldKeyMapper(Type keyType, String field) {
+            this.keyType = keyType;
             this.field = field;
+        }
+
+        public SObjectFieldKeyMapper(SObjectField field) {
+            this.keyType = TYPE_BY_FIELD_TYPE.get(field.getDescribe().getType());
+            this.field = '' + field;
         }
 
         public Object key(Object item) {
             return ((SObject) item).get(field);
+        }
+
+        public Type keyType() {
+            return keyType;
         }
     }
 
@@ -531,14 +572,11 @@ public class Collections {
     /**
      * @return New empty list of the same SObject type as original.
      */
-    public static List<SObject> getNewListOfTheSameSObjectType(List<SObject> original) {
-        SObjectType sobjType = getSObjectType(original);
+    public static List<Object> getNewListOfTheSameType(List<Object> original) {
+        List<Object> clone = original.clone();
+        clone.clear();
 
-        if (sobjType == null) {
-            return new List<SObject>();
-        } else {
-            return (List<SObject>) Type.forName('List<' + sobjType + '>').newInstance();
-        }
+        return clone;
     }
 
 
@@ -558,8 +596,12 @@ public class Collections {
      * IMap factory method which returns proper IMap implementation for given keyType parameter
      * and initializes it with empty Map of the same sObject type as given records.
      */
-    private static IMap getSObjectIMap(Type keyType, List<SObject> records) {
-        Object sfMap = getNewMapOfTheSameSObjectType(keyType, records);
+    private static IMap getIMap(Type keyType, List<Object> records) {
+        return getIMap(keyType, getListItemType(records));
+    }
+
+    private static IMap getIMap(Type keyType, Type objectType) {
+        Object sfMap = Type.forName('Map<' + keyType + ',' + objectType + '>').newInstance();
 
         if (keyType == Id.class) return new MapById((Map<Id, Object>) sfMap);
         if (keyType == String.class) return new MapByString((Map<String, Object>) sfMap);
@@ -572,18 +614,14 @@ public class Collections {
         return new MapByObject((Map<Object, Object>) sfMap);
     }
 
-    private static IMap getObjectIMap(Type keyType, Type objectType) {
-        Object sfMap = Type.forName('Map<' + keyType + ',' + objectType + '>').newInstance();
-
-        if (keyType == Id.class) return new MapById((Map<Id, Object>) sfMap);
-        if (keyType == String.class) return new MapByString((Map<String, Object>) sfMap);
-        if (keyType == Integer.class) return new MapByInteger((Map<Integer, Object>) sfMap);
-        if (keyType == Decimal.class) return new MapByDecimal((Map<Decimal, Object>) sfMap);
-        if (keyType == Date.class) return new MapByDate((Map<Date, Object>) sfMap);
-        if (keyType == Datetime.class) return new MapByDatetime((Map<Datetime, Object>) sfMap);
-        if (keyType == Boolean.class) return new MapByBoolean((Map<Boolean, Object>) sfMap);
-
-        return new MapByObject((Map<Object, Object>) sfMap);
+    private static Type getListItemType(Object o) {
+        try {
+            Date d = (Date) o;
+            return Date.class;
+        } catch (Exception ex) {
+            String typeName = ex.getMessage().substringBetween('Invalid conversion from runtime type List<', '> to Date');
+            return Type.forName(typeName);
+        }
     }
 
     /**
@@ -785,4 +823,32 @@ public class Collections {
             return mapInstance.keySet();
         }
     }
+
+
+    private final static Map<Schema.DisplayType, Type> TYPE_BY_FIELD_TYPE = new Map<DisplayType, Type>{
+            Schema.DisplayType.ID => Id.class,
+            Schema.DisplayType.REFERENCE => Id.class,
+            Schema.DisplayType.INTEGER => Integer.class,
+            Schema.DisplayType.ADDRESS => String.class,
+            Schema.DisplayType.ANYTYPE => Object.class,
+            Schema.DisplayType.BASE64 => String.class,
+            Schema.DisplayType.BOOLEAN => Boolean.class,
+            Schema.DisplayType.COMBOBOX => String.class,
+            Schema.DisplayType.CURRENCY => Decimal.class,
+            Schema.DisplayType.DATE => Date.class,
+            Schema.DisplayType.DATETIME => Datetime.class,
+            Schema.DisplayType.DOUBLE => Decimal.class,
+            Schema.DisplayType.EMAIL => String.class,
+            Schema.DisplayType.ENCRYPTEDSTRING => String.class,
+            Schema.DisplayType.JSON => String.class,
+            Schema.DisplayType.LOCATION => Decimal.class,
+            Schema.DisplayType.MULTIPICKLIST => String.class,
+            Schema.DisplayType.PERCENT => Decimal.class,
+            Schema.DisplayType.PHONE => String.class,
+            Schema.DisplayType.PICKLIST => String.class,
+            Schema.DisplayType.STRING => String.class,
+            Schema.DisplayType.TEXTAREA => String.class,
+            Schema.DisplayType.TIME => Time.class,
+            Schema.DisplayType.URL => String.class
+    };
 }

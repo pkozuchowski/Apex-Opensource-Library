@@ -134,7 +134,7 @@ public class Collections {
      * @return Set of gathered values.
      */
     public static Object getUniqueValues(List<SObject> records, KeyMapper keyMapper) {
-        return mapByFieldToIMap(records, keyMapper, getIMap(keyMapper.keyType(), records)).keySet();
+        return mapByFieldToIMap(records, new MapperWithKeyMapper(keyMapper, getListItemType(records))).keySet();
     }
 
     /**
@@ -158,7 +158,7 @@ public class Collections {
 
 
     /**
-     * KeyMapper implementations determine Map's key for given object.
+     * KeyMapper implementations determine Map's key for given object and key's type.
      */
     public interface KeyMapper {
         Object key(Object item);
@@ -166,7 +166,7 @@ public class Collections {
     }
 
     /**
-     * Mapper implementations determine Map's key and value for given object.
+     * Mapper implementations determine Map's key and value for given object and types of key and value.
      */
     public interface Mapper {
         Type keyType();
@@ -201,15 +201,7 @@ public class Collections {
      * @return Map of items where list item is map's value and key is produced by KeyMapper.
      */
     public static Object mapBy(List<Object> items, KeyMapper mapper) {
-        return mapByFieldToIMap(items, mapper, getIMap(mapper.keyType(), items)).toMap();
-    }
-
-
-    private static IMap mapByFieldToIMap(List<Object> items, KeyMapper mapper, IMap imap) {
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            imap.put(mapper.key(items[i]), items[i]);
-        }
-        return imap;
+        return mapByFieldToIMap(items, new MapperWithKeyMapper(mapper, getListItemType(items))).toMap();
     }
 
     /**
@@ -220,12 +212,20 @@ public class Collections {
      * @return Map of items where Item is map's value and key is produced by KeyMapper.
      */
     public static Object mapBy(List<Object> items, Mapper mapper) {
-        IMap iMap = getIMap(mapper.keyType(), mapper.valueType());
+        return mapByFieldToIMap(items, mapper).toMap();
+    }
+
+    /*
+    * Internal method. Maps items to IMap instance.
+    * */
+    private static IMap mapByFieldToIMap(List<Object> items, Mapper mapper) {
+        IMap imap = newIMap(mapper.keyType(), mapper.valueType());
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
-            iMap.put(mapper.key(items[i]), mapper.value(items[i]));
+            Object item = items[i];
+            imap.put(mapper.key(item), mapper.value(item));
         }
-        return iMap.toMap();
+        return imap;
     }
 
 
@@ -243,21 +243,7 @@ public class Collections {
      * @return Map where Map's Key is produced by KeyMapper and Map's Value is list of collection items which share the same key.
      */
     public static Object groupBy(List<Object> items, KeyMapper keyMapper) {
-        IMap imap = getIMap(keyMapper.keyType(), getType(items));
-
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            SObject item = (SObject) items[i];
-            Object key = keyMapper.key(item);
-
-            if (!imap.containsKey(key)) {
-                imap.put(key, newListOfTheSameType(items));
-            }
-
-            List<Object> groupedRecords = (List<Object>) imap.get(key);
-            groupedRecords.add(item);
-        }
-
-        return iMap.toMap();
+        return groupBy(items, new MapperWithKeyMapper(keyMapper, getListItemType(items)));
     }
 
     /**
@@ -268,7 +254,7 @@ public class Collections {
      * created by Mapper's value() method which share the same key.
      */
     public static Object groupBy(List<Object> items, Mapper mapper) {
-        IMap imap = getIMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
+        IMap imap = newIMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
             SObject item = (SObject) items[i];
@@ -577,16 +563,38 @@ public class Collections {
         }
     }
 
+    public virtual class MapperWithKeyMapper implements Mapper {
+        private KeyMapper keyMapper;
+        private Type valueType;
+
+        public MapperWithKeyMapper(KeyMapper keyMapper, Type valueType) {
+            this.keyMapper = keyMapper;
+            this.valueType = valueType;
+        }
+
+        public Type keyType() {
+            return keyMapper.keyType();
+        }
+
+        public Type valueType() {
+            return valueType;
+        }
+
+        public Object key(Object item) {
+            return keyMapper.key(item);
+        }
+
+        public Object value(Object item) {
+            return item;
+        }
+    }
+
 
     /**
      * IMap factory method which returns proper IMap implementation for given keyType parameter
      * and initializes it with empty Map of the same sObject type as given records.
      */
-    private static IMap getIMap(Type keyType, List<Object> records) {
-        return getIMap(keyType, getListItemType(records));
-    }
-
-    public static IMap getIMap(Type keyType, Type objectType) {
+    public static IMap newIMap(Type keyType, Type objectType) {
         Object sfMap = Type.forName('Map<' + keyType + ',' + objectType + '>').newInstance();
 
         if (keyType == Id.class) return new MapById((Map<Id, Object>) sfMap);

@@ -77,7 +77,23 @@ public class Collections {
     }
 
 
+    /**
+     * KeyMapper implementations determine Map's key for given object.
+     */
+    public interface KeyMapper {
+        Object key(Object item);
+        Type keyType();
+    }
 
+    /**
+     * Mapper implementations determine Map's key and value for given object.
+     */
+    public interface Mapper {
+        Type keyType();
+        Type valueType();
+        Object key(Object item);
+        Object value(Object item);
+    }
 
 
     /**
@@ -126,12 +142,6 @@ public class Collections {
     }
 
 
-
-
-
-
-
-
     /**
      * @param keyType Type of result Map key
      * @param items List of SObject records to map
@@ -163,22 +173,12 @@ public class Collections {
     }
 
 
-
     private static IMap mapByFieldToIMap(List<Object> items, KeyMapper mapper, IMap imap) {
         for (Integer i = 0, j = items.size(); i < j; i++) {
             imap.put(mapper.key(items[i]), items[i]);
         }
         return imap;
     }
-
-    /**
-     * KeyMapper implementations determine Map's key for given object.
-     */
-    public interface KeyMapper {
-        Object key(Object item);
-        Type keyType();
-    }
-
 
     /**
      * @param keyType Type of result Map key ex. String.class
@@ -195,17 +195,6 @@ public class Collections {
         }
         return iMap.toMap();
     }
-
-    /**
-     * Mapper implementations determine Map's key and value for given object.
-     */
-    public interface Mapper {
-        Type keyType();
-        Type valueType();
-        Object key(Object item);
-        Object value(Object item);
-    }
-
 
 
     public static Object groupBy(List<SObject> records, SObjectField field) {
@@ -299,6 +288,7 @@ public class Collections {
 
 
     /**
+     *
      * @return List of SObjects which field is the same as given value.
      */
     public static List<SObject> filterByFieldValue(List<SObject> records, SObjectField field, Object value) {
@@ -307,20 +297,6 @@ public class Collections {
     public static List<SObject> filterByFieldValue(List<SObject> records, String field, Object value) {
         return (List<SObject>) filter(records, new FieldValueFilter(field, value));
     }
-    public class FieldValueFilter implements Filter {
-        private Object value;
-        private String field;
-
-        public FieldValueFilter(String field, Object value) {
-            this.value = value;
-            this.field = field;
-        }
-
-        public Boolean accepts(Object record) {
-            return ((SObject) record).get(field) == this.value;
-        }
-    }
-
 
     /**
      * @return List of SObjects where given field contains any of the given values.
@@ -331,20 +307,6 @@ public class Collections {
     public static List<SObject> filterByFieldValues(List<SObject> records, String field, Set<Object> values) {
         return (List<SObject>) filter(records, new FieldValuesFilter(field, values));
     }
-    public class FieldValuesFilter implements Filter {
-        private Set<Object> values;
-        private String field;
-
-        public FieldValuesFilter(String field, Set<Object> values) {
-            this.values = values;
-            this.field = field;
-        }
-
-        public Boolean accepts(Object record) {
-            return values.contains(((SObject) record).get(field));
-        }
-    }
-
 
     /**
      * @param records List of items to filter.
@@ -365,8 +327,39 @@ public class Collections {
         return filtered;
     }
 
+    /*
+    * TODO
+    * */
     public interface Filter {
         Boolean accepts(Object record);
+    }
+
+    public class FieldValueFilter implements Filter {
+        private Object value;
+        private String field;
+
+        public FieldValueFilter(String field, Object value) {
+            this.value = value;
+            this.field = field;
+        }
+
+        public Boolean accepts(Object record) {
+            return ((SObject) record).get(field) == this.value;
+        }
+    }
+
+    public class FieldValuesFilter implements Filter {
+        private Set<Object> values;
+        private String field;
+
+        public FieldValuesFilter(String field, Set<Object> values) {
+            this.values = values;
+            this.field = field;
+        }
+
+        public Boolean accepts(Object record) {
+            return values.contains(((SObject) record).get(field));
+        }
     }
 
 
@@ -407,6 +400,55 @@ public class Collections {
      */
     public static List<SObject> sort(List<SObject> records, SObjectField field, Boolean isAscending) {
         return (List<SObject>) sort(records, new SObjectFieldComparator(field, isAscending));
+    }
+
+    /**
+     * @param items Collection of items to sort.
+     * @param comparator Comparator implementation which compares 2 items to determine order.
+     *
+     * @return Sorted list of objects with order determined by comparator.
+     */
+    public static List<Object> sort(List<Object> items, Comparator comparator) {
+        List<ObjectComparable> comparables = new List<ObjectComparable>();
+
+        for (Integer i = 0, size = items.size(); i < size; i++) {
+            comparables.add(new ObjectComparable(items[i], comparator));
+        }
+
+        comparables.sort();
+        List<Object> sorted = items.clone();
+        sorted.clear();
+
+        for (Integer i = 0, size = comparables.size(); i < size; i++) {
+            sorted.add(comparables[i].item);
+        }
+
+        return sorted;
+    }
+
+    /**
+     * Compares 2 objects to determine their order.
+     * The implementation of this method should return the following values:
+     * 0 if thisItem and otherItem are equal
+     * > 0 if thisItem is greater than otherItem
+     * < 0 if thisItem is less than otherItem
+     */
+    public interface Comparator {
+        Integer compare(Object thisItem, Object otherItem);
+    }
+
+    public virtual class ObjectComparable implements Comparable {
+        private Object item;
+        private Comparator comparator;
+
+        public ObjectComparable(Object item, Comparator comparator) {
+            this.item = item;
+            this.comparator = comparator;
+        }
+
+        public Integer compareTo(Object other) {
+            return comparator.compare(this.item, ((ObjectComparable) other).item);
+        }
     }
 
     public class SObjectFieldComparator implements Comparator {
@@ -473,56 +515,6 @@ public class Collections {
         }
     }
     public class SortException extends Exception {
-    }
-
-
-    /**
-     * @param items Collection of items to sort.
-     * @param comparator Comparator implementation which compares 2 items to determine order.
-     *
-     * @return Sorted list of objects with order determined by comparator.
-     */
-    public static List<Object> sort(List<Object> items, Comparator comparator) {
-        List<ObjectComparable> comparables = new List<ObjectComparable>();
-
-        for (Integer i = 0, size = items.size(); i < size; i++) {
-            comparables.add(new ObjectComparable(items[i], comparator));
-        }
-
-        comparables.sort();
-        List<Object> sorted = items.clone();
-        sorted.clear();
-
-        for (Integer i = 0, size = comparables.size(); i < size; i++) {
-            sorted.add(comparables[i].item);
-        }
-
-        return sorted;
-    }
-
-    /**
-     * Compares 2 objects to determine their order.
-     * The implementation of this method should return the following values:
-     * 0 if thisItem and otherItem are equal
-     * > 0 if thisItem is greater than otherItem
-     * < 0 if thisItem is less than otherItem
-     */
-    public interface Comparator {
-        Integer compare(Object thisItem, Object otherItem);
-    }
-
-    public virtual class ObjectComparable implements Comparable {
-        private Object item;
-        private Comparator comparator;
-
-        public ObjectComparable(Object item, Comparator comparator) {
-            this.item = item;
-            this.comparator = comparator;
-        }
-
-        public Integer compareTo(Object other) {
-            return comparator.compare(this.item, ((ObjectComparable) other).item);
-        }
     }
 
 

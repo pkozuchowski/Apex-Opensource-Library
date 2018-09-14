@@ -321,7 +321,7 @@ public class Collections {
         return filterByFieldValue(records, '' + field, value);
     }
     public static List<SObject> filterByFieldValue(List<SObject> records, String field, Object value) {
-        return filter(records, new FieldValueFilter(field, value));
+        return (List<SObject>) filter(records, new FieldValueFilter(field, value));
     }
     public class FieldValueFilter implements Filter {
         private Object value;
@@ -345,7 +345,7 @@ public class Collections {
         return filterByFieldValues(records, '' + field, values);
     }
     public static List<SObject> filterByFieldValues(List<SObject> records, String field, Set<Object> values) {
-        return filter(records, new FieldValuesFilter(field, values));
+        return (List<SObject>) filter(records, new FieldValuesFilter(field, values));
     }
     public class FieldValuesFilter implements Filter {
         private Set<Object> values;
@@ -369,8 +369,8 @@ public class Collections {
      *
      * @return List of items for which filter returned "true".
      */
-    public static List<SObject> filter(List<SObject> records, Filter filter) {
-        List<SObject> filtered = (List<SObject>) newListOfTheSameType(records);
+    public static List<Object> filter(List<Object> records, Filter filter) {
+        List<Object> filtered = newListOfTheSameType(records);
 
         for (Integer i = 0, j = records.size(); i < j; i++) {
             if (filter.accepts(records[i])) {

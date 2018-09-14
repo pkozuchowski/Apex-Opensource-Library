@@ -187,8 +187,9 @@ public class Collections {
      * @param mapper KeyMapper instance which produce map key for given item.
      * @return Map of items where Item is map's value and key is produced by KeyMapper.
      */
-    public static Object mapBy(Type keyType, Type valueType, List<Object> items, Mapper mapper) {
-        IMap iMap = getIMap(keyType, valueType);
+    public static Object mapBy(List<Object> items, Mapper mapper) {
+        IMap iMap = getIMap(mapper.keyType(), mapper.valueType());
+
         for (Integer i = 0, j = items.size(); i < j; i++) {
             iMap.put(mapper.key(items[i]), mapper.value(items[i]));
         }

@@ -207,28 +207,13 @@ public class Collections {
     }
 
 
-    public static Object groupByField(Type keyType, List<SObject> records, SObjectField field) {
-        return groupByField(keyType, records, '' + field);
+
+    public static Object groupBy(List<SObject> records, SObjectField field) {
+        return groupBy(records, new SObjectFieldKeyMapper(field));
     }
-    public static Object groupByField(Type keyType, List<SObject> records, String field) {
-        return groupByField(records, field, getIMap(keyType, records));
+    public static Object groupBy(Type keyType, List<SObject> records, String field) {
+        return groupBy(records, new SObjectFieldKeyMapper(keyType, field));
     }
-
-    private static Object groupByField(List<SObject> records, String field, IMap mapInstance) {
-        for (Integer i = 0, j = records.size(); i < j; i++) {
-            SObject record = (SObject) records[i];
-            Object key = record.get(field);
-
-            if (!mapInstance.containsKey(key)) {
-                mapInstance.put(key, new List<SObject>());
-            }
-
-            List<SObject> groupedRecords = (List<SObject>) mapInstance.get(key);
-            groupedRecords.add(record);
-        }
-        return mapInstance.toMap();
-    }
-
 
     /**
      * @param records List of items to group
@@ -236,14 +221,23 @@ public class Collections {
      *
      * @return Map where Map's Key is produced by KeyMapper and Map's Value is list of collection items which share the same key.
      */
-    public static Object groupBy(Type keyType, List<SObject> records, KeyMapper keyMapper) {
-        return null;
-    }
+    public static Object groupBy(List<Object> items, KeyMapper keyMapper) {
+        IMap imap = getIMap(keyMapper.keyType(), getType(items));
 
-    public static Object groupBy(Type keyType, Type objectType, List<Object> records, KeyMapper keyMapper) {
-        return null;
-    }
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            SObject item = (SObject) items[i];
+            Object key = keyMapper.key(item);
 
+            if (!imap.containsKey(key)) {
+                imap.put(key, newListOfTheSameType(items));
+            }
+
+            List<Object> groupedRecords = (List<Object>) imap.get(key);
+            groupedRecords.add(item);
+        }
+
+        return iMap.toMap();
+    }
 
     /**
      * @param records List of items to group
@@ -252,23 +246,24 @@ public class Collections {
      * @return Map where Map's key is produced by Mapper's Key() method and Map's value is list of objects
      * created by Mapper's value() method which share the same key.
      */
-//    public static Object groupBy(List<SObject> records, Mapper mapper) {
-//
-//        for (Integer i = 0, j = records.size(); i < j; i++) {
-//            SObject record = (SObject) records[i];
-//            Object key = mapper.key(record);
-//            Object value = mapper.value(item);
-//
-//            if (!mapInstance.containsKey(key)) {
-//                mapInstance.put(key, new List<SObject>());
-//            }
-//
-//            List<SObject> groupedRecords = (List<SObject>) mapInstance.get(key);
-//            groupedRecords.add(record);
-//        }
-//
-//        return iMap.toMap();
-//    }
+    public static Object groupBy(List<Object> items, Mapper mapper) {
+        IMap imap = getIMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
+
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            SObject item = (SObject) items[i];
+            Object key = mapper.key(item);
+            Object value = mapper.value(item);
+
+            if (!imap.containsKey(key)) {
+                imap.put(key, newListOfTheSameType(items));
+            }
+
+            List<Object> groupedRecords = (List<Object>) imap.get(key);
+            groupedRecords.add(value);
+        }
+
+        return iMap.toMap();
+    }
 
 
     /**
@@ -570,6 +565,14 @@ public class Collections {
 
 
     /**
+     * @return New empty list of the same SObject type as original.
+     */
+    public static List<Object> newListOfType(Type itemType) {
+        return (List<Object>) Type.forName('List<' + itemType + '>').newInstance();
+    }
+
+
+    /**
      * IMap factory method which returns proper IMap implementation for given keyType parameter
      * and initializes it with empty Map of the same sObject type as given records.
      */
@@ -597,6 +600,16 @@ public class Collections {
             return Date.class;
         } catch (Exception ex) {
             String typeName = ex.getMessage().substringBetween('Invalid conversion from runtime type List<', '> to Date');
+            return Type.forName(typeName);
+        }
+    }
+
+    private static Type getType(Object o) {
+        try {
+            Date d = (Date) o;
+            return Date.class;
+        } catch (Exception ex) {
+            String typeName = ex.getMessage().substringBetween('Invalid conversion from runtime type ', ' to Date');
             return Type.forName(typeName);
         }
     }

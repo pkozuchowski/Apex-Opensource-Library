@@ -639,173 +639,174 @@ private class CollectionsTest {
             this.opportunity = opportunity;
         }
     }
-//
-//    @IsTest
-//    static void whenEmptyOpportunityListIsGrouppedThenEmptyOpportunityByStringMapIsReturned() {
-//        Map<String, List<Opportunity>> expected = new Map<String, List<Opportunity>>();
-//        Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collections.groupByStringField(new List<Opportunity>(), Opportunity.Name);
-//        System.assertEquals(expected, actual);
-//    }
-//
-//    @IsTest
-//    static void whenEmptySObjectListIsGrouppedThenEmptySObjectByStringMapIsReturned() {
-//        Map<String, List<SObject>> expected = new Map<String, List<SObject>>();
-//        Map<String, List<SObject>> actual = (Map<String, List<SObject>>) Collections.groupByStringField(new List<SObject>(), Opportunity.Name);
-//        System.assertEquals(expected, actual);
-//    }
-//
-//
-//    /**
-//     *@description
-//     * Collections.filterByFieldValue filters input records and return only those which field is the same as specified value.
-//     */
-//    @IsTest
-//    static void testFilterByFieldValue() {
-//        System.assertEquals(
-//                new List<Opportunity>{
-//                        opportunities[0], opportunities[2], opportunities[4], opportunities[6], opportunities[8]
-//                },
-//                Collections.filterByFieldValue(opportunities, Opportunity.HasOpenActivity, true)
-//        );
-//        System.assertEquals(
-//                new List<Opportunity>{
-//                        opportunities[0], opportunities[4], opportunities[8]
-//                },
-//                Collections.filterByFieldValue(opportunities, Opportunity.FiscalQuarter, 0)
-//        );
-//        System.assertEquals(
-//                new List<Opportunity>{
-//                        opportunities[0], opportunities[1], opportunities[2], opportunities[3]
-//                },
-//                Collections.filterByFieldValue(opportunities, Opportunity.NextStep, 'Analysis')
-//        );
-//    }
-//
-//
-//    /**
-//     * @description
-//     * Collections.filterByFieldValues filters input records and return only those which field is one of specified values.
-//     */
-//    @IsTest
-//    static void testFilterByFieldValues() {
-//        Set<String> acceptedStages = new Set<String>{
-//                'Analysis', 'Deal'
-//        };
-//
-//        List<Opportunity> expected = new List<Opportunity>();
-//        for (Opportunity opportunity : opportunities) {
-//            if (acceptedStages.contains(opportunity.StageName)) {
-//                expected.add(opportunity);
-//            }
-//        }
-//
-//        System.assertEquals(expected,
-//                Collections.filterByFieldValues(opportunities, Opportunity.StageName, new Set<Object>{
-//                        'Analysis', 'Deal'
-//                })
-//        );
-//    }
-//
-//
-//    /**
-//     * @description
-//     * Collections.filter(UpdateFilter) takes list of Trigger.new records, trigger oldmap and UpdateFilter implementation
-//     * and return only these records that are accepted by Filter
-//     */
-//    @IsTest
-//    static void testFilterByUpdateFilter() {
-//        List<Opportunity> opportunities = opportunities;
-//        Map<Id, Opportunity> oldMap = new Map<Id, Opportunity>(opportunities.deepClone(true));
-//
-//        oldMap.get(opportunities[0].Id).Name += '_CHANGED';
-//        oldMap.get(opportunities[1].Id).Name += '_CHANGED';
-//        oldMap.get(opportunities[2].Id).Name += '_CHANGED';
-//
-//        List<Opportunity> expected = new List<Opportunity>{
-//                opportunities[0],
-//                opportunities[1],
-//                opportunities[2]
-//        };
-//
-//        List<Opportunity> actual = Collections.filter(opportunities, oldMap, new OpportunityChangedNameFilter());
-//        System.assertEquals(expected, actual);
-//    }
-//    private class OpportunityChangedNameFilter implements Collections.UpdateFilter {
-//        public Boolean accepts(SObject record, SObject oldRecord) {
-//            return ((Opportunity) record).Name != ((Opportunity) oldRecord).Name;
-//        }
-//    }
-//
-//
-//    /**
-//     * @description
-//     * Collections.sort takes list of objects and comparator implementation.
-//     * Sorted list is returned as result.
-//     */
-//    @IsTest
-//    static void testSortByComparator() {
-//        List<Opportunity> expected = new List<Opportunity>();
-//        for (Integer i = opportunities.size() - 1; i >= 0; --i) {
-//            expected.add(opportunities[i]);
-//        }
-//
-//        List<Opportunity> actual = (List<Opportunity>) Collections.sort(opportunities, new ReverseProbabilityComparator());
-//
-//        System.assertEquals(actual, expected);
-//    }
-//    private class ReverseProbabilityComparator implements Collections.Comparator {
-//        public Integer compare(Object thisItem, Object otherItem) {
-//            Opportunity thisOpp = (Opportunity) thisItem;
-//            Opportunity otherOpp = (Opportunity) otherItem;
-//
-//            if (thisOpp.Probability < otherOpp.Probability) {
-//                return 1;
-//
-//            } else if (thisOpp.Probability > otherOpp.Probability) {
-//                return -1;
-//
-//            } else {
-//                return 0;
-//            }
-//        }
-//    }
-//
-//
-//    /**
-//     * @description
-//     * Collections.sort sorts list of records by given field and order.
-//     */
-//    @IsTest
-//    static void testSortByField() {
-//        Opportunity previous;
-//
-//        List<Opportunity> sortedOpportunities = Collections.sort(opportunities, Opportunity.CreatedDate, true);
-//        for (Opportunity opportunity : sortedOpportunities) {
-//            if (previous != null) {
-//                System.assert(opportunity.CreatedDate >= previous.CreatedDate);
-//            }
-//            previous = opportunity;
-//        }
-//        previous = null;
-//
-//
-//        sortedOpportunities = Collections.sort(opportunities, Opportunity.Name, false);
-//        for (Opportunity opportunity : sortedOpportunities) {
-//            if (previous != null) {
-//                System.assertEquals(-1, opportunity.Name.compareTo(previous.Name));
-//            }
-//            previous = opportunity;
-//        }
-//        previous = null;
-//
-//
-//        sortedOpportunities = Collections.sort(opportunities, Opportunity.FiscalQuarter, true);
-//        for (Opportunity opportunity : sortedOpportunities) {
-//            if (previous != null) {
-//                System.assert(opportunity.FiscalQuarter >= previous.FiscalQuarter);
-//            }
-//            previous = opportunity;
-//        }
-//        previous = null;
-//    }
+
+    @IsTest
+    static void whenEmptyOpportunityListIsGrouppedThenEmptyOpportunityByStringMapIsReturned() {
+        Map<String, List<Opportunity>> expected = new Map<String, List<Opportunity>>();
+        Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collections.groupBy(new List<Opportunity>(), Opportunity.Name);
+        System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void whenEmptySObjectListIsGrouppedThenEmptySObjectByStringMapIsReturned() {
+        Map<String, List<SObject>> expected = new Map<String, List<SObject>>();
+        Map<String, List<SObject>> actual = (Map<String, List<SObject>>) Collections.groupBy(new List<SObject>(), Opportunity.Name);
+        System.assertEquals(expected, actual);
+    }
+
+
+    /**
+     *@description
+     * Collections.filterByFieldValue filters input records and return only those which field is the same as specified value.
+     */
+    @IsTest
+    static void testFilterByFieldValue() {
+        List<Opportunity> expected = new List<Opportunity>{
+                opportunities[0], opportunities[2], opportunities[4], opportunities[6], opportunities[8]
+        };
+        List<Opportunity> actual = Collections.filterByFieldValue(opportunities, Opportunity.HasOpenActivity, true);
+        System.assertEquals(expected, actual);
+
+
+        expected = new List<Opportunity>{
+                opportunities[0], opportunities[4], opportunities[8]
+        };
+        actual = Collections.filterByFieldValue(opportunities, Opportunity.FiscalQuarter, 0);
+        System.assertEquals(expected, actual);
+
+
+        expected = new List<Opportunity>{
+                opportunities[0], opportunities[1], opportunities[2], opportunities[3]
+        };
+        actual = Collections.filterByFieldValue(opportunities, Opportunity.NextStep, 'Analysis');
+        System.assertEquals(expected, actual);
+    }
+
+
+    /**
+     * @description
+     * Collections.filterByFieldValues filters input records and return only those which field is one of specified values.
+     */
+    @IsTest
+    static void testFilterByFieldValues() {
+        Set<String> acceptedStages = new Set<String>{
+                'Analysis', 'Deal'
+        };
+
+        List<Opportunity> expected = new List<Opportunity>();
+        for (Opportunity opportunity : opportunities) {
+            if (acceptedStages.contains(opportunity.StageName)) {
+                expected.add(opportunity);
+            }
+        }
+
+        List<Opportunity> actual = Collections.filterByFieldValues(opportunities, Opportunity.StageName, new Set<Object>{
+                'Analysis', 'Deal'
+        });
+
+        System.assertEquals(expected, actual);
+    }
+
+
+    /**
+     * @description
+     * Collections.filter(UpdateFilter) takes list of Trigger.new records, trigger oldmap and UpdateFilter implementation
+     * and return only these records that are accepted by Filter
+     */
+    @IsTest
+    static void testFilterByUpdateFilter() {
+        List<Opportunity> opportunities = opportunities;
+        Map<Id, Opportunity> oldMap = new Map<Id, Opportunity>(opportunities.deepClone(true));
+
+        oldMap.get(opportunities[0].Id).Name += '_CHANGED';
+        oldMap.get(opportunities[1].Id).Name += '_CHANGED';
+        oldMap.get(opportunities[2].Id).Name += '_CHANGED';
+
+        List<Opportunity> expected = new List<Opportunity>{
+                opportunities[0],
+                opportunities[1],
+                opportunities[2]
+        };
+
+        List<Opportunity> actual = Collections.filter(opportunities, oldMap, new OpportunityChangedNameFilter());
+        System.assertEquals(expected, actual);
+    }
+    private class OpportunityChangedNameFilter implements Collections.UpdateFilter {
+        public Boolean accepts(Object record, Object oldRecord) {
+            return ((Opportunity) record).Name != ((Opportunity) oldRecord).Name;
+        }
+    }
+
+
+    /**
+     * @description
+     * Collections.sort takes list of objects and comparator implementation.
+     * Sorted list is returned as result.
+     */
+    @IsTest
+    static void testSortByComparator() {
+        List<Opportunity> expected = new List<Opportunity>();
+        for (Integer i = opportunities.size() - 1; i >= 0; --i) {
+            expected.add(opportunities[i]);
+        }
+
+        List<Opportunity> actual = (List<Opportunity>) Collections.sort(opportunities, new ReverseProbabilityComparator());
+
+        System.assertEquals(actual, expected);
+    }
+    private class ReverseProbabilityComparator implements Collections.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Opportunity thisOpp = (Opportunity) thisItem;
+            Opportunity otherOpp = (Opportunity) otherItem;
+
+            if (thisOpp.Probability < otherOpp.Probability) {
+                return 1;
+
+            } else if (thisOpp.Probability > otherOpp.Probability) {
+                return -1;
+
+            } else {
+                return 0;
+            }
+        }
+    }
+
+
+    /**
+     * @description
+     * Collections.sort sorts list of records by given field and order.
+     */
+    @IsTest
+    static void testSortByField() {
+        Opportunity previous;
+
+        List<Opportunity> sortedOpportunities = Collections.sort(opportunities, Opportunity.CreatedDate, true);
+        for (Opportunity opportunity : sortedOpportunities) {
+            if (previous != null) {
+                System.assert(opportunity.CreatedDate >= previous.CreatedDate);
+            }
+            previous = opportunity;
+        }
+        previous = null;
+
+
+        sortedOpportunities = Collections.sort(opportunities, Opportunity.Name, false);
+        for (Opportunity opportunity : sortedOpportunities) {
+            if (previous != null) {
+                System.assertEquals(-1, opportunity.Name.compareTo(previous.Name));
+            }
+            previous = opportunity;
+        }
+        previous = null;
+
+
+        sortedOpportunities = Collections.sort(opportunities, Opportunity.FiscalQuarter, true);
+        for (Opportunity opportunity : sortedOpportunities) {
+            if (previous != null) {
+                System.assert(opportunity.FiscalQuarter >= previous.FiscalQuarter);
+            }
+            previous = opportunity;
+        }
+        previous = null;
+    }
 }

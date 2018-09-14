@@ -104,7 +104,7 @@ public class Collections {
     /**
      * @return New list of given item type.
      */
-    public static List<Object> newListOfType(Type itemType) {
+    public static List<Object> newListOfItemType(Type itemType) {
         return (List<Object>) Type.forName('List<' + itemType + '>').newInstance();
     }
 
@@ -262,7 +262,7 @@ public class Collections {
             Object value = mapper.value(item);
 
             if (!imap.containsKey(key)) {
-                imap.put(key, newListOfTheSameType(items));
+                imap.put(key, newListOfItemType(mapper.valueType()));
             }
 
             List<Object> groupedRecords = (List<Object>) imap.get(key);

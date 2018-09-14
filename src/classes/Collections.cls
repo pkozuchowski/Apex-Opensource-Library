@@ -108,9 +108,7 @@ public class Collections {
         return mapByFieldToIMap(records, keyMapper, getIMap(keyMapper.keyType(), records)).keySet();
     }
 
-
     /**
-     * TODO
      * @param records List of records to return field values from.
      * @param fields List of fields to return values from.
      * @return Set of unique SObject field values of given fields of given records.
@@ -160,18 +158,8 @@ public class Collections {
      * @param mapper KeyMapper instance which produce map key for given item.
      * @return Map of items where Item is map's value and key is produced by KeyMapper.
      */
-    public static Object mapBy(List<SObject> records, KeyMapper mapper) {
-        return mapByFieldToIMap(records, mapper, getIMap(mapper.keyType(), records)).toMap();
-    }
-
-    /**
-     * @param keyType Type of result Map key
-     * @param items List of items to map
-     * @param mapper KeyMapper instance which produce map key for given item.
-     * @return Map of items where Item is map's value and key is produced by KeyMapper.
-     */
     public static Object mapBy(List<Object> items, KeyMapper mapper) {
-        return mapByFieldToIMap(items, mapper, getIMap(mapper.keyType(), getListItemType(items)));
+        return mapByFieldToIMap(items, mapper, getIMap(mapper.keyType(), items)).toMap();
     }
 
 

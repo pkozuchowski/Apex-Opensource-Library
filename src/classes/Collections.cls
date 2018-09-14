@@ -572,7 +572,7 @@ public class Collections {
         return getIMap(keyType, getListItemType(records));
     }
 
-    private static IMap getIMap(Type keyType, Type objectType) {
+    public static IMap getIMap(Type keyType, Type objectType) {
         Object sfMap = Type.forName('Map<' + keyType + ',' + objectType + '>').newInstance();
 
         if (keyType == Id.class) return new MapById((Map<Id, Object>) sfMap);
@@ -586,22 +586,27 @@ public class Collections {
         return new MapByObject((Map<Object, Object>) sfMap);
     }
 
-    private static Type getListItemType(Object o) {
-        try {
-            Date d = (Date) o;
-            return Date.class;
-        } catch (Exception ex) {
-            String typeName = ex.getMessage().substringBetween('Invalid conversion from runtime type List<', '> to Date');
-            return Type.forName(typeName);
-        }
+
+    /*
+    * TODO
+    * */
+    public static Type getListItemType(Object o) {
+        return getType(o, 'Invalid conversion from runtime type List<', '> to Date');
     }
 
-    private static Type getType(Object o) {
+    /*
+    * TODO
+    * */
+    public static Type getType(Object o) {
+        return getType(o, 'Invalid conversion from runtime type ', ' to Date');
+    }
+
+    private static Type getType(Object o, String open, String close) {
         try {
             Date d = (Date) o;
             return Date.class;
         } catch (Exception ex) {
-            String typeName = ex.getMessage().substringBetween('Invalid conversion from runtime type ', ' to Date');
+            String typeName = ex.getMessage().substringBetween(open, close);
             return Type.forName(typeName);
         }
     }

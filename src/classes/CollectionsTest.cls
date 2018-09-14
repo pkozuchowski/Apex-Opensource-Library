@@ -130,7 +130,7 @@ private class CollectionsTest {
      * Collections.getType() returns type of collection or any given object.
      */
     @IsTest
-    static void testGetType(){
+    static void testGetType() {
         System.assertEquals(List<Account>.class, Collections.getType(new List<Account>()));
 
         List<SObject> records = new List<Opportunity>();
@@ -821,6 +821,32 @@ private class CollectionsTest {
     private class OpportunityChangedNameFilter implements Collections.UpdateFilter {
         public Boolean accepts(Object record, Object oldRecord) {
             return ((Opportunity) record).Name != ((Opportunity) oldRecord).Name;
+        }
+    }
+
+
+    /**
+     *@description
+     * Collections.reduce() reduces collection to one object or other collection using Reducer implementation.
+     */
+    @IsTest
+    static void testReduce() {
+        Set<Id> expected = new Set<Id>();
+        for (Opportunity opportunity : opportunities) {
+            expected.add(opportunity.Id);
+            expected.add(opportunity.AccountId);
+        }
+        Set<Id> actual = (Set<Id>) Collections.reduce(opportunities, new ReducerToIdAndAccountId(), new Set<Id>());
+
+        System.assertEquals(expected, actual);
+    }
+    private class ReducerToIdAndAccountId implements Collections.Reducer {
+        public void reduce(Object aggregatedValues, Object item) {
+            Set<Id> ids = (Set<Id>) aggregatedValues;
+            Opportunity opp = (Opportunity) item;
+
+            ids.add(opp.Id);
+            ids.add(opp.AccountId);
         }
     }
 

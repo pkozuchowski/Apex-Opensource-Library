@@ -124,7 +124,8 @@ public abstract class XmlNode {
             for (Dom.XmlNode childDomNode : listNode.getChildElements()) {
                 if (childDomNode.getName() == childNodeName) {
                     XmlNode childNode = (XmlNode) prototype.newInstance();
-                    childNode.deserializeXML(childDomNode);
+                    childNode.node = childDomNode;
+                    childNode.registerXML();
 
                     childrenList.add(childNode);
                 }
@@ -168,14 +169,14 @@ public abstract class XmlNode {
 
         public virtual void load(Dom.Document document) {
             isSerialization = false;
-            deserializeXML(document.getRootElement());
+            this.node = document.getRootElement();
+            registerXML();
         }
 
         public virtual void load(String xmlStr) {
-            isSerialization = false;
-            this.document = new Dom.Document();
-            this.document.load(xmlStr);
-            deserializeXML(document.getRootElement());
+            Dom.Document document = new Dom.Document();
+            document.load(xmlStr);
+            load(document);
         }
     }
 

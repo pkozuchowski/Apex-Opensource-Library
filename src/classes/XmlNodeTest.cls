@@ -75,7 +75,7 @@ public class XmlNodeTest {
     * a text element with predefined values (values are made up)
     * */
     private class SampleRequest extends BodyContent {
-        public ExclusionMode exclusionType = ExclusionMode.DuplicateEmail;
+        public ExclusionMode exclusionType = ExclusionMode.None;
         public Criteria criteria = new Criteria();
 
         public SampleRequest() {
@@ -87,7 +87,8 @@ public class XmlNodeTest {
 
         protected override void registerXML() {
             registerThisNode('SampleRequest', NAMESPACE_SAMPLE, '');
-            registerTextNode(String.class, 'exclusion', null, null, exclusionType.name());
+            String exclType = (String) registerTextNode(String.class, 'exclusion', NAMESPACE_SAMPLE, '', exclusionType.name());
+            this.exclusionType = ExclusionModeFactory.get(exclType);
             registerChild(criteria);
         }
     }
@@ -97,6 +98,13 @@ public class XmlNodeTest {
         DuplicateName,
         All
     }
+    private static Map<String, ExclusionMode> ExclusionModeFactory = new Map<String, XmlNodeTest.ExclusionMode>{
+            'None' => ExclusionMode.None,
+            'DuplicateEmail' => ExclusionMode.DuplicateEmail,
+            'DuplicateName' => ExclusionMode.DuplicateName,
+            'All' => ExclusionMode.All
+    };
+
     private class Criteria extends XmlNode {
         public String firstName;
         public String lastName;
@@ -118,11 +126,11 @@ public class XmlNodeTest {
 
         protected override void registerXML() {
             registerThisNode('criteria', NAMESPACE_SAMPLE, '');
-            this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, null, firstName);
-            this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, null, lastName);
-            this.email = (String) registerTextNode(String.class, 'Email', NAMESPACE_SAMPLE, null, email);
-            this.username = (String) registerTextNode(String.class, 'Username', NAMESPACE_SAMPLE, null, username);
-            String dobStr = (String) registerTextNode(String.class, 'DateOfBirth', NAMESPACE_SAMPLE, null, dob.format('dd/MM/YYYY'));
+            this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, '', firstName);
+            this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
+            this.email = (String) registerTextNode(String.class, 'Email', NAMESPACE_SAMPLE, '', email);
+            this.username = (String) registerTextNode(String.class, 'Username', NAMESPACE_SAMPLE, '', username);
+            String dobStr = (String) registerTextNode(String.class, 'DateOfBirth', NAMESPACE_SAMPLE, '', dob.format('dd/MM/YYYY'));
             this.dob = Date.parse(dobStr);
 
             registerChildren(addresses, 'Address', NAMESPACE_SAMPLE, null, Address.class);
@@ -146,10 +154,10 @@ public class XmlNodeTest {
         protected override void registerXML() {
             registerThisNode('Address', NAMESPACE_SAMPLE, '');
             this.country = (String) registerTextNode(String.class, 'Country', NAMESPACE_SAMPLE, null, country);
-            this.addressLine1 = (String) registerTextNode(String.class, 'AddressLine1', NAMESPACE_SAMPLE, null, addressLine1);
-            this.addressLine2 = (String) registerTextNode(String.class, 'AddressLine2', NAMESPACE_SAMPLE, null, addressLine2);
-            this.addressLine3 = (String) registerTextNode(String.class, 'AddressLine3', NAMESPACE_SAMPLE, null, addressLine3);
-            this.addressLine4 = (String) registerTextNode(String.class, 'AddressLine4', NAMESPACE_SAMPLE, null, addressLine4);
+            this.addressLine1 = (String) registerTextNode(String.class, 'AddressLine1', NAMESPACE_SAMPLE, '', addressLine1);
+            this.addressLine2 = (String) registerTextNode(String.class, 'AddressLine2', NAMESPACE_SAMPLE, '', addressLine2);
+            this.addressLine3 = (String) registerTextNode(String.class, 'AddressLine3', NAMESPACE_SAMPLE, '', addressLine3);
+            this.addressLine4 = (String) registerTextNode(String.class, 'AddressLine4', NAMESPACE_SAMPLE, '', addressLine4);
         }
     }
 

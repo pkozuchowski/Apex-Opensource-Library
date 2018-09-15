@@ -58,6 +58,19 @@ public abstract class XmlNode {
         registerTextNode(name, null, null, value);
     }
 
+    protected Object registerTextNode(Type t, String name, String namespace, String prefix, Object value) {
+        if (isSerialization) {
+            if (value != null) {
+                Dom.XmlNode txtNode = this.node.addChildElement(name, namespace, prefix);
+                String textValue = String.valueOf(value).escapeXml();
+                txtNode.addTextNode(textValue);
+            }
+            return value;
+
+        } else {
+            return getValue(t, getStringValue(name, namespace));
+        }
+    }
     protected void registerTextNode(String name, String namespace, String prefix, Object value) {
         if (value != null) {
             Dom.XmlNode txtNode = this.node.addChildElement(name, namespace, prefix);
@@ -206,5 +219,22 @@ public abstract class XmlNode {
             this.document.load(xmlStr);
             deserializeXML(document.getRootElement());
         }
+    }
+
+
+    private Object getValue(Type t, String value) {
+        if (value != null) {
+            if (t == String.class) return String.valueOf(value);
+            if (t == Double.class) return Double.valueOf(value);
+            if (t == Decimal.class) return Decimal.valueOf(value);
+            if (t == Integer.class) return Integer.valueOf(value);
+            if (t == Long.class) return Long.valueOf(value);
+            if (t == Date.class) return Date.valueOf(value);
+            if (t == Datetime.class) return Datetime.valueOf(value);
+            if (t == Boolean.class) return Boolean.valueOf(value);
+
+            return value;
+        }
+        return null;
     }
 }

@@ -11,6 +11,12 @@ public class XmlNodeTest {
         public Body body = new Body();
         public Header header = new Header();
 
+        public Envelope(){}
+        public Envelope(Header header, BodyContent content) {
+            this.header = header;
+            this.body = new Body(content);
+        }
+
         protected override void serializeToXML() {
             createThisNode('Envelope', NAMESPACE_SOAP, 'soap');
             setNamespace('xsi', NAMESPACE_XSI);
@@ -30,6 +36,12 @@ public class XmlNodeTest {
         public String username;
         public String password;
 
+        public Header(){}
+        public Header(String username, String password) {
+            this.username = username;
+            this.password = password;
+        }
+
         protected override void serializeToXML() {
             createThisNode('Header', NAMESPACE_SOAP, 'soap');
             addChildTextElement('username', username);
@@ -46,6 +58,11 @@ public class XmlNodeTest {
 
     private class Body extends XmlNode {
         public BodyContent content;
+
+        public Body(){}
+        public Body(BodyContent content) {
+            this.content = content;
+        }
 
         protected override void serializeToXML() {
             createThisNode('Body', NAMESPACE_SOAP, 'soap');
@@ -96,6 +113,12 @@ public class XmlNodeTest {
         public ExclusionMode exclusionType = ExclusionMode.DuplicateEmail;
         public Criteria criteria = new Criteria();
 
+        public SampleRequest(){}
+        public SampleRequest(ExclusionMode exclusionType, Criteria criteria) {
+            this.exclusionType = exclusionType;
+            this.criteria = criteria;
+        }
+
         protected override void serializeToXML() {
             createThisNode('SampleRequest', NAMESPACE_SAMPLE, '');
             addChildTextElement('exclusion', exclusionType.name());
@@ -116,6 +139,16 @@ public class XmlNodeTest {
         public Datetime dob;
         public List<Address> addresses = new List<Address>();
 
+        public Criteria(){}
+        public Criteria(String firstName, String lastName, String email, Datetime dob, List<Address> addresses) {
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.email = email;
+            this.username = email;
+            this.dob = dob;
+            this.addresses = addresses;
+        }
+
         protected override void serializeToXML() {
             createThisNode('criteria');
             addChildTextElement('FirstName', firstName);
@@ -133,6 +166,12 @@ public class XmlNodeTest {
         public String addressLine3;
         public String addressLine4;
 
+        public Address(String country, String addressLine1, String addressLine2) {
+            this.country = country;
+            this.addressLine1 = addressLine1;
+            this.addressLine2 = addressLine2;
+        }
+
         protected override void serializeToXML() {
             createThisNode('Address');
             addChildTextElement('Country', country);
@@ -146,31 +185,19 @@ public class XmlNodeTest {
 
     @IsTest
     static void testRequestSerialization() {
-        SampleRequest request = new SampleRequest();
+        Envelope envelope = new Envelope(
+                new Header('api.user', 'secret'),
+                new SampleRequest(ExclusionMode.DuplicateEmail,
+                        new Criteria(
+                                'John', 'Doe', 'John.Doe@sample.com', Datetime.newInstance(1980, 01, 01),
+                                new List<Address>{
+                                        new Address('UK', 'London', 'Test Street 2'),
+                                        new Address('UK', 'Bridgetown', 'Other Street 2')
+                                }
+                        )
+                )
+        );
 
-        Envelope envelope = new Envelope();
-        envelope.body.content = request;
-
-        envelope.header.username = 'api.user';
-        envelope.header.password = 'secret';
-
-        request.exclusionType = ExclusionMode.DuplicateEmail;
-        request.criteria.firstName = 'John';
-        request.criteria.lastName = 'Doe';
-        request.criteria.username = request.criteria.email = 'John.Doe@sample.com';
-        request.criteria.dob = Datetime.newInstance(1980, 01, 01);
-
-        Address mailingAddress = new Address();
-        mailingAddress.country = 'UK';
-        mailingAddress.addressLine1 = 'London';
-        mailingAddress.addressLine2 = 'Test Street 2';
-        request.criteria.addresses.add(mailingAddress);
-
-        Address billingStreet = new Address();
-        billingStreet.country = 'UK';
-        billingStreet.addressLine1 = 'Bridgetown';
-        billingStreet.addressLine2 = 'Other Street 2';
-        request.criteria.addresses.add(billingStreet);
 
         Dom.Document document = envelope.toDOMDocument();
         System.debug(document.toXmlString());

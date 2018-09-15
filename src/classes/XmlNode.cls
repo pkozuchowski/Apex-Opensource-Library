@@ -6,12 +6,8 @@
 public abstract class XmlNode {
     private transient Dom.XmlNode node;
     private transient Dom.XmlNode parent;
-    private static XmlNode.OperationMode mode;
+    private static Boolean isSerialization;
 
-    private enum OperationMode {
-        SERIALIZE,
-        DESERIALIZE
-    }
 
     /**
     * Sets namespace for current node
@@ -49,7 +45,7 @@ public abstract class XmlNode {
     * */
     protected virtual void registerThisNode(String nodeName, String namespace, String prefix) {
         if (this.node == null) {
-            if (XmlNode.mode == OperationMode.SERIALIZE) {
+            if (isSerialization) {
                 this.node = this.parent.addChildElement(nodeName, namespace, prefix);
             } else {
                 this.node = this.parent.getChildElement(nodeName, namespace);
@@ -82,7 +78,7 @@ public abstract class XmlNode {
         if (childNode != null) {
             childNode.parent = this.node;
 
-            if (XmlNode.mode == OperationMode.SERIALIZE) {
+            if (isSerialization) {
                 childNode.serializeToXML();
             } else {
                 childNode.deserializeXMLImpl();
@@ -90,7 +86,7 @@ public abstract class XmlNode {
         }
     }
 
-    protected void addChildrenElements(List<XmlNode> childNodes) {
+    protected void registerChildrenNodes(List<XmlNode> childNodes) {
         if (childNodes != null) {
             for (XmlNode childNode : childNodes) {
                 registerChild(childNode);
@@ -177,25 +173,25 @@ public abstract class XmlNode {
         private transient Dom.Document document;
 
         protected override void registerThisNode(String nodeName, String namespace, String prefix) {
-            if (mode == OperationMode.SERIALIZE) {
+            if (isSerialization) {
                 this.document = new Dom.Document();
                 this.node = this.document.createRootElement(nodeName, namespace, prefix);
             }
         }
 
         public virtual Dom.Document serialize() {
-            mode = OperationMode.SERIALIZE;
+            isSerialization = true;
             serializeToXML();
             return document;
         }
 
         public virtual void load(Dom.Document document) {
-            mode = OperationMode.DESERIALIZE;
+            isSerialization = false;
             deserializeXML(document.getRootElement());
         }
 
         public virtual void load(String xmlStr) {
-            mode = OperationMode.DESERIALIZE;
+            isSerialization = false;
             this.document = new Dom.Document();
             this.document.load(xmlStr);
             deserializeXML(document.getRootElement());

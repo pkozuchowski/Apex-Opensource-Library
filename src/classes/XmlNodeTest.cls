@@ -155,7 +155,7 @@ public class XmlNodeTest {
             registerTextNode('Email', email);
             registerTextNode('Username', username);
             registerTextNode('DateOfBirth', dob.format('dd/MM/YYYY'));
-            addChildrenElements(addresses);
+            registerChildrenNodes(addresses);
         }
     }
     private class Address extends XmlNodeTest.RequestSchema {

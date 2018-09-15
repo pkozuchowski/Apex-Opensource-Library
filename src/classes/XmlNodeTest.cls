@@ -24,14 +24,14 @@ public class XmlNodeTest {
             setNamespace('xsd', NAMESPACE_XSD);
             setNamespace('soap', NAMESPACE_SOAP);
 
-            addChildElement(header);
-            addChildElement(body);
+            registerChild(header);
+            registerChild(body);
         }
 
         protected override void deserializeXML() {
             registerThisNode('Envelope', NAMESPACE_SOAP, 'soap');
-            deserializeChild(header);
-            deserializeChild(body);
+            registerChild(header);
+            registerChild(body);
         }
     }
 
@@ -71,12 +71,12 @@ public class XmlNodeTest {
 
         protected override void serializeToXML() {
             registerThisNode('Body', NAMESPACE_SOAP, 'soap');
-            addChildElement(content);
+            registerChild(content);
         }
 
         protected override void deserializeXML() {
             registerThisNode('Body', NAMESPACE_SOAP, 'soap');
-            deserializeChild(content);
+            registerChild(content);
         }
 
     }
@@ -120,7 +120,7 @@ public class XmlNodeTest {
         protected override void serializeToXML() {
             registerThisNode('SampleRequest', NAMESPACE_SAMPLE, '');
             addChildTextElement('exclusion', exclusionType.name());
-            addChildElement(criteria);
+            registerChild(criteria);
         }
     }
     public enum ExclusionMode {

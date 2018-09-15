@@ -31,29 +31,6 @@ public abstract class XmlNode {
     }
 
 
-    /**
-    * Add argument as child node
-    * */
-    protected void addChildElement(XmlNode childNode) {
-        if (childNode != null) {
-            childNode.parent = this.node;
-            childNode.serializeToXML();
-        }
-    }
-
-    protected void addChildrenElements(List<XmlNode> childNodes) {
-        if (childNodes != null) {
-            for (XmlNode childNode : childNodes) {
-                addChildElement(childNode);
-            }
-        }
-    }
-
-    protected Dom.XmlNode addChildElement(String name, String namespace, String prefix) {
-        return this.node.addChildElement(name, namespace, prefix);
-    }
-
-
     protected void addChildTextElement(String name, Object value) {
         addChildTextElement(name, null, null, value);
     }
@@ -89,12 +66,34 @@ public abstract class XmlNode {
     protected abstract void serializeToXML();
     protected abstract void deserializeXML();
 
-    protected virtual void deserializeChild(XmlNode childNode) {
+
+    /**
+    * Add argument as child node
+    * */
+    protected void registerChild(XmlNode childNode) {
         if (childNode != null) {
             childNode.parent = this.node;
-            childNode.deserializeXMLImpl();
+
+            if (XmlNode.mode == OperationMode.SERIALIZE) {
+                childNode.serializeToXML();
+            } else {
+                childNode.deserializeXMLImpl();
+            }
         }
     }
+
+    protected void addChildrenElements(List<XmlNode> childNodes) {
+        if (childNodes != null) {
+            for (XmlNode childNode : childNodes) {
+                registerChild(childNode);
+            }
+        }
+    }
+
+    protected Dom.XmlNode addChildElement(String name, String namespace, String prefix) {
+        return this.node.addChildElement(name, namespace, prefix);
+    }
+
 
     public void deserializeXML(Dom.XmlNode thisNode) {
         this.node = thisNode;

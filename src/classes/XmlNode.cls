@@ -171,6 +171,12 @@ public abstract class XmlNode {
             deserializeXML(document.getRootElement());
         }
 
+        public virtual void load(String xmlStr) {
+            this.document = new Dom.Document();
+            this.document.load(xmlStr);
+            deserializeXML(document.getRootElement());
+        }
+
         protected override Dom.XmlNode locateInParent(Dom.XmlNode parentNode) {
             return null;
         }

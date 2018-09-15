@@ -21,10 +21,12 @@ public abstract class XmlNode {
     }
 
     protected virtual void registerThisNode(String nodeName, String namespace, String prefix) {
-        if (XmlNode.mode == OperationMode.SERIALIZE) {
-            this.node = this.parent.addChildElement(nodeName, namespace, prefix);
-        } else {
-            this.node = this.parent.getChildElement(nodeName, namespace);
+        if (this.node == null) {
+            if (XmlNode.mode == OperationMode.SERIALIZE) {
+                this.node = this.parent.addChildElement(nodeName, namespace, prefix);
+            } else {
+                this.node = this.parent.getChildElement(nodeName, namespace);
+            }
         }
     }
 
@@ -98,11 +100,13 @@ public abstract class XmlNode {
         this.node = thisNode;
         deserializeXML();
         this.node = null;
+        this.parent = null;
     }
 
     public void deserializeXMLImpl() {
         deserializeXML();
         this.node = null;
+        this.parent = null;
     }
 
     protected virtual void deserializeList(String name, String namespace, List<XmlNode> childrenList, String childNodeName, Type prototype) {

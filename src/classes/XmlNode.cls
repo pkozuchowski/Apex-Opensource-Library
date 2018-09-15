@@ -171,6 +171,11 @@ public abstract class XmlNode {
             return document;
         }
 
+        public String toXmlString() {
+            serialize();
+            return document.toXmlString();
+        }
+
         public virtual void load(String xmlStr) {
             Dom.Document document = new Dom.Document();
             document.load(xmlStr);
@@ -181,7 +186,6 @@ public abstract class XmlNode {
             isSerialization = false;
             this.node = document.getRootElement();
             registerXML_internal();
-            this.document = null;
         }
     }
 

@@ -124,10 +124,9 @@ public abstract class XmlNode {
      * @param childNodes List of nodes to register. (required in both phases)
      * @param name Name of the child nodes to search for. (Deserialization phase only)
      * @param namespace Namespace of the child nodes to search for. (Deserialization phase only)
-     * @param prefix TODO: REMOVE
      * @param childType Type of the children. Children must extend XmlNode and have no-args constructor. (Deserialization phase only)
      */
-    protected void registerChildren(List<XmlNode> childNodes, String name, String namespace, String prefix, Type childType) {
+    protected void registerChildren(List<XmlNode> childNodes, String name, String namespace, Type childType) {
         if (childNodes != null) {
             if (isSerialization) {
                 for (XmlNode childNode : childNodes) {

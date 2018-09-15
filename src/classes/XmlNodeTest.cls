@@ -126,7 +126,7 @@ public class XmlNodeTest {
             String dobStr = (String) registerTextNode(String.class, 'DateOfBirth', NAMESPACE_SAMPLE, '', dob.format('dd/MM/YYYY'));
             this.dob = Date.parse(dobStr);
 
-            registerChildren(addresses, 'Address', NAMESPACE_SAMPLE, null, Address.class);
+            registerChildren(addresses, 'Address', NAMESPACE_SAMPLE, Address.class);
         }
     }
     private class Address extends XmlNode {

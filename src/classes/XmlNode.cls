@@ -181,6 +181,7 @@ public abstract class XmlNode {
             isSerialization = false;
             this.node = document.getRootElement();
             registerXML_internal();
+            this.document = null;
         }
     }
 

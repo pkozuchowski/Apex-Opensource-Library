@@ -64,9 +64,9 @@ public abstract class XmlNode {
 
     protected void registerTextNode(String name, String namespace, String prefix, Object value) {
         if (value != null) {
-            Dom.XmlNode node = addChildElement(name, namespace, prefix);
+            Dom.XmlNode txtNode = this.node.addChildElement(name, namespace, prefix);
             String textValue = String.valueOf(value).escapeXml();
-            node.addTextNode(textValue);
+            txtNode.addTextNode(textValue);
         }
     }
 
@@ -96,10 +96,6 @@ public abstract class XmlNode {
                 registerChild(childNode);
             }
         }
-    }
-
-    protected Dom.XmlNode addChildElement(String name, String namespace, String prefix) {
-        return this.node.addChildElement(name, namespace, prefix);
     }
 
 

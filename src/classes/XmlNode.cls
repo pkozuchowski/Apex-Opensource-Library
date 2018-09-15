@@ -10,38 +10,24 @@ public abstract class XmlNode {
 
 
     /**
-    * Sets namespace for current node
-    * */
-    protected void setNamespace(String prefix, String namespace) {
-        this.node.setNamespace(prefix, namespace);
-    }
+     *
+     */
+    protected abstract void registerXML();
 
     /**
-    * Sets attribute for current node
-    * */
-    protected void setAttribute(String key, String value) {
-        this.node.setAttribute(key, value);
-    }
-
-    /**
-    * Sets attribute for current node
-    * */
-    protected void setAttribute(String key, String value, String keyNamespace, String valueNamespace) {
-        this.node.setAttributeNs(key, value, keyNamespace, valueNamespace);
+     * This method is required to clean up node and parent after work is done.
+     * It significantly reduces required heap size (by half).
+     */
+    private void registerXML_internal() {
+        registerXML();
+        this.node = null;
+        this.parent = null;
     }
 
 
     /**
-    * During serialization creates node for this element in parent.
-    * During deserialization, searches for node in parent element
-    * */
-    protected void registerThisNode(String nodeName) {
-        registerThisNode(nodeName, null, null);
-    }
-
-    /**
-    * During serialization creates node for this element in parent.
-    * During deserialization, searches for node in parent element
+    * During serialization creates node for this element in parent node.
+    * During deserialization, searches for node in parent element node.
     * */
     protected virtual void registerThisNode(String nodeName, String namespace, String prefix) {
         if (this.node == null) {
@@ -54,10 +40,24 @@ public abstract class XmlNode {
     }
 
 
-    protected Object registerTextNode(Type t, String name, Object value) {
-        return registerTextNode(t, name, null, null, value);
-    }
-    protected Object registerTextNode(Type t, String name, String namespace, String prefix, Object value) {
+    /**
+     * During serialization:
+     * Creates text node in current element with given text value.
+     *
+     * During deserialization:
+     * Returns value of text node specified by given name and namespace.
+     *
+     * @param valueType Text node value will be automatically parsed to this type.
+     * Possible values: String,Double,Decimal,Integer,Long,Date,Datetime,Boolean, Any enum type (for any other, returns String)
+     * Required in deserialization.
+     * @param name Text node name.
+     * @param namespace Text node namespace.
+     * @param prefix Text node prefix (only in serialization phase).
+     * @param value This value will be parsed to String, escaped and placed in created text node. (Only in serialization phase).
+     *
+     * @return
+     */
+    protected Object registerTextNode(Type valueType, String name, String namespace, String prefix, Object value) {
         if (isSerialization) {
             if (value != null) {
                 Dom.XmlNode txtNode = this.node.addChildElement(name, namespace, prefix);
@@ -67,11 +67,18 @@ public abstract class XmlNode {
             return value;
 
         } else {
-            return getValue(t, getStringValue(name, namespace));
+            return getValue(valueType, name, namespace);
         }
     }
 
-    private Object getValue(Type t, String value) {
+    /**
+    * @return Value of the text node child specified by name and namespace.
+    * Value is parsed to given primitive or enum type, or returned as String if type is not supported.
+    * */
+    private Object getValue(Type t, String name, String namespace) {
+        Dom.XmlNode textNode = this.node.getChildElement(name, namespace);
+        String value = textNode == null ? '' : textNode.getText();
+
         if (String.isNotBlank(value)) {
             if (t == String.class) return String.valueOf(value);
             if (t == Double.class) return Double.valueOf(value);
@@ -95,17 +102,10 @@ public abstract class XmlNode {
     }
 
 
-    protected abstract void registerXML();
-    private void registerXML_internal() {
-        registerXML();
-        this.node = null;
-        this.parent = null;
-    }
-
-
     /**
-    * Add argument as child node
-    * */
+     * Links child node to the current node and execute's it's registerXML() method.
+     * NPE Safe.
+     */
     protected void registerChild(XmlNode childNode) {
         if (childNode != null) {
             childNode.parent = this.node;
@@ -113,6 +113,18 @@ public abstract class XmlNode {
         }
     }
 
+
+    /**
+     *
+     *
+     * @param childNodes
+     * @param name
+     * @param namespace
+     * @param prefix
+     * @param prototype
+     *
+     * @return
+     */
     protected List<XmlNode> registerChildren(List<XmlNode> childNodes, String name, String namespace, String prefix, Type prototype) {
         if (childNodes != null) {
             if (isSerialization) {
@@ -121,7 +133,7 @@ public abstract class XmlNode {
                 }
 
             } else {
-                for (Dom.XmlNode childDomNode : node.getChildElements()) {
+                for (Dom.XmlNode childDomNode : getChildElements()) {
                     if (childDomNode.getName() == name) {
                         XmlNode childNode = (XmlNode) prototype.newInstance();
                         childNode.node = childDomNode;
@@ -136,6 +148,16 @@ public abstract class XmlNode {
     }
 
 
+    /**
+     *
+     *
+     * @param listName
+     * @param listNamespace
+     * @param listPrefix
+     * @param childrenList
+     * @param childNodeName
+     * @param prototype
+     */
     protected virtual void registerList(String listName, String listNamespace, String listPrefix, List<XmlNode> childrenList, String childNodeName, Type prototype) {
         if (isSerialization) {
             Dom.XmlNode listNode = this.node.addChildElement(listName, listNamespace, listPrefix);
@@ -160,16 +182,41 @@ public abstract class XmlNode {
         }
     }
 
+
+    /**
+     * @return List of Dom.XmlNode elements under current node.
+     */
     protected virtual List<Dom.XmlNode> getChildElements() {
         return node.getChildElements();
     }
 
+    /**
+     * @return Text value of the current node.
+     */
     protected String getStringValue() {
         return this.node.getText();
     }
-    protected String getStringValue(String name, String namespace) {
-        Dom.XmlNode textNode = this.node.getChildElement(name, namespace);
-        return textNode == null ? '' : textNode.getText();
+
+
+    /**
+    * Sets namespace for current node
+    * */
+    protected void setNamespace(String prefix, String namespace) {
+        this.node.setNamespace(prefix, namespace);
+    }
+
+    /**
+    * Sets attribute for current node
+    * */
+    protected void setAttribute(String key, String value) {
+        this.node.setAttribute(key, value);
+    }
+
+    /**
+    * Sets attribute for current node
+    * */
+    protected void setAttribute(String key, String value, String keyNamespace, String valueNamespace) {
+        this.node.setAttributeNs(key, value, keyNamespace, valueNamespace);
     }
 
 
@@ -188,7 +235,7 @@ public abstract class XmlNode {
             }
         }
 
-        public virtual Dom.Document serialize() {
+        public Dom.Document serialize() {
             isSerialization = true;
             registerXML_internal();
             return document;

@@ -14,12 +14,39 @@ public abstract class XmlNode {
     }
 
     /**
-    * Creates node for this element in parent
+    * Sets namespace for current node
+    * */
+    protected void setNamespace(String prefix, String namespace) {
+        this.node.setNamespace(prefix, namespace);
+    }
+
+    /**
+    * Sets attribute for current node
+    * */
+    protected void setAttribute(String key, String value) {
+        this.node.setAttribute(key, value);
+    }
+
+    /**
+    * Sets attribute for current node
+    * */
+    protected void setAttribute(String key, String value, String keyNamespace, String valueNamespace) {
+        this.node.setAttributeNs(key, value, keyNamespace, valueNamespace);
+    }
+
+
+    /**
+    * During serialization creates node for this element in parent.
+    * During deserialization, searches for node in parent element
     * */
     protected void registerThisNode(String nodeName) {
         registerThisNode(nodeName, null, null);
     }
 
+    /**
+    * During serialization creates node for this element in parent.
+    * During deserialization, searches for node in parent element
+    * */
     protected virtual void registerThisNode(String nodeName, String namespace, String prefix) {
         if (this.node == null) {
             if (XmlNode.mode == OperationMode.SERIALIZE) {
@@ -41,25 +68,6 @@ public abstract class XmlNode {
             String textValue = String.valueOf(value).escapeXml();
             node.addTextNode(textValue);
         }
-    }
-
-
-    /**
-    * Sets namespace for current node
-    * */
-    protected void setNamespace(String prefix, String namespace) {
-        this.node.setNamespace(prefix, namespace);
-    }
-
-    /**
-    * Sets namespace for current node
-    * */
-    protected void setAttribute(String key, String value) {
-        this.node.setAttribute(key, value);
-    }
-
-    protected void setAttribute(String key, String value, String keyNamespace, String valueNamespace) {
-        this.node.setAttributeNs(key, value, keyNamespace, valueNamespace);
     }
 
 

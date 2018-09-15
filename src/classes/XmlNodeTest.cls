@@ -125,11 +125,11 @@ public class XmlNodeTest {
 
         protected override void registerXML() {
             registerThisNode('criteria');
-            this.firstName = (String) registerTextNode(String.class, 'FirstName', null, null, firstName);
-            this.lastName = (String) registerTextNode(String.class, 'LastName', null, null, lastName);
-            this.email = (String) registerTextNode(String.class, 'Email', null, null, email);
-            this.username = (String) registerTextNode(String.class, 'Username', null, null, username);
-            registerTextNode(Datetime.class, 'DateOfBirth', null, null, dob.format('dd/MM/YYYY'));
+            this.firstName = (String) registerTextNode(String.class, 'FirstName', firstName);
+            this.lastName = (String) registerTextNode(String.class, 'LastName', lastName);
+            this.email = (String) registerTextNode(String.class, 'Email', email);
+            this.username = (String) registerTextNode(String.class, 'Username', username);
+            registerTextNode(Datetime.class, 'DateOfBirth', dob.format('dd/MM/YYYY'));
             registerChildren(addresses);
         }
     }
@@ -149,10 +149,10 @@ public class XmlNodeTest {
         protected override void registerXML() {
             registerThisNode('Address');
             this.country = (String) registerTextNode(String.class, 'Country', null, null, country);
-            this.addressLine1 = (String) registerTextNode(String.class, 'AddressLine1', null, null, addressLine1);
-            this.addressLine2 = (String) registerTextNode(String.class, 'AddressLine2', null, null, addressLine2);
-            this.addressLine3 = (String) registerTextNode(String.class, 'AddressLine3', null, null, addressLine3);
-            this.addressLine4 = (String) registerTextNode(String.class, 'AddressLine4', null, null, addressLine4);
+            this.addressLine1 = (String) registerTextNode(String.class, 'AddressLine1', addressLine1);
+            this.addressLine2 = (String) registerTextNode(String.class, 'AddressLine2', addressLine2);
+            this.addressLine3 = (String) registerTextNode(String.class, 'AddressLine3', addressLine3);
+            this.addressLine4 = (String) registerTextNode(String.class, 'AddressLine4', addressLine4);
         }
     }
 

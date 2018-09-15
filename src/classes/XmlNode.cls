@@ -54,6 +54,9 @@ public abstract class XmlNode {
     }
 
 
+    protected Object registerTextNode(Type t, String name, Object value) {
+        return registerTextNode(t, name, null, null, value);
+    }
     protected Object registerTextNode(Type t, String name, String namespace, String prefix, Object value) {
         if (isSerialization) {
             if (value != null) {

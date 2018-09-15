@@ -166,7 +166,7 @@ public abstract class XmlNode {
     }
 
     private Object getValue(Type t, String value) {
-        if (value != null) {
+        if (String.isNotBlank(value)) {
             if (t == String.class) return String.valueOf(value);
             if (t == Double.class) return Double.valueOf(value);
             if (t == Decimal.class) return Decimal.valueOf(value);

@@ -19,7 +19,7 @@ public class XmlNodeTest {
         }
 
         protected override void serializeToXML() {
-            createThisNode('Envelope', NAMESPACE_SOAP, 'soap');
+            registerThisNode('Envelope', NAMESPACE_SOAP, 'soap');
             setNamespace('xsi', NAMESPACE_XSI);
             setNamespace('xsd', NAMESPACE_XSD);
             setNamespace('soap', NAMESPACE_SOAP);
@@ -29,6 +29,7 @@ public class XmlNodeTest {
         }
 
         protected override void deserializeXML() {
+            registerThisNode('Envelope', NAMESPACE_SOAP, 'soap');
             deserializeChild(header);
             deserializeChild(body);
         }
@@ -46,19 +47,17 @@ public class XmlNodeTest {
         }
 
         protected override void serializeToXML() {
-            createThisNode('Header', NAMESPACE_SOAP, 'soap');
+            registerThisNode('Header', NAMESPACE_SOAP, 'soap');
             addChildTextElement('username', username);
             addChildTextElement('password', password);
         }
 
         protected override void deserializeXML() {
+            registerThisNode('Header', NAMESPACE_SOAP, 'soap');
             this.username = getStringValue('username', null);
             this.password = getStringValue('password', null);
         }
 
-        protected override Dom.XmlNode locateInParent(Dom.XmlNode parentNode) {
-            return parentNode.getChildElement('Header', NAMESPACE_SOAP);
-        }
     }
 
     private class Body extends XmlNode {
@@ -71,17 +70,15 @@ public class XmlNodeTest {
         }
 
         protected override void serializeToXML() {
-            createThisNode('Body', NAMESPACE_SOAP, 'soap');
+            registerThisNode('Body', NAMESPACE_SOAP, 'soap');
             addChildElement(content);
         }
 
         protected override void deserializeXML() {
+            registerThisNode('Body', NAMESPACE_SOAP, 'soap');
             deserializeChild(content);
         }
 
-        protected override Dom.XmlNode locateInParent(Dom.XmlNode parentNode) {
-            return parentNode.getChildElement('Body', NAMESPACE_SOAP);
-        }
     }
 
 
@@ -93,12 +90,6 @@ public class XmlNodeTest {
     }
 
     private abstract class RequestSchema extends BodyContent {
-        /*
-        * Deserialization methods are obsolete in request.
-        * */
-        protected override Dom.XmlNode locateInParent(Dom.XmlNode parentNode) {
-            return null;
-        }
         protected override void deserializeXML() {
         }
     }
@@ -127,7 +118,7 @@ public class XmlNodeTest {
         }
 
         protected override void serializeToXML() {
-            createThisNode('SampleRequest', NAMESPACE_SAMPLE, '');
+            registerThisNode('SampleRequest', NAMESPACE_SAMPLE, '');
             addChildTextElement('exclusion', exclusionType.name());
             addChildElement(criteria);
         }
@@ -158,7 +149,7 @@ public class XmlNodeTest {
         }
 
         protected override void serializeToXML() {
-            createThisNode('criteria');
+            registerThisNode('criteria');
             addChildTextElement('FirstName', firstName);
             addChildTextElement('LastName', lastName);
             addChildTextElement('Email', email);
@@ -181,7 +172,7 @@ public class XmlNodeTest {
         }
 
         protected override void serializeToXML() {
-            createThisNode('Address');
+            registerThisNode('Address');
             addChildTextElement('Country', country);
             addChildTextElement('AddressLine1', addressLine1);
             addChildTextElement('AddressLine2', addressLine2);
@@ -248,10 +239,8 @@ public class XmlNodeTest {
     private class SampleResponse extends XmlNodeTest.ResponseSchema {
         public List<Match> matches = new List<Match>();
 
-        protected override Dom.XmlNode locateInParent(Dom.XmlNode parentNode) {
-            return parentNode.getChildElement('SampleResponse', NAMESPACE_SAMPLE);
-        }
         protected override void deserializeXML() {
+            registerThisNode('SampleResponse', NAMESPACE_SAMPLE, null);
             deserializeList('matches', NAMESPACE_SAMPLE, matches, 'match', Match.class);
         }
     }
@@ -265,10 +254,6 @@ public class XmlNodeTest {
         public Long distance;
         public Boolean isMarried;
 
-        protected override Dom.XmlNode locateInParent(Dom.XmlNode parentNode) {
-            /*In this case, it's not needed since parent does the search*/
-            return null;
-        }
         protected override void deserializeXML() {
             this.firstName = getStringValue('FirstName', NAMESPACE_SAMPLE);
             this.lastName = getStringValue('LastName', NAMESPACE_SAMPLE);

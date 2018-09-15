@@ -6,16 +6,26 @@
 public abstract class XmlNode {
     private transient Dom.XmlNode node;
     private transient Dom.XmlNode parent;
+    private static XmlNode.OperationMode mode;
+
+    private enum OperationMode {
+        SERIALIZE,
+        DESERIALIZE
+    }
 
     /**
     * Creates node for this element in parent
     * */
-    protected void createThisNode(String nodeName) {
-        createThisNode(nodeName, null, null);
+    protected void registerThisNode(String nodeName) {
+        registerThisNode(nodeName, null, null);
     }
 
-    protected virtual void createThisNode(String nodeName, String namespace, String prefix) {
-        this.node = this.parent.addChildElement(nodeName, namespace, prefix);
+    protected virtual void registerThisNode(String nodeName, String namespace, String prefix) {
+        if (XmlNode.mode == OperationMode.SERIALIZE) {
+            this.node = this.parent.addChildElement(nodeName, namespace, prefix);
+        } else {
+            this.node = this.parent.getChildElement(nodeName, namespace);
+        }
     }
 
 
@@ -75,8 +85,14 @@ public abstract class XmlNode {
 
 
     protected abstract void serializeToXML();
-    protected abstract Dom.XmlNode locateInParent(Dom.XmlNode parentNode);
     protected abstract void deserializeXML();
+
+    protected virtual void deserializeChild(XmlNode childNode) {
+        if (childNode != null) {
+            childNode.parent = this.node;
+            childNode.deserializeXMLImpl();
+        }
+    }
 
     public void deserializeXML(Dom.XmlNode thisNode) {
         this.node = thisNode;
@@ -84,15 +100,9 @@ public abstract class XmlNode {
         this.node = null;
     }
 
-
-    protected virtual void deserializeChild(XmlNode childNode) {
-        if (childNode != null) {
-            Dom.XmlNode childDOMNode = childNode.locateInParent(this.node);
-
-            if (childDOMNode != null) {
-                childNode.deserializeXML(childDOMNode);
-            }
-        }
+    public void deserializeXMLImpl() {
+        deserializeXML();
+        this.node = null;
     }
 
     protected virtual void deserializeList(String name, String namespace, List<XmlNode> childrenList, String childNodeName, Type prototype) {
@@ -159,28 +169,29 @@ public abstract class XmlNode {
     public abstract class XmlRootNode extends XmlNode {
         private transient Dom.Document document;
 
-        protected override void createThisNode(String nodeName, String namespace, String prefix) {
-            this.document = new Dom.Document();
-            this.node = this.document.createRootElement(nodeName, namespace, prefix);
+        protected override void registerThisNode(String nodeName, String namespace, String prefix) {
+            if (mode == OperationMode.SERIALIZE) {
+                this.document = new Dom.Document();
+                this.node = this.document.createRootElement(nodeName, namespace, prefix);
+            }
         }
 
         public virtual Dom.Document serialize() {
+            mode = OperationMode.SERIALIZE;
             serializeToXML();
             return document;
         }
 
         public virtual void load(Dom.Document document) {
+            mode = OperationMode.DESERIALIZE;
             deserializeXML(document.getRootElement());
         }
 
         public virtual void load(String xmlStr) {
+            mode = OperationMode.DESERIALIZE;
             this.document = new Dom.Document();
             this.document.load(xmlStr);
             deserializeXML(document.getRootElement());
-        }
-
-        protected override Dom.XmlNode locateInParent(Dom.XmlNode parentNode) {
-            return null;
         }
     }
 }

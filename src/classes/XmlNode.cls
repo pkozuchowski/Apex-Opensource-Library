@@ -71,6 +71,22 @@ public abstract class XmlNode {
         }
     }
 
+    private Object getValue(Type t, String value) {
+        if (String.isNotBlank(value)) {
+            if (t == String.class) return String.valueOf(value);
+            if (t == Double.class) return Double.valueOf(value);
+            if (t == Decimal.class) return Decimal.valueOf(value);
+            if (t == Integer.class) return Integer.valueOf(value);
+            if (t == Long.class) return Long.valueOf(value);
+            if (t == Date.class) return Date.valueOf(value);
+            if (t == Datetime.class) return Datetime.valueOf(value);
+            if (t == Boolean.class) return Boolean.valueOf(value);
+
+            return value;
+        }
+        return null;
+    }
+
 
     protected abstract void registerXML();
     private void registerXML_internal() {
@@ -187,21 +203,5 @@ public abstract class XmlNode {
             this.node = document.getRootElement();
             registerXML_internal();
         }
-    }
-
-    private Object getValue(Type t, String value) {
-        if (String.isNotBlank(value)) {
-            if (t == String.class) return String.valueOf(value);
-            if (t == Double.class) return Double.valueOf(value);
-            if (t == Decimal.class) return Decimal.valueOf(value);
-            if (t == Integer.class) return Integer.valueOf(value);
-            if (t == Long.class) return Long.valueOf(value);
-            if (t == Date.class) return Date.valueOf(value);
-            if (t == Datetime.class) return Datetime.valueOf(value);
-            if (t == Boolean.class) return Boolean.valueOf(value);
-
-            return value;
-        }
-        return null;
     }
 }

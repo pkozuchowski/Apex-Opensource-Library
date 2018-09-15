@@ -205,10 +205,8 @@ public class XmlNodeTest {
                         )
                 )
         );
+        Dom.Document document = envelope.serialize();
 
-
-        Dom.Document document = envelope.toDOMDocument();
-        System.debug(document.toXmlString());
 
         String expectedXML = ('<?xml version="1.0" encoding="UTF-8"?>'
                 + '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'

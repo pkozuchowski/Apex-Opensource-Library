@@ -164,12 +164,12 @@ public abstract class XmlNode {
             this.node = this.document.createRootElement(nodeName, namespace, prefix);
         }
 
-        public virtual Dom.Document toDOMDocument() {
+        public virtual Dom.Document serialize() {
             serializeToXML();
             return document;
         }
 
-        public virtual void deserializeXML(Dom.Document document) {
+        public virtual void load(Dom.Document document) {
             deserializeXML(document.getRootElement());
         }
 

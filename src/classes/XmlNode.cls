@@ -85,12 +85,26 @@ public abstract class XmlNode {
         }
     }
 
-    protected void registerChildren(List<XmlNode> childNodes) {
+    protected List<XmlNode> registerChildren(List<XmlNode> childNodes, String name, String namespace, String prefix, Type prototype) {
         if (childNodes != null) {
-            for (XmlNode childNode : childNodes) {
-                registerChild(childNode);
+            if (isSerialization) {
+                for (XmlNode childNode : childNodes) {
+                    registerChild(childNode);
+                }
+
+            } else {
+                for (Dom.XmlNode childDomNode : node.getChildElements()) {
+                    if (childDomNode.getName() == name) {
+                        XmlNode childNode = (XmlNode) prototype.newInstance();
+                        childNode.node = childDomNode;
+                        childNode.registerXML();
+
+                        childNodes.add(childNode);
+                    }
+                }
             }
         }
+        return childNodes;
     }
 
 

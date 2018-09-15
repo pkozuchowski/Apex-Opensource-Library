@@ -95,8 +95,10 @@ public abstract class XmlNode {
         }
     }
 
-    protected virtual void deserializeChildren(List<XmlNode> childrenList, String childNodeName, Type prototype) {
-        for (Dom.XmlNode childDomNode : this.node.getChildElements()) {
+    protected virtual void deserializeList(String name, String namespace, List<XmlNode> childrenList, String childNodeName, Type prototype) {
+        Dom.XmlNode listNode = this.node.getChildElement(name, namespace);
+
+        for (Dom.XmlNode childDomNode : listNode.getChildElements()) {
             if (childDomNode.getName() == childNodeName) {
                 XmlNode childNode = (XmlNode) prototype.newInstance();
                 childNode.deserializeXML(childDomNode);

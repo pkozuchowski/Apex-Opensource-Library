@@ -248,29 +248,13 @@ public class XmlNodeTest {
     * Sample SOAP response
     * */
     private class SampleResponse extends XmlNodeTest.ResponseSchema {
-        public Matches matches = new Matches();
+        public List<Match> matches = new List<Match>();
 
         protected override Dom.XmlNode locateInParent(Dom.XmlNode parentNode) {
             return parentNode.getChildElement('SampleResponse', NAMESPACE_SAMPLE);
         }
         protected override void deserializeXML() {
-            deserializeChild(matches);
-        }
-    }
-
-    private class Matches extends XmlNodeTest.ResponseSchema {
-        public List<Match> matches = new List<Match>();
-
-        protected override Dom.XmlNode locateInParent(Dom.XmlNode parentNode) {
-            return parentNode.getChildElement('matches', NAMESPACE_SAMPLE);
-        }
-        protected override void deserializeXML() {
-            /*
-            * Iterates through children and looks for element with name 'match' (2nd argument),
-            * new XmlNode node is constructed from given prototype (3rd argument)
-            * and added to the list (1st argument)
-            * */
-            deserializeChildren(matches, 'match', Match.class);
+            deserializeList('matches', NAMESPACE_SAMPLE, matches, 'match', Match.class);
         }
     }
 
@@ -337,26 +321,24 @@ public class XmlNodeTest {
         Map<String, Object> expected = new Map<String, Object>{
                 'body' => new Map<String, Object>{
                         'content' => new Map<String, Object>{
-                                'matches' => new Map<String, Object>{
-                                        'matches' => new List<Object>{
-                                                new Map<String, Object>{
-                                                        'weight' => 69.5,
-                                                        'score' => 1,
-                                                        'lastName' => 'Doe',
-                                                        'isMarried' => true,
-                                                        'height' => 182,
-                                                        'firstName' => 'John',
-                                                        'distance' => 4000000
-                                                },
-                                                new Map<String, Object>{
-                                                        'weight' => 80.1,
-                                                        'score' => 0.5,
-                                                        'lastName' => 'Liebert',
-                                                        'isMarried' => false,
-                                                        'height' => 190,
-                                                        'firstName' => 'Johan',
-                                                        'distance' => 5000000
-                                                }
+                                'matches' => new List<Object>{
+                                        new Map<String, Object>{
+                                                'weight' => 69.5,
+                                                'score' => 1,
+                                                'lastName' => 'Doe',
+                                                'isMarried' => true,
+                                                'height' => 182,
+                                                'firstName' => 'John',
+                                                'distance' => 4000000
+                                        },
+                                        new Map<String, Object>{
+                                                'weight' => 80.1,
+                                                'score' => 0.5,
+                                                'lastName' => 'Liebert',
+                                                'isMarried' => false,
+                                                'height' => 190,
+                                                'firstName' => 'Johan',
+                                                'distance' => 5000000
                                         }
                                 }
                         }

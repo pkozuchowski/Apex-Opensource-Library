@@ -54,10 +54,6 @@ public abstract class XmlNode {
     }
 
 
-    protected void registerTextNode(String name, Object value) {
-        registerTextNode(name, null, null, value);
-    }
-
     protected Object registerTextNode(Type t, String name, String namespace, String prefix, Object value) {
         if (isSerialization) {
             if (value != null) {
@@ -69,13 +65,6 @@ public abstract class XmlNode {
 
         } else {
             return getValue(t, getStringValue(name, namespace));
-        }
-    }
-    protected void registerTextNode(String name, String namespace, String prefix, Object value) {
-        if (value != null) {
-            Dom.XmlNode txtNode = this.node.addChildElement(name, namespace, prefix);
-            String textValue = String.valueOf(value).escapeXml();
-            txtNode.addTextNode(textValue);
         }
     }
 
@@ -153,36 +142,6 @@ public abstract class XmlNode {
     protected String getStringValue(String name, String namespace) {
         Dom.XmlNode textNode = this.node.getChildElement(name, namespace);
         return textNode == null ? '' : textNode.getText();
-    }
-
-    protected Double getDoubleValue(String name, String namespace) {
-        String textValue = getStringValue(name, namespace);
-        return String.isEmpty(textValue) ? null : Double.valueOf(textValue);
-    }
-
-    protected Decimal getDecimalValue(String name, String namespace) {
-        String textValue = getStringValue(name, namespace);
-        return String.isEmpty(textValue) ? null : Decimal.valueOf(textValue);
-    }
-
-    protected Integer getIntegerValue(String name, String namespace) {
-        String textValue = getStringValue(name, namespace);
-        return String.isEmpty(textValue) ? null : Integer.valueOf(textValue);
-    }
-
-    protected Long getLongValue(String name, String namespace) {
-        String textValue = getStringValue(name, namespace);
-        return String.isEmpty(textValue) ? null : Long.valueOf(textValue);
-    }
-
-    protected Boolean getBooleanValue(String name, String namespace) {
-        String textValue = getStringValue(name, namespace);
-        return String.isEmpty(textValue) ? null : Boolean.valueOf(textValue);
-    }
-
-    protected String getStringAttribute(String name, String namespace) {
-        String value = node.getAttribute(name, namespace);
-        return value == null ? '' : value;
     }
 
 

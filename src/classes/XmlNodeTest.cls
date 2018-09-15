@@ -94,7 +94,7 @@ public class XmlNodeTest {
 
         protected override void registerXML() {
             registerThisNode('SampleRequest', NAMESPACE_SAMPLE, '');
-            registerTextNode('exclusion', exclusionType.name());
+            registerTextNode(String.class, 'exclusion', null, null, exclusionType.name());
             registerChild(criteria);
         }
     }
@@ -125,11 +125,11 @@ public class XmlNodeTest {
 
         protected override void registerXML() {
             registerThisNode('criteria');
-            registerTextNode('FirstName', firstName);
-            registerTextNode('LastName', lastName);
-            registerTextNode('Email', email);
-            registerTextNode('Username', username);
-            registerTextNode('DateOfBirth', dob.format('dd/MM/YYYY'));
+            this.firstName = (String) registerTextNode(String.class, 'FirstName', null, null, firstName);
+            this.lastName = (String) registerTextNode(String.class, 'LastName', null, null, lastName);
+            this.email = (String) registerTextNode(String.class, 'Email', null, null, email);
+            this.username = (String) registerTextNode(String.class, 'Username', null, null, username);
+            registerTextNode(Datetime.class, 'DateOfBirth', null, null, dob.format('dd/MM/YYYY'));
             registerChildren(addresses);
         }
     }

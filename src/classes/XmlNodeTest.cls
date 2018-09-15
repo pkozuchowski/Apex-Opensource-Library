@@ -109,7 +109,7 @@ public class XmlNodeTest {
         public String lastName;
         public String email;
         public String username;
-        public Datetime dob;
+        public Datetime dob = Datetime.now();
         public List<Address> addresses = new List<Address>();
 
         public Criteria() {
@@ -152,7 +152,7 @@ public class XmlNodeTest {
 
         protected override void registerXML() {
             registerThisNode('Address', NAMESPACE_SAMPLE, '');
-            this.country = (String) registerTextNode(String.class, 'Country', null, null, country);
+            this.country = (String) registerTextNode(String.class, 'Country', NAMESPACE_SAMPLE, null, country);
             this.addressLine1 = (String) registerTextNode(String.class, 'AddressLine1', NAMESPACE_SAMPLE, null, addressLine1);
             this.addressLine2 = (String) registerTextNode(String.class, 'AddressLine2', NAMESPACE_SAMPLE, null, addressLine2);
             this.addressLine3 = (String) registerTextNode(String.class, 'AddressLine3', NAMESPACE_SAMPLE, null, addressLine3);
@@ -208,7 +208,19 @@ public class XmlNodeTest {
                 + '        </SampleRequest>'
                 + '    </soap:Body>'
                 + '</soap:Envelope>').replaceAll('\\>\\s+<', '><');
-        System.assertEquals(expectedXML, document.toXmlString());
+
+        String actual = document.toXmlString();
+        System.assertEquals(expectedXML, actual);
+
+
+        Envelope envelope2 = new Envelope(
+                new Header('api.user', 'secret'),
+                new SampleRequest()
+        );
+
+        envelope2.load(actual);
+        String actual2 = envelope2.serialize().toXmlString();
+        System.assertEquals(actual, actual2);
     }
 
 

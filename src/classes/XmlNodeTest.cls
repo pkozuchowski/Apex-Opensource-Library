@@ -70,18 +70,11 @@ public class XmlNodeTest {
     private abstract class BodyContent extends XmlNode {
     }
 
-    private abstract class RequestSchema extends BodyContent {
-
-    }
-    private abstract class ResponseSchema extends BodyContent {
-    }
-
-
     /**
     * Sample SOAP Request which will contain 1 Criteria element and
     * a text element with predefined values (values are made up)
     * */
-    private class SampleRequest extends RequestSchema {
+    private class SampleRequest extends BodyContent {
         public ExclusionMode exclusionType = ExclusionMode.DuplicateEmail;
         public Criteria criteria = new Criteria();
 
@@ -104,7 +97,7 @@ public class XmlNodeTest {
         DuplicateName,
         All
     }
-    private class Criteria extends XmlNodeTest.RequestSchema {
+    private class Criteria extends XmlNode {
         public String firstName;
         public String lastName;
         public String email;
@@ -135,7 +128,7 @@ public class XmlNodeTest {
             registerChildren(addresses, 'Address', NAMESPACE_SAMPLE, null, Address.class);
         }
     }
-    private class Address extends XmlNodeTest.RequestSchema {
+    private class Address extends XmlNode {
         public String country;
         public String addressLine1;
         public String addressLine2;
@@ -227,16 +220,16 @@ public class XmlNodeTest {
     /**
     * Sample SOAP response
     * */
-    private class SampleResponse extends XmlNodeTest.ResponseSchema {
+    private class SampleResponse extends BodyContent {
         public List<Match> matches = new List<Match>();
 
         protected override void registerXML() {
-            registerThisNode('SampleResponse', NAMESPACE_SAMPLE, null);
-            registerList('matches', NAMESPACE_SAMPLE, '', matches, 'match', Match.class);
+            registerThisNode('SampleResponse', NAMESPACE_SAMPLE, '');
+            registerList('matches', NAMESPACE_SAMPLE, null, matches, 'match', Match.class);
         }
     }
 
-    private class Match extends XmlNodeTest.ResponseSchema {
+    private class Match extends XmlNode {
         public String firstName;
         public String lastName;
         public Decimal score;
@@ -246,6 +239,7 @@ public class XmlNodeTest {
         public Boolean isMarried;
 
         protected override void registerXML() {
+            registerThisNode('match', NAMESPACE_SAMPLE, null);
             this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, '', firstName);
             this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
             this.score = (Decimal) registerTextNode(Decimal.class, 'Score', NAMESPACE_SAMPLE, '', score);

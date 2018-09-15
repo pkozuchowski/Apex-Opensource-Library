@@ -119,18 +119,20 @@ public class XmlNodeTest {
             this.lastName = lastName;
             this.email = email;
             this.username = email;
-            this.dob = dob;
+            this.dob = dob = dob;
             this.addresses = addresses;
         }
 
         protected override void registerXML() {
-            registerThisNode('criteria');
-            this.firstName = (String) registerTextNode(String.class, 'FirstName', firstName);
-            this.lastName = (String) registerTextNode(String.class, 'LastName', lastName);
-            this.email = (String) registerTextNode(String.class, 'Email', email);
-            this.username = (String) registerTextNode(String.class, 'Username', username);
-            registerTextNode(Datetime.class, 'DateOfBirth', dob.format('dd/MM/YYYY'));
-            registerChildren(addresses);
+            registerThisNode('criteria', NAMESPACE_SAMPLE, '');
+            this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, null, firstName);
+            this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, null, lastName);
+            this.email = (String) registerTextNode(String.class, 'Email', NAMESPACE_SAMPLE, null, email);
+            this.username = (String) registerTextNode(String.class, 'Username', NAMESPACE_SAMPLE, null, username);
+            String dobStr = (String) registerTextNode(String.class, 'DateOfBirth', NAMESPACE_SAMPLE, null, dob.format('dd/MM/YYYY'));
+            this.dob = Date.parse(dobStr);
+
+            registerChildren(addresses, 'Address', NAMESPACE_SAMPLE, null, Address.class);
         }
     }
     private class Address extends XmlNodeTest.RequestSchema {
@@ -140,6 +142,8 @@ public class XmlNodeTest {
         public String addressLine3;
         public String addressLine4;
 
+        public Address() {
+        }
         public Address(String country, String addressLine1, String addressLine2) {
             this.country = country;
             this.addressLine1 = addressLine1;
@@ -147,12 +151,12 @@ public class XmlNodeTest {
         }
 
         protected override void registerXML() {
-            registerThisNode('Address');
+            registerThisNode('Address', NAMESPACE_SAMPLE, '');
             this.country = (String) registerTextNode(String.class, 'Country', null, null, country);
-            this.addressLine1 = (String) registerTextNode(String.class, 'AddressLine1', addressLine1);
-            this.addressLine2 = (String) registerTextNode(String.class, 'AddressLine2', addressLine2);
-            this.addressLine3 = (String) registerTextNode(String.class, 'AddressLine3', addressLine3);
-            this.addressLine4 = (String) registerTextNode(String.class, 'AddressLine4', addressLine4);
+            this.addressLine1 = (String) registerTextNode(String.class, 'AddressLine1', NAMESPACE_SAMPLE, null, addressLine1);
+            this.addressLine2 = (String) registerTextNode(String.class, 'AddressLine2', NAMESPACE_SAMPLE, null, addressLine2);
+            this.addressLine3 = (String) registerTextNode(String.class, 'AddressLine3', NAMESPACE_SAMPLE, null, addressLine3);
+            this.addressLine4 = (String) registerTextNode(String.class, 'AddressLine4', NAMESPACE_SAMPLE, null, addressLine4);
         }
     }
 

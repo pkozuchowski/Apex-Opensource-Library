@@ -259,9 +259,9 @@ public class XmlNodeTest {
     @IsTest
     static void testResponseDeserialization() {
         String responseXML =
-                '<?xml version="1.0" encoding="UTF-8"?>'
+                ('<?xml version="1.0" encoding="UTF-8"?>'
                         + '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'
-                        + '               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">'
+                        + ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">'
                         + '    <soap:Header>'
                         + '        <username>api.user</username>'
                         + '        <password>secret</password>'
@@ -273,8 +273,8 @@ public class XmlNodeTest {
                         + '                    <FirstName>John</FirstName>'
                         + '                    <LastName>Doe</LastName>'
                         + '                    <Score>1</Score>'
-                        + '                    <Height>182</Height>'
                         + '                    <Weight>69.5</Weight>'
+                        + '                    <Height>182</Height>'
                         + '                    <Distance>4000000</Distance>'
                         + '                    <Married>true</Married>'
                         + '                </match>'
@@ -282,15 +282,15 @@ public class XmlNodeTest {
                         + '                    <FirstName>Johan</FirstName>'
                         + '                    <LastName>Liebert</LastName>'
                         + '                    <Score>0.5</Score>'
-                        + '                    <Height>190</Height>'
                         + '                    <Weight>80.1</Weight>'
+                        + '                    <Height>190</Height>'
                         + '                    <Distance>5000000</Distance>'
                         + '                    <Married>false</Married>'
                         + '                </match>'
                         + '            </matches>'
                         + '        </SampleResponse>'
                         + '    </soap:Body>'
-                        + '</soap:Envelope>';
+                        + '</soap:Envelope>').replaceAll('\\>\\s+<', '><');
 
         Envelope envelope = new Envelope(
                 new Header(),
@@ -331,5 +331,6 @@ public class XmlNodeTest {
         };
         Map<String, Object> actual = (Map<String, Object>) JSON.deserializeUntyped(JSON.serialize(envelope));
         System.assertEquals(expected, actual);
+        System.assertEquals(responseXML, envelope.serialize().toXmlString());
     }
 }

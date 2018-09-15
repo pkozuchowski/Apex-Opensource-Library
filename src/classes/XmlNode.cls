@@ -58,11 +58,11 @@ public abstract class XmlNode {
     }
 
 
-    protected void addChildTextElement(String name, Object value) {
-        addChildTextElement(name, null, null, value);
+    protected void registerTextNode(String name, Object value) {
+        registerTextNode(name, null, null, value);
     }
 
-    protected void addChildTextElement(String name, String namespace, String prefix, Object value) {
+    protected void registerTextNode(String name, String namespace, String prefix, Object value) {
         if (value != null) {
             Dom.XmlNode node = addChildElement(name, namespace, prefix);
             String textValue = String.valueOf(value).escapeXml();

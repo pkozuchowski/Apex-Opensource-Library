@@ -48,8 +48,8 @@ public class XmlNodeTest {
 
         protected override void serializeToXML() {
             registerThisNode('Header', NAMESPACE_SOAP, 'soap');
-            addChildTextElement('username', username);
-            addChildTextElement('password', password);
+            registerTextNode('username', username);
+            registerTextNode('password', password);
         }
 
         protected override void deserializeXML() {
@@ -119,7 +119,7 @@ public class XmlNodeTest {
 
         protected override void serializeToXML() {
             registerThisNode('SampleRequest', NAMESPACE_SAMPLE, '');
-            addChildTextElement('exclusion', exclusionType.name());
+            registerTextNode('exclusion', exclusionType.name());
             registerChild(criteria);
         }
     }
@@ -150,11 +150,11 @@ public class XmlNodeTest {
 
         protected override void serializeToXML() {
             registerThisNode('criteria');
-            addChildTextElement('FirstName', firstName);
-            addChildTextElement('LastName', lastName);
-            addChildTextElement('Email', email);
-            addChildTextElement('Username', username);
-            addChildTextElement('DateOfBirth', dob.format('dd/MM/YYYY'));
+            registerTextNode('FirstName', firstName);
+            registerTextNode('LastName', lastName);
+            registerTextNode('Email', email);
+            registerTextNode('Username', username);
+            registerTextNode('DateOfBirth', dob.format('dd/MM/YYYY'));
             addChildrenElements(addresses);
         }
     }
@@ -173,11 +173,11 @@ public class XmlNodeTest {
 
         protected override void serializeToXML() {
             registerThisNode('Address');
-            addChildTextElement('Country', country);
-            addChildTextElement('AddressLine1', addressLine1);
-            addChildTextElement('AddressLine2', addressLine2);
-            addChildTextElement('AddressLine3', addressLine3);
-            addChildTextElement('AddressLine4', addressLine4);
+            registerTextNode('Country', country);
+            registerTextNode('AddressLine1', addressLine1);
+            registerTextNode('AddressLine2', addressLine2);
+            registerTextNode('AddressLine3', addressLine3);
+            registerTextNode('AddressLine4', addressLine4);
         }
     }
 

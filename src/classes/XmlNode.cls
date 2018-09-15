@@ -115,17 +115,19 @@ public abstract class XmlNode {
 
 
     /**
+     * Serialization Phase:
+     * Registers each child node in given list as direct child of this node.
      *
+     * Deserialization Phase:
+     * Searches through children of deserialized node for children with given name and namespace and deserialize found nodes.
      *
-     * @param childNodes
-     * @param name
-     * @param namespace
-     * @param prefix
-     * @param prototype
-     *
-     * @return
+     * @param childNodes List of nodes to register. (required in both phases)
+     * @param name Name of the child nodes to search for. (Deserialization phase only)
+     * @param namespace Namespace of the child nodes to search for. (Deserialization phase only)
+     * @param prefix TODO: REMOVE
+     * @param childType Type of the children. Children must extend XmlNode and have no-args constructor. (Deserialization phase only)
      */
-    protected List<XmlNode> registerChildren(List<XmlNode> childNodes, String name, String namespace, String prefix, Type prototype) {
+    protected void registerChildren(List<XmlNode> childNodes, String name, String namespace, String prefix, Type childType) {
         if (childNodes != null) {
             if (isSerialization) {
                 for (XmlNode childNode : childNodes) {
@@ -134,8 +136,8 @@ public abstract class XmlNode {
 
             } else {
                 for (Dom.XmlNode childDomNode : getChildElements()) {
-                    if (childDomNode.getName() == name) {
-                        XmlNode childNode = (XmlNode) prototype.newInstance();
+                    if (childDomNode.getName() == name && childDomNode.getNamespace() == namespace) {
+                        XmlNode childNode = (XmlNode) childType.newInstance();
                         childNode.node = childDomNode;
                         childNode.registerXML_internal();
 
@@ -144,21 +146,47 @@ public abstract class XmlNode {
                 }
             }
         }
-        return childNodes;
     }
 
 
     /**
+     * Serialization Phase:
+     * Registers each child node in given named list.
      *
+     * Deserialization Phase:
+     * Searches through children of deserialized node for node with listName and listNamspace
+     * and iterates through the children of that node. Grandchildren with given name and namespace are deserialized to the list
+     * of children of current node.
      *
-     * @param listName
-     * @param listNamespace
-     * @param listPrefix
-     * @param childrenList
-     * @param childNodeName
-     * @param prototype
+     * <pre>
+     *     &lt; SampleResponse &gt;
+     *         &lt; matchesPrefix:matches &gt;
+     *             &lt; match &gt;
+     *             &lt;/ match &gt;
+     *         &lt;/ matchesPrefix:matches &gt;
+     *     &lt;/ SampleResponse &gt; <br/>
+
+     *     class Matches extends XmlNode{
+     *          private List<Match> matches = new List<Match>();
+     *
+     *          protected override void registerXML(){
+     *              ...
+     *              registerList('matches',responseNamespace,matchesPrefix,matches,'match',responseNamespace,Match.class);
+     *          }
+     *     } <br/>
+     *
+     *     class Match extends XmlNode{...}
+     * </pre>
+     *
+     * @param listName Name of the list element. (Both phase)
+     * @param listNamespace Namespace of the list element. (Both phase)
+     * @param listPrefix Prefix of the list element. (Serialization phase)
+     * @param childrenList List of children to serialize under current node, or list to populate from deserialized node.
+     * @param childNodeName Node name of the grand children to search for.(Deserialization phase only)
+     * @param childNamespace Namespace of the grand children to search for.(Deserialization phase only)
+     * @param prototype Type of the children. Children must extend XmlNode and have no-args constructor. (Deserialization phase only)
      */
-    protected virtual void registerList(String listName, String listNamespace, String listPrefix, List<XmlNode> childrenList, String childNodeName, Type prototype) {
+    protected virtual void registerList(String listName, String listNamespace, String listPrefix, List<XmlNode> childrenList, String childNodeName, String childNamespace, Type prototype) {
         if (isSerialization) {
             Dom.XmlNode listNode = this.node.addChildElement(listName, listNamespace, listPrefix);
 
@@ -171,7 +199,7 @@ public abstract class XmlNode {
             Dom.XmlNode listNode = this.node.getChildElement(listName, listNamespace);
 
             for (Dom.XmlNode childDomNode : listNode.getChildElements()) {
-                if (childDomNode.getName() == childNodeName) {
+                if (childDomNode.getName() == childNodeName && childDomNode.getNamespace() == childNamespace) {
                     XmlNode childNode = (XmlNode) prototype.newInstance();
                     childNode.node = childDomNode;
                     childNode.registerXML_internal();

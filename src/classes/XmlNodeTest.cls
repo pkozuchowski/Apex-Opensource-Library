@@ -226,7 +226,7 @@ public class XmlNodeTest {
 
         protected override void registerXML() {
             registerThisNode('SampleResponse', NAMESPACE_SAMPLE, '');
-            registerList('matches', NAMESPACE_SAMPLE, null, matches, 'match', Match.class);
+            registerList('matches', NAMESPACE_SAMPLE, '', matches, 'match', NAMESPACE_SAMPLE, Match.class);
         }
     }
 
@@ -240,7 +240,7 @@ public class XmlNodeTest {
         public Boolean isMarried;
 
         protected override void registerXML() {
-            registerThisNode('match', NAMESPACE_SAMPLE, null);
+            registerThisNode('match', NAMESPACE_SAMPLE, '');
             this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, '', firstName);
             this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
             this.score = (Decimal) registerTextNode(Decimal.class, 'Score', NAMESPACE_SAMPLE, '', score);

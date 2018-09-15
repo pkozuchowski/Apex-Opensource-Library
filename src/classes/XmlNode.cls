@@ -106,7 +106,7 @@ public abstract class XmlNode {
         }
     }
 
-    protected virtual List<Dom.XmlNode> getChildElements(){
+    protected virtual List<Dom.XmlNode> getChildElements() {
         return node.getChildElements();
     }
 
@@ -143,9 +143,9 @@ public abstract class XmlNode {
         return String.isEmpty(textValue) ? null : Boolean.valueOf(textValue);
     }
 
-    protected String getStringAttribute(String name, String namespace){
+    protected String getStringAttribute(String name, String namespace) {
         String value = node.getAttribute(name, namespace);
-        return value == null? '' : value;
+        return value == null ? '' : value;
     }
 
 

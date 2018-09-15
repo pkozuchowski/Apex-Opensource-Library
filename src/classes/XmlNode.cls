@@ -78,12 +78,7 @@ public abstract class XmlNode {
     protected void registerChild(XmlNode childNode) {
         if (childNode != null) {
             childNode.parent = this.node;
-
-            if (isSerialization) {
-                childNode.registerXML();
-            } else {
-                childNode.deserializeXMLImpl();
-            }
+            childNode.registerXML();
         }
     }
 
@@ -95,19 +90,6 @@ public abstract class XmlNode {
         }
     }
 
-
-    public void deserializeXML(Dom.XmlNode thisNode) {
-        this.node = thisNode;
-        registerXML();
-        this.node = null;
-        this.parent = null;
-    }
-
-    public void deserializeXMLImpl() {
-        registerXML();
-        this.node = null;
-        this.parent = null;
-    }
 
     protected virtual void registerList(String listName, String listNamespace, String listPrefix, List<XmlNode> childrenList, String childNodeName, Type prototype) {
         if (isSerialization) {
@@ -179,7 +161,6 @@ public abstract class XmlNode {
             registerXML();
         }
     }
-
 
     private Object getValue(Type t, String value) {
         if (value != null) {

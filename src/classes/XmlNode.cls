@@ -167,16 +167,16 @@ public abstract class XmlNode {
             return document;
         }
 
-        public virtual void load(Dom.Document document) {
-            isSerialization = false;
-            this.node = document.getRootElement();
-            registerXML();
-        }
-
         public virtual void load(String xmlStr) {
             Dom.Document document = new Dom.Document();
             document.load(xmlStr);
             load(document);
+        }
+
+        public virtual void load(Dom.Document document) {
+            isSerialization = false;
+            this.node = document.getRootElement();
+            registerXML();
         }
     }
 

@@ -318,6 +318,12 @@ public class XmlNodeTest {
                         + '    </soap:Body>'
                         + '</soap:Envelope>';
 
+        Envelope envelope = new Envelope(
+                new Header(),
+                new SampleResponse()
+        );
+        envelope.load(responseXML);
+
         Map<String, Object> expected = new Map<String, Object>{
                 'body' => new Map<String, Object>{
                         'content' => new Map<String, Object>{
@@ -349,15 +355,7 @@ public class XmlNodeTest {
                         'username' => 'api.user'
                 }
         };
-
-        Envelope envelope = new Envelope(
-                new Header(),
-                new SampleResponse()
-        );
-        envelope.load(responseXML);
-
         Map<String, Object> actual = (Map<String, Object>) JSON.deserializeUntyped(JSON.serialize(envelope));
-
         System.assertEquals(expected, actual);
     }
 }

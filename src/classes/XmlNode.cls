@@ -73,6 +73,11 @@ public abstract class XmlNode {
 
 
     protected abstract void registerXML();
+    private void registerXML_internal() {
+        registerXML();
+        this.node = null;
+        this.parent = null;
+    }
 
 
     /**
@@ -81,7 +86,7 @@ public abstract class XmlNode {
     protected void registerChild(XmlNode childNode) {
         if (childNode != null) {
             childNode.parent = this.node;
-            childNode.registerXML();
+            childNode.registerXML_internal();
         }
     }
 
@@ -97,7 +102,7 @@ public abstract class XmlNode {
                     if (childDomNode.getName() == name) {
                         XmlNode childNode = (XmlNode) prototype.newInstance();
                         childNode.node = childDomNode;
-                        childNode.registerXML();
+                        childNode.registerXML_internal();
 
                         childNodes.add(childNode);
                     }
@@ -114,7 +119,7 @@ public abstract class XmlNode {
 
             for (XmlNode childNode : childrenList) {
                 childNode.parent = listNode;
-                childNode.registerXML();
+                childNode.registerXML_internal();
             }
 
         } else {
@@ -124,7 +129,7 @@ public abstract class XmlNode {
                 if (childDomNode.getName() == childNodeName) {
                     XmlNode childNode = (XmlNode) prototype.newInstance();
                     childNode.node = childDomNode;
-                    childNode.registerXML();
+                    childNode.registerXML_internal();
 
                     childrenList.add(childNode);
                 }
@@ -162,7 +167,7 @@ public abstract class XmlNode {
 
         public virtual Dom.Document serialize() {
             isSerialization = true;
-            registerXML();
+            registerXML_internal();
             return document;
         }
 
@@ -175,7 +180,7 @@ public abstract class XmlNode {
         public virtual void load(Dom.Document document) {
             isSerialization = false;
             this.node = document.getRootElement();
-            registerXML();
+            registerXML_internal();
         }
     }
 

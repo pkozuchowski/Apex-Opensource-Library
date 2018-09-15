@@ -11,7 +11,8 @@ public class XmlNodeTest {
         public Body body = new Body();
         public Header header = new Header();
 
-        public Envelope(){}
+        public Envelope() {
+        }
         public Envelope(Header header, BodyContent content) {
             this.header = header;
             this.body = new Body(content);
@@ -28,6 +29,7 @@ public class XmlNodeTest {
         }
 
         protected override void deserializeXML() {
+            deserializeChild(header);
             deserializeChild(body);
         }
     }
@@ -36,7 +38,8 @@ public class XmlNodeTest {
         public String username;
         public String password;
 
-        public Header(){}
+        public Header() {
+        }
         public Header(String username, String password) {
             this.username = username;
             this.password = password;
@@ -49,6 +52,8 @@ public class XmlNodeTest {
         }
 
         protected override void deserializeXML() {
+            this.username = getStringValue('username', null);
+            this.password = getStringValue('password', null);
         }
 
         protected override Dom.XmlNode locateInParent(Dom.XmlNode parentNode) {
@@ -59,7 +64,8 @@ public class XmlNodeTest {
     private class Body extends XmlNode {
         public BodyContent content;
 
-        public Body(){}
+        public Body() {
+        }
         public Body(BodyContent content) {
             this.content = content;
         }
@@ -113,7 +119,8 @@ public class XmlNodeTest {
         public ExclusionMode exclusionType = ExclusionMode.DuplicateEmail;
         public Criteria criteria = new Criteria();
 
-        public SampleRequest(){}
+        public SampleRequest() {
+        }
         public SampleRequest(ExclusionMode exclusionType, Criteria criteria) {
             this.exclusionType = exclusionType;
             this.criteria = criteria;
@@ -139,7 +146,8 @@ public class XmlNodeTest {
         public Datetime dob;
         public List<Address> addresses = new List<Address>();
 
-        public Criteria(){}
+        public Criteria() {
+        }
         public Criteria(String firstName, String lastName, String email, Datetime dob, List<Address> addresses) {
             this.firstName = firstName;
             this.lastName = lastName;
@@ -325,33 +333,49 @@ public class XmlNodeTest {
                         + '        </SampleResponse>'
                         + '    </soap:Body>'
                         + '</soap:Envelope>';
-        Dom.Document document = new Dom.Document();
-        document.load(responseXML);
 
-        SampleResponse response = new SampleResponse();
+        Map<String, Object> expected = new Map<String, Object>{
+                'body' => new Map<String, Object>{
+                        'content' => new Map<String, Object>{
+                                'matches' => new Map<String, Object>{
+                                        'matches' => new List<Object>{
+                                                new Map<String, Object>{
+                                                        'weight' => 69.5,
+                                                        'score' => 1,
+                                                        'lastName' => 'Doe',
+                                                        'isMarried' => true,
+                                                        'height' => 182,
+                                                        'firstName' => 'John',
+                                                        'distance' => 4000000
+                                                },
+                                                new Map<String, Object>{
+                                                        'weight' => 80.1,
+                                                        'score' => 0.5,
+                                                        'lastName' => 'Liebert',
+                                                        'isMarried' => false,
+                                                        'height' => 190,
+                                                        'firstName' => 'Johan',
+                                                        'distance' => 5000000
+                                                }
+                                        }
+                                }
+                        }
+                },
 
-        Envelope envelope = new Envelope();
-        envelope.body.content = response;
+                'header' => new Map<String, Object>{
+                        'password' => 'secret',
+                        'username' => 'api.user'
+                }
+        };
 
-        envelope.deserializeXML(document);
+        Envelope envelope = new Envelope(
+                new Header(),
+                new SampleResponse()
+        );
+        envelope.load(responseXML);
 
-        List<Match> matches = response.matches.matches;
-        System.assertEquals(2, matches.size());
+        Map<String, Object> actual = (Map<String, Object>) JSON.deserializeUntyped(JSON.serialize(envelope));
 
-        System.assertEquals('John', matches.get(0).firstName);
-        System.assertEquals('Doe', matches.get(0).lastName);
-        System.assertEquals(1.0, matches.get(0).score);
-        System.assertEquals(182, matches.get(0).height);
-        System.assertEquals(69.5, matches.get(0).weight);
-        System.assertEquals(4000000, matches.get(0).distance);
-        System.assertEquals(true, matches.get(0).isMarried);
-
-        System.assertEquals('Johan', matches.get(1).firstName);
-        System.assertEquals('Liebert', matches.get(1).lastName);
-        System.assertEquals(0.5, matches.get(1).score);
-        System.assertEquals(190, matches.get(1).height);
-        System.assertEquals(80.1, matches.get(1).weight);
-        System.assertEquals(5000000, matches.get(1).distance);
-        System.assertEquals(false, matches.get(1).isMarried);
+        System.assertEquals(expected, actual);
     }
 }

@@ -86,7 +86,7 @@ public abstract class XmlNode {
         }
     }
 
-    protected void registerChildrenNodes(List<XmlNode> childNodes) {
+    protected void registerChildren(List<XmlNode> childNodes) {
         if (childNodes != null) {
             for (XmlNode childNode : childNodes) {
                 registerChild(childNode);
@@ -108,15 +108,25 @@ public abstract class XmlNode {
         this.parent = null;
     }
 
-    protected virtual void deserializeList(String name, String namespace, List<XmlNode> childrenList, String childNodeName, Type prototype) {
-        Dom.XmlNode listNode = this.node.getChildElement(name, namespace);
+    protected virtual void registerList(String listName, String listNamespace, String listPrefix, List<XmlNode> childrenList, String childNodeName, Type prototype) {
+        if (isSerialization) {
+            Dom.XmlNode listNode = this.node.addChildElement(listName, listNamespace, listPrefix);
 
-        for (Dom.XmlNode childDomNode : listNode.getChildElements()) {
-            if (childDomNode.getName() == childNodeName) {
-                XmlNode childNode = (XmlNode) prototype.newInstance();
-                childNode.deserializeXML(childDomNode);
+            for (XmlNode childNode : childrenList) {
+                childNode.parent = listNode;
+                childNode.serializeToXML();
+            }
 
-                childrenList.add(childNode);
+        } else {
+            Dom.XmlNode listNode = this.node.getChildElement(listName, listNamespace);
+
+            for (Dom.XmlNode childDomNode : listNode.getChildElements()) {
+                if (childDomNode.getName() == childNodeName) {
+                    XmlNode childNode = (XmlNode) prototype.newInstance();
+                    childNode.deserializeXML(childDomNode);
+
+                    childrenList.add(childNode);
+                }
             }
         }
     }

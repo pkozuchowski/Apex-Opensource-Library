@@ -155,7 +155,7 @@ public class XmlNodeTest {
             registerTextNode('Email', email);
             registerTextNode('Username', username);
             registerTextNode('DateOfBirth', dob.format('dd/MM/YYYY'));
-            registerChildrenNodes(addresses);
+            registerChildren(addresses);
         }
     }
     private class Address extends XmlNodeTest.RequestSchema {
@@ -241,7 +241,7 @@ public class XmlNodeTest {
 
         protected override void deserializeXML() {
             registerThisNode('SampleResponse', NAMESPACE_SAMPLE, null);
-            deserializeList('matches', NAMESPACE_SAMPLE, matches, 'match', Match.class);
+            registerList('matches', NAMESPACE_SAMPLE, '', matches, 'match', Match.class);
         }
     }
 

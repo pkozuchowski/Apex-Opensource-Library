@@ -82,6 +82,13 @@ public abstract class XmlNode {
             if (t == Datetime.class) return Datetime.valueOf(value);
             if (t == Boolean.class) return Boolean.valueOf(value);
 
+            /*Attempt to cast string value to Enum. This is only possible through JSON deserialization to List<Enums>*/
+            try {
+                List<Object> enums = (List<Object>) JSON.deserialize('["' + value + '"]', Type.forName('List<' + t + '>'));
+                return enums[0];
+            } catch (Exception ex) {
+            }
+
             return value;
         }
         return null;

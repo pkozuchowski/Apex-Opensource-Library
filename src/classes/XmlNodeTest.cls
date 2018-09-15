@@ -87,8 +87,7 @@ public class XmlNodeTest {
 
         protected override void registerXML() {
             registerThisNode('SampleRequest', NAMESPACE_SAMPLE, '');
-            String exclType = (String) registerTextNode(String.class, 'exclusion', NAMESPACE_SAMPLE, '', exclusionType.name());
-            this.exclusionType = ExclusionModeFactory.get(exclType);
+            this.exclusionType = (ExclusionMode) registerTextNode(ExclusionMode.class, 'exclusion', NAMESPACE_SAMPLE, '', exclusionType);
             registerChild(criteria);
         }
     }
@@ -98,12 +97,6 @@ public class XmlNodeTest {
         DuplicateName,
         All
     }
-    private static Map<String, ExclusionMode> ExclusionModeFactory = new Map<String, XmlNodeTest.ExclusionMode>{
-            'None' => ExclusionMode.None,
-            'DuplicateEmail' => ExclusionMode.DuplicateEmail,
-            'DuplicateName' => ExclusionMode.DuplicateName,
-            'All' => ExclusionMode.All
-    };
 
     private class Criteria extends XmlNode {
         public String firstName;

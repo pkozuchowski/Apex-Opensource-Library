@@ -235,7 +235,7 @@ public class XmlNodeTest {
             * new XmlNode node is constructed from given prototype (3rd argument)
             * and added to the list (1st argument)
             * */
-            deserializeChildren(matches, 'match', new Match());
+            deserializeChildren(matches, 'match', Match.class);
         }
     }
 

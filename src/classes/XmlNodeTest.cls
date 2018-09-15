@@ -18,18 +18,12 @@ public class XmlNodeTest {
             this.body = new Body(content);
         }
 
-        protected override void serializeToXML() {
+        protected override void registerXML() {
             registerThisNode('Envelope', NAMESPACE_SOAP, 'soap');
             setNamespace('xsi', NAMESPACE_XSI);
             setNamespace('xsd', NAMESPACE_XSD);
             setNamespace('soap', NAMESPACE_SOAP);
 
-            registerChild(header);
-            registerChild(body);
-        }
-
-        protected override void deserializeXML() {
-            registerThisNode('Envelope', NAMESPACE_SOAP, 'soap');
             registerChild(header);
             registerChild(body);
         }
@@ -46,13 +40,7 @@ public class XmlNodeTest {
             this.password = password;
         }
 
-        protected override void serializeToXML() {
-            registerThisNode('Header', NAMESPACE_SOAP, 'soap');
-            this.username = (String) registerTextNode(String.class, 'username', null, null, username);
-            this.password = (String) registerTextNode(String.class, 'password', null, null, password);
-        }
-
-        protected override void deserializeXML() {
+        protected override void registerXML() {
             registerThisNode('Header', NAMESPACE_SOAP, 'soap');
             this.username = (String) registerTextNode(String.class, 'username', null, null, username);
             this.password = (String) registerTextNode(String.class, 'password', null, null, password);
@@ -68,16 +56,10 @@ public class XmlNodeTest {
             this.content = content;
         }
 
-        protected override void serializeToXML() {
+        protected override void registerXML() {
             registerThisNode('Body', NAMESPACE_SOAP, 'soap');
             registerChild(content);
         }
-
-        protected override void deserializeXML() {
-            registerThisNode('Body', NAMESPACE_SOAP, 'soap');
-            registerChild(content);
-        }
-
     }
 
 
@@ -89,15 +71,9 @@ public class XmlNodeTest {
     }
 
     private abstract class RequestSchema extends BodyContent {
-        protected override void deserializeXML() {
-        }
+
     }
     private abstract class ResponseSchema extends BodyContent {
-        /**
-        * Serialization methods are obsolete in response.
-        * */
-        protected override void serializeToXML() {
-        }
     }
 
 
@@ -116,7 +92,7 @@ public class XmlNodeTest {
             this.criteria = criteria;
         }
 
-        protected override void serializeToXML() {
+        protected override void registerXML() {
             registerThisNode('SampleRequest', NAMESPACE_SAMPLE, '');
             registerTextNode('exclusion', exclusionType.name());
             registerChild(criteria);
@@ -147,7 +123,7 @@ public class XmlNodeTest {
             this.addresses = addresses;
         }
 
-        protected override void serializeToXML() {
+        protected override void registerXML() {
             registerThisNode('criteria');
             registerTextNode('FirstName', firstName);
             registerTextNode('LastName', lastName);
@@ -170,7 +146,7 @@ public class XmlNodeTest {
             this.addressLine2 = addressLine2;
         }
 
-        protected override void serializeToXML() {
+        protected override void registerXML() {
             registerThisNode('Address');
             this.country = (String) registerTextNode(String.class, 'Country', null, null, country);
             this.addressLine1 = (String) registerTextNode(String.class, 'AddressLine1', null, null, addressLine1);
@@ -238,7 +214,7 @@ public class XmlNodeTest {
     private class SampleResponse extends XmlNodeTest.ResponseSchema {
         public List<Match> matches = new List<Match>();
 
-        protected override void deserializeXML() {
+        protected override void registerXML() {
             registerThisNode('SampleResponse', NAMESPACE_SAMPLE, null);
             registerList('matches', NAMESPACE_SAMPLE, '', matches, 'match', Match.class);
         }
@@ -253,7 +229,7 @@ public class XmlNodeTest {
         public Long distance;
         public Boolean isMarried;
 
-        protected override void deserializeXML() {
+        protected override void registerXML() {
             this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, '', firstName);
             this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
             this.score = (Decimal) registerTextNode(Decimal.class, 'Score', NAMESPACE_SAMPLE, '', score);

@@ -80,8 +80,7 @@ public abstract class XmlNode {
     }
 
 
-    protected abstract void serializeToXML();
-    protected abstract void deserializeXML();
+    protected abstract void registerXML();
 
 
     /**
@@ -92,7 +91,7 @@ public abstract class XmlNode {
             childNode.parent = this.node;
 
             if (isSerialization) {
-                childNode.serializeToXML();
+                childNode.registerXML();
             } else {
                 childNode.deserializeXMLImpl();
             }
@@ -110,13 +109,13 @@ public abstract class XmlNode {
 
     public void deserializeXML(Dom.XmlNode thisNode) {
         this.node = thisNode;
-        deserializeXML();
+        registerXML();
         this.node = null;
         this.parent = null;
     }
 
     public void deserializeXMLImpl() {
-        deserializeXML();
+        registerXML();
         this.node = null;
         this.parent = null;
     }
@@ -127,7 +126,7 @@ public abstract class XmlNode {
 
             for (XmlNode childNode : childrenList) {
                 childNode.parent = listNode;
-                childNode.serializeToXML();
+                childNode.registerXML();
             }
 
         } else {
@@ -204,7 +203,7 @@ public abstract class XmlNode {
 
         public virtual Dom.Document serialize() {
             isSerialization = true;
-            serializeToXML();
+            registerXML();
             return document;
         }
 

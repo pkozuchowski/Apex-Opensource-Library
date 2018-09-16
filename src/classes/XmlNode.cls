@@ -311,10 +311,10 @@ public abstract class XmlNode {
         }
 
         public String toXmlString() {
-            return serialize().toXmlString();
+            return toDomDocument().toXmlString();
         }
 
-        public Dom.Document serialize() {
+        public Dom.Document toDomDocument() {
             this.mode = Context.SERIALIZATION;
             registerXML_internal(mode);
             return document;

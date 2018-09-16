@@ -25,68 +25,6 @@ public abstract class XmlNode {
 
     /**
      * During serialization:
-     * Creates text node in current element with given text value.
-     *
-     * During deserialization:
-     * Returns value of text node specified by given name and namespace.
-     *
-     * @param valueType Text node value will be automatically parsed to this type.
-     * Possible values: String,Double,Decimal,Integer,Long,Date,Datetime,Boolean, Any enum type (for any other, returns String)
-     * Required in deserialization.
-     * @param name Text node name.
-     * @param namespace Text node namespace.
-     * @param prefix Text node prefix (only in serialization phase).
-     * @param value This value will be parsed to String, escaped and placed in created text node. (Only in serialization phase).
-     *
-     * @return
-     */
-    protected Object registerTextNode(Type valueType, String name, String namespace, String prefix, Object value) {
-        if (isSerialization) {
-            if (value != null) {
-                Dom.XmlNode txtNode = this.node.addChildElement(name, namespace, prefix);
-                String textValue = String.valueOf(value).escapeXml();
-                txtNode.addTextNode(textValue);
-            }
-            return value;
-
-        } else {
-            Dom.XmlNode textNode = this.node.getChildElement(name, namespace);
-            String nodeValue = textNode == null ? '' : textNode.getText();
-
-            return getValue(valueType, nodeValue);
-        }
-    }
-
-    /**
-    * @return Value of the text node child specified by name and namespace.
-    * Value is parsed to given primitive or enum type, or returned as String if type is not supported.
-    * */
-    private Object getValue(Type valueType, String value) {
-        if (String.isNotBlank(value)) {
-            if (valueType == String.class) return value;
-            if (valueType == Double.class) return Double.valueOf(value);
-            if (valueType == Decimal.class) return Decimal.valueOf(value);
-            if (valueType == Integer.class) return Integer.valueOf(value);
-            if (valueType == Long.class) return Long.valueOf(value);
-            if (valueType == Date.class) return Date.valueOf(value);
-            if (valueType == Datetime.class) return Datetime.valueOf(value);
-            if (valueType == Boolean.class) return Boolean.valueOf(value);
-
-            /*Attempt to cast string value to Enum. This is only possible through JSON deserialization to List<Enums>*/
-            try {
-                List<Object> enums = (List<Object>) JSON.deserialize('["' + value + '"]', Type.forName('List<' + valueType + '>'));
-                return enums[0];
-            } catch (Exception ex) {
-            }
-
-            return value;
-        }
-        return null;
-    }
-
-
-    /**
-     * During serialization:
      * Creates child xml node with given nodeName, namespace and prefix.
      *
      * During deserialization:
@@ -232,6 +170,40 @@ public abstract class XmlNode {
 
 
     /**
+     * During serialization:
+     * Creates text node in current element with given text value.
+     *
+     * During deserialization:
+     * Returns value of text node specified by given name and namespace.
+     *
+     * @param valueType Text node value will be automatically parsed to this type.
+     * Possible values: String,Double,Decimal,Integer,Long,Date,Datetime,Boolean, Any enum type (for any other, returns String)
+     * Required in deserialization.
+     * @param name Text node name.
+     * @param namespace Text node namespace.
+     * @param prefix Text node prefix (only in serialization phase).
+     * @param value This value will be parsed to String, escaped and placed in created text node. (Only in serialization phase).
+     *
+     * @return
+     */
+    protected Object registerTextNode(Type valueType, String name, String namespace, String prefix, Object value) {
+        if (isSerialization) {
+            if (value != null) {
+                Dom.XmlNode txtNode = this.node.addChildElement(name, namespace, prefix);
+                String textValue = String.valueOf(value).escapeXml();
+                txtNode.addTextNode(textValue);
+            }
+            return value;
+
+        } else {
+            Dom.XmlNode textNode = this.node.getChildElement(name, namespace);
+            String nodeValue = textNode == null ? '' : textNode.getText();
+
+            return parseStringValue(valueType, nodeValue);
+        }
+    }
+
+    /**
     * Invokes registerAttribute with null key namespace and value namespace.
     * @see XmlNode.registerAttribute
      */
@@ -260,8 +232,35 @@ public abstract class XmlNode {
             return value;
         } else {
             String atributeValue = this.node.getAttribute(key, keyNamespace);
-            return getValue(valueType, atributeValue);
+            return parseStringValue(valueType, atributeValue);
         }
+    }
+
+    /**
+    * @return Value of the text node child specified by name and namespace.
+    * Value is parsed to given primitive or enum type, or returned as String if type is not supported.
+    * */
+    private Object parseStringValue(Type valueType, String value) {
+        if (String.isNotBlank(value)) {
+            if (valueType == String.class) return value;
+            if (valueType == Double.class) return Double.valueOf(value);
+            if (valueType == Decimal.class) return Decimal.valueOf(value);
+            if (valueType == Integer.class) return Integer.valueOf(value);
+            if (valueType == Long.class) return Long.valueOf(value);
+            if (valueType == Date.class) return Date.valueOf(value);
+            if (valueType == Datetime.class) return Datetime.valueOf(value);
+            if (valueType == Boolean.class) return Boolean.valueOf(value);
+
+            /*Attempt to cast string value to Enum. This is only possible through JSON deserialization to List<Enums>*/
+            try {
+                List<Object> enums = (List<Object>) JSON.deserialize('["' + value + '"]', Type.forName('List<' + valueType + '>'));
+                return enums[0];
+            } catch (Exception ex) {
+            }
+
+            return value;
+        }
+        return null;
     }
 
 

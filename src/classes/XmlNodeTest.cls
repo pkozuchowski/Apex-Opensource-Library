@@ -172,8 +172,6 @@ public class XmlNodeTest {
                         )
                 )
         );
-        Dom.Document document = envelope.serialize();
-
 
         String expectedXML = ('<?xml version="1.0" encoding="UTF-8"?>'
                 + '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'
@@ -206,7 +204,7 @@ public class XmlNodeTest {
                 + '    </soap:Body>'
                 + '</soap:Envelope>').replaceAll('\\>\\s+<', '><');
 
-        String actual = document.toXmlString();
+        String actual = envelope.toXmlString();
         System.assertEquals(expectedXML, actual);
 
 
@@ -216,7 +214,7 @@ public class XmlNodeTest {
         );
 
         envelope2.load(actual);
-        String actual2 = envelope2.serialize().toXmlString();
+        String actual2 = envelope2.toXmlString();
         System.assertEquals(actual, actual2);
     }
 
@@ -331,6 +329,6 @@ public class XmlNodeTest {
         };
         Map<String, Object> actual = (Map<String, Object>) JSON.deserializeUntyped(JSON.serialize(envelope));
         System.assertEquals(expected, actual);
-        System.assertEquals(responseXML, envelope.serialize().toXmlString());
+        System.assertEquals(responseXML, envelope.toXmlString());
     }
 }

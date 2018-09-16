@@ -234,18 +234,37 @@ public abstract class XmlNode {
         this.node.setNamespace(prefix, namespace);
     }
 
-    /**
-    * Sets attribute for current node
-    * */
-    protected void setAttribute(String key, String value) {
-        this.node.setAttribute(key, value);
-    }
 
     /**
-    * Sets attribute for current node
-    * */
-    protected void setAttribute(String key, String value, String keyNamespace, String valueNamespace) {
-        this.node.setAttributeNs(key, value, keyNamespace, valueNamespace);
+    * Invokes registerAttribute with null key namespace and value namespace.
+    * @see registerAttribute
+     */
+    protected Object registerAttribute(String key, Object value) {
+        return registerAttribute(key, value, null, null);
+    }
+
+
+    /**
+     * Serialization Phase:
+     * Sets attribute on XML Node.
+     *
+     * Deserialization Phase:
+     * Returns attribute from deserialized node.
+     *
+     * @param key Attribute key
+     * @param value Attribute value
+     * @param keyNamespace Namespace of the attribute's key
+     * @param valueNamespace Namespace of the attribute's value
+     *
+     * @return Serialization: returns passed value. Deserialization: returns attribute's value.
+     */
+    protected Object registerAttribute(String key, Object value, String keyNamespace, String valueNamespace) {
+        if (isSerialization) {
+            this.node.setAttributeNs(key, String.valueOf(value), keyNamespace, valueNamespace);
+            return value;
+        } else {
+            return this.node.getAttribute(key, keyNamespace);
+        }
     }
 
 

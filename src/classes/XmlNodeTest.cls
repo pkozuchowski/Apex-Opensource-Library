@@ -107,6 +107,7 @@ public class XmlNodeTest {
         public String username;
         public Datetime dob = Datetime.now();
         public List<Address> addresses = new List<Address>();
+        public String criteriaType = 'Personal Data';
 
         public Criteria() {
         }
@@ -126,6 +127,8 @@ public class XmlNodeTest {
             this.username = (String) registerTextNode(String.class, 'Username', NAMESPACE_SAMPLE, '', username);
             String dobStr = (String) registerTextNode(String.class, 'DateOfBirth', NAMESPACE_SAMPLE, '', dob.format('dd/MM/YYYY'));
             this.dob = Date.parse(dobStr);
+
+            this.criteriaType = (String) registerAttribute('type', criteriaType, null, null);
 
             registerChildren(addresses, 'Address', NAMESPACE_SAMPLE, '', Address.class);
         }
@@ -182,7 +185,7 @@ public class XmlNodeTest {
                 + '    <soap:Body>'
                 + '        <SampleRequest xmlns="http://sample.test/webservices/">'
                 + '            <exclusion>DuplicateEmail</exclusion>'
-                + '            <criteria>'
+                + '            <criteria type="Personal Data">'
                 + '                <FirstName>John</FirstName>'
                 + '                <LastName>Doe</LastName>'
                 + '                <Email>John.Doe@sample.com</Email>'

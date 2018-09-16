@@ -33,7 +33,11 @@
  * - Sorting records by given field or comparator.
  */
 public class Collections {
-
+    public final static Boolean
+            EQUALS = true,
+            NOT_EQUALS = false,
+            VALUE_IN = true,
+            VALUE_NOT_IN = false;
     /**
      * @return true when collection is not null or empty, false otherwise.
      */
@@ -305,25 +309,57 @@ public class Collections {
     }
 
 
+    /*
+    * Filter methods
+    * */
+
     /**
-     *
-     * @return List of SObjects which field is the same as given value.
+     * Filters given records and returns only these with field of given value.
+     * @param records Records to be filtered.
+     * @param field Field to filter by.
+     * @param equals Should field equal given value or not.
+     * @param value Expected value of the field.
+     * @return List of filtered records.
      */
-    public static List<SObject> filterByFieldValue(List<SObject> records, SObjectField field, Object value) {
-        return filterByFieldValue(records, '' + field, value);
-    }
-    public static List<SObject> filterByFieldValue(List<SObject> records, String field, Object value) {
-        return (List<SObject>) filter(records, new FieldValueFilter(field, value));
+    public static List<SObject> filterByFieldValue(List<SObject> records, SObjectField field, Boolean equals, Object value) {
+        return filterByFieldValue(records, '' + field, equals, value);
     }
 
     /**
-     * @return List of SObjects where given field contains any of the given values.
+     * Filters given records and returns only these with field of given value.
+     * @param records Records to be filtered.
+     * @param field Field to filter by.
+     * @param equals Should field equal given value or not.
+     * @param value Expected value of the field.
+     * @return List of filtered records.
      */
-    public static List<SObject> filterByFieldValues(List<SObject> records, SObjectField field, Set<Object> values) {
-        return filterByFieldValues(records, '' + field, values);
+    public static List<SObject> filterByFieldValue(List<SObject> records, String field, Boolean equals, Object value) {
+        return (List<SObject>) filter(records, new FieldValueFilter(field, equals, value));
     }
-    public static List<SObject> filterByFieldValues(List<SObject> records, String field, Set<Object> values) {
-        return (List<SObject>) filter(records, new FieldValuesFilter(field, values));
+
+
+    /**
+     * Filters given records and returns only these where field is one of given values.
+     * @param records Records to be filtered.
+     * @param field Field to filter by.
+     * @param inSet Is value in set.
+     * @param values Set of expected values.
+     * @return  List of filtered records.
+     */
+    public static List<SObject> filterByFieldValues(List<SObject> records, SObjectField field, Boolean inSet, Set<Object> values) {
+        return filterByFieldValueIn(records, '' + field, inSet, values);
+    }
+
+    /**
+     * Filters given records and returns only these where field is one of given values.
+     * @param records Records to be filtered.
+     * @param field Field to filter by.
+     * @param inSet Is value in set.
+     * @param values Set of expected values.
+     * @return  List of filtered records.
+     */
+    public static List<SObject> filterByFieldValueIn(List<SObject> records, String field, Boolean inSet, Set<Object> values) {
+        return (List<SObject>) filter(records, new FieldValuesFilter(field, inSet, values));
     }
 
     /**
@@ -348,7 +384,7 @@ public class Collections {
     }
 
     /*
-    * TODO
+    * This interface determines whether record should be included in the result collection or not.
     * */
     public interface Filter {
         Boolean accepts(Object record);
@@ -357,28 +393,32 @@ public class Collections {
     private class FieldValueFilter implements Filter {
         private Object value;
         private String field;
+        private Boolean equals;
 
-        public FieldValueFilter(String field, Object value) {
+        public FieldValueFilter(String field, Boolean equals, Object value) {
             this.value = value;
             this.field = field;
+            this.equals = equals;
         }
 
         public Boolean accepts(Object record) {
-            return ((SObject) record).get(field) == this.value;
+            return equals == ((SObject) record).get(field) == this.value;
         }
     }
 
     private class FieldValuesFilter implements Filter {
         private Set<Object> values;
         private String field;
+        private Boolean valueIn;
 
-        public FieldValuesFilter(String field, Set<Object> values) {
+        public FieldValuesFilter(String field, Boolean valueIn, Set<Object> values) {
             this.values = values;
             this.field = field;
+            this.valueIn = valueIn;
         }
 
         public Boolean accepts(Object record) {
-            return values.contains(((SObject) record).get(field));
+            return valueIn == values.contains(((SObject) record).get(field));
         }
     }
 

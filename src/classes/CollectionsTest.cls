@@ -751,21 +751,21 @@ private class CollectionsTest {
         List<Opportunity> expected = new List<Opportunity>{
                 opportunities[0], opportunities[2], opportunities[4], opportunities[6], opportunities[8]
         };
-        List<Opportunity> actual = Collections.filterByFieldValue(opportunities, Opportunity.HasOpenActivity, true);
+        List<Opportunity> actual = Collections.filterByFieldValue(opportunities, Opportunity.HasOpenActivity, Collections.EQUALS, true);
         System.assertEquals(expected, actual);
 
 
         expected = new List<Opportunity>{
                 opportunities[0], opportunities[4], opportunities[8]
         };
-        actual = Collections.filterByFieldValue(opportunities, Opportunity.FiscalQuarter, 0);
+        actual = Collections.filterByFieldValue(opportunities, Opportunity.FiscalQuarter, Collections.EQUALS, 0);
         System.assertEquals(expected, actual);
 
 
         expected = new List<Opportunity>{
                 opportunities[0], opportunities[1], opportunities[2], opportunities[3]
         };
-        actual = Collections.filterByFieldValue(opportunities, Opportunity.NextStep, 'Analysis');
+        actual = Collections.filterByFieldValue(opportunities, Opportunity.NextStep, Collections.EQUALS, 'Analysis');
         System.assertEquals(expected, actual);
     }
 
@@ -787,7 +787,7 @@ private class CollectionsTest {
             }
         }
 
-        List<Opportunity> actual = Collections.filterByFieldValues(opportunities, Opportunity.StageName, new Set<Object>{
+        List<Opportunity> actual = Collections.filterByFieldValues(opportunities, Opportunity.StageName, Collections.VALUE_IN, new Set<Object>{
                 'Analysis', 'Deal'
         });
 

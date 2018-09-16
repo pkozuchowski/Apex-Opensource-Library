@@ -101,17 +101,18 @@ public class XmlNodeTest {
     }
 
     private class Criteria extends XmlNode {
+        public String criteriaType;
         public String firstName;
         public String lastName;
         public String email;
         public String username;
         public Datetime dob = Datetime.now();
         public List<Address> addresses = new List<Address>();
-        public String criteriaType = 'Personal Data';
 
         public Criteria() {
         }
-        public Criteria(String firstName, String lastName, String email, Datetime dob, List<Address> addresses) {
+        public Criteria(String criteriaType, String firstName, String lastName, String email, Datetime dob, List<Address> addresses) {
+            this.criteriaType = criteriaType;
             this.firstName = firstName;
             this.lastName = lastName;
             this.email = email;
@@ -121,6 +122,7 @@ public class XmlNodeTest {
         }
 
         protected override void registerXML() {
+            this.criteriaType = (String) registerAttribute(String.class, 'type', criteriaType);
             this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, '', firstName);
             this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
             this.email = (String) registerTextNode(String.class, 'Email', NAMESPACE_SAMPLE, '', email);
@@ -128,7 +130,6 @@ public class XmlNodeTest {
             String dobStr = (String) registerTextNode(String.class, 'DateOfBirth', NAMESPACE_SAMPLE, '', dob.format('dd/MM/YYYY'));
             this.dob = Date.parse(dobStr);
 
-            this.criteriaType = (String) registerAttribute('type', criteriaType, null, null);
 
             registerChildren(addresses, 'Address', NAMESPACE_SAMPLE, '', Address.class);
         }
@@ -164,7 +165,7 @@ public class XmlNodeTest {
                 new Header('api.user', 'secret'),
                 new SampleRequest(ExclusionMode.DuplicateEmail,
                         new Criteria(
-                                'John', 'Doe', 'John.Doe@sample.com', Datetime.newInstance(1980, 01, 01),
+                                'Personal Data', 'John', 'Doe', 'John.Doe@sample.com', Datetime.newInstance(1980, 01, 01),
                                 new List<Address>{
                                         new Address('UK', 'London', 'Test Street 2'),
                                         new Address('UK', 'Bridgetown', 'Other Street 2')

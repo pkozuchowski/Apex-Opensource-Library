@@ -52,7 +52,10 @@ public abstract class XmlNode {
             return value;
 
         } else {
-            return getValue(valueType, name, namespace);
+            Dom.XmlNode textNode = this.node.getChildElement(name, namespace);
+            String nodeValue = textNode == null ? '' : textNode.getText();
+
+            return getValue(valueType, nodeValue);
         }
     }
 
@@ -60,23 +63,20 @@ public abstract class XmlNode {
     * @return Value of the text node child specified by name and namespace.
     * Value is parsed to given primitive or enum type, or returned as String if type is not supported.
     * */
-    private Object getValue(Type t, String name, String namespace) {
-        Dom.XmlNode textNode = this.node.getChildElement(name, namespace);
-        String value = textNode == null ? '' : textNode.getText();
-
+    private Object getValue(Type valueType, String value) {
         if (String.isNotBlank(value)) {
-            if (t == String.class) return String.valueOf(value);
-            if (t == Double.class) return Double.valueOf(value);
-            if (t == Decimal.class) return Decimal.valueOf(value);
-            if (t == Integer.class) return Integer.valueOf(value);
-            if (t == Long.class) return Long.valueOf(value);
-            if (t == Date.class) return Date.valueOf(value);
-            if (t == Datetime.class) return Datetime.valueOf(value);
-            if (t == Boolean.class) return Boolean.valueOf(value);
+            if (valueType == String.class) return value;
+            if (valueType == Double.class) return Double.valueOf(value);
+            if (valueType == Decimal.class) return Decimal.valueOf(value);
+            if (valueType == Integer.class) return Integer.valueOf(value);
+            if (valueType == Long.class) return Long.valueOf(value);
+            if (valueType == Date.class) return Date.valueOf(value);
+            if (valueType == Datetime.class) return Datetime.valueOf(value);
+            if (valueType == Boolean.class) return Boolean.valueOf(value);
 
             /*Attempt to cast string value to Enum. This is only possible through JSON deserialization to List<Enums>*/
             try {
-                List<Object> enums = (List<Object>) JSON.deserialize('["' + value + '"]', Type.forName('List<' + t + '>'));
+                List<Object> enums = (List<Object>) JSON.deserialize('["' + value + '"]', Type.forName('List<' + valueType + '>'));
                 return enums[0];
             } catch (Exception ex) {
             }
@@ -239,8 +239,8 @@ public abstract class XmlNode {
     * Invokes registerAttribute with null key namespace and value namespace.
     * @see registerAttribute
      */
-    protected Object registerAttribute(String key, Object value) {
-        return registerAttribute(key, value, null, null);
+    protected Object registerAttribute(Type valueType, String key, Object value) {
+        return registerAttribute(valueType, key, value, null, null);
     }
 
 
@@ -251,19 +251,21 @@ public abstract class XmlNode {
      * Deserialization Phase:
      * Returns attribute from deserialized node.
      *
+     * @param valueType Attribute value will be automatically parsed to this type. (Deserialization phase only)
      * @param key Attribute key
      * @param value Attribute value
-     * @param keyNamespace Namespace of the attribute's key
-     * @param valueNamespace Namespace of the attribute's value
+     * @param keyNamespace Namespace of the attribute's key. (Serialization phase only)
+     * @param valueNamespace Namespace of the attribute's value. (Serialization phase only)
      *
      * @return Serialization: returns passed value. Deserialization: returns attribute's value.
      */
-    protected Object registerAttribute(String key, Object value, String keyNamespace, String valueNamespace) {
+    protected Object registerAttribute(Type valueType, String key, Object value, String keyNamespace, String valueNamespace) {
         if (isSerialization) {
             this.node.setAttributeNs(key, String.valueOf(value), keyNamespace, valueNamespace);
             return value;
         } else {
-            return this.node.getAttribute(key, keyNamespace);
+            String atributeValue = this.node.getAttribute(key, keyNamespace);
+            return getValue(valueType, atributeValue);
         }
     }
 

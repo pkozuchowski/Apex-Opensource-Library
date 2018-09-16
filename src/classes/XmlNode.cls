@@ -1,6 +1,6 @@
 /**
 * XML Tree generation tool
-* Used to create XML Tree from hierarchy of classess extending this abstract class
+* Used to create XML Tree from hierarchy of classes extending this abstract class
 * @author Piotr Kożuchowski
 * */
 public abstract class XmlNode {
@@ -10,7 +10,7 @@ public abstract class XmlNode {
 
 
     /**
-     *
+     * Override this method to register all text nodes and child nodes under current node.
      */
     protected abstract void registerXML();
 
@@ -88,8 +88,16 @@ public abstract class XmlNode {
 
 
     /**
-     * Links child node to the current node and execute's it's registerXML() method.
-     * NPE Safe.
+     * During serialization:
+     * Creates child xml node with given nodeName, namespace and prefix.
+     *
+     * During deserialization:
+     * Finds child node element of given nodeName and namespace in current node.
+     *
+     * @param childNode XmlNode implementation
+     * @param nodeName Name of child node.
+     * @param namespace Namespace of child node.
+     * @param prefix Prefix of child node. (Serialization phase only)
      */
     protected void registerChild(XmlNode childNode, String nodeName, String namespace, String prefix) {
         if (childNode != null) {
@@ -115,6 +123,7 @@ public abstract class XmlNode {
      * @param childNodes List of nodes to register. (required in both phases)
      * @param name Name of the child nodes to search for. (Deserialization phase only)
      * @param namespace Namespace of the child nodes to search for. (Deserialization phase only)
+     * @param prefix Prefix of the created child nodes. (Serialization phase only)
      * @param childType Type of the children. Children must extend XmlNode and have no-args constructor. (Deserialization phase only)
      */
     protected void registerChildren(List<XmlNode> childNodes, String name, String namespace, String prefix, Type childType) {
@@ -149,12 +158,12 @@ public abstract class XmlNode {
      * of children of current node.
      *
      * <pre>
-     *     &lt; SampleResponse &gt;
-     *         &lt; matchesPrefix:matches &gt;
-     *             &lt; match &gt;
-     *             &lt;/ match &gt;
-     *         &lt;/ matchesPrefix:matches &gt;
-     *     &lt;/ SampleResponse &gt; <br/>
+     *     &lt;SampleResponse&gt;
+     *         &lt;matchesPrefix:matches&gt;
+     *             &lt;match&gt;
+     *             &lt;/match&gt;
+     *         &lt;/matchesPrefix:matches&gt;
+     *     &lt;/SampleResponse&gt; <br/>
 
      *     class Matches extends XmlNode{
      *          private List<Match> matches = new List<Match>();
@@ -174,6 +183,7 @@ public abstract class XmlNode {
      * @param childrenList List of children to serialize under current node, or list to populate from deserialized node.
      * @param childNodeName Node name of the grand children to search for.(Deserialization phase only)
      * @param childNamespace Namespace of the grand children to search for.(Deserialization phase only)
+     * @param childPrefix Prefix of the created grand children.(Serialization phase only)
      * @param prototype Type of the children. Children must extend XmlNode and have no-args constructor. (Deserialization phase only)
      */
     protected virtual void registerList(String listName, String listNamespace, String listPrefix, List<XmlNode> childrenList, String childNodeName, String childNamespace, String childPrefix, Type prototype) {

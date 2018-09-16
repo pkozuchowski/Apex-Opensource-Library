@@ -233,7 +233,7 @@ public abstract class XmlNode {
 
     /**
     * Invokes registerAttribute with null key namespace and value namespace.
-    * @see registerAttribute
+    * @see XmlNode.registerAttribute
      */
     protected Object registerAttribute(Type valueType, String key, Object value) {
         return registerAttribute(valueType, key, value, null, null);

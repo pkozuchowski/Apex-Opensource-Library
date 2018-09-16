@@ -26,21 +26,6 @@ public abstract class XmlNode {
 
 
     /**
-    * During serialization creates node for this element in parent node.
-    * During deserialization, searches for node in parent element node.
-    * */
-    protected virtual void registerThisNode(String nodeName, String namespace, String prefix) {
-        if (this.node == null) {
-            if (isSerialization) {
-                this.node = this.parent.addChildElement(nodeName, namespace, prefix);
-            } else {
-                this.node = this.parent.getChildElement(nodeName, namespace);
-            }
-        }
-    }
-
-
-    /**
      * During serialization:
      * Creates text node in current element with given text value.
      *
@@ -106,8 +91,14 @@ public abstract class XmlNode {
      * Links child node to the current node and execute's it's registerXML() method.
      * NPE Safe.
      */
-    protected void registerChild(XmlNode childNode) {
+    protected void registerChild(XmlNode childNode, String nodeName, String namespace, String prefix) {
         if (childNode != null) {
+            if (isSerialization) {
+                childNode.node = this.node.addChildElement(nodeName, namespace, prefix);
+            } else {
+                childNode.node = this.node.getChildElement(nodeName, namespace);
+            }
+
             childNode.parent = this.node;
             childNode.registerXML_internal();
         }
@@ -126,11 +117,11 @@ public abstract class XmlNode {
      * @param namespace Namespace of the child nodes to search for. (Deserialization phase only)
      * @param childType Type of the children. Children must extend XmlNode and have no-args constructor. (Deserialization phase only)
      */
-    protected void registerChildren(List<XmlNode> childNodes, String name, String namespace, Type childType) {
+    protected void registerChildren(List<XmlNode> childNodes, String name, String namespace, String prefix, Type childType) {
         if (childNodes != null) {
             if (isSerialization) {
                 for (XmlNode childNode : childNodes) {
-                    registerChild(childNode);
+                    registerChild(childNode, name, namespace, prefix);
                 }
 
             } else {
@@ -185,12 +176,13 @@ public abstract class XmlNode {
      * @param childNamespace Namespace of the grand children to search for.(Deserialization phase only)
      * @param prototype Type of the children. Children must extend XmlNode and have no-args constructor. (Deserialization phase only)
      */
-    protected virtual void registerList(String listName, String listNamespace, String listPrefix, List<XmlNode> childrenList, String childNodeName, String childNamespace, Type prototype) {
+    protected virtual void registerList(String listName, String listNamespace, String listPrefix, List<XmlNode> childrenList, String childNodeName, String childNamespace, String childPrefix, Type prototype) {
         if (isSerialization) {
             Dom.XmlNode listNode = this.node.addChildElement(listName, listNamespace, listPrefix);
 
             for (XmlNode childNode : childrenList) {
                 childNode.parent = listNode;
+                childNode.node = listNode.addChildElement(childNodeName, childNamespace, childPrefix);
                 childNode.registerXML_internal();
             }
 
@@ -255,7 +247,7 @@ public abstract class XmlNode {
     public abstract class XmlRootNode extends XmlNode {
         private transient Dom.Document document;
 
-        protected override void registerThisNode(String nodeName, String namespace, String prefix) {
+        protected void registerRootNode(String nodeName, String namespace, String prefix) {
             if (isSerialization) {
                 this.document = new Dom.Document();
                 this.node = this.document.createRootElement(nodeName, namespace, prefix);

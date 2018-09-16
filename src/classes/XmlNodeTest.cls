@@ -19,13 +19,13 @@ public class XmlNodeTest {
         }
 
         protected override void registerXML() {
-            registerThisNode('Envelope', NAMESPACE_SOAP, 'soap');
+            registerRootNode('Envelope', NAMESPACE_SOAP, 'soap');
             setNamespace('xsi', NAMESPACE_XSI);
             setNamespace('xsd', NAMESPACE_XSD);
             setNamespace('soap', NAMESPACE_SOAP);
 
-            registerChild(header);
-            registerChild(body);
+            registerChild(header, 'Header', NAMESPACE_SOAP, 'soap');
+            registerChild(body, 'Body', NAMESPACE_SOAP, 'soap');
         }
     }
 
@@ -41,7 +41,6 @@ public class XmlNodeTest {
         }
 
         protected override void registerXML() {
-            registerThisNode('Header', NAMESPACE_SOAP, 'soap');
             this.username = (String) registerTextNode(String.class, 'username', null, null, username);
             this.password = (String) registerTextNode(String.class, 'password', null, null, password);
         }
@@ -57,8 +56,7 @@ public class XmlNodeTest {
         }
 
         protected override void registerXML() {
-            registerThisNode('Body', NAMESPACE_SOAP, 'soap');
-            registerChild(content);
+            registerChild(content, content.getNodeName(), NAMESPACE_SAMPLE, '');
         }
     }
 
@@ -68,6 +66,7 @@ public class XmlNodeTest {
     * reside in Body element
     * */
     private abstract class BodyContent extends XmlNode {
+        public abstract String getNodeName();
     }
 
     /**
@@ -86,9 +85,12 @@ public class XmlNodeTest {
         }
 
         protected override void registerXML() {
-            registerThisNode('SampleRequest', NAMESPACE_SAMPLE, '');
             this.exclusionType = (ExclusionMode) registerTextNode(ExclusionMode.class, 'exclusion', NAMESPACE_SAMPLE, '', exclusionType);
-            registerChild(criteria);
+            registerChild(criteria, 'criteria', NAMESPACE_SAMPLE, '');
+        }
+
+        public override String getNodeName() {
+            return 'SampleRequest';
         }
     }
     public enum ExclusionMode {
@@ -118,7 +120,6 @@ public class XmlNodeTest {
         }
 
         protected override void registerXML() {
-            registerThisNode('criteria', NAMESPACE_SAMPLE, '');
             this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, '', firstName);
             this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
             this.email = (String) registerTextNode(String.class, 'Email', NAMESPACE_SAMPLE, '', email);
@@ -126,7 +127,7 @@ public class XmlNodeTest {
             String dobStr = (String) registerTextNode(String.class, 'DateOfBirth', NAMESPACE_SAMPLE, '', dob.format('dd/MM/YYYY'));
             this.dob = Date.parse(dobStr);
 
-            registerChildren(addresses, 'Address', NAMESPACE_SAMPLE, Address.class);
+            registerChildren(addresses, 'Address', NAMESPACE_SAMPLE, '', Address.class);
         }
     }
     private class Address extends XmlNode {
@@ -145,7 +146,6 @@ public class XmlNodeTest {
         }
 
         protected override void registerXML() {
-            registerThisNode('Address', NAMESPACE_SAMPLE, '');
             this.country = (String) registerTextNode(String.class, 'Country', NAMESPACE_SAMPLE, null, country);
             this.addressLine1 = (String) registerTextNode(String.class, 'AddressLine1', NAMESPACE_SAMPLE, '', addressLine1);
             this.addressLine2 = (String) registerTextNode(String.class, 'AddressLine2', NAMESPACE_SAMPLE, '', addressLine2);
@@ -225,8 +225,11 @@ public class XmlNodeTest {
         public List<Match> matches = new List<Match>();
 
         protected override void registerXML() {
-            registerThisNode('SampleResponse', NAMESPACE_SAMPLE, '');
-            registerList('matches', NAMESPACE_SAMPLE, '', matches, 'match', NAMESPACE_SAMPLE, Match.class);
+            registerList('matches', NAMESPACE_SAMPLE, '', matches, 'match', NAMESPACE_SAMPLE, '', Match.class);
+        }
+
+        public override String getNodeName() {
+            return 'SampleResponse';
         }
     }
 
@@ -240,7 +243,6 @@ public class XmlNodeTest {
         public Boolean isMarried;
 
         protected override void registerXML() {
-            registerThisNode('match', NAMESPACE_SAMPLE, '');
             this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, '', firstName);
             this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
             this.score = (Decimal) registerTextNode(Decimal.class, 'Score', NAMESPACE_SAMPLE, '', score);

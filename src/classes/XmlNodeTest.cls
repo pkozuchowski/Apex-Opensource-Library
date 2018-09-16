@@ -30,7 +30,9 @@ private class XmlNodeTest {
             NAMESPACE_SAMPLE = 'http://sample.test/webservices/';
 
 
+    /*Root Element must extend XmlRootNode*/
     private class Envelope extends XmlNode.XmlRootNode {
+        /*It's important to have all nodes initialized. Otherwise they will be omitted.*/
         public Body body = new Body();
         public Header header = new Header();
 
@@ -69,6 +71,7 @@ private class XmlNodeTest {
         }
 
         protected override void registerXML(XmlNode.Context ctx) {
+            /*Passed value is important in serialization, returned in deserialization*/
             this.username = (String) registerTextNode(String.class, 'username', null, null, username);
             this.password = (String) registerTextNode(String.class, 'password', null, null, password);
         }
@@ -91,7 +94,7 @@ private class XmlNodeTest {
 
     /**
     * Abstract type which will be super type for all request and response elements that
-    * reside in Body element
+    * reside in Body element.
     * */
     private abstract class BodyContent extends XmlNode {
         public abstract String getNodeName();
@@ -113,6 +116,7 @@ private class XmlNodeTest {
         }
 
         protected override void registerXML(XmlNode.Context ctx) {
+            /*Enums are automatically deserialized from the XML string as well*/
             this.exclusionType = (ExclusionMode) registerTextNode(ExclusionMode.class, 'exclusion', NAMESPACE_SAMPLE, '', exclusionType);
             registerChild(criteria, 'criteria', NAMESPACE_SAMPLE, '');
         }
@@ -203,6 +207,12 @@ private class XmlNodeTest {
         public List<Match> matches = new List<Match>();
 
         protected override void registerXML(XmlNode.Context ctx) {
+            /*registerList() creates single List node - 'matches' using listNodeName, ListNamespace and listPrefix
+            * then creates 'match' nodes inside it.
+            *
+            * Adequately, during deserialization single matches child is retrieved and all it's match nodes are deserialized
+            * to the List<Match>
+            * */
             registerList('matches', NAMESPACE_SAMPLE, '', matches, 'match', NAMESPACE_SAMPLE, '', Match.class);
         }
 

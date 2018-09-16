@@ -1,6 +1,8 @@
 /**
-* XML Tree generation tool
-* Used to create XML Tree from hierarchy of classes extending this abstract class
+* Dom.XmlNode wrapper for automatic serialization/deserialization of class structures to/from XML.
+* To use this class, you have to recreate XML tree structure as class structure and each class should extend XmlNode.
+* Each class will have to implement registerXML() class and register all children as either text node, child node or list node.
+* @see XmlNodeTest for usage.
 * @author Piotr Kożuchowski
 * */
 public abstract class XmlNode {

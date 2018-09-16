@@ -1,8 +1,67 @@
-## Welcome to GitHub Pages
+# Salesforce Developer Toolkit
+## Introduction
+
+
+## [Collections](https://github.com/amorek/sfdc-toolkit)
+Most of the Salesforce business logic involves some sort of data collection transformations.
+List of SObjects are filtered, mapped or grouped in almost every business process implemented in Apex.
+This utility class contains methods for these common operations.
+
+#### Features:
+##### Gathering values
+Family of `Collections.getUniqueValues()` methods return Set of field values from given records.
+
+###### Examples
+```java
+Set<String> accountNames = Collections.getUniqueStringValues(accounts, Account.Name);
+Set<Datetime> accountCreatedDates = Collections.getUniqueDatetimeValues(accounts, Account.Datetime);
+Set<Id> parentAccountIds = Collections.getUniqueIdValues(accounts, 'ParentId');
+/*...*/
+```
+
+##### Mapping
+Map list of objects by given field or Mapper implementation.
+```java
+//Map by field
+Map<String, Account> accountByNamesMap = (Map<String, Account>) Collections.mapByStringField(accounts, Account.Name);
+Map<Id, Account> accountByParent = (Map<Id, Account>) Collections.mapByStringField(accounts, Account.ParentId);
+/*...*/
+
+//Map By KeyMapper
+Map<Object,Account> accountsByBrandAndParent = (Map<Object,Account>) Collections.mapBy(accounts, new AccountBrandAndParentKeyMapper());
+private class AccountBrandAndParentKeyMapper implements KeyMapper{
+    public Object key(Object record){
+        Account account = (Account) record;
+        return account.Brand__c + account.ParentId;
+    }
+}
+```
+
+###### Examples
+
+##### Grouping
+###### Examples
+
+##### Filtering
+###### Examples
+
+##### Sorting
+###### Examples
+
+##### Reducing
+###### Examples
+
+## Datatable
+tbc
+## XML Parser
+tbc
+
 
 You can use the [editor on GitHub](https://github.com/amorek/sfdc-toolkit/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+
+
 
 ### Markdown
 

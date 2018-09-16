@@ -171,7 +171,7 @@ public abstract class XmlNode {
     /**
     * Sets namespace for current node
     * */
-    protected void setNamespace(String prefix, String namespace) {
+    protected void registerNamespace(String prefix, String namespace) {
         this.node.setNamespace(prefix, namespace);
     }
 

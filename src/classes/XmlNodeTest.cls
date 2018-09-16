@@ -20,10 +20,9 @@ public class XmlNodeTest {
 
         protected override void registerXML(XmlNode.Context ctx) {
             registerRootNode('Envelope', NAMESPACE_SOAP, 'soap');
-            setNamespace('xsi', NAMESPACE_XSI);
-            setNamespace('xsd', NAMESPACE_XSD);
-            setNamespace('soap', NAMESPACE_SOAP);
-
+            registerNamespace('xsi', NAMESPACE_XSI);
+            registerNamespace('xsd', NAMESPACE_XSD);
+            registerNamespace('soap', NAMESPACE_SOAP);
             registerChild(header, 'Header', NAMESPACE_SOAP, 'soap');
             registerChild(body, 'Body', NAMESPACE_SOAP, 'soap');
         }

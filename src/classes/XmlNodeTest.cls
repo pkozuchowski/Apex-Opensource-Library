@@ -42,10 +42,16 @@ private class XmlNodeTest {
         }
 
         protected override void registerXML(XmlNode.Context ctx) {
+            /*Root node has to call registerRootNode() as first entry in registerXML()*/
             registerRootNode('Envelope', NAMESPACE_SOAP, 'soap');
+
+            /*Namespaces of the root element*/
             registerNamespace('xsi', NAMESPACE_XSI);
             registerNamespace('xsd', NAMESPACE_XSD);
             registerNamespace('soap', NAMESPACE_SOAP);
+
+            /*registerChild() will create a Dom.XMLNode with given specs for the child element and pass it
+            * for futher processing to header element*/
             registerChild(header, 'Header', NAMESPACE_SOAP, 'soap');
             registerChild(body, 'Body', NAMESPACE_SOAP, 'soap');
         }
@@ -149,8 +155,17 @@ private class XmlNodeTest {
             this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
             this.email = (String) registerTextNode(String.class, 'Email', NAMESPACE_SAMPLE, '', email);
             this.username = (String) registerTextNode(String.class, 'Username', NAMESPACE_SAMPLE, '', username);
+
+            /*You can decouple deserialization and serialization using context.
+            * In this case, variable is a Datetime, but we pass in String value - formatted Date.
+            * registerTextNode() will always return passed value, so a String in this case.
+            * I don't want to change the value during serialization, so I only handled returned date string in
+            * deserialization context.
+            * */
             String dobStr = (String) registerTextNode(String.class, 'DateOfBirth', NAMESPACE_SAMPLE, '', dob.format('dd/MM/YYYY'));
-            this.dob = Date.parse(dobStr);
+            if (ctx == XmlNode.Context.DESERIALIZATION) {
+                this.dob = Date.parse(dobStr);
+            }
 
 
             registerChildren(addresses, 'Address', NAMESPACE_SAMPLE, '', Address.class);
@@ -208,6 +223,7 @@ private class XmlNodeTest {
         protected override void registerXML(XmlNode.Context ctx) {
             this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, '', firstName);
             this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
+            /*During deserialization, text value of Score text node will be deserialized to Decimal*/
             this.score = (Decimal) registerTextNode(Decimal.class, 'Score', NAMESPACE_SAMPLE, '', score);
             this.weight = (Double) registerTextNode(Double.class, 'Weight', NAMESPACE_SAMPLE, '', weight);
             this.height = (Integer) registerTextNode(Integer.class, 'Height', NAMESPACE_SAMPLE, '', height);

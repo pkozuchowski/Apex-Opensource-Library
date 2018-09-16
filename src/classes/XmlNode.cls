@@ -5,7 +5,6 @@
 * */
 public abstract class XmlNode {
     private transient Dom.XmlNode node;
-    private transient Dom.XmlNode parent;
     private static Boolean isSerialization;
 
 
@@ -21,7 +20,6 @@ public abstract class XmlNode {
     private void registerXML_internal() {
         registerXML();
         this.node = null;
-        this.parent = null;
     }
 
 
@@ -107,7 +105,6 @@ public abstract class XmlNode {
                 childNode.node = this.node.getChildElement(nodeName, namespace);
             }
 
-            childNode.parent = this.node;
             childNode.registerXML_internal();
         }
     }
@@ -191,7 +188,6 @@ public abstract class XmlNode {
             Dom.XmlNode listNode = this.node.addChildElement(listName, listNamespace, listPrefix);
 
             for (XmlNode childNode : childrenList) {
-                childNode.parent = listNode;
                 childNode.node = listNode.addChildElement(childNodeName, childNamespace, childPrefix);
                 childNode.registerXML_internal();
             }
@@ -242,7 +238,6 @@ public abstract class XmlNode {
     protected Object registerAttribute(Type valueType, String key, Object value) {
         return registerAttribute(valueType, key, value, null, null);
     }
-
 
     /**
      * Serialization Phase:

@@ -159,6 +159,42 @@ public class XmlNodeTest {
     }
 
 
+    /**
+    * Sample SOAP response
+    * */
+    private class SampleResponse extends BodyContent {
+        public List<Match> matches = new List<Match>();
+
+        protected override void registerXML(XmlNode.Context ctx) {
+            registerList('matches', NAMESPACE_SAMPLE, '', matches, 'match', NAMESPACE_SAMPLE, '', Match.class);
+        }
+
+        public override String getNodeName() {
+            return 'SampleResponse';
+        }
+    }
+
+    private class Match extends XmlNode {
+        public String firstName;
+        public String lastName;
+        public Decimal score;
+        public Double weight;
+        public Integer height;
+        public Long distance;
+        public Boolean isMarried;
+
+        protected override void registerXML(XmlNode.Context ctx) {
+            this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, '', firstName);
+            this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
+            this.score = (Decimal) registerTextNode(Decimal.class, 'Score', NAMESPACE_SAMPLE, '', score);
+            this.weight = (Double) registerTextNode(Double.class, 'Weight', NAMESPACE_SAMPLE, '', weight);
+            this.height = (Integer) registerTextNode(Integer.class, 'Height', NAMESPACE_SAMPLE, '', height);
+            this.distance = (Long) registerTextNode(Long.class, 'Distance', NAMESPACE_SAMPLE, '', distance);
+            this.isMarried = (Boolean) registerTextNode(Boolean.class, 'Married', NAMESPACE_SAMPLE, '', isMarried);
+        }
+    }
+
+
     @IsTest
     static void testRequestSerialization() {
         Envelope envelope = new Envelope(
@@ -217,42 +253,6 @@ public class XmlNodeTest {
         envelope2.load(actual);
         String actual2 = envelope2.toXmlString();
         System.assertEquals(actual, actual2);
-    }
-
-
-    /**
-    * Sample SOAP response
-    * */
-    private class SampleResponse extends BodyContent {
-        public List<Match> matches = new List<Match>();
-
-        protected override void registerXML(XmlNode.Context ctx) {
-            registerList('matches', NAMESPACE_SAMPLE, '', matches, 'match', NAMESPACE_SAMPLE, '', Match.class);
-        }
-
-        public override String getNodeName() {
-            return 'SampleResponse';
-        }
-    }
-
-    private class Match extends XmlNode {
-        public String firstName;
-        public String lastName;
-        public Decimal score;
-        public Double weight;
-        public Integer height;
-        public Long distance;
-        public Boolean isMarried;
-
-        protected override void registerXML(XmlNode.Context ctx) {
-            this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, '', firstName);
-            this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
-            this.score = (Decimal) registerTextNode(Decimal.class, 'Score', NAMESPACE_SAMPLE, '', score);
-            this.weight = (Double) registerTextNode(Double.class, 'Weight', NAMESPACE_SAMPLE, '', weight);
-            this.height = (Integer) registerTextNode(Integer.class, 'Height', NAMESPACE_SAMPLE, '', height);
-            this.distance = (Long) registerTextNode(Long.class, 'Distance', NAMESPACE_SAMPLE, '', distance);
-            this.isMarried = (Boolean) registerTextNode(Boolean.class, 'Married', NAMESPACE_SAMPLE, '', isMarried);
-        }
     }
 
     @IsTest

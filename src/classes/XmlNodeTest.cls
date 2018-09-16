@@ -18,7 +18,7 @@ public class XmlNodeTest {
             this.body = new Body(content);
         }
 
-        protected override void registerXML() {
+        protected override void registerXML(XmlNode.Context ctx) {
             registerRootNode('Envelope', NAMESPACE_SOAP, 'soap');
             setNamespace('xsi', NAMESPACE_XSI);
             setNamespace('xsd', NAMESPACE_XSD);
@@ -40,7 +40,7 @@ public class XmlNodeTest {
             this.password = password;
         }
 
-        protected override void registerXML() {
+        protected override void registerXML(XmlNode.Context ctx) {
             this.username = (String) registerTextNode(String.class, 'username', null, null, username);
             this.password = (String) registerTextNode(String.class, 'password', null, null, password);
         }
@@ -55,7 +55,7 @@ public class XmlNodeTest {
             this.content = content;
         }
 
-        protected override void registerXML() {
+        protected override void registerXML(XmlNode.Context ctx) {
             registerChild(content, content.getNodeName(), NAMESPACE_SAMPLE, '');
         }
     }
@@ -84,7 +84,7 @@ public class XmlNodeTest {
             this.criteria = criteria;
         }
 
-        protected override void registerXML() {
+        protected override void registerXML(XmlNode.Context ctx) {
             this.exclusionType = (ExclusionMode) registerTextNode(ExclusionMode.class, 'exclusion', NAMESPACE_SAMPLE, '', exclusionType);
             registerChild(criteria, 'criteria', NAMESPACE_SAMPLE, '');
         }
@@ -121,7 +121,7 @@ public class XmlNodeTest {
             this.addresses = addresses;
         }
 
-        protected override void registerXML() {
+        protected override void registerXML(XmlNode.Context ctx) {
             this.criteriaType = (String) registerAttribute(String.class, 'type', criteriaType);
             this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, '', firstName);
             this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
@@ -149,7 +149,7 @@ public class XmlNodeTest {
             this.addressLine2 = addressLine2;
         }
 
-        protected override void registerXML() {
+        protected override void registerXML(XmlNode.Context ctx) {
             this.country = (String) registerTextNode(String.class, 'Country', NAMESPACE_SAMPLE, null, country);
             this.addressLine1 = (String) registerTextNode(String.class, 'AddressLine1', NAMESPACE_SAMPLE, '', addressLine1);
             this.addressLine2 = (String) registerTextNode(String.class, 'AddressLine2', NAMESPACE_SAMPLE, '', addressLine2);
@@ -226,7 +226,7 @@ public class XmlNodeTest {
     private class SampleResponse extends BodyContent {
         public List<Match> matches = new List<Match>();
 
-        protected override void registerXML() {
+        protected override void registerXML(XmlNode.Context ctx) {
             registerList('matches', NAMESPACE_SAMPLE, '', matches, 'match', NAMESPACE_SAMPLE, '', Match.class);
         }
 
@@ -244,7 +244,7 @@ public class XmlNodeTest {
         public Long distance;
         public Boolean isMarried;
 
-        protected override void registerXML() {
+        protected override void registerXML(XmlNode.Context ctx) {
             this.firstName = (String) registerTextNode(String.class, 'FirstName', NAMESPACE_SAMPLE, '', firstName);
             this.lastName = (String) registerTextNode(String.class, 'LastName', NAMESPACE_SAMPLE, '', lastName);
             this.score = (Decimal) registerTextNode(Decimal.class, 'Score', NAMESPACE_SAMPLE, '', score);

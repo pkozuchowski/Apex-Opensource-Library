@@ -7,20 +7,25 @@
 * */
 public abstract class XmlNode {
     private transient Dom.XmlNode node;
-    private static Boolean isSerialization;
+    private transient Context mode;
 
+    public enum Context {
+        SERIALIZATION,
+        DESERIALIZATION
+    }
 
     /**
      * Override this method to register all text nodes and child nodes under current node.
      */
-    protected abstract void registerXML();
+    protected abstract void registerXML(Context mode);
 
     /**
      * This method is required to clean up node and parent after work is done.
      * It significantly reduces required heap size (by half).
      */
-    private void registerXML_internal() {
-        registerXML();
+    private void registerXML_internal(Context mode) {
+        this.mode = mode;
+        registerXML(mode);
         this.node = null;
     }
 
@@ -39,13 +44,13 @@ public abstract class XmlNode {
      */
     protected void registerChild(XmlNode childNode, String nodeName, String namespace, String prefix) {
         if (childNode != null) {
-            if (isSerialization) {
+            if (mode == Context.SERIALIZATION) {
                 childNode.node = this.node.addChildElement(nodeName, namespace, prefix);
             } else {
                 childNode.node = this.node.getChildElement(nodeName, namespace);
             }
 
-            childNode.registerXML_internal();
+            childNode.registerXML_internal(mode);
         }
     }
 
@@ -65,7 +70,7 @@ public abstract class XmlNode {
      */
     protected void registerChildren(List<XmlNode> childNodes, String name, String namespace, String prefix, Type childType) {
         if (childNodes != null) {
-            if (isSerialization) {
+            if (mode == Context.SERIALIZATION) {
                 for (XmlNode childNode : childNodes) {
                     registerChild(childNode, name, namespace, prefix);
                 }
@@ -75,7 +80,7 @@ public abstract class XmlNode {
                     if (childDomNode.getName() == name && childDomNode.getNamespace() == namespace) {
                         XmlNode childNode = (XmlNode) childType.newInstance();
                         childNode.node = childDomNode;
-                        childNode.registerXML_internal();
+                        childNode.registerXML_internal(mode);
 
                         childNodes.add(childNode);
                     }
@@ -124,12 +129,12 @@ public abstract class XmlNode {
      * @param prototype Type of the children. Children must extend XmlNode and have no-args constructor. (Deserialization phase only)
      */
     protected virtual void registerList(String listName, String listNamespace, String listPrefix, List<XmlNode> childrenList, String childNodeName, String childNamespace, String childPrefix, Type prototype) {
-        if (isSerialization) {
+        if (mode == Context.SERIALIZATION) {
             Dom.XmlNode listNode = this.node.addChildElement(listName, listNamespace, listPrefix);
 
             for (XmlNode childNode : childrenList) {
                 childNode.node = listNode.addChildElement(childNodeName, childNamespace, childPrefix);
-                childNode.registerXML_internal();
+                childNode.registerXML_internal(mode);
             }
 
         } else {
@@ -139,7 +144,7 @@ public abstract class XmlNode {
                 if (childDomNode.getName() == childNodeName && childDomNode.getNamespace() == childNamespace) {
                     XmlNode childNode = (XmlNode) prototype.newInstance();
                     childNode.node = childDomNode;
-                    childNode.registerXML_internal();
+                    childNode.registerXML_internal(mode);
 
                     childrenList.add(childNode);
                 }
@@ -189,7 +194,7 @@ public abstract class XmlNode {
      * @return
      */
     protected Object registerTextNode(Type valueType, String name, String namespace, String prefix, Object value) {
-        if (isSerialization) {
+        if (mode == Context.SERIALIZATION) {
             if (value != null) {
                 Dom.XmlNode txtNode = this.node.addChildElement(name, namespace, prefix);
                 String textValue = String.valueOf(value).escapeXml();
@@ -229,7 +234,7 @@ public abstract class XmlNode {
      * @return Serialization: returns passed value. Deserialization: returns attribute's value.
      */
     protected Object registerAttribute(Type valueType, String key, Object value, String keyNamespace, String valueNamespace) {
-        if (isSerialization) {
+        if (mode == Context.SERIALIZATION) {
             this.node.setAttributeNs(key, String.valueOf(value), keyNamespace, valueNamespace);
             return value;
         } else {
@@ -275,21 +280,20 @@ public abstract class XmlNode {
         private transient Dom.Document document;
 
         protected void registerRootNode(String nodeName, String namespace, String prefix) {
-            if (isSerialization) {
+            if (mode == Context.SERIALIZATION) {
                 this.document = new Dom.Document();
                 this.node = this.document.createRootElement(nodeName, namespace, prefix);
             }
         }
 
-        public Dom.Document serialize() {
-            isSerialization = true;
-            registerXML_internal();
-            return document;
+        public String toXmlString() {
+            return serialize().toXmlString();
         }
 
-        public String toXmlString() {
-            serialize();
-            return document.toXmlString();
+        public Dom.Document serialize() {
+            this.mode = Context.SERIALIZATION;
+            registerXML_internal(mode);
+            return document;
         }
 
         public virtual void load(String xmlStr) {
@@ -299,9 +303,9 @@ public abstract class XmlNode {
         }
 
         public virtual void load(Dom.Document document) {
-            isSerialization = false;
+            this.mode = Context.DESERIALIZATION;
             this.node = document.getRootElement();
-            registerXML_internal();
+            registerXML_internal(mode);
         }
     }
 }

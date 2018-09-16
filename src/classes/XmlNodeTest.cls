@@ -195,8 +195,15 @@ public class XmlNodeTest {
     }
 
 
+    /**
+     * @description
+     * Envelope class structure and all it's data are transformed into proper XML request,
+     * maintaining proper namespaces, node names and attributes according to registerXML() implementations.
+     * Resulting XML is then loaded by another instance and serialized again to make sure, that consecutive serialization
+     * and deserialization yields the same result.
+     */
     @IsTest
-    static void testRequestSerialization() {
+    static void testRequestEnvelopeStructureIsSerializedToTheXMLProperly() {
         Envelope envelope = new Envelope(
                 new Header('api.user', 'secret'),
                 new SampleRequest(ExclusionMode.DuplicateEmail,
@@ -255,8 +262,15 @@ public class XmlNodeTest {
         System.assertEquals(actual, actual2);
     }
 
+
+    /**
+     * @description
+     * XML string is deserialized by given Envelope class structure.
+     * XML text node values are parsed to the correct types and are available on the Envelope instance after loading xml.
+     * After loading XML, Envelope is serialized again and the result should be the same as initial response xml.
+     */
     @IsTest
-    static void testResponseDeserialization() {
+    static void testResponseIsDeserializedToEnvelopeStructure() {
         String responseXML =
                 ('<?xml version="1.0" encoding="UTF-8"?>'
                         + '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'

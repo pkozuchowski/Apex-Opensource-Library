@@ -402,7 +402,7 @@ public class Collections {
         }
 
         public Boolean accepts(Object record) {
-            return equals == ((SObject) record).get(field) == this.value;
+            return equals == (((SObject) record).get(field) == this.value);
         }
     }
 
@@ -418,7 +418,7 @@ public class Collections {
         }
 
         public Boolean accepts(Object record) {
-            return valueIn == values.contains(((SObject) record).get(field));
+            return valueIn == (values.contains(((SObject) record).get(field)));
         }
     }
 

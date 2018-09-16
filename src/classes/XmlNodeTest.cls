@@ -1,4 +1,4 @@
-@IsTest
+@IsTest(IsParallel=true)
 public class XmlNodeTest {
     private final static String
             NAMESPACE_XSI = 'http://www.w3.org/2001/XMLSchema-instance',

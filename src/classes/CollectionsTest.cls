@@ -748,25 +748,41 @@ private class CollectionsTest {
      */
     @IsTest
     static void testFilterByFieldValue() {
-        List<Opportunity> expected = new List<Opportunity>{
-                opportunities[0], opportunities[2], opportunities[4], opportunities[6], opportunities[8]
-        };
-        List<Opportunity> actual = Collections.filterByFieldValue(opportunities, Opportunity.HasOpenActivity, Collections.EQUALS, true);
-        System.assertEquals(expected, actual);
+        List<Opportunity> hasOpenActivity = new List<Opportunity>();
+        List<Opportunity> hasNotOpenActivity = new List<Opportunity>();
+        List<Opportunity> fiscalQuarterEquals0 = new List<Opportunity>();
+        List<Opportunity> fiscalQuarterNotEquals0 = new List<Opportunity>();
+        List<Opportunity> nextStepAnalysis = new List<Opportunity>();
+        List<Opportunity> nextStepNotAnalysis = new List<Opportunity>();
 
+        for (Opportunity opp : opportunities) {
+            if (opp.HasOpenActivity) {
+                hasOpenActivity.add(opp);
+            } else {
+                hasNotOpenActivity.add(opp);
+            }
 
-        expected = new List<Opportunity>{
-                opportunities[0], opportunities[4], opportunities[8]
-        };
-        actual = Collections.filterByFieldValue(opportunities, Opportunity.FiscalQuarter, Collections.EQUALS, 0);
-        System.assertEquals(expected, actual);
+            if (opp.FiscalQuarter == 0) {
+                fiscalQuarterEquals0.add(opp);
+            } else {
+                fiscalQuarterNotEquals0.add(opp);
+            }
 
+            if (opp.NextStep == 'Analysis') {
+                nextStepAnalysis.add(opp);
+            } else {
+                nextStepNotAnalysis.add(opp);
+            }
+        }
 
-        expected = new List<Opportunity>{
-                opportunities[0], opportunities[1], opportunities[2], opportunities[3]
-        };
-        actual = Collections.filterByFieldValue(opportunities, Opportunity.NextStep, Collections.EQUALS, 'Analysis');
-        System.assertEquals(expected, actual);
+        System.assertEquals(hasOpenActivity, Collections.filterByFieldValue(opportunities, Opportunity.HasOpenActivity, Collections.EQUALS, true));
+        System.assertEquals(hasNotOpenActivity, Collections.filterByFieldValue(opportunities, Opportunity.HasOpenActivity, Collections.NOT_EQUALS, true));
+
+        System.assertEquals(fiscalQuarterEquals0, Collections.filterByFieldValue(opportunities, Opportunity.FiscalQuarter, Collections.EQUALS, 0));
+        System.assertEquals(fiscalQuarterNotEquals0, Collections.filterByFieldValue(opportunities, Opportunity.FiscalQuarter, Collections.NOT_EQUALS, 0));
+
+        System.assertEquals(nextStepAnalysis, Collections.filterByFieldValue(opportunities, Opportunity.NextStep, Collections.EQUALS, 'Analysis'));
+        System.assertEquals(nextStepNotAnalysis, Collections.filterByFieldValue(opportunities, Opportunity.NextStep, Collections.NOT_EQUALS, 'Analysis'));
     }
 
 

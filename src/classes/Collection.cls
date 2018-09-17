@@ -516,7 +516,7 @@ public class Collection {
      * @return List of filtered records.
      */
     public static List<SObject> filterByFieldValue(List<SObject> records, String field, Boolean equals, Object value) {
-        return (List<SObject>) filter(records, new FieldValueFilter(field, equals, value));
+        return (List<SObject>) filter(records, new FilterFieldByValue(field, equals, value));
     }
 
 
@@ -541,7 +541,7 @@ public class Collection {
      * @return  List of filtered records.
      */
     public static List<SObject> filterByFieldValueIn(List<SObject> records, String field, Boolean inSet, Set<Object> values) {
-        return (List<SObject>) filter(records, new FieldValuesFilter(field, inSet, values));
+        return (List<SObject>) filter(records, new FilterFieldByValues(field, inSet, values));
     }
 
     /**
@@ -572,12 +572,12 @@ public class Collection {
         Boolean accepts(Object record);
     }
 
-    public class FieldValueFilter implements Filter {
+    public class FilterFieldByValue implements Filter {
         private Object value;
         private String field;
         private Boolean equals;
 
-        public FieldValueFilter(String field, Boolean equals, Object value) {
+        public FilterFieldByValue(String field, Boolean equals, Object value) {
             this.value = value;
             this.field = field;
             this.equals = equals;
@@ -588,12 +588,12 @@ public class Collection {
         }
     }
 
-    public class FieldValuesFilter implements Filter {
+    public class FilterFieldByValues implements Filter {
         private Set<Object> values;
         private String field;
         private Boolean valueIn;
 
-        public FieldValuesFilter(String field, Boolean valueIn, Set<Object> values) {
+        public FilterFieldByValues(String field, Boolean valueIn, Set<Object> values) {
             this.values = values;
             this.field = field;
             this.valueIn = valueIn;
@@ -735,16 +735,21 @@ public class Collection {
     private class SObjectFieldComparator implements Comparator {
         private SObjectField field;
         private Integer direction;
-        private Comparator fieldTypeComparator;
+        private Comparator comparator;
 
         public SObjectFieldComparator(SObjectField field, Boolean isAscending) {
             this.field = field;
             this.direction = isAscending ? 1 : -1;
             DisplayType type = field.getDescribe().getType();
-            this.fieldTypeComparator = comparatorsByFieldType.get(type);
 
-            if (fieldTypeComparator == null) {
-                throw new SortException('FIELD_TYPE_UNSUPPORTED: [' + type + ']');
+            if (numericFields.contains(type)) {
+                this.comparator = NumericFieldComparatorInstance;
+            } else {
+                this.comparator = StringFieldComparatorInstance;
+            }
+
+            if (comparator == null) {
+                this.comparator = StringFieldComparatorInstance;
             }
         }
 
@@ -752,31 +757,17 @@ public class Collection {
             Object thisValue = ((SObject) thisItem).get(field);
             Object otherValue = ((SObject) otherItem).get(field);
 
-            return fieldTypeComparator.compare(thisValue, otherValue) * direction;
+            return comparator.compare(thisValue, otherValue) * direction;
         }
     }
 
     private static StringFieldComparator StringFieldComparatorInstance = new StringFieldComparator();
     private static NumericFieldComparator NumericFieldComparatorInstance = new NumericFieldComparator();
 
-    private static Map<Schema.DisplayType, Comparator> comparatorsByFieldType = new Map<DisplayType, Comparator>{
-            Schema.DisplayType.ANYTYPE => StringFieldComparatorInstance,
-            Schema.DisplayType.BOOLEAN => StringFieldComparatorInstance,
-            Schema.DisplayType.COMBOBOX => StringFieldComparatorInstance,
-            Schema.DisplayType.CURRENCY => StringFieldComparatorInstance,
-            Schema.DisplayType.DATE => StringFieldComparatorInstance,
-            Schema.DisplayType.DATETIME => StringFieldComparatorInstance,
-            Schema.DisplayType.DOUBLE => NumericFieldComparatorInstance,
-            Schema.DisplayType.EMAIL => StringFieldComparatorInstance,
-            Schema.DisplayType.ID => StringFieldComparatorInstance,
-            Schema.DisplayType.INTEGER => NumericFieldComparatorInstance,
-            Schema.DisplayType.PERCENT => NumericFieldComparatorInstance,
-            Schema.DisplayType.PHONE => StringFieldComparatorInstance,
-            Schema.DisplayType.PICKLIST => StringFieldComparatorInstance,
-            Schema.DisplayType.STRING => StringFieldComparatorInstance,
-            Schema.DisplayType.TEXTAREA => StringFieldComparatorInstance,
-            Schema.DisplayType.TIME => StringFieldComparatorInstance,
-            Schema.DisplayType.URL => StringFieldComparatorInstance
+    private static Set<Schema.DisplayType> numericFields = new Set<DisplayType>{
+            Schema.DisplayType.DOUBLE,
+            Schema.DisplayType.INTEGER,
+            Schema.DisplayType.PERCENT
     };
     private class StringFieldComparator implements Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
@@ -794,8 +785,6 @@ public class Collection {
             if (d1 < d2) return -1;
             return 0;
         }
-    }
-    public class SortException extends Exception {
     }
 
 

@@ -38,6 +38,8 @@ public class Collection {
             NOT_EQUALS = false,
             VALUE_IN = true,
             VALUE_NOT_IN = false,
+            ASCENDING = true,
+            DESCENDING = false,
             ANY_VALUE = true;
 
     private List<Object> items;
@@ -47,6 +49,9 @@ public class Collection {
         this.items = items;
     }
 
+    /*
+    * @return Salesforce List collection
+    * */
     public List<Object> toList() {
         return items;
     }
@@ -64,6 +69,7 @@ public class Collection {
     public Boolean isEmpty() {
         return Collection.isEmpty(items);
     }
+
 
     /**
      * Transforms generic collection to given type.

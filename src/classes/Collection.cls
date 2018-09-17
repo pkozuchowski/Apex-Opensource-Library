@@ -155,6 +155,9 @@ public class Collection {
     }
 
 
+    /*
+    * GET UNIQUE VALUES - INSTANCE
+    * */
     /**
      * @param field SObject field from which value is taken.
      * @return Set of gathered values.
@@ -188,6 +191,9 @@ public class Collection {
     }
 
 
+    /*
+    * GET UNIQUE VALUES - STATIC
+    * */
     /**
      * @param records List of SObject records from which values are gathered.
      * @param field SObject field from which value is taken.
@@ -254,6 +260,48 @@ public class Collection {
         Object value(Object item);
     }
 
+    /*
+    * MAP BY - INSTANCE
+    * */
+    /**
+     * @param field SObject Field to map by
+     * @return Map of items where record is map's value and field's value is map's key.
+     * Map's key type is derived from field's DisplayType.
+     */
+    public Object mapBy(SObjectField field) {
+        return Collection.mapBy((List<SObject>) items, field);
+    }
+
+    /**
+     * @param keyType Type of returned map's key
+     * @param field SObject Field API name to map by
+     * @return Map of items where record is map's value and field's value is map's key.
+     */
+    public Object mapBy(Type keyType, String field) {
+        return Collection.mapBy(keyType, (List<SObject>) items, field);
+    }
+
+    /**
+     * @param mapper KeyMapper instance which produce map key for given item.
+     * @return Map of items where list item is map's value and key is produced by KeyMapper.
+     */
+    public Object mapBy(KeyMapper mapper) {
+        return Collection.mapBy(items, mapper);
+    }
+
+    /**
+     * @param keyType Type of result Map key ex. String.class
+     * @param valueType Type of result Map key ex. Account.class
+     * @param mapper KeyMapper instance which produce map key for given item.
+     * @return Map of items where Item is map's value and key is produced by KeyMapper.
+     */
+    public Object mapBy(Mapper mapper) {
+        return Collection.mapBy(items, mapper);
+    }
+
+    /*
+    * MAP BY - STATIC
+    * */
     /**
      * @param items List of SObject records to map
      * @param field SObject Field to map by

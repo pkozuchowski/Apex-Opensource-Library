@@ -47,7 +47,6 @@ public class Collection {
         this.items = items;
     }
 
-
     /**
      * @return true when collection is not null or empty, false otherwise.
      */
@@ -56,18 +55,145 @@ public class Collection {
     }
 
     /**
-     * @return true when collection is not null or empty, false otherwise.
-     */
-    public static Boolean isNotEmpty(List<Object> collection) {
-        return !isEmpty(collection);
-    }
-
-
-    /**
      * @return true when collection is null or empty, false otherwise.
      */
     public Boolean isEmpty() {
         return Collection.isEmpty(items);
+    }
+
+    /**
+     * Transforms generic collection to given type.
+     * Ex. Map<Object,Object> => Map<String,Account>
+     * Casting is done through JSON serialization/deserialization, this process is CPU Time consuming.
+     *
+     * This method is NPE-safe, when collection is null, then blank instance of target type is returned.
+     */
+    public Object cast(Type targetType) {
+        return Collection.cast(items, targetType);
+    }
+
+
+    /**
+     * @param field SObject field from which value is taken.
+     * @return Set of gathered values.
+     */
+    public Object getUniqueValues(SObjectField field) {
+        return Collection.getUniqueValues((SObject[]) items, field);
+    }
+
+    /**
+     * @param field SObject field from which value is taken.
+     * @return Set of gathered values.
+     */
+    public Object getUniqueValues(Type valueType, String field) {
+        return Collection.getUniqueValues(valueType, (SObject[]) items, field);
+    }
+
+    /**
+     * @param keyMapper KeyMapper implementation which returns value for each record
+     * @return Set of gathered values.
+     */
+    public Object getUniqueValues(KeyMapper keyMapper) {
+        return Collection.getUniqueValues(items, keyMapper);
+    }
+
+    /**
+     * @param fields List of fields to return values from.
+     * @return Set of unique SObject field values of given fields of given records.
+     */
+    public Set<Object> getUniqueValues(List<SObjectField> fields) {
+        return Collection.getUniqueValues((SObject[]) items, fields);
+    }
+
+
+    /**
+     * @param field SObject Field to map by
+     * @return Map of items where record is map's value and field's value is map's key.
+     * Map's key type is derived from field's DisplayType.
+     */
+    public Object mapBy(SObjectField field) {
+        return Collection.mapBy((List<SObject>) items, field);
+    }
+
+    /**
+     * @param keyType Type of returned map's key
+     * @param field SObject Field API name to map by
+     * @return Map of items where record is map's value and field's value is map's key.
+     */
+    public Object mapBy(Type keyType, String field) {
+        return Collection.mapBy(keyType, (List<SObject>) items, field);
+    }
+
+    /**
+     * @param mapper KeyMapper instance which produce map key for given item.
+     * @return Map of items where list item is map's value and key is produced by KeyMapper.
+     */
+    public Object mapBy(KeyMapper mapper) {
+        return Collection.mapBy(items, mapper);
+    }
+
+    /**
+     * @param mapper Mapper instance which produce map key and value for given item.
+     * @return Map of items where Item is map's value and key is produced by KeyMapper.
+     */
+    public Object mapBy(Mapper mapper) {
+        return Collection.mapBy(items, mapper);
+    }
+
+
+    public Object groupBy(SObjectField field) {
+        return Collection.groupBy((SObject[]) items, field);
+    }
+
+    public Object groupBy(Type keyType, String field) {
+        return Collection.groupBy(keyType, (SObject[]) items, field);
+    }
+
+    public Object groupBy(KeyMapper keyMapper) {
+        return Collection.groupBy(items, keyMapper);
+    }
+
+    public Object groupBy(Mapper mapper) {
+        return Collection.groupBy(items, mapper);
+    }
+
+
+    public Object reduce(Reducer reducer, Object result) {
+        return Collection.reduce(items, reducer, result);
+    }
+
+
+    /**
+     * Sorts collection by given field and order.
+     * @param field Field to sort by.
+     * @param isAscending true -> ascending order, false -> descending order.
+     */
+    public Collection sort(SObjectField field, Boolean isAscending) {
+        this.items = Collection.sort((List<SObject>) items, field, isAscending);
+        return this;
+    }
+
+    public Collection sort(Comparator comparator) {
+        this.items = Collection.sort(items, comparator);
+        return this;
+    }
+
+
+    /*
+    *
+    *
+    *
+    *
+    *
+    *
+    *
+    *
+    * */
+    /**
+     * @return true when collection is not null or empty, false otherwise.
+     */
+    public static Boolean isNotEmpty(List<Object> collection) {
+        return !isEmpty(collection);
     }
 
     /**
@@ -85,17 +211,6 @@ public class Collection {
      *
      * This method is NPE-safe, when collection is null, then blank instance of target type is returned.
      */
-    public Object cast(Type targetType) {
-        return Collection.cast(items, targetType);
-    }
-
-    /**
-     * Transforms generic collection to given type.
-     * Ex. Map<Object,Object> => Map<String,Account>
-     * Casting is done through JSON serialization/deserialization, this process is CPU Time consuming.
-     *
-     * This method is NPE-safe, when collection is null, then blank instance of target type is returned.
-     */
     public static Object cast(Object collection, Type targetType) {
         if (collection == null) {
             return targetType.newInstance();
@@ -104,13 +219,6 @@ public class Collection {
         return JSON.deserialize(JSON.serialize(collection), targetType);
     }
 
-
-    /*
-    * @return returns Type of given list single element
-    * */
-    public Type getListItemType() {
-        return Collection.getListItemType(items);
-    }
 
     /*
     * @return returns Type of given list single element
@@ -156,43 +264,7 @@ public class Collection {
 
 
     /*
-    * GET UNIQUE VALUES - INSTANCE
-    * */
-    /**
-     * @param field SObject field from which value is taken.
-     * @return Set of gathered values.
-     */
-    public Object getUniqueValues(SObjectField field) {
-        return Collection.getUniqueValues((SObject[]) items, field);
-    }
-
-    /**
-     * @param field SObject field from which value is taken.
-     * @return Set of gathered values.
-     */
-    public Object getUniqueValues(Type valueType, String field) {
-        return Collection.getUniqueValues(valueType, (SObject[]) items, field);
-    }
-
-    /**
-     * @param keyMapper KeyMapper implementation which returns value for each record
-     * @return Set of gathered values.
-     */
-    public static Object getUniqueValues(KeyMapper keyMapper) {
-        return Collection.getUniqueValues(keyMapper);
-    }
-
-    /**
-     * @param fields List of fields to return values from.
-     * @return Set of unique SObject field values of given fields of given records.
-     */
-    public Set<Object> getUniqueValues(List<SObjectField> fields) {
-        return Collection.getUniqueValues((SObject[]) items, fields);
-    }
-
-
-    /*
-    * GET UNIQUE VALUES - STATIC
+    * GET UNIQUE VALUES
     * */
     /**
      * @param records List of SObject records from which values are gathered.
@@ -260,44 +332,6 @@ public class Collection {
         Object value(Object item);
     }
 
-    /*
-    * MAP BY - INSTANCE
-    * */
-    /**
-     * @param field SObject Field to map by
-     * @return Map of items where record is map's value and field's value is map's key.
-     * Map's key type is derived from field's DisplayType.
-     */
-    public Object mapBy(SObjectField field) {
-        return Collection.mapBy((List<SObject>) items, field);
-    }
-
-    /**
-     * @param keyType Type of returned map's key
-     * @param field SObject Field API name to map by
-     * @return Map of items where record is map's value and field's value is map's key.
-     */
-    public Object mapBy(Type keyType, String field) {
-        return Collection.mapBy(keyType, (List<SObject>) items, field);
-    }
-
-    /**
-     * @param mapper KeyMapper instance which produce map key for given item.
-     * @return Map of items where list item is map's value and key is produced by KeyMapper.
-     */
-    public Object mapBy(KeyMapper mapper) {
-        return Collection.mapBy(items, mapper);
-    }
-
-    /**
-     * @param keyType Type of result Map key ex. String.class
-     * @param valueType Type of result Map key ex. Account.class
-     * @param mapper KeyMapper instance which produce map key for given item.
-     * @return Map of items where Item is map's value and key is produced by KeyMapper.
-     */
-    public Object mapBy(Mapper mapper) {
-        return Collection.mapBy(items, mapper);
-    }
 
     /*
     * MAP BY - STATIC
@@ -357,25 +391,6 @@ public class Collection {
 
 
     /*
-    * GROUP BY - INSTANCE
-    * */
-    public Object groupBy(SObjectField field) {
-        return Collection.groupBy((SObject[]) items, field);
-    }
-
-    public Object groupBy(Type keyType, String field) {
-        return Collection.groupBy(keyType, (SObject[]) items, field);
-    }
-
-    public Object groupBy(KeyMapper keyMapper) {
-        return Collection.groupBy(items, keyMapper);
-    }
-
-    public Object groupBy(Mapper mapper) {
-        return Collection.groupBy(items, mapper);
-    }
-
-    /*
     * GROUP BY - STATIC
     * */
     /*
@@ -425,6 +440,9 @@ public class Collection {
     }
 
 
+    /*
+    * REDUCE - STATIC
+    * */
     /**
      * Reduces collection of objects to other collection of given type.
      * @param items input collection to reduce
@@ -458,7 +476,7 @@ public class Collection {
 
 
     /*
-    * Filter methods
+    * FILTER
     * */
 
     /**
@@ -633,46 +651,12 @@ public class Collection {
         }
     }
 
-//    public class FilterFieldChangedFromTo implements UpdateFilter {
-//        public FilterFieldChangedTo(SObjectField field, Object fromValue, Object toValue) {
-//
-//        }
-//
-//        public Boolean accepts(SObject record, SObject oldRecord) {
-//            return true;
-//        }
-//    }
-
-    public static List<SObject> filterFieldChangedTo(
-            List<SObject> records,
-            Map<Id, SObject> oldRecords,
-            SObjectField field,
-            Object newValue) {
-        return filter(records, oldRecords, new FilterFieldChanged(field, ANY_VALUE, newValue));
-    }
-    public static List<SObject> filterFieldChangedFromTo(
-            List<SObject> records,
-            Map<Id, SObject> oldRecords,
-            SObjectField field,
-            Object oldValue,
-            Object newValue) {
-        return filter(records, oldRecords, new FilterFieldChanged(field, oldValue, newValue));
-    }
-//    public static List<SObject> filterFieldChangedFromAnyTo(List<SObject> records, Map<Id, SObject> oldRecords,) {
-//        return null;
-//    }
-//    public static List<SObject> filterFieldChangedFromToAny(List<SObject> records, Map<Id, SObject> oldRecords,) {
-//        return null;
-//    }
-//    public static List<SObject> filterFieldChangedFromAnyToAny(List<SObject> records, Map<Id, SObject> oldRecords,) {
-//        return null;
-//    }
-
 
     /*
-    * SORT METHODS
+    *
+    * SORT
+    *
     * */
-
     /**
      * @param records List of SObject records to sort.
      * @param field Field to sort by.
@@ -800,9 +784,10 @@ public class Collection {
 
 
     /*
+    *
     * Implementations
+    *
     * */
-
     /**
      * Key mapper where key is SObject field.
      */

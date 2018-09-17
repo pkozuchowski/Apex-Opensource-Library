@@ -156,6 +156,39 @@ public class Collection {
 
 
     /**
+     * @param field SObject field from which value is taken.
+     * @return Set of gathered values.
+     */
+    public Object getUniqueValues(SObjectField field) {
+        return Collection.getUniqueValues((SObject[]) items, field);
+    }
+
+    /**
+     * @param field SObject field from which value is taken.
+     * @return Set of gathered values.
+     */
+    public Object getUniqueValues(Type valueType, String field) {
+        return Collection.getUniqueValues(valueType, (SObject[]) items, field);
+    }
+
+    /**
+     * @param keyMapper KeyMapper implementation which returns value for each record
+     * @return Set of gathered values.
+     */
+    public static Object getUniqueValues(KeyMapper keyMapper) {
+        return Collection.getUniqueValues(keyMapper);
+    }
+
+    /**
+     * @param fields List of fields to return values from.
+     * @return Set of unique SObject field values of given fields of given records.
+     */
+    public Set<Object> getUniqueValues(List<SObjectField> fields) {
+        return Collection.getUniqueValues((SObject[]) items, fields);
+    }
+
+
+    /**
      * @param records List of SObject records from which values are gathered.
      * @param field SObject field from which value is taken.
      * @return Set of gathered values.

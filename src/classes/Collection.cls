@@ -47,6 +47,10 @@ public class Collection {
         this.items = items;
     }
 
+    public List<Object> toList() {
+        return items;
+    }
+
     /**
      * @return true when collection is not null or empty, false otherwise.
      */
@@ -175,6 +179,12 @@ public class Collection {
 
     public Collection sort(Comparator comparator) {
         this.items = Collection.sort(items, comparator);
+        return this;
+    }
+
+
+    public Collection filter(Filter filter) {
+        this.items = Collection.filter(items, filter);
         return this;
     }
 
@@ -556,7 +566,7 @@ public class Collection {
         Boolean accepts(Object record);
     }
 
-    private class FieldValueFilter implements Filter {
+    public class FieldValueFilter implements Filter {
         private Object value;
         private String field;
         private Boolean equals;
@@ -572,7 +582,7 @@ public class Collection {
         }
     }
 
-    private class FieldValuesFilter implements Filter {
+    public class FieldValuesFilter implements Filter {
         private Set<Object> values;
         private String field;
         private Boolean valueIn;

@@ -792,22 +792,25 @@ private class CollectionsTest {
      */
     @IsTest
     static void testFilterByFieldValues() {
-        Set<String> acceptedStages = new Set<String>{
+        Set<Object> acceptedStages = new Set<Object>{
                 'Analysis', 'Deal'
         };
+        List<Opportunity> expectedAcceptedOpps = new List<Opportunity>();
+        List<Opportunity> expectedRejectedOpps = new List<Opportunity>();
 
-        List<Opportunity> expected = new List<Opportunity>();
         for (Opportunity opportunity : opportunities) {
             if (acceptedStages.contains(opportunity.StageName)) {
-                expected.add(opportunity);
+                expectedAcceptedOpps.add(opportunity);
+            } else {
+                expectedRejectedOpps.add(opportunity);
             }
         }
 
-        List<Opportunity> actual = Collections.filterByFieldValues(opportunities, Opportunity.StageName, Collections.VALUE_IN, new Set<Object>{
-                'Analysis', 'Deal'
-        });
+        List<Opportunity> actualAcceptedOpps = Collections.filterByFieldValues(opportunities, Opportunity.StageName, Collections.VALUE_IN, acceptedStages);
+        List<Opportunity> actualRejectedOpps = Collections.filterByFieldValues(opportunities, Opportunity.StageName, Collections.VALUE_NOT_IN, acceptedStages);
 
-        System.assertEquals(expected, actual);
+        System.assertEquals(expectedAcceptedOpps, actualAcceptedOpps);
+        System.assertEquals(expectedRejectedOpps, actualRejectedOpps);
     }
 
 

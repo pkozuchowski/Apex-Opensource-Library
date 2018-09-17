@@ -356,6 +356,31 @@ public class Collection {
     }
 
 
+    /*
+    * GROUP BY - INSTANCE
+    * */
+    public Object groupBy(SObjectField field) {
+        return Collection.groupBy((SObject[]) items, field);
+    }
+
+    public Object groupBy(Type keyType, String field) {
+        return Collection.groupBy(keyType, (SObject[]) items, field);
+    }
+
+    public Object groupBy(KeyMapper keyMapper) {
+        return Collection.groupBy(items, keyMapper);
+    }
+
+    public Object groupBy(Mapper mapper) {
+        return Collection.groupBy(items, mapper);
+    }
+
+    /*
+    * GROUP BY - STATIC
+    * */
+    /*
+    * TODO:
+    * */
     public static Object groupBy(List<SObject> records, SObjectField field) {
         return groupBy(records, new SObjectFieldKeyMapper(field));
     }

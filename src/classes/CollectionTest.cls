@@ -87,6 +87,8 @@ private class CollectionTest {
     static void testIsNotEmpty() {
         System.assertEquals(false, Collection.isNotEmpty(null));
         System.assertEquals(false, Collection.isNotEmpty(new List<String>()));
+        System.assertEquals(false, new Collection(null).isNotEmpty());
+        System.assertEquals(false, new Collection(new List<String>()).isNotEmpty());
     }
 
 
@@ -98,6 +100,8 @@ private class CollectionTest {
     static void testIsEmpty() {
         System.assertEquals(true, Collection.isEmpty(null));
         System.assertEquals(true, Collection.isEmpty(new List<String>()));
+        System.assertEquals(true, new Collection(null).isEmpty());
+        System.assertEquals(true, new Collection(new List<String>()).isEmpty());
     }
 
 

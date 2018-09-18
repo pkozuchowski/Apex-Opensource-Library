@@ -171,32 +171,65 @@ public class Collection {
     }
 
 
+    /**
+     * Groups collection items by given field to map where key
+     * is the field's value and the value is List<SObject> which have the same key.
+     * @param field SObject Field
+     */
     public Object groupBy(SObjectField field) {
         assertSObjectCollection();
         return Collection.groupBy((SObject[]) items, field);
     }
 
+    /**
+     * Groups collection items by given field to map where key
+     * is the field's value and the value is List<SObject> which have the same key.
+     * @param keyType Type of the key ex. String.class, Id.class
+     * @param field SObject Field
+     */
     public Object groupBy(Type keyType, String field) {
         assertSObjectCollection();
         return Collection.groupBy(keyType, (SObject[]) items, field);
     }
 
+    /**
+     * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
+     * key is produced by the key mapper and the value is List<Object> which have the same key.
+     * @param keyMapper Collection.KeyMapper implementation.
+     */
     public Object groupBy(KeyMapper keyMapper) {
         return Collection.groupBy(items, keyMapper);
     }
 
+    /**
+     * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
+     * both key and values are produced by Mapper for each collection item.
+     *
+     * @param Mapper Collection.Mapper implementation.
+     */
     public Object groupBy(Mapper mapper) {
         return Collection.groupBy(items, mapper);
     }
 
 
+    /**
+     * Reduces collection to resulting object.
+     *
+     * @param reducer Collection.Reducer implementation which reduces each item to resulting object.
+     * @param result Instance of the result.
+     */
     public Object reduce(Reducer reducer, Object result) {
         return Collection.reduce(items, reducer, result);
     }
 
 
-    public List<Wrapper> wrap(Type wrapperType) {
-        return Collection.wrap(items, wrapperType);
+    /**
+     * Wraps objects into Wrapper implementation.
+     * @param wrapper Empty prototype of wrapper implementation.
+     * This prototype will be cloned and populated with each item.
+     */
+    public List<Wrapper> wrap(Wrapper wrapper) {
+        return Collection.wrap(items, wrapper);
     }
 
 
@@ -553,16 +586,17 @@ public class Collection {
      * Wraps each item into Wrapper class
      *
      * @param items List of objects to wrap.
-     * @param wrapperType Type of concrete class implementing Wrapper interface.
+     * @param wrapper Empty prototype of wrapper implementation.
+     * This prototype will be cloned and populated with each item.
      *
      * @return List of Wrappers
      */
-    public static List<Wrapper> wrap(List<Object> items, Type wrapperType) {
-        List<Wrapper> wrappers = (List<Wrapper>) newListOfItemType(wrapperType);
+    public static List<Wrapper> wrap(List<Object> items, Wrapper wrapper) {
+        List<Wrapper> wrappers = new List<Wrapper>();
 
-        for (Integer i = 0; i < items.size(); i++) {
-            Wrapper wrapper = (Wrapper) wrapperType.newInstance();
-            wrapper.setItem(items[0]);
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            Wrapper wrapper = wrapper.clone();
+            wrapper.setItem(items[i]);
             wrappers.add(wrapper);
         }
 

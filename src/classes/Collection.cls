@@ -275,7 +275,9 @@ public class Collection {
 
     /*
     *
+    *
     * STATIC METHODS
+    *
     *
     * */
     /**
@@ -423,6 +425,22 @@ public class Collection {
         Type valueType();
         Object key(Object item);
         Object value(Object item);
+    }
+
+    /**
+     * Set and Map are not covariant types and there's no Map interface in Salesforce which would allow casting differently typed Maps on abstract Map type.
+     * Because of that, we cannot cast Map<Id, Account> to Map<Object,Object> or any other map
+     * (unless we serialize and deserialize via JSON). It means, that we cannot have one generic method which would take
+     * generic Map and operate on it, we would need separate methods for each type of key.
+     * This wrapper is a workaround for this, it lets us use AbstractMap regardless of it's key type.
+     * Instead of having separate methods for each kind of map, we have IMap implementations for all primitive key types.
+     */
+    public interface IMap {
+        Object toMap();
+        Object keySet();
+        void put(Object key, Object value);
+        Object get(Object key);
+        Boolean containsKey(Object key);
     }
 
 
@@ -773,22 +791,6 @@ public class Collection {
         }
     }
 
-
-    /**
-     * Set and Map are not covariant types and there's no Map interface in Salesforce which would allow casting differently typed Maps on abstract Map type.
-     * Because of that, we cannot cast Map<Id, Account> to Map<Object,Object> or any other map
-     * (unless we serialize and deserialize via JSON). It means, that we cannot have one generic method which would take
-     * generic Map and operate on it, we would need separate methods for each type of key.
-     * This wrapper is a workaround for this, it lets us use AbstractMap regardless of it's key type.
-     * Instead of having separate methods for each kind of map, we have IMap implementations for all primitive key types.
-     */
-    public interface IMap {
-        Object toMap();
-        Object keySet();
-        void put(Object key, Object value);
-        Object get(Object key);
-        Boolean containsKey(Object key);
-    }
 
     private class CollectionException extends Exception {
     }

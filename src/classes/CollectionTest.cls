@@ -22,7 +22,7 @@
 * SOFTWARE.
 */
 @IsTest(IsParallel=true)
-private class CollectionsTest {
+private class CollectionTest {
 
     private static List<Opportunity> opportunities = new List<Opportunity>{
             newOpportunity(0, new Map<String, Object>{
@@ -841,6 +841,48 @@ private class CollectionsTest {
         public Boolean accepts(Object record, Object oldRecord) {
             return ((Opportunity) record).Name != ((Opportunity) oldRecord).Name;
         }
+    }
+
+    /**
+     *@description
+     *
+     */
+    @IsTest
+    static void testFilterFieldChanged() {
+        List<Opportunity> opps = opportunities;
+        List<Opportunity> oldOpps = opps.deepClone(true);
+        Map<Id, Opportunity> oldMap = new Map<Id, Opportunity>(oldOpps);
+
+        opps[0].Name = opps[1].Name = 'Henry';
+        opps[2].Name = opps[3].Name = 'John';
+
+        oldOpps[0].Name = 'Hen';
+        oldOpps[1].Name = oldOpps[2].Name = 'Ken';
+
+
+        System.assertEquals(new List<Opportunity>{
+                opps[0], opps[1], opps[2], opps[3]
+        },
+                Collections.filter(opps, oldMap,
+                        new Collections.FilterFieldChanged(Opportunity.Name)
+                )
+        );
+
+        System.assertEquals(new List<Opportunity>{
+                opps[2], opps[3]
+        },
+                Collections.filter(opps, oldMap, new Collections.FilterFieldChanged(Opportunity.Name, Collections.ANY_VALUE, 'John'))
+        );
+
+        System.assertEquals(new List<Opportunity>{
+                opps[1], opps[2]
+        }, Collections.filter(opps, oldMap, new Collections.FilterFieldChanged(Opportunity.Name, 'Ken', Collections.ANY_VALUE))
+        );
+
+        System.assertEquals(new List<Opportunity>{
+                opps[0]
+        }, Collections.filter(opps, oldMap, new Collections.FilterFieldChanged(Opportunity.Name, 'Hen', 'Henry'))
+        );
     }
 
 

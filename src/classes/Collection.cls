@@ -810,16 +810,9 @@ public class Collection {
         public SObjectFieldComparator(SObjectField field, Boolean isAscending) {
             this.field = field;
             this.direction = isAscending ? 1 : -1;
-            DisplayType type = field.getDescribe().getType();
-
-            if (numericFields.contains(type)) {
-                this.comparator = NumericFieldComparatorInstance;
-            } else {
-                this.comparator = StringFieldComparatorInstance;
-            }
-
+            this.comparator = comparatorsByFieldType.get(field.getDescribe().getSoapType());
             if (comparator == null) {
-                this.comparator = StringFieldComparatorInstance;
+                this.comparator = comparatorsByFieldType.get(SoapType.STRING);
             }
         }
 
@@ -831,29 +824,60 @@ public class Collection {
         }
     }
 
-    private static StringFieldComparator StringFieldComparatorInstance = new StringFieldComparator();
-    private static NumericFieldComparator NumericFieldComparatorInstance = new NumericFieldComparator();
 
-    private static Set<Schema.DisplayType> numericFields = new Set<DisplayType>{
-            Schema.DisplayType.DOUBLE,
-            Schema.DisplayType.INTEGER,
-            Schema.DisplayType.PERCENT
+    private static Map<Schema.SoapType, Comparator> comparatorsByFieldType = new Map<SoapType, Collection.Comparator>{
+            SoapType.STRING => new StringComparator(),
+            SoapType.DATE => new DateComparator(),
+            SoapType.DATETIME => new DateTimeComparator(),
+            SoapType.INTEGER => new IntegerComparator(),
+            SoapType.DECIMAL => new DecimalComparator(),
+            SoapType.BOOLEAN => new BooleanComparator()
     };
-    private class StringFieldComparator implements Comparator {
+
+    private class DateComparator implements Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
-            String s1 = thisItem == null ? '' : '' + thisItem;
-            String s2 = otherItem == null ? '' : '' + otherItem;
-            return s1.compareTo(s2);
+            Date a = (Date) thisItem, b = (Date) otherItem;
+            if (a > b) return 1;
+            if (a < b) return -1;
+            return 0;
         }
     }
-    private class NumericFieldComparator implements Comparator {
+    private class DateTimeComparator implements Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
-            Decimal d1 = thisItem == null ? 0.0 : (Decimal) thisItem;
-            Decimal d2 = otherItem == null ? 0.0 : (Decimal) otherItem;
-
-            if (d1 > d2) return 1;
-            if (d1 < d2) return -1;
+            Datetime a = (Datetime) thisItem, b = (Datetime) otherItem;
+            if (a > b) return 1;
+            if (a < b) return -1;
             return 0;
+        }
+    }
+    public class StringComparator implements Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            String a = (String) thisItem, b = (String) otherItem;
+            if (a > b) return 1;
+            if (a < b) return -1;
+            return 0;
+        }
+    }
+    private class IntegerComparator implements Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Integer a = (Integer) thisItem, b = (Integer) otherItem;
+            if (a > b) return 1;
+            if (a < b) return -1;
+            return 0;
+        }
+    }
+    private class DecimalComparator implements Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Decimal a = (Decimal) thisItem, b = (Decimal) otherItem;
+            if (a > b) return 1;
+            if (a < b) return -1;
+            return 0;
+        }
+    }
+    private class BooleanComparator implements Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Boolean a = (Boolean) thisItem, b = (Boolean) otherItem;
+            return a == b ? 0 : 1;
         }
     }
 

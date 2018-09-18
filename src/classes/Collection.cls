@@ -34,13 +34,19 @@
  */
 public class Collection {
     public final static Boolean
-            EQUALS = true,
-            NOT_EQUALS = false,
-            VALUE_IN = true,
-            VALUE_NOT_IN = false,
             ASCENDING = true,
             DESCENDING = false,
             ANY_VALUE = true;
+
+    public final static String
+            EQUALS = '==',
+            NOT_EQUALS = '!=',
+            GREATER_THAN = '>',
+            GREATER_EQUAL_THAN = '>=',
+            LESS_THAN = '<',
+            LESS_EQUAL_THAN = '<=',
+            VALUE_IN = 'IN',
+            VALUE_NOT_IN = 'NOT IN';
 
     private List<Object> items;
 
@@ -503,7 +509,7 @@ public class Collection {
      * @param value Expected value of the field.
      * @return List of filtered records.
      */
-    public static List<SObject> filterByFieldValue(List<SObject> records, SObjectField field, Boolean equals, Object value) {
+    public static List<SObject> filterByFieldValue(List<SObject> records, SObjectField field, String equals, Object value) {
         return filterByFieldValue(records, '' + field, equals, value);
     }
 
@@ -515,8 +521,8 @@ public class Collection {
      * @param value Expected value of the field.
      * @return List of filtered records.
      */
-    public static List<SObject> filterByFieldValue(List<SObject> records, String field, Boolean equals, Object value) {
-        return (List<SObject>) filter(records, new FilterFieldByValue(field, equals, value));
+    public static List<SObject> filterByFieldValue(List<SObject> records, String field, String equals, Object value) {
+        return (List<SObject>) filter(records, new FilterByFieldValue(field, equals, value));
     }
 
 
@@ -528,7 +534,7 @@ public class Collection {
      * @param values Set of expected values.
      * @return  List of filtered records.
      */
-    public static List<SObject> filterByFieldValues(List<SObject> records, SObjectField field, Boolean inSet, Set<Object> values) {
+    public static List<SObject> filterByFieldValues(List<SObject> records, SObjectField field, String inSet, Set<Object> values) {
         return filterByFieldValueIn(records, '' + field, inSet, values);
     }
 
@@ -540,8 +546,8 @@ public class Collection {
      * @param values Set of expected values.
      * @return  List of filtered records.
      */
-    public static List<SObject> filterByFieldValueIn(List<SObject> records, String field, Boolean inSet, Set<Object> values) {
-        return (List<SObject>) filter(records, new FilterFieldByValues(field, inSet, values));
+    public static List<SObject> filterByFieldValueIn(List<SObject> records, String field, String inSet, Set<Object> values) {
+        return (List<SObject>) filter(records, new FilterByFieldValues(field, inSet, values));
     }
 
     /**
@@ -572,31 +578,77 @@ public class Collection {
         Boolean accepts(Object record);
     }
 
-    public class FilterFieldByValue implements Filter {
+    public final static Map<String, Set<Integer>> COMPARATOR_OUTCOMES = new Map<String, Set<Integer>>{
+            GREATER_THAN => new Set<Integer>{
+                    1
+            },
+            GREATER_EQUAL_THAN => new Set<Integer>{
+                    0, 1
+            },
+            LESS_THAN => new Set<Integer>{
+                    -1
+            },
+            LESS_EQUAL_THAN => new Set<Integer>{
+                    0, -1
+            },
+            EQUALS => new Set<Integer>{
+                    0
+            },
+            NOT_EQUALS => new Set<Integer>{
+                    1, -1
+            }
+    };
+    public class FilterByFieldValue implements Filter {
         private Object value;
         private String field;
-        private Boolean equals;
+        private String operator;
+        private Comparator comparator;
+        private final Set<Integer> acceptedCompareValues;
 
-        public FilterFieldByValue(String field, Boolean equals, Object value) {
-            this.value = value;
-            this.field = field;
-            this.equals = equals;
+
+        public FilterByFieldValue(SObjectField field, String operator, Object value) {
+            this('' + field, operator, value);
         }
 
+        public FilterByFieldValue(String field, String operator, Object value) {
+            this.value = value;
+            this.field = field;
+            this.operator = operator;
+
+            if (value instanceof Integer || value instanceof Decimal || value instanceof Long) {
+                this.comparator = NumericFieldComparatorInstance;
+            } else {
+                this.comparator = StringFieldComparatorInstance;
+            }
+
+            this.acceptedCompareValues = COMPARATOR_OUTCOMES.get(operator);
+        }
+
+
         public Boolean accepts(Object record) {
-            return equals == (((SObject) record).get(field) == this.value);
+            Object fieldValue = ((SObject) record).get(field);
+            Integer outcome = comparator.compare(fieldValue, value);
+            outcome = outcome > 1 ? 1 : (outcome < -1 ? -1 : outcome);
+
+            return acceptedCompareValues.contains(outcome);
         }
     }
 
-    public class FilterFieldByValues implements Filter {
+    public class FilterByFieldValues implements Filter {
         private Set<Object> values;
         private String field;
         private Boolean valueIn;
 
-        public FilterFieldByValues(String field, Boolean valueIn, Set<Object> values) {
+        public FilterByFieldValues(String field, String operator, Set<Object> values) {
             this.values = values;
             this.field = field;
-            this.valueIn = valueIn;
+            this.valueIn = operator == VALUE_IN;
+        }
+
+        public FilterByFieldValues(SObjectField field, String operator, Set<Object> values) {
+            this.values = values;
+            this.field = '' + field;
+            this.valueIn = operator == VALUE_IN;
         }
 
         public Boolean accepts(Object record) {

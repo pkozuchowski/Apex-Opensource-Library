@@ -39,14 +39,14 @@ public class CollectionFilter {
      *     Collection.filter(accounts, new CollectionFilter.ByFieldValue(Account.CreatedDate,'>=', Date.today().addDays(-1) ));
      * </pre>
      */
-    public class FilterByFieldValue implements Collection.Filter {
+    public class ByFieldValue implements Collection.Filter {
         private Object value;
         private String field;
         private String operator;
         private Collection.Comparator comparator;
         private final Set<Integer> acceptedCompareValues;
 
-        public FilterByFieldValue(SObjectField field, String operator, Object value) {
+        public ByFieldValue(SObjectField field, String operator, Object value) {
             this.field = '' + field;
             this.operator = operator;
             this.value = value;
@@ -76,18 +76,18 @@ public class CollectionFilter {
      *     new Collection(accounts).filter(new CollectionFilter.ByFieldValues(Account.Name,'IN',new Set<Object>{'Test Account', 'Other Account'}));
      * </pre>
      */
-    public class FilterByFieldValues implements Collection.Filter {
+    public class ByFieldValues implements Collection.Filter {
         private Set<Object> values;
         private String field;
         private Boolean valueIn;
 
-        public FilterByFieldValues(String field, String operator, Set<Object> values) {
+        public ByFieldValues(String field, String operator, Set<Object> values) {
             this.values = values;
             this.field = field;
             this.valueIn = operator == Collection.VALUE_IN;
         }
 
-        public FilterByFieldValues(SObjectField field, String operator, Set<Object> values) {
+        public ByFieldValues(SObjectField field, String operator, Set<Object> values) {
             this.values = values;
             this.field = '' + field;
             this.valueIn = operator == Collection.VALUE_IN;
@@ -101,16 +101,21 @@ public class CollectionFilter {
 
     /**
      * Filters SObject list to those related to given parents by given relationship field.
+     *
+     * @example
+     * <pre>
+     *     Collection.filter(contacts, new CollectionFilter.RelatedTo(accounts, Contact.AccountId));
+     * </pre>
      */
-    public class FilterRelatedTo implements Collection.Filter {
+    public class RelatedTo implements Collection.Filter {
         private Map<Id, SObject> parents;
         private SObjectField relationshipField;
 
-        public FilterRelatedTo(List<SObject> parents, SObjectField relationshipField) {
+        public RelatedTo(List<SObject> parents, SObjectField relationshipField) {
             this(new Map<Id, SObject>(parents), relationshipField);
         }
 
-        public FilterRelatedTo(Map<Id, SObject> parents, SObjectField relationshipField) {
+        public RelatedTo(Map<Id, SObject> parents, SObjectField relationshipField) {
             this.parents = new Map<Id, SObject>(parents);
             this.relationshipField = relationshipField;
         }
@@ -131,17 +136,17 @@ public class CollectionFilter {
      *     new Collection(accounts).filter(new CollectionFilter.FieldChanged(Opportunity.StageName, Collection.ANY_VALUE, 'Closed'));
      * </pre>
      */
-    public class FilterFieldChanged implements Collection.UpdateFilter {
+    public class FieldChanged implements Collection.UpdateFilter {
         private Object fromValue;
         private Object toValue;
         private SObjectField field;
 
-        public FilterFieldChanged(SObjectField field) {
+        public FieldChanged(SObjectField field) {
             this.field = field;
             this.fromValue = this.toValue = Collection.ANY_VALUE;
         }
 
-        public FilterFieldChanged(SObjectField field, Object fromValue, Object toValue) {
+        public FieldChanged(SObjectField field, Object fromValue, Object toValue) {
             this.field = field;
             this.fromValue = fromValue;
             this.toValue = toValue;

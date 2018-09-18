@@ -56,6 +56,9 @@ public class Collection {
         this.items = items;
     }
 
+    /*
+    * Constructor used for update trigger.
+    * */
     public Collection(List<SObject> items, Map<Id, SObject> old) {
         this.items = items;
         this.old = old;

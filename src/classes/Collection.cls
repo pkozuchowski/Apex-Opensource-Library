@@ -501,13 +501,14 @@ public class Collection {
     * */
 
     /**
-     * Reduces collection of objects to other collection of given type.
+     * Reduces collection of objects to other collection or object of given type.
      * @param items input collection to reduce
      * @param reducer Reducer interface implementation. @see Collections.Reducer
-     * @param result collection to which input is reduced.
+     * @param result collection/object to which input is reduced.
+     * @return result after reduction.
      * <pre>
      * @example
-     * reduce(List<Account> accounts, AccountToIdReducer, Set<Id> accountIds);
+     * Set<Id> accountIds = reduce(List<Account> accounts, AccountToIdReducer, Set<Id> accountIds);
      *
      * class AccountToIdReducer implements Reducer{
      *  public reduce(Object ids, Object item){
@@ -594,6 +595,22 @@ public class Collection {
     * FILTER
     * */
 
+    /*
+    * Filter determines whether collection item should be included into result collection of filter method.
+    * */
+    public interface Filter {
+        Boolean accepts(Object record);
+    }
+
+    /*
+    * Filter determines whether collection item should be included into result collection of filter method.
+    * This kind of filter compares current record value with Trigger.old value.
+    * */
+    public interface UpdateFilter {
+        Boolean accepts(SObject record, SObject oldRecord);
+    }
+
+
     /**
      * @param items List of items to filter.
      * @param filter Filter implementation which for each collection item returns boolean value whether item should
@@ -614,14 +631,6 @@ public class Collection {
 
         return filtered;
     }
-
-    /*
-    * This interface determines whether record should be included in the result collection or not.
-    * */
-    public interface Filter {
-        Boolean accepts(Object record);
-    }
-
 
     /**
      * @param records List of Trigger New records
@@ -644,10 +653,6 @@ public class Collection {
         }
 
         return filtered;
-    }
-
-    public interface UpdateFilter {
-        Boolean accepts(SObject record, SObject oldRecord);
     }
 
 
@@ -685,10 +690,10 @@ public class Collection {
      * @return Sorted list of objects with order determined by comparator.
      */
     public static List<Object> sort(List<Object> items, Comparator comparator) {
-        List<ObjectComparable> comparables = new List<ObjectComparable>();
+        List<ComparableObject> comparables = new List<ComparableObject>();
 
         for (Integer i = 0, size = items.size(); i < size; i++) {
-            comparables.add(new ObjectComparable(items[i], comparator));
+            comparables.add(new ComparableObject(items[i], comparator));
         }
 
         comparables.sort();
@@ -701,17 +706,17 @@ public class Collection {
         return sorted;
     }
 
-    private virtual class ObjectComparable implements Comparable {
+    private virtual class ComparableObject implements Comparable {
         private Object item;
         private Comparator comparator;
 
-        public ObjectComparable(Object item, Comparator comparator) {
+        public ComparableObject(Object item, Comparator comparator) {
             this.item = item;
             this.comparator = comparator;
         }
 
         public Integer compareTo(Object other) {
-            return comparator.compare(this.item, ((ObjectComparable) other).item);
+            return comparator.compare(this.item, ((ComparableObject) other).item);
         }
     }
 

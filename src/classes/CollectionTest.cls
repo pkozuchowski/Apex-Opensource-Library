@@ -545,14 +545,19 @@ private class CollectionTest {
     static void whenEmptyOpportunityListIsMappedThenEmptyOpportunityByStringMapIsReturned() {
         Map<String, Opportunity> expected = new Map<String, Opportunity>();
         Map<String, Opportunity> actual = (Map<String, Opportunity>) Collection.mapBy(new List<Opportunity>(), Opportunity.Name);
+        Map<String, Opportunity> actual2 = (Map<String, Opportunity>) new Collection(new List<Opportunity>()).mapBy(Opportunity.Name);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     @IsTest
     static void whenEmptySObjectListIsMappedThenEmptySObjectByStringMapIsReturned() {
         Map<String, SObject> expected = new Map<String, SObject>();
         Map<String, SObject> actual = (Map<String, SObject>) Collection.mapBy(new List<SObject>(), Opportunity.Name);
+        Map<String, SObject> actual2 = (Map<String, SObject>) new Collection(new List<SObject>()).mapBy(Opportunity.Name);
+
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
 

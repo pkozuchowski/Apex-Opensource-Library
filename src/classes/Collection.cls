@@ -215,8 +215,9 @@ public class Collection {
      * Wraps objects into Wrapper implementation.
      * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
      */
-    public List<Wrapper> wrap(Type wrapperType) {
-        return Collection.wrap(items, wrapperType);
+    public Collection wrap(Type wrapperType) {
+        this.items = Collection.wrap(items, wrapperType);
+        return this;
     }
 
 

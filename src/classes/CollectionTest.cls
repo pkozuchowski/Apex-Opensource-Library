@@ -581,8 +581,10 @@ private class CollectionTest {
                 }
         };
         Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collection.groupBy(String.class, opportunities, 'NextStep');
+        Map<String, List<Opportunity>> actual2 = (Map<String, List<Opportunity>>) new Collection(opportunities).groupBy(String.class, 'NextStep');
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -605,6 +607,7 @@ private class CollectionTest {
                 }
         };
         Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.NextStep);
+        Map<String, List<Opportunity>> actual2 = (Map<String, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.NextStep);
 
         System.assertEquals(expected, actual);
     }
@@ -623,6 +626,7 @@ private class CollectionTest {
                 }
         };
         Map<Id, List<Opportunity>> actual = (Map<Id, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.AccountId);
+        Map<Id, List<Opportunity>> actual2 = (Map<Id, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.AccountId);
 
         System.assertEquals(expected, actual);
     }
@@ -644,8 +648,10 @@ private class CollectionTest {
                 }
         };
         Map<Integer, List<Opportunity>> actual = (Map<Integer, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.FiscalQuarter);
+        Map<Integer, List<Opportunity>> actual2 = (Map<Integer, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.FiscalQuarter);
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     @IsTest
@@ -657,9 +663,11 @@ private class CollectionTest {
             });
         }
         Map<Decimal, List<Opportunity>> actual = (Map<Decimal, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.Probability);
-
+        Map<Decimal, List<Opportunity>> actual2 = (Map<Decimal, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.Probability);
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
+
     }
 
     @IsTest
@@ -671,9 +679,11 @@ private class CollectionTest {
             });
         }
         Map<Date, List<Opportunity>> actual = (Map<Date, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.LastActivityDate);
+        Map<Date, List<Opportunity>> actual2 = (Map<Date, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.LastActivityDate);
 
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     @IsTest
@@ -685,9 +695,11 @@ private class CollectionTest {
             });
         }
         Map<Datetime, List<Opportunity>> actual = (Map<Datetime, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.CreatedDate);
+        Map<Datetime, List<Opportunity>> actual2 = (Map<Datetime, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.CreatedDate);
 
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     @IsTest
@@ -701,8 +713,10 @@ private class CollectionTest {
                 }
         };
         Map<Boolean, List<Opportunity>> actual = (Map<Boolean, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.HasOpenActivity);
+        Map<Boolean, List<Opportunity>> actual2 = (Map<Boolean, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.HasOpenActivity);
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     @IsTest
@@ -716,9 +730,11 @@ private class CollectionTest {
                 }
         };
         Map<Integer, List<Opportunity>> actual = (Map<Integer, List<Opportunity>>) Collection.groupBy(opportunities, new OpportunitiesByYearsHalfMapper());
+        Map<Integer, List<Opportunity>> actual2 = (Map<Integer, List<Opportunity>>) new Collection(opportunities).groupBy(new OpportunitiesByYearsHalfMapper());
 
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     private class OpportunitiesByYearsHalfMapper implements Collection.KeyMapper {
@@ -754,6 +770,8 @@ private class CollectionTest {
         };
 
         Map<Integer, List<OpportunityWrapper>> actual = (Map<Integer, List<OpportunityWrapper>>) Collection.groupBy(opportunities, new OppWrapperByHalfYearMapper());
+
+        System.assertEquals(expected,actual);
     }
 
     private class OppWrapperByHalfYearMapper implements Collection.Mapper {

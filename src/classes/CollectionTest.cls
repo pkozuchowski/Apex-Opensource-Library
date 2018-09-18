@@ -747,7 +747,7 @@ private class CollectionTest {
      * Collections.filterByFieldValue filters input records and return only those which field is the same as specified value.
      */
     @IsTest
-    static void testFilterByFieldValue() {
+    static void tesFiltertFilterByFieldValue() {
         List<Opportunity> hasOpenActivity = new List<Opportunity>();
         List<Opportunity> hasNotOpenActivity = new List<Opportunity>();
         List<Opportunity> fiscalQuarterEquals0 = new List<Opportunity>();
@@ -775,14 +775,14 @@ private class CollectionTest {
             }
         }
 
-        System.assertEquals(hasOpenActivity, Collection.filter(opportunities, new Collection.FilterByFieldValue(Opportunity.HasOpenActivity, '==', true)));
-        System.assertEquals(hasNotOpenActivity, Collection.filter(opportunities, new Collection.FilterByFieldValue(Opportunity.HasOpenActivity, '!=', true)));
+        System.assertEquals(hasOpenActivity, Collection.filter(opportunities, new CollectionFilter.FilterByFieldValue(Opportunity.HasOpenActivity, '==', true)));
+        System.assertEquals(hasNotOpenActivity, Collection.filter(opportunities, new CollectionFilter.FilterByFieldValue(Opportunity.HasOpenActivity, '!=', true)));
 
-        System.assertEquals(fiscalQuarterEquals0, Collection.filter(opportunities, new Collection.FilterByFieldValue(Opportunity.FiscalQuarter, '==', 0)));
-        System.assertEquals(fiscalQuarterNotEquals0, Collection.filter(opportunities, new Collection.FilterByFieldValue(Opportunity.FiscalQuarter, '!=', 0)));
+        System.assertEquals(fiscalQuarterEquals0, Collection.filter(opportunities, new CollectionFilter.FilterByFieldValue(Opportunity.FiscalQuarter, '==', 0)));
+        System.assertEquals(fiscalQuarterNotEquals0, Collection.filter(opportunities, new CollectionFilter.FilterByFieldValue(Opportunity.FiscalQuarter, '!=', 0)));
 
-        System.assertEquals(nextStepAnalysis, Collection.filter(opportunities, new Collection.FilterByFieldValue(Opportunity.NextStep, '==', 'Analysis')));
-        System.assertEquals(nextStepNotAnalysis, Collection.filter(opportunities, new Collection.FilterByFieldValue(Opportunity.NextStep, '!=', 'Analysis')));
+        System.assertEquals(nextStepAnalysis, Collection.filter(opportunities, new CollectionFilter.FilterByFieldValue(Opportunity.NextStep, '==', 'Analysis')));
+        System.assertEquals(nextStepNotAnalysis, Collection.filter(opportunities, new CollectionFilter.FilterByFieldValue(Opportunity.NextStep, '!=', 'Analysis')));
     }
 
 
@@ -791,7 +791,7 @@ private class CollectionTest {
      * Collections.filterByFieldValues filters input records and return only those which field is one of specified values.
      */
     @IsTest
-    static void testFilterByFieldValues() {
+    static void tesFiltertFilterByFieldValues() {
         Set<Object> acceptedStages = new Set<Object>{
                 'Analysis', 'Deal'
         };
@@ -806,8 +806,8 @@ private class CollectionTest {
             }
         }
 
-        List<Opportunity> actualAcceptedOpps = (List<Opportunity>) Collection.filter(opportunities, new Collection.FilterByFieldValues(Opportunity.StageName, 'IN', acceptedStages));
-        List<Opportunity> actualRejectedOpps = (List<Opportunity>) Collection.filter(opportunities, new Collection.FilterByFieldValues(Opportunity.StageName, 'NOT IN', acceptedStages));
+        List<Opportunity> actualAcceptedOpps = (List<Opportunity>) Collection.filter(opportunities, new CollectionFilter.FilterByFieldValues(Opportunity.StageName, 'IN', acceptedStages));
+        List<Opportunity> actualRejectedOpps = (List<Opportunity>) Collection.filter(opportunities, new CollectionFilter.FilterByFieldValues(Opportunity.StageName, 'NOT IN', acceptedStages));
 
         System.assertEquals(expectedAcceptedOpps, actualAcceptedOpps);
         System.assertEquals(expectedRejectedOpps, actualRejectedOpps);
@@ -864,24 +864,24 @@ private class CollectionTest {
                 opps[0], opps[1], opps[2], opps[3]
         },
                 Collection.filter(opps, oldMap,
-                        new Collection.FilterFieldChanged(Opportunity.Name)
+                        new CollectionFilter.FilterFieldChanged(Opportunity.Name)
                 )
         );
 
         System.assertEquals(new List<Opportunity>{
                 opps[2], opps[3]
         },
-                Collection.filter(opps, oldMap, new Collection.FilterFieldChanged(Opportunity.Name, Collection.ANY_VALUE, 'John'))
+                Collection.filter(opps, oldMap, new CollectionFilter.FilterFieldChanged(Opportunity.Name, Collection.ANY_VALUE, 'John'))
         );
 
         System.assertEquals(new List<Opportunity>{
                 opps[1], opps[2]
-        }, Collection.filter(opps, oldMap, new Collection.FilterFieldChanged(Opportunity.Name, 'Ken', Collection.ANY_VALUE))
+        }, Collection.filter(opps, oldMap, new CollectionFilter.FilterFieldChanged(Opportunity.Name, 'Ken', Collection.ANY_VALUE))
         );
 
         System.assertEquals(new List<Opportunity>{
                 opps[0]
-        }, Collection.filter(opps, oldMap, new Collection.FilterFieldChanged(Opportunity.Name, 'Hen', 'Henry'))
+        }, Collection.filter(opps, oldMap, new CollectionFilter.FilterFieldChanged(Opportunity.Name, 'Hen', 'Henry'))
         );
     }
 

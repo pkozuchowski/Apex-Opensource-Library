@@ -326,7 +326,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public static Object getUniqueValues(List<SObject> records, SObjectField field) {
-        return getUniqueValues(records, new SObjectFieldKeyMapper(field));
+        return getUniqueValues(records, new CollectionMapper.SObjectFieldKeyMapper(field));
     }
 
     /**
@@ -336,7 +336,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public static Object getUniqueValues(Type valueType, List<SObject> records, String field) {
-        return getUniqueValues(records, new SObjectFieldKeyMapper(valueType, field));
+        return getUniqueValues(records, new CollectionMapper.SObjectFieldKeyMapper(valueType, field));
     }
 
     /**
@@ -345,7 +345,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public static Object getUniqueValues(List<Object> records, KeyMapper keyMapper) {
-        return mapByFieldToIMap(records, new MapperWithKeyMapper(keyMapper, getListItemType(records))).keySet();
+        return mapByFieldToIMap(records, new CollectionMapper.MapperWithKeyMapper(keyMapper, getListItemType(records))).keySet();
     }
 
     /**
@@ -398,7 +398,7 @@ public class Collection {
      * Map's key type is derived from field's DisplayType.
      */
     public static Object mapBy(List<SObject> records, SObjectField field) {
-        return mapBy(records, new SObjectFieldKeyMapper(field));
+        return mapBy(records, new CollectionMapper.SObjectFieldKeyMapper(field));
     }
 
     /**
@@ -408,7 +408,7 @@ public class Collection {
      * @return Map of items where record is map's value and field's value is map's key.
      */
     public static Object mapBy(Type keyType, List<SObject> records, String field) {
-        return mapBy(records, new SObjectFieldKeyMapper(keyType, field));
+        return mapBy(records, new CollectionMapper.SObjectFieldKeyMapper(keyType, field));
     }
 
     /**
@@ -417,7 +417,7 @@ public class Collection {
      * @return Map of items where list item is map's value and key is produced by KeyMapper.
      */
     public static Object mapBy(List<Object> items, KeyMapper mapper) {
-        return mapByFieldToIMap(items, new MapperWithKeyMapper(mapper, getListItemType(items))).toMap();
+        return mapByFieldToIMap(items, new CollectionMapper.MapperWithKeyMapper(mapper, getListItemType(items))).toMap();
     }
 
     /**
@@ -435,7 +435,7 @@ public class Collection {
     * Internal method. Maps items to IMap instance.
     * */
     private static IMap mapByFieldToIMap(List<Object> items, Mapper mapper) {
-        IMap imap = newIMap(mapper.keyType(), mapper.valueType());
+        IMap imap = CollectionMap.newIMap(mapper.keyType(), mapper.valueType());
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
             Object item = items[i];
@@ -453,10 +453,10 @@ public class Collection {
     * TODO:
     * */
     public static Object groupBy(List<SObject> records, SObjectField field) {
-        return groupBy(records, new SObjectFieldKeyMapper(field));
+        return groupBy(records, new CollectionMapper.SObjectFieldKeyMapper(field));
     }
     public static Object groupBy(Type keyType, List<SObject> records, String field) {
-        return groupBy(records, new SObjectFieldKeyMapper(keyType, field));
+        return groupBy(records, new CollectionMapper.SObjectFieldKeyMapper(keyType, field));
     }
 
     /**
@@ -466,7 +466,7 @@ public class Collection {
      * @return Map where Map's Key is produced by KeyMapper and Map's Value is list of collection items which share the same key.
      */
     public static Object groupBy(List<Object> items, KeyMapper keyMapper) {
-        return groupBy(items, new MapperWithKeyMapper(keyMapper, getListItemType(items)));
+        return groupBy(items, new CollectionMapper.MapperWithKeyMapper(keyMapper, getListItemType(items)));
     }
 
     /**
@@ -477,7 +477,7 @@ public class Collection {
      * created by Mapper's value() method which share the same key.
      */
     public static Object groupBy(List<Object> items, Mapper mapper) {
-        IMap imap = newIMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
+        IMap imap = CollectionMap.newIMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
             SObject item = (SObject) items[i];
@@ -622,91 +622,6 @@ public class Collection {
         Boolean accepts(Object record);
     }
 
-    public final static Map<String, Set<Integer>> COMPARATOR_OUTCOMES = new Map<String, Set<Integer>>{
-            GREATER_THAN => new Set<Integer>{
-                    1
-            },
-            GREATER_EQUAL_THAN => new Set<Integer>{
-                    0, 1
-            },
-            LESS_THAN => new Set<Integer>{
-                    -1
-            },
-            LESS_EQUAL_THAN => new Set<Integer>{
-                    0, -1
-            },
-            EQUALS => new Set<Integer>{
-                    0
-            },
-            NOT_EQUALS => new Set<Integer>{
-                    1, -1
-            }
-    };
-    public class FilterByFieldValue implements Filter {
-        private Object value;
-        private String field;
-        private String operator;
-        private Comparator comparator;
-        private final Set<Integer> acceptedCompareValues;
-
-
-        public FilterByFieldValue(SObjectField field, String operator, Object value) {
-            this.field = '' + field;
-            this.operator = operator;
-            this.value = value;
-            SoapType fieldType = field.getDescribe().getSoapType();
-            this.acceptedCompareValues = COMPARATOR_OUTCOMES.get(operator);
-            this.comparator = comparatorsByFieldType.get(fieldType);
-        }
-
-        public Boolean accepts(Object record) {
-            Object fieldValue = ((SObject) record).get(field);
-            Integer outcome = comparator.compare(fieldValue, value);
-
-            return acceptedCompareValues.contains(outcome);
-        }
-    }
-
-    public class FilterByFieldValues implements Filter {
-        private Set<Object> values;
-        private String field;
-        private Boolean valueIn;
-
-        public FilterByFieldValues(String field, String operator, Set<Object> values) {
-            this.values = values;
-            this.field = field;
-            this.valueIn = operator == VALUE_IN;
-        }
-
-        public FilterByFieldValues(SObjectField field, String operator, Set<Object> values) {
-            this.values = values;
-            this.field = '' + field;
-            this.valueIn = operator == VALUE_IN;
-        }
-
-        public Boolean accepts(Object record) {
-            return valueIn == (values.contains(((SObject) record).get(field)));
-        }
-    }
-
-    public class FilterRelatedTo implements Filter {
-        private Map<Id, SObject> parents;
-        private SObjectField relationshipField;
-
-        public FilterRelatedTo(List<SObject> parents, SObjectField relationshipField) {
-            this(new Map<Id, SObject>(parents), relationshipField);
-        }
-
-        public FilterRelatedTo(Map<Id, SObject> parents, SObjectField relationshipField) {
-            this.parents = new Map<Id, SObject>(parents);
-            this.relationshipField = relationshipField;
-        }
-
-        public Boolean accepts(Object record) {
-            return parents.containsKey((Id) ((SObject) record).get(relationshipField));
-        }
-    }
-
 
     /**
      * @param records List of Trigger New records
@@ -735,45 +650,22 @@ public class Collection {
         Boolean accepts(SObject record, SObject oldRecord);
     }
 
-    public class FilterFieldChanged implements UpdateFilter {
-        private Object fromValue;
-        private Object toValue;
-        private SObjectField field;
-
-        public FilterFieldChanged(SObjectField field) {
-            this.field = field;
-            this.fromValue = this.toValue = ANY_VALUE;
-        }
-
-        public FilterFieldChanged(SObjectField field, Object fromValue, Object toValue) {
-            this.field = field;
-            this.fromValue = fromValue;
-            this.toValue = toValue;
-        }
-
-        public Boolean accepts(SObject record, SObject old) {
-            Object currentValue = record.get(field),
-                    oldValue = old.get(field);
-
-            if (fromValue === ANY_VALUE && toValue === ANY_VALUE) {
-                return currentValue != oldValue;
-
-            } else if (fromValue !== ANY_VALUE && toValue === ANY_VALUE) {
-                return oldValue == fromValue;
-
-            } else if (fromValue === ANY_VALUE && toValue !== ANY_VALUE) {
-                return currentValue == toValue;
-
-            } else {
-                return oldValue == fromValue && currentValue == toValue;
-            }
-        }
-    }
-
 
     /*
     * SORT
     * */
+
+    /**
+     * Compares 2 objects to determine their order.
+     * The implementation of this method should return the following values:
+     * 0 if thisItem and otherItem are equal
+     * > 0 if thisItem is greater than otherItem
+     * < 0 if thisItem is less than otherItem
+     */
+    public interface Comparator {
+        Integer compare(Object thisItem, Object otherItem);
+    }
+
 
     /**
      * @param records List of SObject records to sort.
@@ -783,7 +675,7 @@ public class Collection {
      * @return Sorted list of records.
      */
     public static List<SObject> sort(List<SObject> records, SObjectField field, Boolean isAscending) {
-        return (List<SObject>) sort(records, new SObjectFieldComparator(field, isAscending));
+        return (List<SObject>) sort(records, new CollectionComparator.SObjectFieldComparator(field, isAscending));
     }
 
     /**
@@ -809,17 +701,6 @@ public class Collection {
         return sorted;
     }
 
-    /**
-     * Compares 2 objects to determine their order.
-     * The implementation of this method should return the following values:
-     * 0 if thisItem and otherItem are equal
-     * > 0 if thisItem is greater than otherItem
-     * < 0 if thisItem is less than otherItem
-     */
-    public interface Comparator {
-        Integer compare(Object thisItem, Object otherItem);
-    }
-
     private virtual class ObjectComparable implements Comparable {
         private Object item;
         private Comparator comparator;
@@ -834,162 +715,6 @@ public class Collection {
         }
     }
 
-    private class SObjectFieldComparator implements Comparator {
-        private SObjectField field;
-        private Integer direction;
-        private Comparator comparator;
-
-        public SObjectFieldComparator(SObjectField field, Boolean isAscending) {
-            this.field = field;
-            this.direction = isAscending ? 1 : -1;
-            this.comparator = comparatorsByFieldType.get(field.getDescribe().getSoapType());
-            if (comparator == null) {
-                this.comparator = comparatorsByFieldType.get(SoapType.STRING);
-            }
-        }
-
-        public Integer compare(Object thisItem, Object otherItem) {
-            Object thisValue = ((SObject) thisItem).get(field);
-            Object otherValue = ((SObject) otherItem).get(field);
-
-            return comparator.compare(thisValue, otherValue) * direction;
-        }
-    }
-
-
-    private static Map<Schema.SoapType, Comparator> comparatorsByFieldType = new Map<SoapType, Collection.Comparator>{
-            SoapType.STRING => new StringComparator(),
-            SoapType.DATE => new DateComparator(),
-            SoapType.DATETIME => new DateTimeComparator(),
-            SoapType.INTEGER => new IntegerComparator(),
-            SoapType.DECIMAL => new DecimalComparator(),
-            SoapType.BOOLEAN => new BooleanComparator()
-    };
-
-    private class DateComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            Date a = (Date) thisItem, b = (Date) otherItem;
-            if (a > b) return 1;
-            if (a < b) return -1;
-            return 0;
-        }
-    }
-    private class DateTimeComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            Datetime a = (Datetime) thisItem, b = (Datetime) otherItem;
-            if (a > b) return 1;
-            if (a < b) return -1;
-            return 0;
-        }
-    }
-    public class StringComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            String a = (String) thisItem, b = (String) otherItem;
-            if (a > b) return 1;
-            if (a < b) return -1;
-            return 0;
-        }
-    }
-    private class IntegerComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            Integer a = (Integer) thisItem, b = (Integer) otherItem;
-            if (a > b) return 1;
-            if (a < b) return -1;
-            return 0;
-        }
-    }
-    private class DecimalComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            Decimal a = (Decimal) thisItem, b = (Decimal) otherItem;
-            if (a > b) return 1;
-            if (a < b) return -1;
-            return 0;
-        }
-    }
-    private class BooleanComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            Boolean a = (Boolean) thisItem, b = (Boolean) otherItem;
-            return a == b ? 0 : 1;
-        }
-    }
-
-
-    /*
-    *
-    * Implementations
-    *
-    * */
-    /**
-     * Key mapper where key is SObject field.
-     */
-    private virtual class SObjectFieldKeyMapper implements KeyMapper {
-        private String field;
-        private Type keyType;
-
-        public SObjectFieldKeyMapper(Type keyType, String field) {
-            this.keyType = keyType;
-            this.field = field;
-        }
-
-        public SObjectFieldKeyMapper(SObjectField field) {
-            this.keyType = TYPE_BY_FIELD_TYPE.get(field.getDescribe().getType());
-            this.field = '' + field;
-        }
-
-        public Object key(Object item) {
-            return ((SObject) item).get(field);
-        }
-
-        public Type keyType() {
-            return keyType;
-        }
-    }
-
-    private class MapperWithKeyMapper implements Mapper {
-        private KeyMapper keyMapper;
-        private Type valueType;
-
-        public MapperWithKeyMapper(KeyMapper keyMapper, Type valueType) {
-            this.keyMapper = keyMapper;
-            this.valueType = valueType;
-        }
-
-        public Type keyType() {
-            return keyMapper.keyType();
-        }
-
-        public Type valueType() {
-            return valueType;
-        }
-
-        public Object key(Object item) {
-            return keyMapper.key(item);
-        }
-
-        public Object value(Object item) {
-            return item;
-        }
-    }
-
-
-    /**
-     * IMap factory method which returns proper IMap implementation for given keyType parameter
-     * and initializes it with empty Map of the same sObject type as given records.
-     */
-    public static IMap newIMap(Type keyType, Type objectType) {
-        Object sfMap = Type.forName('Map<' + keyType + ',' + objectType + '>').newInstance();
-
-        if (keyType == Id.class) return new MapById((Map<Id, Object>) sfMap);
-        if (keyType == String.class) return new MapByString((Map<String, Object>) sfMap);
-        if (keyType == Integer.class) return new MapByInteger((Map<Integer, Object>) sfMap);
-        if (keyType == Decimal.class) return new MapByDecimal((Map<Decimal, Object>) sfMap);
-        if (keyType == Date.class) return new MapByDate((Map<Date, Object>) sfMap);
-        if (keyType == Datetime.class) return new MapByDatetime((Map<Datetime, Object>) sfMap);
-        if (keyType == Boolean.class) return new MapByBoolean((Map<Boolean, Object>) sfMap);
-        if (keyType == Time.class) return new MapByTime((Map<Time, Object>) sfMap);
-
-        return new MapByObject((Map<Object, Object>) sfMap);
-    }
 
     /**
      * Set and Map are not covariant types and there's no Map interface in Salesforce which would allow casting differently typed Maps on abstract Map type.
@@ -1006,241 +731,6 @@ public class Collection {
         Object get(Object key);
         Boolean containsKey(Object key);
     }
-
-    public class MapByObject implements IMap {
-        private Map<Object, Object> mapInstance;
-
-        public MapByObject(Map<Object, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put(key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey(key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get(key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet();
-        }
-    }
-
-    public class MapById implements IMap {
-        private Map<Id, Object> mapInstance;
-
-        public MapById(Map<Id, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Id) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Id) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Id) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet();
-        }
-    }
-
-    public class MapByString implements IMap {
-        private Map<String, Object> mapInstance;
-
-        public MapByString(Map<String, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((String) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((String) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((String) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet();
-        }
-    }
-
-    public class MapByInteger implements IMap {
-        private Map<Integer, Object> mapInstance;
-
-        public MapByInteger(Map<Integer, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Integer) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Integer) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Integer) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet();
-        }
-    }
-
-    public class MapByDecimal implements IMap {
-        private Map<Decimal, Object> mapInstance;
-
-        public MapByDecimal(Map<Decimal, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Decimal) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Decimal) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Decimal) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet();
-        }
-    }
-
-    public class MapByDate implements IMap {
-        private Map<Date, Object> mapInstance;
-
-        public MapByDate(Map<Date, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Date) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Date) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Date) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet();
-        }
-    }
-
-    public class MapByDatetime implements IMap {
-        private Map<Datetime, Object> mapInstance;
-
-        public MapByDatetime(Map<Datetime, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Datetime) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Datetime) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Datetime) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet();
-        }
-    }
-
-    public class MapByBoolean implements IMap {
-        private Map<Boolean, Object> mapInstance;
-
-        public MapByBoolean(Map<Boolean, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Boolean) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Boolean) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Boolean) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet();
-        }
-    }
-
-    public class MapByTime implements IMap {
-        private Map<Time, Object> mapInstance;
-
-        public MapByTime(Map<Time, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Time) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Time) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Time) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet();
-        }
-    }
-
-
-    private final static Map<Schema.DisplayType, Type> TYPE_BY_FIELD_TYPE = new Map<DisplayType, Type>{
-            Schema.DisplayType.ID => Id.class,
-            Schema.DisplayType.REFERENCE => Id.class,
-            Schema.DisplayType.INTEGER => Integer.class,
-            Schema.DisplayType.ADDRESS => String.class,
-            Schema.DisplayType.ANYTYPE => Object.class,
-            Schema.DisplayType.BASE64 => String.class,
-            Schema.DisplayType.BOOLEAN => Boolean.class,
-            Schema.DisplayType.COMBOBOX => String.class,
-            Schema.DisplayType.CURRENCY => Decimal.class,
-            Schema.DisplayType.DATE => Date.class,
-            Schema.DisplayType.DATETIME => Datetime.class,
-            Schema.DisplayType.DOUBLE => Decimal.class,
-            Schema.DisplayType.EMAIL => String.class,
-            Schema.DisplayType.ENCRYPTEDSTRING => String.class,
-            Schema.DisplayType.JSON => String.class,
-            Schema.DisplayType.LOCATION => Decimal.class,
-            Schema.DisplayType.MULTIPICKLIST => String.class,
-            Schema.DisplayType.PERCENT => Decimal.class,
-            Schema.DisplayType.PHONE => String.class,
-            Schema.DisplayType.PICKLIST => String.class,
-            Schema.DisplayType.STRING => String.class,
-            Schema.DisplayType.TEXTAREA => String.class,
-            Schema.DisplayType.TIME => Time.class,
-            Schema.DisplayType.URL => String.class
-    };
 
     private class CollectionException extends Exception {
     }

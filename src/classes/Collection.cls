@@ -435,7 +435,7 @@ public class Collection {
     * Internal method. Maps items to IMap instance.
     * */
     private static IMap mapByFieldToIMap(List<Object> items, Mapper mapper) {
-        IMap imap = CollectionMap.newIMap(mapper.keyType(), mapper.valueType());
+        IMap imap = CollectionMap.newMap(mapper.keyType(), mapper.valueType());
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
             Object item = items[i];
@@ -477,7 +477,7 @@ public class Collection {
      * created by Mapper's value() method which share the same key.
      */
     public static Object groupBy(List<Object> items, Mapper mapper) {
-        IMap imap = CollectionMap.newIMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
+        IMap imap = CollectionMap.newMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
             SObject item = (SObject) items[i];

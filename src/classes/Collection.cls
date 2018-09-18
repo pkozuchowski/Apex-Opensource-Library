@@ -185,6 +185,12 @@ public class Collection {
     }
 
 
+    public List<Wrapper> wrap(Type wrapperType) {
+        return Collection.wrap(items, wrapperType);
+    }
+
+
+
     /**
      * Sorts collection by given field and order.
      * @param field Field to sort by.
@@ -505,6 +511,40 @@ public class Collection {
      */
     public interface Reducer {
         void reduce(Object aggregatedValues, Object item);
+    }
+
+
+    /*
+    * WRAP
+    * */
+
+    /**
+     * Wrapper interface.
+     * Concrete method implementing this interface should have a member variable for wrapped item.
+     * setItem method should set that member variable.
+     */
+    public interface Wrapper {
+        void setItem(Object item);
+    }
+
+    /**
+     * Wraps each item into Wrapper class
+     *
+     * @param items List of objects to wrap.
+     * @param wrapperType Type of concrete class implementing Wrapper interface.
+     *
+     * @return List of Wrappers
+     */
+    public static List<Wrapper> wrap(List<Object> items, Type wrapperType) {
+        List<Wrapper> wrappers = (List<Wrapper>) newListOfItemType(wrapperType);
+
+        for (Integer i = 0; i < items.size(); i++) {
+            Wrapper wrapper = (Wrapper) wrapperType.newInstance();
+            wrapper.setItem(items[0]);
+            wrappers.add(wrapper);
+        }
+
+        return wrappers;
     }
 
 

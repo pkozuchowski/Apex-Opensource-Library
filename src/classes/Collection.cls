@@ -236,6 +236,7 @@ public class Collection {
      * Sorts collection by given field and order.
      * @param field Field to sort by.
      * @param isAscending true -> ascending order, false -> descending order.
+     * Collection.ASCENDING/DESCENDING can be used instead.
      */
     public Collection sort(SObjectField field, Boolean isAscending) {
         assertSObjectCollection();
@@ -243,17 +244,34 @@ public class Collection {
         return this;
     }
 
+    /**
+     * Sorts collection using given Collection.Comparator implementation.
+     * @param field Field to sort by.
+     * @param isAscending true -> ascending order, false -> descending order.
+     * Collection.ASCENDING/DESCENDING can be used instead.
+     */
     public Collection sort(Comparator comparator) {
         this.items = Collection.sort(items, comparator);
         return this;
     }
 
 
+    /**
+     * Filters collection items using given Filter implementation.
+     * @param filter Filter implementation which for each collection item returns boolean value whether item should
+     * be included in the output or not.
+     */
     public Collection filter(Filter filter) {
         this.items = Collection.filter(items, filter);
         return this;
     }
 
+
+    /**
+     * Filters collection items using given Filter implementation.
+     * @param filter UpdateFilter interface implementation, which for new and old record return boolean value whether
+     * new record should be included in output.
+     */
     public Collection filter(UpdateFilter filter) {
         assertSObjectCollection();
         assert(old != null, 'Operation only applies to Collections initialized ' +

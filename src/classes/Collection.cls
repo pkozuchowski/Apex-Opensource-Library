@@ -190,7 +190,6 @@ public class Collection {
     }
 
 
-
     /**
      * Sorts collection by given field and order.
      * @param field Field to sort by.
@@ -220,12 +219,7 @@ public class Collection {
 
     /*
     *
-    *
-    *
-    *
-    *
-    *
-    *
+    * STATIC METHODS
     *
     * */
     /**
@@ -353,6 +347,10 @@ public class Collection {
     }
 
 
+    /*
+    * MAP BY
+    * */
+
     /**
      * KeyMapper implementations determine Map's key for given object and key's type.
      */
@@ -372,9 +370,6 @@ public class Collection {
     }
 
 
-    /*
-    * MAP BY - STATIC
-    * */
     /**
      * @param items List of SObject records to map
      * @param field SObject Field to map by
@@ -430,8 +425,9 @@ public class Collection {
 
 
     /*
-    * GROUP BY - STATIC
+    * GROUP BY
     * */
+
     /*
     * TODO:
     * */
@@ -480,8 +476,9 @@ public class Collection {
 
 
     /*
-    * REDUCE - STATIC
+    * REDUCE
     * */
+
     /**
      * Reduces collection of objects to other collection of given type.
      * @param items input collection to reduce
@@ -545,6 +542,30 @@ public class Collection {
         }
 
         return wrappers;
+    }
+
+
+    /*
+    * FOR EACH
+    * */
+
+    /**
+     * Worker performs action on each item in collection.
+     */
+    public interface Worker {
+        void forEach(Object item, Integer index);
+    }
+
+    /**
+     * For each element in collection, Worker.forEach action is executed.
+     *
+     * @param items List of items to execute action on
+     * @param worker Concrete class implementing Worker interface. Executes action on each element.
+     */
+    public static void forEach(List<Object> items, Worker worker) {
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            worker.forEach(items[i], i);
+        }
     }
 
 
@@ -730,10 +751,9 @@ public class Collection {
 
 
     /*
-    *
     * SORT
-    *
     * */
+
     /**
      * @param records List of SObject records to sort.
      * @param field Field to sort by.

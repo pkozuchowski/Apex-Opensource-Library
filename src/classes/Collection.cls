@@ -49,10 +49,16 @@ public class Collection {
             VALUE_NOT_IN = 'NOT IN';
 
     private List<Object> items;
+    private Map<Id, SObject> old;
 
 
     public Collection(List<Object> items) {
         this.items = items;
+    }
+
+    public Collection(List<SObject> items, Map<Id, SObject> old) {
+        this.items = items;
+        this.old = old;
     }
 
     /*
@@ -197,6 +203,11 @@ public class Collection {
 
     public Collection filter(Filter filter) {
         this.items = Collection.filter(items, filter);
+        return this;
+    }
+
+    public Collection filter(UpdateFilter filter) {
+        this.items = Collection.filter((List<SObject>) items, old, filter);
         return this;
     }
 
@@ -458,7 +469,7 @@ public class Collection {
             groupedRecords.add(value);
         }
 
-        return iMap.toMap();
+        return imap.toMap();
     }
 
 
@@ -500,55 +511,6 @@ public class Collection {
     /*
     * FILTER
     * */
-
-    /**
-     * Filters given records and returns only these with field of given value.
-     * @param records Records to be filtered.
-     * @param field Field to filter by.
-     * @param equals Should field equal given value or not.
-     * @param value Expected value of the field.
-     * @return List of filtered records.
-     */
-    public static List<SObject> filterByFieldValue(List<SObject> records, SObjectField field, String equals, Object value) {
-        return filterByFieldValue(records, '' + field, equals, value);
-    }
-
-    /**
-     * Filters given records and returns only these with field of given value.
-     * @param records Records to be filtered.
-     * @param field Field to filter by.
-     * @param equals Should field equal given value or not.
-     * @param value Expected value of the field.
-     * @return List of filtered records.
-     */
-    public static List<SObject> filterByFieldValue(List<SObject> records, String field, String equals, Object value) {
-        return (List<SObject>) filter(records, new FilterByFieldValue(field, equals, value));
-    }
-
-
-    /**
-     * Filters given records and returns only these where field is one of given values.
-     * @param records Records to be filtered.
-     * @param field Field to filter by.
-     * @param inSet Is value in set.
-     * @param values Set of expected values.
-     * @return  List of filtered records.
-     */
-    public static List<SObject> filterByFieldValues(List<SObject> records, SObjectField field, String inSet, Set<Object> values) {
-        return filterByFieldValueIn(records, '' + field, inSet, values);
-    }
-
-    /**
-     * Filters given records and returns only these where field is one of given values.
-     * @param records Records to be filtered.
-     * @param field Field to filter by.
-     * @param inSet Is value in set.
-     * @param values Set of expected values.
-     * @return  List of filtered records.
-     */
-    public static List<SObject> filterByFieldValueIn(List<SObject> records, String field, String inSet, Set<Object> values) {
-        return (List<SObject>) filter(records, new FilterByFieldValues(field, inSet, values));
-    }
 
     /**
      * @param items List of items to filter.
@@ -607,28 +569,17 @@ public class Collection {
 
 
         public FilterByFieldValue(SObjectField field, String operator, Object value) {
-            this('' + field, operator, value);
-        }
-
-        public FilterByFieldValue(String field, String operator, Object value) {
-            this.value = value;
-            this.field = field;
+            this.field = '' + field;
             this.operator = operator;
-
-            if (value instanceof Integer || value instanceof Decimal || value instanceof Long) {
-                this.comparator = NumericFieldComparatorInstance;
-            } else {
-                this.comparator = StringFieldComparatorInstance;
-            }
-
+            this.value = value;
+            SoapType fieldType = field.getDescribe().getSoapType();
             this.acceptedCompareValues = COMPARATOR_OUTCOMES.get(operator);
+            this.comparator = comparatorsByFieldType.get(fieldType);
         }
-
 
         public Boolean accepts(Object record) {
             Object fieldValue = ((SObject) record).get(field);
             Integer outcome = comparator.compare(fieldValue, value);
-            outcome = outcome > 1 ? 1 : (outcome < -1 ? -1 : outcome);
 
             return acceptedCompareValues.contains(outcome);
         }

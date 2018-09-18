@@ -1220,4 +1220,7 @@ public class Collection {
             Schema.DisplayType.TIME => Time.class,
             Schema.DisplayType.URL => String.class
     };
+
+    private class CollectionException extends Exception {
+    }
 }

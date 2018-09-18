@@ -162,7 +162,9 @@ private class CollectionTest {
         }
 
         Set<Id> actual = (Set<Id>) Collection.getUniqueValues(opportunities, Opportunity.AccountId);
+        Set<Id> actual2 = (Set<Id>) new Collection(opportunities).getUniqueValues(Opportunity.AccountId);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -177,7 +179,9 @@ private class CollectionTest {
         }
 
         Set<String> actual = (Set<String>) Collection.getUniqueValues(opportunities, Opportunity.Name);
+        Set<String> actual2 = (Set<String>) new Collection(opportunities).getUniqueValues(Opportunity.Name);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -192,7 +196,10 @@ private class CollectionTest {
         }
 
         Set<Integer> actual = (Set<Integer>) Collection.getUniqueValues(opportunities, Opportunity.FiscalQuarter);
+        Set<Integer> actual2 = (Set<Integer>) new Collection(opportunities).getUniqueValues(Opportunity.FiscalQuarter);
+
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -207,7 +214,9 @@ private class CollectionTest {
         }
 
         Set<Decimal> actual = (Set<Decimal>) Collection.getUniqueValues(opportunities, Opportunity.Probability);
+        Set<Decimal> actual2 = (Set<Decimal>) new Collection(opportunities).getUniqueValues(Opportunity.Probability);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -222,7 +231,9 @@ private class CollectionTest {
         }
 
         Set<Date> actual = (Set<Date>) Collection.getUniqueValues(opportunities, Opportunity.LastActivityDate);
+        Set<Date> actual2 = (Set<Date>) new Collection(opportunities).getUniqueValues(Opportunity.LastActivityDate);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -237,7 +248,9 @@ private class CollectionTest {
         }
 
         Set<Datetime> actual = (Set<Datetime>) Collection.getUniqueValues(opportunities, Opportunity.CreatedDate);
+        Set<Datetime> actual2 = (Set<Datetime>) new Collection(opportunities).getUniqueValues(Opportunity.CreatedDate);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -252,7 +265,9 @@ private class CollectionTest {
         }
 
         Set<Boolean> actual = (Set<Boolean>) Collection.getUniqueValues(opportunities, Opportunity.HasOpenActivity);
+        Set<Boolean> actual2 = (Set<Boolean>) new Collection(opportunities).getUniqueValues(Opportunity.HasOpenActivity);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
 
@@ -272,7 +287,9 @@ private class CollectionTest {
         }
 
         Set<String> actual = (Set<String>) Collection.getUniqueValues(String.class, records, 'Name');
+        Set<String> actual2 = (Set<String>) new Collection(records).getUniqueValues(String.class, 'Name');
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
 
@@ -287,7 +304,9 @@ private class CollectionTest {
         };
 
         Set<Integer> actual = (Set<Integer>) Collection.getUniqueValues(opportunities, new OpportunitiesByYearsHalfMapper());
+        Set<Integer> actual2 = (Set<Integer>) new Collection(opportunities).getUniqueValues(new OpportunitiesByYearsHalfMapper());
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -308,9 +327,14 @@ private class CollectionTest {
         }
 
         Set<Object> actual = Collection.getUniqueValues(opportunities, fields);
+        Set<Object> actual2 = new Collection(opportunities).getUniqueValues(fields);
         System.assertEquals(
                 JSON.serialize(expected),
                 JSON.serialize(actual)
+        );
+        System.assertEquals(
+                JSON.serialize(expected),
+                JSON.serialize(actual2)
         );
     }
 

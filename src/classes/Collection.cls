@@ -656,6 +656,24 @@ public class Collection {
         }
     }
 
+    public class FilterRelatedTo implements Filter {
+        private Map<Id, SObject> parents;
+        private SObjectField relationshipField;
+
+        public FilterRelatedTo(List<SObject> parents, SObjectField relationshipField) {
+            this(new Map<Id, SObject>(parents), relationshipField);
+        }
+
+        public FilterRelatedTo(Map<Id, SObject> parents, SObjectField relationshipField) {
+            this.parents = new Map<Id, SObject>(parents);
+            this.relationshipField = relationshipField;
+        }
+
+        public Boolean accepts(Object record) {
+            return parents.containsKey((Id) ((SObject) record).get(relationshipField));
+        }
+    }
+
 
     /**
      * @param records List of Trigger New records

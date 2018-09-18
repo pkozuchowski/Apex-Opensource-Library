@@ -225,11 +225,10 @@ public class Collection {
 
     /**
      * Wraps objects into Wrapper implementation.
-     * @param wrapper Empty prototype of wrapper implementation.
-     * This prototype will be cloned and populated with each item.
+     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
      */
-    public List<Wrapper> wrap(Wrapper wrapper) {
-        return Collection.wrap(items, wrapper);
+    public List<Wrapper> wrap(Type wrapperType) {
+        return Collection.wrap(items, wrapperType);
     }
 
 
@@ -488,29 +487,48 @@ public class Collection {
     /*
     * TODO:
     * */
+
+    /**
+    * Groups collection items by given field to map where key
+    * is the field's value and the value is List<SObject> which have the same key.
+    * @param records SObject list to group.
+    * @param field SObject Field
+    * @return Map<FieldValue : FieldType, List<SObject>>
+    */
     public static Object groupBy(List<SObject> records, SObjectField field) {
         return groupBy(records, new CollectionMapper.SObjectFieldKeyMapper(field));
     }
+
+    /**
+     * Groups collection items by given field to map where key
+     * is the field's value and the value is List<SObject> which have the same key.
+     * @param keyType Type of the key ex. String.class, Id.class
+     * @param records SObject list to group.
+     * @param field SObject Field
+     * @return Map<FieldValue : keyType, List<SObject>>
+     */
     public static Object groupBy(Type keyType, List<SObject> records, String field) {
         return groupBy(records, new CollectionMapper.SObjectFieldKeyMapper(keyType, field));
     }
 
     /**
+     * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
+     * both key and values are produced by Mapper for each collection item.
      * @param records List of items to group
      * @param keyMapper KeyMapper implementation which for each collection item produces Map key.
-     *
-     * @return Map where Map's Key is produced by KeyMapper and Map's Value is list of collection items which share the same key.
+     * @return Map<KeyMapper.key() : KeyMapper.keyType(), List<Object>>
      */
     public static Object groupBy(List<Object> items, KeyMapper keyMapper) {
         return groupBy(items, new CollectionMapper.MapperWithKeyMapper(keyMapper, getListItemType(items)));
     }
 
     /**
+     * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
+     * both key and values are produced by Mapper for each collection item.
+     *
      * @param records List of items to group
      * @param mapper Mapper implementation which for each collection item produces Map key and value.
-     *
-     * @return Map where Map's key is produced by Mapper's Key() method and Map's value is list of objects
-     * created by Mapper's value() method which share the same key.
+     * @return Map<Mapper.key() : Mapper.keyType(), List<Mapper.value() : Mapper.valueType()>>
      */
     public static Object groupBy(List<Object> items, Mapper mapper) {
         IMap imap = CollectionMap.newMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
@@ -586,16 +604,14 @@ public class Collection {
      * Wraps each item into Wrapper class
      *
      * @param items List of objects to wrap.
-     * @param wrapper Empty prototype of wrapper implementation.
-     * This prototype will be cloned and populated with each item.
-     *
+     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
      * @return List of Wrappers
      */
-    public static List<Wrapper> wrap(List<Object> items, Wrapper wrapper) {
-        List<Wrapper> wrappers = new List<Wrapper>();
+    public static List<Wrapper> wrap(List<Object> items, Type wrapperType) {
+        List<Wrapper> wrappers = (List<Wrapper>) newListOfItemType(wrapperType);
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
-            Wrapper wrapper = wrapper.clone();
+            Wrapper wrapper = (Wrapper) wrapperType.newInstance();
             wrapper.setItem(items[i]);
             wrappers.add(wrapper);
         }

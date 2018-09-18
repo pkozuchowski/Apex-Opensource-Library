@@ -87,18 +87,6 @@ public class Collection {
 
 
     /**
-     * Transforms generic collection to given type.
-     * Ex. Map<Object,Object> => Map<String,Account>
-     * Casting is done through JSON serialization/deserialization, this process is CPU Time consuming.
-     *
-     * This method is NPE-safe, when collection is null, then blank instance of target type is returned.
-     */
-    public Object cast(Type targetType) {
-        return Collection.cast(items, targetType);
-    }
-
-
-    /**
      * @param field SObject field from which value is taken.
      * @return Set of gathered values.
      */

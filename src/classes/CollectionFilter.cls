@@ -21,6 +21,24 @@ public class CollectionFilter {
             }
     };
 
+    /**
+     * Filters List of SObject by field value.
+     * Operators:
+     * <ul>
+     *  <li>'==' or Collection.EQUALS</li>
+     *  <li>'!=' or Collection.NOT_EQUALS</li>
+     *  <li>'>' or Collection.GREATER_THAN</li>
+     *  <li>'>=' or Collection.GREATER_EQUAL_THAN</li>
+     *  <li>'<' or Collection.LESS_THAN</li>
+     *  <li>'<=' or Collection.LESS_EQUAL_THAN</li>
+     * </ul>
+     *
+     * @example
+     * <pre>
+     *     new Collection(accounts).filter(new CollectionFilter.ByFieldValue(Account.CreatedDate,'>=', Date.today().addDays(-1)));
+     *     Collection.filter(accounts, new CollectionFilter.ByFieldValue(Account.CreatedDate,'>=', Date.today().addDays(-1) ));
+     * </pre>
+     */
     public class FilterByFieldValue implements Collection.Filter {
         private Object value;
         private String field;
@@ -44,6 +62,20 @@ public class CollectionFilter {
         }
     }
 
+
+    /**
+     * Filters List of SObject by one of many possible field values.
+     * Operators:
+     * <ul>
+     *  <li>'IN' or Collection.VALUE_IN</li>
+     *  <li>'NOT IN' or Collection.VALUE_NOT_IN</li>
+     * </ul>
+     *
+     * @example
+     * <pre>
+     *     new Collection(accounts).filter(new CollectionFilter.ByFieldValues(Account.Name,'IN',new Set<Object>{'Test Account', 'Other Account'}));
+     * </pre>
+     */
     public class FilterByFieldValues implements Collection.Filter {
         private Set<Object> values;
         private String field;
@@ -66,6 +98,10 @@ public class CollectionFilter {
         }
     }
 
+
+    /**
+     * Filters SObject list to those related to given parents by given relationship field.
+     */
     public class FilterRelatedTo implements Collection.Filter {
         private Map<Id, SObject> parents;
         private SObjectField relationshipField;
@@ -84,6 +120,17 @@ public class CollectionFilter {
         }
     }
 
+
+    /**
+     * Filter records that changed field value to other value.
+     * Developer can specify any value by using Collection.ANY_VALUE, keep in mind though
+     * that using "true" or "false" will not work.
+     *
+     * @example
+     * <pre>
+     *     new Collection(accounts).filter(new CollectionFilter.FieldChanged(Opportunity.StageName, Collection.ANY_VALUE, 'Closed'));
+     * </pre>
+     */
     public class FilterFieldChanged implements Collection.UpdateFilter {
         private Object fromValue;
         private Object toValue;

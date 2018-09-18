@@ -100,6 +100,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public Object getUniqueValues(SObjectField field) {
+        assertSObjectCollection();
         return Collection.getUniqueValues((SObject[]) items, field);
     }
 
@@ -108,6 +109,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public Object getUniqueValues(Type valueType, String field) {
+        assertSObjectCollection();
         return Collection.getUniqueValues(valueType, (SObject[]) items, field);
     }
 
@@ -124,6 +126,7 @@ public class Collection {
      * @return Set of unique SObject field values of given fields of given records.
      */
     public Set<Object> getUniqueValues(List<SObjectField> fields) {
+        assertSObjectCollection();
         return Collection.getUniqueValues((SObject[]) items, fields);
     }
 
@@ -134,6 +137,7 @@ public class Collection {
      * Map's key type is derived from field's DisplayType.
      */
     public Object mapBy(SObjectField field) {
+        assertSObjectCollection();
         return Collection.mapBy((List<SObject>) items, field);
     }
 
@@ -143,6 +147,7 @@ public class Collection {
      * @return Map of items where record is map's value and field's value is map's key.
      */
     public Object mapBy(Type keyType, String field) {
+        assertSObjectCollection();
         return Collection.mapBy(keyType, (List<SObject>) items, field);
     }
 
@@ -164,10 +169,12 @@ public class Collection {
 
 
     public Object groupBy(SObjectField field) {
+        assertSObjectCollection();
         return Collection.groupBy((SObject[]) items, field);
     }
 
     public Object groupBy(Type keyType, String field) {
+        assertSObjectCollection();
         return Collection.groupBy(keyType, (SObject[]) items, field);
     }
 
@@ -196,6 +203,7 @@ public class Collection {
      * @param isAscending true -> ascending order, false -> descending order.
      */
     public Collection sort(SObjectField field, Boolean isAscending) {
+        assertSObjectCollection();
         this.items = Collection.sort((List<SObject>) items, field, isAscending);
         return this;
     }
@@ -212,8 +220,21 @@ public class Collection {
     }
 
     public Collection filter(UpdateFilter filter) {
+        assertSObjectCollection();
+        assert(old != null, 'Operation only applies to Collections initialized ' +
+                'with Collection(List<SObject>, Map<Id,SObject>) oldMap constructor.'
+        );
         this.items = Collection.filter((List<SObject>) items, old, filter);
         return this;
+    }
+
+
+    private void assertSObjectCollection() {
+        assert(items instanceof List<SObject>, 'Operation only applies to SObject collection.');
+    }
+
+    private void assert(Boolean condition, String errorMsg) {
+        if (!condition) throw new CollectionException(errorMsg);
     }
 
 

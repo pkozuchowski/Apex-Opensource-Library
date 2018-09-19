@@ -41,16 +41,16 @@ public class CollectionMapper {
     /**
       * Key mapper where key is SObject field.
       */
-    public virtual class SObjectFieldKeyMapper implements Collection.KeyMapper {
+    public virtual class ByField implements Collection.KeyMapper {
         private String field;
         private Type keyType;
 
-        public SObjectFieldKeyMapper(Type keyType, String field) {
+        public ByField(Type keyType, String field) {
             this.keyType = keyType;
             this.field = field;
         }
 
-        public SObjectFieldKeyMapper(SObjectField field) {
+        public ByField(SObjectField field) {
             this.keyType = getSObjectFieldType(field);
             this.field = '' + field;
         }
@@ -65,11 +65,11 @@ public class CollectionMapper {
     }
 
 
-    public class MapperWithKeyMapper implements Collection.Mapper {
+    public class ByKeyMapper implements Collection.Mapper {
         private Collection.KeyMapper keyMapper;
         private Type valueType;
 
-        public MapperWithKeyMapper(Collection.KeyMapper keyMapper, Type valueType) {
+        public ByKeyMapper(Collection.KeyMapper keyMapper, Type valueType) {
             this.keyMapper = keyMapper;
             this.valueType = valueType;
         }

@@ -21,7 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-public with sharing class CollectionMap {
+public class CollectionMap {
 
     /**
      * IMap factory method which returns proper IMap implementation for given keyType parameter

@@ -38,9 +38,9 @@ public class CollectionMapper {
     }
 
 
-    /**
-      * Key mapper where key is SObject field.
-      */
+    /*
+    * Maps SObject collection by SObject field.
+    * */
     public virtual class ByField implements Collection.KeyMapper {
         private String field;
         private Type keyType;
@@ -65,6 +65,10 @@ public class CollectionMapper {
     }
 
 
+    /*
+    * Mapper implementation which uses given KeyMapper for producing key,
+    * and returns collection item as mapped value.
+    * */
     public class ByKeyMapper implements Collection.Mapper {
         private Collection.KeyMapper keyMapper;
         private Type valueType;

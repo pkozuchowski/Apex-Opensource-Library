@@ -38,7 +38,7 @@ public class CollectionMapper {
     }
 
 
-    /*
+    /**
     * Maps SObject collection by SObject field.
     * */
     public virtual class ByField implements Collection.KeyMapper {
@@ -65,7 +65,45 @@ public class CollectionMapper {
     }
 
 
-    /*
+    /**
+    * Maps collection by pair of fields and separator. ex.
+    * Junction object by both parent fields.
+    * This mapper will always map by String key.
+    *
+    * @example
+    * <pre>
+    *       Map<String, JunctionObject> junctionRecordsByParents =
+    *           Collection.mapBy(junctionRecords,
+    *               new CollectionMapper.ByFieldPair(JunctionObject.ParentId1, '_', JunctionObject.ParentId2)
+    *           );
+    * </pre>
+    * */
+    public virtual class ByFieldPair implements Collection.KeyMapper {
+        private String fieldLeft;
+        private String fieldRight;
+        private String separator = '';
+
+        public ByFieldPair(SObjectField fieldLeft, String separator, SObjectField fieldRight) {
+            this('' + fieldLeft, separator, '' + fieldRight);
+        }
+
+        public ByFieldPair(String fieldLeft, String separator, String fieldRight) {
+            this.separator = separator;
+            this.fieldLeft = fieldLeft;
+            this.fieldRight = fieldRight;
+        }
+
+        public Object key(Object item) {
+            return ((SObject) item).get(fieldLeft) + separator + ((SObject) item).get(fieldRight);
+        }
+
+        public Type keyType() {
+            return String.class;
+        }
+    }
+
+
+    /**
     * Mapper implementation which uses given KeyMapper for producing key,
     * and returns collection item as mapped value.
     * */

@@ -150,6 +150,35 @@ public class CollectionFilter {
 
 
     /**
+     * Filters SObjects by distance to given Geolocation.
+     */
+    public class ByDistance implements Collection.Filter {
+        private Location targetLocation;
+        private String field;
+        private String unit;
+        private Double maxDistance;
+
+        /**
+         * @param locationField Geolocation field to filter by.
+         * @param targetLocation Target geolocation to filter by distance to.
+         * @param maxDistance Max. distance from the target location
+         * @param unit Distance unit 'km'/'mi'
+         */
+        public ByDistance(SObjectField locationField, Location targetLocation, Double maxDistance, String unit) {
+            this.field = '' + locationField;
+            this.targetLocation = targetLocation;
+            this.unit = unit;
+            this.maxDistance = maxDistance;
+        }
+
+        public Boolean accepts(Object record) {
+            Location fieldValue = (Location) ((SObject) record).get(field);
+            return Location.getDistance(fieldValue, targetLocation, unit) <= maxDistance;
+        }
+    }
+
+
+    /**
      * Filter records that changed field value to other value.
      * Developer can specify any value by using Collection.ANY_VALUE, keep in mind though
      * that using "true" or "false" will not work.

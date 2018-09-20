@@ -673,7 +673,7 @@ public class Collection {
     * Filter determines whether collection item should be included into result collection of filter method.
     * */
     public interface Filter {
-        Boolean accepts(Object record);
+        Boolean accepts(Object item);
     }
 
     /*
@@ -779,6 +779,7 @@ public class Collection {
 
         return sorted;
     }
+
 
     private virtual class ComparableObject implements Comparable {
         private Object item;

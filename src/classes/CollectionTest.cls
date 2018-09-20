@@ -770,8 +770,7 @@ private class CollectionTest {
         };
 
         Map<Integer, List<OpportunityWrapper>> actual = (Map<Integer, List<OpportunityWrapper>>) Collection.groupBy(opportunities, new OppWrapperByHalfYearMapper());
-
-        System.assertEquals(expected,actual);
+        System.assertEquals(JSON.serialize(expected), JSON.serialize(actual));
     }
 
     private class OppWrapperByHalfYearMapper implements Collection.Mapper {

@@ -136,4 +136,55 @@ public class CollectionComparator {
             return comparator.compare(thisValue, otherValue) * direction;
         }
     }
+
+
+    /**
+     * Compares SObjects by distance to given geolocation.
+     */
+    public class ByDistance implements Collection.Comparator {
+        private SObjectField field;
+        private Integer direction;
+        private Location target;
+        private Map<Id, Double> distanceCache;
+
+        /**
+         * @param field Location field
+         * @param geoLocation Target geolocation. Records are sorted by distance to this location.
+         * @param closestFirst true - Closest are first / false - farthest first
+         */
+        public ByDistance(SObjectField field, Location geoLocation, Boolean closestFirst) {
+            this.distanceCache = new Map<Id, Double>();
+            this.field = field;
+            this.direction = closestFirst ? 1 : -1;
+            this.target = geoLocation;
+        }
+
+        public Integer compare(Object thisItem, Object otherItem) {
+            Double thisDistance = getDistance((SObject) thisItem);
+            if (thisDistance == null) return -1;
+
+            Double otherDistance = getDistance((SObject) otherItem);
+            if (otherDistance == null) return 1;
+
+            return thisDistance > otherDistance ? 1 :
+                    thisDistance < otherDistance ? -1
+                            : 0;
+        }
+
+        private Double getDistance(SObject record) {
+            if (distanceCache.containsKey(record.Id)) {
+                return distanceCache.get(record.Id);
+            }
+
+            Location loc = (Location) record.get(field);
+            if (loc == null) {
+                return null;
+            }
+
+            Double distance = this.target.getDistance((Location) record.get(field), 'km');
+            distanceCache.put(record.Id, distance);
+
+            return distance;
+        }
+    }
 }

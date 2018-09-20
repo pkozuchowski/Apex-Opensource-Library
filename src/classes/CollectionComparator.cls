@@ -23,18 +23,42 @@
 */
 public class CollectionComparator {
     private final static Map<Schema.SoapType, Collection.Comparator> comparatorsByFieldType = new Map<SoapType, Collection.Comparator>{
+            SoapType.ID => new StringComparator(),
             SoapType.STRING => new StringComparator(),
             SoapType.DATE => new DateComparator(),
             SoapType.DATETIME => new DateTimeComparator(),
             SoapType.INTEGER => new IntegerComparator(),
             SoapType.DECIMAL => new DecimalComparator(),
-            SoapType.BOOLEAN => new BooleanComparator()
+            SoapType.DOUBLE => new DoubleComparator(),
+            SoapType.BOOLEAN => new BooleanComparator(),
+            SoapType.TIME => new BooleanComparator()
     };
 
     public static Collection.Comparator getComparatorByField(SObjectField field) {
-        return comparatorsByFieldType.get(field.getDescribe().getSoapType());
+        Collection.Comparator comparator = comparatorsByFieldType.get(field.getDescribe().getSoapType());
+
+        if (comparator == null) {
+            comparator = new AnyComparator();
+        }
+
+        return comparator;
     }
 
+
+    public class AnyComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            String a = thisItem == null ? '' : '' + thisItem;
+            String b = otherItem == null ? '' : '' + otherItem;
+
+            return a.compareTo(b);
+        }
+    }
+    public class BooleanComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Boolean a = (Boolean) thisItem, b = (Boolean) otherItem;
+            return a == b ? 0 : 1;
+        }
+    }
     public class DateComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             Date a = (Date) thisItem, b = (Date) otherItem;
@@ -51,9 +75,17 @@ public class CollectionComparator {
             return 0;
         }
     }
-    public class StringComparator implements Collection.Comparator {
+    public class DecimalComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
-            String a = (String) thisItem, b = (String) otherItem;
+            Decimal a = (Decimal) thisItem, b = (Decimal) otherItem;
+            if (a > b) return 1;
+            if (a < b) return -1;
+            return 0;
+        }
+    }
+    public class DoubleComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Double a = (Double) thisItem, b = (Double) otherItem;
             if (a > b) return 1;
             if (a < b) return -1;
             return 0;
@@ -67,22 +99,25 @@ public class CollectionComparator {
             return 0;
         }
     }
-    public class DecimalComparator implements Collection.Comparator {
+    public class StringComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
-            Decimal a = (Decimal) thisItem, b = (Decimal) otherItem;
+            String a = (String) thisItem, b = (String) otherItem;
             if (a > b) return 1;
             if (a < b) return -1;
             return 0;
         }
     }
-    public class BooleanComparator implements Collection.Comparator {
+    public class TimeComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
-            Boolean a = (Boolean) thisItem, b = (Boolean) otherItem;
+            Time a = (Time) thisItem, b = (Time) otherItem;
             return a == b ? 0 : 1;
         }
     }
 
 
+    /**
+     * Compares records by values of the SObject field.
+     */
     public class SObjectFieldComparator implements Collection.Comparator {
         private SObjectField field;
         private Integer direction;
@@ -92,9 +127,6 @@ public class CollectionComparator {
             this.field = field;
             this.direction = isAscending ? 1 : -1;
             this.comparator = getComparatorByField(field);
-            if (comparator == null) {
-                this.comparator = comparatorsByFieldType.get(SoapType.STRING);
-            }
         }
 
         public Integer compare(Object thisItem, Object otherItem) {

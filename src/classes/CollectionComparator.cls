@@ -144,6 +144,7 @@ public class CollectionComparator {
     public class ByDistance implements Collection.Comparator {
         private SObjectField field;
         private Integer direction;
+        private Integer nullsPosition = 1;
         private Location target;
         private Map<Id, Double> distanceCache;
 
@@ -152,23 +153,24 @@ public class CollectionComparator {
          * @param geoLocation Target geolocation. Records are sorted by distance to this location.
          * @param closestFirst true - Closest are first / false - farthest first
          */
-        public ByDistance(SObjectField field, Location geoLocation, Boolean closestFirst) {
+        public ByDistance(SObjectField field, Location geoLocation, Boolean closestFirst, Boolean nullFirst) {
             this.distanceCache = new Map<Id, Double>();
             this.field = field;
-            this.direction = closestFirst ? 1 : -1;
+            this.direction = closestFirst ? -1 : 1;
+            this.nullsPosition = nullFirst ? -1 : 1;
             this.target = geoLocation;
         }
 
         public Integer compare(Object thisItem, Object otherItem) {
             Double thisDistance = getDistance((SObject) thisItem);
-            if (thisDistance == null) return -1;
+            if (thisDistance == null) return nullsPosition;
 
             Double otherDistance = getDistance((SObject) otherItem);
-            if (otherDistance == null) return 1;
+            if (otherDistance == null) return -nullsPosition;
 
-            return thisDistance > otherDistance ? 1 :
+            return direction * (thisDistance > otherDistance ? 1 :
                     thisDistance < otherDistance ? -1
-                            : 0;
+                            : 0);
         }
 
         private Double getDistance(SObject record) {

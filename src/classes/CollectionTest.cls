@@ -1106,4 +1106,36 @@ private class CollectionTest {
             return opportunity.Name;
         }
     }
+
+
+    /**
+     *@description
+     * Fills in the list with number of clones of provided prototype record.
+     */
+    @IsTest
+    static void testFillInstance() {
+        Contact contact = new Contact(LastName = 'Test');
+
+        List<Account> accounts = Collection.fill(new List<Account>(), 10, new Account(
+                Name = 'Test Account',
+                Contact__r = contact
+        ));
+        Collection.fill(accounts, 10, new Account(Name = 'Other Account'));
+
+        System.assertEquals(20, accounts.size());
+
+        /*Test if clone is deep*/
+        accounts[0].Name += '0';
+        accounts[0].Contact__r.LastName += '0';
+
+        for (Integer i = 1; i < 20; i++) {
+            if (i < 10) {
+                System.assertEquals('Test Account', accounts[i].Name);
+                System.assertEquals('Test', accounts[i].Contact__r.LastName);
+
+            } else {
+                System.assertEquals('Other Account', accounts[i].Name);
+            }
+        }
+    }
 }

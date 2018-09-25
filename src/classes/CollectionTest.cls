@@ -846,14 +846,14 @@ private class CollectionTest {
             }
         }
 
-        System.assertEquals(hasOpenActivity, Collection.filter(opportunities, new CollectionFilter.ByFieldValue(Opportunity.HasOpenActivity, '==', true)));
-        System.assertEquals(hasNotOpenActivity, Collection.filter(opportunities, new CollectionFilter.ByFieldValue(Opportunity.HasOpenActivity, '!=', true)));
+        System.assertEquals(hasOpenActivity, Collection.filter(opportunities, Opportunity.HasOpenActivity, '==', true));
+        System.assertEquals(hasNotOpenActivity, Collection.filter(opportunities, Opportunity.HasOpenActivity, '!=', true));
 
         System.assertEquals(fiscalQuarterEquals0, Collection.filter(opportunities, new CollectionFilter.ByFieldValue(Opportunity.FiscalQuarter, '==', 0)));
         System.assertEquals(fiscalQuarterNotEquals0, Collection.filter(opportunities, new CollectionFilter.ByFieldValue(Opportunity.FiscalQuarter, '!=', 0)));
 
-        System.assertEquals(nextStepAnalysis, Collection.filter(opportunities, new CollectionFilter.ByFieldValue(Opportunity.NextStep, '==', 'Analysis')));
-        System.assertEquals(nextStepNotAnalysis, Collection.filter(opportunities, new CollectionFilter.ByFieldValue(Opportunity.NextStep, '!=', 'Analysis')));
+        System.assertEquals(nextStepAnalysis, new Collection(opportunities).filter(Opportunity.NextStep, '==', 'Analysis').toList());
+        System.assertEquals(nextStepNotAnalysis, new Collection(opportunities).filter(new CollectionFilter.ByFieldValue(Opportunity.NextStep, '!=', 'Analysis')).toList());
     }
 
 

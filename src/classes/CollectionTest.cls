@@ -1192,4 +1192,26 @@ private class CollectionTest {
             }
         }
     }
+
+
+    /**
+     *@description
+     * ForEach executes action on each element in collection and can be chained using instance methods.
+     */
+    @IsTest
+    static void testForEach() {
+        List<Opportunity> opportunities = (List<Opportunity>) new Collection(opportunities)
+                .forEach(new AppendIndexToOpportunityNameWorker())
+                .toList();
+
+        for (Integer i = 0; i < opportunities.size(); i++) {
+            System.assert(opportunities[i].Name.contains('' + i));
+        }
+    }
+
+    private class AppendIndexToOpportunityNameWorker implements Collection.Worker {
+        public void forEach(Object item, Integer index) {
+            ((Opportunity) item).Name += index;
+        }
+    }
 }

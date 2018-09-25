@@ -481,7 +481,8 @@ public class Collection {
     }
 
     /**
-     * Set and Map are not covariant types and there's no Map interface in Salesforce which would allow casting differently typed Maps on abstract Map type.
+     * Set and Map are not covariant types and there's no Map interface in Salesforce which would allow casting
+     * differently typed Maps on abstract Map type.
      * Because of that, we cannot cast Map<Id, Account> to Map<Object,Object> or any other map
      * (unless we serialize and deserialize via JSON). It means, that we cannot have one generic method which would take
      * generic Map and operate on it, we would need separate methods for each type of key.

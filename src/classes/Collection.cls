@@ -216,8 +216,7 @@ public class Collection {
      * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
      */
     public Collection wrap(Type wrapperType) {
-        this.items = Collection.wrap(items, wrapperType);
-        return this;
+        return new Collection(Collection.wrap(items, wrapperType));
     }
 
 
@@ -229,8 +228,7 @@ public class Collection {
      */
     public Collection sort(SObjectField field, Boolean isAscending) {
         assertSObjectCollection();
-        this.items = Collection.sort((List<SObject>) items, field, isAscending);
-        return this;
+        return new Collection(Collection.sort((List<SObject>) items, field, isAscending));
     }
 
     /**
@@ -240,8 +238,7 @@ public class Collection {
      * Collection.ASCENDING/DESCENDING can be used instead.
      */
     public Collection sort(Comparator comparator) {
-        this.items = Collection.sort(items, comparator);
-        return this;
+        return new Collection(Collection.sort(items, comparator));
     }
 
 
@@ -261,8 +258,7 @@ public class Collection {
      * be included in the output or not.
      */
     public Collection filter(Filter filter) {
-        this.items = Collection.filter(items, filter);
-        return this;
+        return new Collection(Collection.filter(items, filter));
     }
 
 
@@ -276,8 +272,7 @@ public class Collection {
         assert(old != null, 'Operation only applies to Collections initialized ' +
                 'with Collection(List<SObject>, Map<Id,SObject>) oldMap constructor.'
         );
-        this.items = Collection.filter((List<SObject>) items, old, filter);
-        return this;
+        return new Collection(Collection.filter((List<SObject>) items, old, filter));
     }
 
     public Collection fill(Integer count, SObject prototype) {

@@ -21,7 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-public class CollectionComparator {
+public class CollectionComparators {
     private final static Map<Schema.SoapType, Collection.Comparator> comparatorsByFieldType = new Map<SoapType, Collection.Comparator>{
             SoapType.ID => new StringComparator(),
             SoapType.STRING => new StringComparator(),

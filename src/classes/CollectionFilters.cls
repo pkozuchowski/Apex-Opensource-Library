@@ -21,7 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-public class CollectionFilter {
+public class CollectionFilters {
 
     public final static Map<String, Set<Integer>> COMPARATOR_OUTCOMES = new Map<String, Set<Integer>>{
             Collection.GREATER_THAN => new Set<Integer>{
@@ -74,7 +74,7 @@ public class CollectionFilter {
             this.operator = operator;
             this.value = value;
             this.acceptedCompareValues = COMPARATOR_OUTCOMES.get(operator);
-            this.comparator = CollectionComparator.getComparatorByField(field);
+            this.comparator = CollectionComparators.getComparatorByField(field);
         }
 
         public Boolean accepts(Object record) {

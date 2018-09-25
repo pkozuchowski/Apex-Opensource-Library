@@ -447,7 +447,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public static Object getUniqueValues(List<SObject> records, SObjectField field) {
-        return getUniqueValues(records, new CollectionMapper.ByField(field));
+        return getUniqueValues(records, new CollectionMappers.ByField(field));
     }
 
     /**
@@ -457,7 +457,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public static Object getUniqueValues(Type valueType, List<SObject> records, String field) {
-        return getUniqueValues(records, new CollectionMapper.ByField(valueType, field));
+        return getUniqueValues(records, new CollectionMappers.ByField(valueType, field));
     }
 
     /**
@@ -466,7 +466,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public static Object getUniqueValues(List<Object> records, KeyMapper keyMapper) {
-        return mapByFieldToIMap(records, new CollectionMapper.ByKeyMapper(keyMapper, getListItemType(records))).keySet();
+        return mapByFieldToIMap(records, new CollectionMappers.ByKeyMapper(keyMapper, getListItemType(records))).keySet();
     }
 
     /**
@@ -536,7 +536,7 @@ public class Collection {
      * Map's key type is derived from field's DisplayType.
      */
     public static Object mapBy(List<SObject> records, SObjectField field) {
-        return mapBy(records, new CollectionMapper.ByField(field));
+        return mapBy(records, new CollectionMappers.ByField(field));
     }
 
     /**
@@ -546,7 +546,7 @@ public class Collection {
      * @return Map of items where record is map's value and field's value is map's key.
      */
     public static Object mapBy(Type keyType, List<SObject> records, String field) {
-        return mapBy(records, new CollectionMapper.ByField(keyType, field));
+        return mapBy(records, new CollectionMappers.ByField(keyType, field));
     }
 
     /**
@@ -555,7 +555,7 @@ public class Collection {
      * @return Map of items where list item is map's value and key is produced by KeyMapper.
      */
     public static Object mapBy(List<Object> items, KeyMapper mapper) {
-        return mapByFieldToIMap(items, new CollectionMapper.ByKeyMapper(mapper, getListItemType(items))).toMap();
+        return mapByFieldToIMap(items, new CollectionMappers.ByKeyMapper(mapper, getListItemType(items))).toMap();
     }
 
     /**
@@ -573,7 +573,7 @@ public class Collection {
     * Internal method. Maps items to IMap instance.
     * */
     private static IMap mapByFieldToIMap(List<Object> items, Mapper mapper) {
-        IMap imap = CollectionMap.newMap(mapper.keyType(), mapper.valueType());
+        IMap imap = CollectionIMaps.newMap(mapper.keyType(), mapper.valueType());
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
             Object item = items[i];
@@ -595,7 +595,7 @@ public class Collection {
     * @return Map<FieldValue : FieldType, List<SObject>>
     */
     public static Object groupBy(List<SObject> records, SObjectField field) {
-        return groupBy(records, new CollectionMapper.ByField(field));
+        return groupBy(records, new CollectionMappers.ByField(field));
     }
 
     /**
@@ -607,7 +607,7 @@ public class Collection {
      * @return Map<FieldValue : keyType, List<SObject>>
      */
     public static Object groupBy(Type keyType, List<SObject> records, String field) {
-        return groupBy(records, new CollectionMapper.ByField(keyType, field));
+        return groupBy(records, new CollectionMappers.ByField(keyType, field));
     }
 
     /**
@@ -618,7 +618,7 @@ public class Collection {
      * @return Map<KeyMapper.key() : KeyMapper.keyType(), List<Object>>
      */
     public static Object groupBy(List<Object> items, KeyMapper keyMapper) {
-        return groupBy(items, new CollectionMapper.ByKeyMapper(keyMapper, getListItemType(items)));
+        return groupBy(items, new CollectionMappers.ByKeyMapper(keyMapper, getListItemType(items)));
     }
 
     /**
@@ -630,7 +630,7 @@ public class Collection {
      * @return Map<Mapper.key() : Mapper.keyType(), List<Mapper.value() : Mapper.valueType()>>
      */
     public static Object groupBy(List<Object> items, Mapper mapper) {
-        IMap imap = CollectionMap.newMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
+        IMap imap = CollectionIMaps.newMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
             SObject item = (SObject) items[i];
@@ -784,7 +784,7 @@ public class Collection {
      * </pre>
      */
     public static List<SObject> filter(List<SObject> records, SObjectField field, String operator, Object value) {
-        return (List<SObject>) filter(records, new CollectionFilter.ByFieldValue(field, operator, value));
+        return (List<SObject>) filter(records, new CollectionFilters.ByFieldValue(field, operator, value));
     }
 
 
@@ -842,7 +842,7 @@ public class Collection {
      * @see CollectionFilter.ByFieldValue
      */
     public static SObject find(List<SObject> records, SObjectField field, String operator, Object value) {
-        return (SObject) find(records, new CollectionFilter.ByFieldValue(field, operator, value));
+        return (SObject) find(records, new CollectionFilters.ByFieldValue(field, operator, value));
     }
 
     /**
@@ -885,7 +885,7 @@ public class Collection {
      * @return Sorted list of records.
      */
     public static List<SObject> sort(List<SObject> records, SObjectField field, Boolean isAscending) {
-        return (List<SObject>) sort(records, new CollectionComparator.SObjectFieldComparator(field, isAscending));
+        return (List<SObject>) sort(records, new CollectionComparators.SObjectFieldComparator(field, isAscending));
     }
 
     /**

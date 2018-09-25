@@ -21,7 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-public class CollectionMapper {
+public class CollectionMappers {
     private final static Map<Schema.SoapType, Type> FIELD_TYPE_MAP = new Map<SoapType, Type>{
             Schema.SoapType.ID => Id.class,
             Schema.SoapType.INTEGER => Integer.class,

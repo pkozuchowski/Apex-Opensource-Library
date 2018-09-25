@@ -270,6 +270,16 @@ public class Collection {
         return this;
     }
 
+    public Collection fill(Integer count, SObject prototype) {
+        assertSObjectCollection();
+
+        for (Integer i = 0; i < count; i++) {
+            this.items.add(prototype.clone());
+        }
+
+        return this;
+    }
+
 
     private void assertSObjectCollection() {
         assert(items instanceof List<SObject>, 'Operation only applies to SObject collection.');
@@ -353,11 +363,26 @@ public class Collection {
         return clone;
     }
 
+
     /**
+     * @param itemType Type of single list element
      * @return New list of given item type.
      */
     public static List<Object> newListOfItemType(Type itemType) {
-        return (List<Object>) Type.forName('List<' + itemType + '>').newInstance();
+        return newListOfItemType(itemType, new List<Object>());
+    }
+
+    /**
+     * @param itemType Type of single list element
+     * @param fallbackItemType Fallback type, in case primary type is not constructible (ex. because the type is private).
+     * @return New list of given item type.
+     */
+    public static List<Object> newListOfItemType(Type itemType, List<Object> fallback) {
+        try {
+            return (List<Object>) Type.forName('List<' + itemType + '>').newInstance();
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
 
@@ -625,11 +650,12 @@ public class Collection {
      * Wraps each item into Wrapper class
      *
      * @param items List of objects to wrap.
-     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
+     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor and have
+     * public accessor.
      * @return List of Wrappers
      */
     public static List<Wrapper> wrap(List<Object> items, Type wrapperType) {
-        List<Wrapper> wrappers = (List<Wrapper>) newListOfItemType(wrapperType);
+        List<Wrapper> wrappers = (List<Wrapper>) newListOfItemType(wrapperType, new List<Wrapper>());
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
             Wrapper wrapper = (Wrapper) wrapperType.newInstance();
@@ -792,6 +818,25 @@ public class Collection {
 
         public Integer compareTo(Object other) {
             return comparator.compare(this.item, ((ComparableObject) other).item);
+        }
+    }
+
+
+    /*
+    * FILL
+    * */
+
+    /**
+     * Fills in the list with number of clones of provided prototype record.
+     *
+     * @param listToFill List to fill in.
+     * @param count Number of clones in the list
+     * @param prototype Prototype of the record. Clone of this record will be added to the list.
+     */
+    public static void fill(List<SObject> listToFill, Integer count, SObject prototype) {
+        for (Integer i = 0; i < count; i++) {
+            SObject clone = prototype.clone();
+            listToFill.add(clone);
         }
     }
 

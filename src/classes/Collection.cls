@@ -48,6 +48,8 @@ public class Collection {
             VALUE_IN = 'IN',
             VALUE_NOT_IN = 'NOT IN';
 
+    private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
+
     private List<Object> items;
 
 
@@ -288,7 +290,9 @@ public class Collection {
      * @param prototype Prototype of the record. Clone of this record will be added to the list.
      */
     public Collection fill(Integer count, SObject prototype) {
-        return fill(count, prototype, new CloneOptions());
+        assertSObjectCollection();
+        this.items = fill((List<SObject>) items, count, prototype);
+        return this;
     }
 
     /**
@@ -861,7 +865,7 @@ public class Collection {
      * @param prototype Prototype of the record. Clone of this record will be added to the list.
      */
     public static List<SObject> fill(List<SObject> listToFill, Integer count, SObject prototype) {
-        return fill(listToFill, count, prototype, new CloneOptions());
+        return fill(listToFill, count, prototype, defaultCloneOptions);
     }
 
     /**
@@ -890,10 +894,6 @@ public class Collection {
                 deepClone,
                 preserveReadonlyTimestamps,
                 preserveAutonumer;
-
-        public CloneOptions() {
-            this(false, true, false, false);
-        }
 
         public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumer) {
             this.preserveId = preserveId;

@@ -1166,13 +1166,14 @@ private class CollectionTest {
      * Fills in the list with number of clones of provided prototype record.
      */
     @IsTest
-    static void testFillInstance() {
+    static void testFill() {
         Contact contact = new Contact(LastName = 'Test');
 
         List<Account> accounts = (List<Account>)
                 new Collection(new List<Account>())
                         .fill(10, new Account(Name = 'Test Account', Contact__r = contact))
-                        .fill(10, new Account(Name = 'Other Account'))
+                        .fill(10, new Account(Name = 'Other Account', Contact__r = contact),
+                        new Collection.CloneOptions(false, false, false, false))
                         .toList();
 
 
@@ -1180,7 +1181,11 @@ private class CollectionTest {
 
         /*Test if clone is deep*/
         accounts[0].Name += '0';
-        accounts[0].Contact__r.LastName += '0';
+        contact.LastName += '0';
+
+        for (Account account : accounts) {
+            System.debug(account.Contact__r.LastName);
+        }
 
         for (Integer i = 1; i < 20; i++) {
             if (i < 10) {
@@ -1189,6 +1194,7 @@ private class CollectionTest {
 
             } else {
                 System.assertEquals('Other Account', accounts[i].Name);
+                System.assertEquals('Test0', accounts[i].Contact__r.LastName);
             }
         }
     }

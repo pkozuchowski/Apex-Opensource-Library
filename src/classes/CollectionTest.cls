@@ -1116,11 +1116,12 @@ private class CollectionTest {
     static void testFillInstance() {
         Contact contact = new Contact(LastName = 'Test');
 
-        List<Account> accounts = Collection.fill(new List<Account>(), 10, new Account(
-                Name = 'Test Account',
-                Contact__r = contact
-        ));
-        Collection.fill(accounts, 10, new Account(Name = 'Other Account'));
+        List<Account> accounts = (List<Account>)
+                new Collection(new List<Account>())
+                        .fill(10, new Account(Name = 'Test Account', Contact__r = contact))
+                        .fill(10, new Account(Name = 'Other Account'))
+                        .toList();
+
 
         System.assertEquals(20, accounts.size());
 

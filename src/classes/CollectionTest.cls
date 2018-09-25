@@ -981,6 +981,31 @@ private class CollectionTest {
 
     /**
      *@description
+     * CollectionsFilter.RelatedTo returns records related to given parents.
+     */
+    @IsTest
+    static void testFilterByRelatedTo() {
+        List<Account> accounts = new List<Account>{
+                new Account(Id = '001000000000000'),
+                new Account(Id = '001000000000001')
+        };
+
+        Set<Id> expected = new Map<Id, Opportunity>(new List<Opportunity>{
+                opportunities[0], opportunities[3], opportunities[6], opportunities[9],
+                opportunities[1], opportunities[4], opportunities[7]
+        }).keySet();
+
+        Set<Id> actual = (Set<Id>)
+                new Collection(opportunities)
+                        .filter(new CollectionFilters.RelatedTo(accounts, Opportunity.AccountId))
+                        .getUniqueValues(Opportunity.Id);
+
+        System.assertEquals(expected, actual);
+    }
+
+
+    /**
+     *@description
      * Collections.reduce() reduces collection to one object or other collection using Reducer implementation.
      */
     @IsTest

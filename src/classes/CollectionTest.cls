@@ -908,6 +908,28 @@ private class CollectionTest {
         List<Opportunity> actual = Collection.filter(opportunities, oldMap, new OpportunityChangedNameFilter());
         System.assertEquals(expected, actual);
     }
+
+    @IsTest
+    static void testFilterByUpdateFilterInstance() {
+        List<Opportunity> opportunities = opportunities;
+        Map<Id, Opportunity> oldMap = new Map<Id, Opportunity>(opportunities.deepClone(true));
+
+        oldMap.get(opportunities[0].Id).Name += '_CHANGED';
+        oldMap.get(opportunities[1].Id).Name += '_CHANGED';
+        oldMap.get(opportunities[2].Id).Name += '_CHANGED';
+
+        List<Opportunity> expected = new List<Opportunity>{
+                opportunities[0],
+                opportunities[1],
+                opportunities[2]
+        };
+
+        List<Opportunity> actual = (List<Opportunity>) new Collection(opportunities)
+                .filter(oldMap, new OpportunityChangedNameFilter())
+                .toList();
+        System.assertEquals(expected, actual);
+    }
+
     private class OpportunityChangedNameFilter implements Collection.UpdateFilter {
         public Boolean accepts(Object record, Object oldRecord) {
             return ((Opportunity) record).Name != ((Opportunity) oldRecord).Name;

@@ -49,19 +49,10 @@ public class Collection {
             VALUE_NOT_IN = 'NOT IN';
 
     private List<Object> items;
-    private Map<Id, SObject> old;
 
 
     public Collection(List<Object> items) {
         this.items = items;
-    }
-
-    /*
-    * Constructor used for update trigger.
-    * */
-    public Collection(List<SObject> items, Map<Id, SObject> old) {
-        this.items = items;
-        this.old = old;
     }
 
     /*
@@ -271,12 +262,9 @@ public class Collection {
      * @param filter UpdateFilter interface implementation, which for new and old record return boolean value whether
      * new record should be included in output.
      */
-    public Collection filter(UpdateFilter filter) {
+    public Collection filter(Map<Id, SObject> oldMap, UpdateFilter filter) {
         assertSObjectCollection();
-        assert(old != null, 'Operation only applies to Collections initialized ' +
-                'with Collection(List<SObject>, Map<Id,SObject>) oldMap constructor.'
-        );
-        this.items = Collection.filter((List<SObject>) items, old, filter);
+        this.items = Collection.filter((List<SObject>) items, oldMap, filter);
         return this;
     }
 

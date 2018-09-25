@@ -1220,4 +1220,47 @@ private class CollectionTest {
             ((Opportunity) item).Name += index;
         }
     }
+
+
+    /**
+     *@description
+     * find() returns first item accepted by ByFieldValue filter.
+     */
+    @IsTest
+    static void testFindReturnsFirstSObjectOfGivenFieldValue() {
+        Opportunity expected = opportunities[3];
+        Opportunity actual = (Opportunity) new Collection(opportunities).find(Opportunity.FiscalQuarter, '==', 3);
+        System.assertEquals(expected, actual);
+    }
+
+    /**
+     *@description
+     * find() returns null if there's no item accepted by filter.
+     */
+    @IsTest
+    static void testFindReturnsNullWhenThereAreNoItemsAcceptedByFilter() {
+        Opportunity actual = (Opportunity) new Collection(opportunities).find(Opportunity.Probability, '==', 1.5);
+        System.assertEquals(null, actual);
+    }
+
+
+    @IsTest
+    static void testFindByFilter() {
+        Opportunity expected = opportunities[5];
+        Opportunity actual = (Opportunity) new Collection(opportunities).find(new OpportunityNameContainsFilter('5'));
+
+        System.assertEquals(expected, actual);
+    }
+
+    private class OpportunityNameContainsFilter implements Collection.Filter {
+        private String expr;
+
+        public OpportunityNameContainsFilter(String expr) {
+            this.expr = expr;
+        }
+
+        public Boolean accepts(Object item) {
+            return ((Opportunity) item).Name.contains(expr);
+        }
+    }
 }

@@ -280,6 +280,24 @@ public class Collection {
 
 
     /**
+     * @return First collection item accepted by CollectionFilter.ByFieldValue, or null.
+     * @see CollectionFilter.ByFieldValue
+     * @see Collection.filter(SObjectField field, String operator, Object value)
+     */
+    public SObject find(SObjectField field, String operator, Object value) {
+        return find((List<SObject>) items, field, operator, value);
+    }
+
+    /**
+     * @param filter Filter implementation used in the search.
+     * @return First collection item accepted by filter or null.
+     */
+    public Object find(Filter filter) {
+        return find(items, filter);
+    }
+
+
+    /**
      * For each element in collection, Worker.forEach action is executed.
      * @param worker Concrete class implementing Worker interface. Executes action on each element.
      */
@@ -815,10 +833,38 @@ public class Collection {
     }
 
 
-    /*
-    * SORT
+    /******
+    * FIND
     * */
 
+    /**
+     * @return First collection item accepted by CollectionFilter.ByFieldValue, or null.
+     * @see CollectionFilter.ByFieldValue
+     */
+    public static SObject find(List<SObject> records, SObjectField field, String operator, Object value) {
+        return (SObject) find(records, new CollectionFilter.ByFieldValue(field, operator, value));
+    }
+
+    /**
+     * @param filter Filter implementation used in the search.
+     * @return First collection item accepted by filter or null.
+     */
+    public static Object find(List<Object> items, Filter filter) {
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            Object item = items[i];
+
+            if (filter.accepts(item)) {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
+
+    /******
+    * SORT
+    * */
     /**
      * Compares 2 objects to determine their order.
      * The implementation of this method should return the following values:

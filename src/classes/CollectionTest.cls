@@ -961,7 +961,7 @@ private class CollectionTest {
      * Collections.reduce() reduces collection to one object or other collection using Reducer implementation.
      */
     @IsTest
-    static void testReduce() {
+    static void testReduceStatic() {
         Set<Id> expected = new Set<Id>();
         for (Opportunity opportunity : opportunities) {
             expected.add(opportunity.Id);
@@ -978,6 +978,30 @@ private class CollectionTest {
 
             ids.add(opp.Id);
             ids.add(opp.AccountId);
+        }
+    }
+
+    /**
+     *@description
+     * List of Opportunities is reduced to string.
+     */
+    @IsTest
+    static void testReduceInstance() {
+        String expected = '';
+        for (Opportunity opportunity : opportunities) {
+            expected += ',' + opportunity.Name;
+        }
+
+        String actual = (String) new Collection(opportunities).reduce(new ReducerToOppNameCSV(), '');
+
+        System.assertEquals(expected, actual);
+    }
+    private class ReducerToOppNameCSV implements Collection.Reducer {
+        public void reduce(Object aggregatedValues, Object item) {
+            String csv = (String) aggregatedValues;
+            Opportunity opp = (Opportunity) item;
+
+            csv += ',' + opp.Name;
         }
     }
 

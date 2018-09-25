@@ -1,7 +1,7 @@
 /**
 * MIT License
 *
-* Copyright (c) 2018 Piotr Kożuchowski <piotr.b.kozuchowski@gmail.com>
+* Copyright (c) 2018 Piotr Kożuchowski
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 * SOFTWARE.
 */
 @IsTest(IsParallel=true)
-private class CollectionsTest {
+private class CollectionTest {
 
     private static List<Opportunity> opportunities = new List<Opportunity>{
             newOpportunity(0, new Map<String, Object>{
@@ -65,12 +65,14 @@ private class CollectionsTest {
         Map<String, Object> oppMap = new Map<String, Object>{
                 'Id' => '006' + ('' + i).leftPad(12, '0'),
                 'AccountId' => '001' + ('' + Math.mod(i, 3)).leftPad(12, '0'),
+                'OwnerId' => '005' + ('' + Math.mod(i, 5)).leftPad(12, '0'),
                 'Name' => 'Test Opportunity ' + i,
                 'CreatedDate' => Datetime.now().addDays(-i),
                 'FiscalQuarter' => Math.mod(i, 4),
                 'HasOpenActivity' => Math.mod(i, 2) == 0,
                 'LastActivityDate' => Date.today().addDays(-i),
-                'Probability' => 1.0 * i / 10
+                'Probability' => 1.0 * i / 10,
+                'Amount' => i * 100
         };
         oppMap.putAll(opp);
 
@@ -85,8 +87,10 @@ private class CollectionsTest {
      */
     @IsTest
     static void testIsNotEmpty() {
-        System.assertEquals(false, Collections.isNotEmpty(null));
-        System.assertEquals(false, Collections.isNotEmpty(new List<String>()));
+        System.assertEquals(false, Collection.isNotEmpty(null));
+        System.assertEquals(false, Collection.isNotEmpty(new List<String>()));
+        System.assertEquals(false, new Collection(null).isNotEmpty());
+        System.assertEquals(false, new Collection(new List<String>()).isNotEmpty());
     }
 
 
@@ -96,8 +100,10 @@ private class CollectionsTest {
      */
     @IsTest
     static void testIsEmpty() {
-        System.assertEquals(true, Collections.isEmpty(null));
-        System.assertEquals(true, Collections.isEmpty(new List<String>()));
+        System.assertEquals(true, Collection.isEmpty(null));
+        System.assertEquals(true, Collection.isEmpty(new List<String>()));
+        System.assertEquals(true, new Collection(null).isEmpty());
+        System.assertEquals(true, new Collection(new List<String>()).isEmpty());
     }
 
 
@@ -107,8 +113,8 @@ private class CollectionsTest {
      */
     @IsTest
     static void testCast() {
-        Map<Id, Account> accountById = (Map<Id, Account>) Collections.cast(new Map<String, SObject>(), Map<Id, Account>.class);
-        Set<String> stringSet = (Set<String>) Collections.cast(new Set<Object>(), Set<String>.class);
+        Map<Id, Account> accountById = (Map<Id, Account>) Collection.cast(new Map<String, SObject>(), Map<Id, Account>.class);
+        Set<String> stringSet = (Set<String>) Collection.cast(new Set<Object>(), Set<String>.class);
         System.assert(true);
     }
 
@@ -119,10 +125,10 @@ private class CollectionsTest {
      */
     @IsTest
     static void testGetListItemType() {
-        System.assertEquals(Account.class, Collections.getListItemType(new List<Account>()));
+        System.assertEquals(Account.class, Collection.getListItemType(new List<Account>()));
 
         List<SObject> records = new List<Opportunity>();
-        System.assertEquals(Opportunity.class, Collections.getListItemType(records));
+        System.assertEquals(Opportunity.class, Collection.getListItemType(records));
     }
 
     /**
@@ -131,16 +137,16 @@ private class CollectionsTest {
      */
     @IsTest
     static void testGetType() {
-        System.assertEquals(List<Account>.class, Collections.getType(new List<Account>()));
+        System.assertEquals(List<Account>.class, Collection.getType(new List<Account>()));
 
         List<SObject> records = new List<Opportunity>();
-        System.assertEquals(List<Opportunity>.class, Collections.getType(records));
+        System.assertEquals(List<Opportunity>.class, Collection.getType(records));
     }
 
     @IsTest
     static void whenCastedCollectionIsNullThenBlankInstanceOfTargetTypeIsReturned() {
         Set<Id> expected = new Set<Id>();
-        Set<Id> actual = (Set<Id>) Collections.cast(null, Set<Id>.class);
+        Set<Id> actual = (Set<Id>) Collection.cast(null, Set<Id>.class);
 
         System.assertEquals(expected, actual);
     }
@@ -157,8 +163,10 @@ private class CollectionsTest {
             expected.add(opp.AccountId);
         }
 
-        Set<Id> actual = (Set<Id>) Collections.getUniqueValues(opportunities, Opportunity.AccountId);
+        Set<Id> actual = (Set<Id>) Collection.getUniqueValues(opportunities, Opportunity.AccountId);
+        Set<Id> actual2 = (Set<Id>) new Collection(opportunities).getUniqueValues(Opportunity.AccountId);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -172,8 +180,10 @@ private class CollectionsTest {
             expected.add(opp.Name);
         }
 
-        Set<String> actual = (Set<String>) Collections.getUniqueValues(opportunities, Opportunity.Name);
+        Set<String> actual = (Set<String>) Collection.getUniqueValues(opportunities, Opportunity.Name);
+        Set<String> actual2 = (Set<String>) new Collection(opportunities).getUniqueValues(Opportunity.Name);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -187,8 +197,11 @@ private class CollectionsTest {
             expected.add(opp.FiscalQuarter);
         }
 
-        Set<Integer> actual = (Set<Integer>) Collections.getUniqueValues(opportunities, Opportunity.FiscalQuarter);
+        Set<Integer> actual = (Set<Integer>) Collection.getUniqueValues(opportunities, Opportunity.FiscalQuarter);
+        Set<Integer> actual2 = (Set<Integer>) new Collection(opportunities).getUniqueValues(Opportunity.FiscalQuarter);
+
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -202,8 +215,10 @@ private class CollectionsTest {
             expected.add(opp.Probability);
         }
 
-        Set<Decimal> actual = (Set<Decimal>) Collections.getUniqueValues(opportunities, Opportunity.Probability);
+        Set<Decimal> actual = (Set<Decimal>) Collection.getUniqueValues(opportunities, Opportunity.Probability);
+        Set<Decimal> actual2 = (Set<Decimal>) new Collection(opportunities).getUniqueValues(Opportunity.Probability);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -217,8 +232,10 @@ private class CollectionsTest {
             expected.add(opp.LastActivityDate);
         }
 
-        Set<Date> actual = (Set<Date>) Collections.getUniqueValues(opportunities, Opportunity.LastActivityDate);
+        Set<Date> actual = (Set<Date>) Collection.getUniqueValues(opportunities, Opportunity.LastActivityDate);
+        Set<Date> actual2 = (Set<Date>) new Collection(opportunities).getUniqueValues(Opportunity.LastActivityDate);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -232,8 +249,10 @@ private class CollectionsTest {
             expected.add(opp.CreatedDate);
         }
 
-        Set<Datetime> actual = (Set<Datetime>) Collections.getUniqueValues(opportunities, Opportunity.CreatedDate);
+        Set<Datetime> actual = (Set<Datetime>) Collection.getUniqueValues(opportunities, Opportunity.CreatedDate);
+        Set<Datetime> actual2 = (Set<Datetime>) new Collection(opportunities).getUniqueValues(Opportunity.CreatedDate);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -247,8 +266,10 @@ private class CollectionsTest {
             expected.add(opp.HasOpenActivity);
         }
 
-        Set<Boolean> actual = (Set<Boolean>) Collections.getUniqueValues(opportunities, Opportunity.HasOpenActivity);
+        Set<Boolean> actual = (Set<Boolean>) Collection.getUniqueValues(opportunities, Opportunity.HasOpenActivity);
+        Set<Boolean> actual2 = (Set<Boolean>) new Collection(opportunities).getUniqueValues(Opportunity.HasOpenActivity);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
 
@@ -267,8 +288,10 @@ private class CollectionsTest {
             expected.add((String) record.get('Name'));
         }
 
-        Set<String> actual = (Set<String>) Collections.getUniqueValues(String.class, records, 'Name');
+        Set<String> actual = (Set<String>) Collection.getUniqueValues(String.class, records, 'Name');
+        Set<String> actual2 = (Set<String>) new Collection(records).getUniqueValues(String.class, 'Name');
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
 
@@ -282,8 +305,10 @@ private class CollectionsTest {
                 0, 1
         };
 
-        Set<Integer> actual = (Set<Integer>) Collections.getUniqueValues(opportunities, new OpportunitiesByYearsHalfMapper());
+        Set<Integer> actual = (Set<Integer>) Collection.getUniqueValues(opportunities, new OpportunitiesByYearsHalfMapper());
+        Set<Integer> actual2 = (Set<Integer>) new Collection(opportunities).getUniqueValues(new OpportunitiesByYearsHalfMapper());
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -303,10 +328,15 @@ private class CollectionsTest {
             }
         }
 
-        Set<Object> actual = Collections.getUniqueValues(opportunities, fields);
+        Set<Object> actual = Collection.getUniqueValues(opportunities, fields);
+        Set<Object> actual2 = new Collection(opportunities).getUniqueValues(fields);
         System.assertEquals(
                 JSON.serialize(expected),
                 JSON.serialize(actual)
+        );
+        System.assertEquals(
+                JSON.serialize(expected),
+                JSON.serialize(actual2)
         );
     }
 
@@ -322,8 +352,10 @@ private class CollectionsTest {
             expected.put(opp.Id, opp);
         }
 
-        Map<Id, Opportunity> actual = (Map<Id, Opportunity>) Collections.mapBy(opportunities, Opportunity.Id);
+        Map<Id, Opportunity> actual = (Map<Id, Opportunity>) Collection.mapBy(opportunities, Opportunity.Id);
+        Map<Id, Opportunity> actual2 = (Map<Id, Opportunity>) new Collection(opportunities).mapBy(Opportunity.Id);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -337,8 +369,10 @@ private class CollectionsTest {
             expected.put(opp.Name, opp);
         }
 
-        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collections.mapBy(opportunities, Opportunity.Name);
+        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collection.mapBy(opportunities, Opportunity.Name);
+        Map<String, Opportunity> actual2 = (Map<String, Opportunity>) new Collection(opportunities).mapBy(Opportunity.Name);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -356,8 +390,10 @@ private class CollectionsTest {
             expected.put((String) opp.get('Name'), opp);
         }
 
-        Map<String, SObject> actual = (Map<String, SObject>) Collections.mapBy(String.class, records, 'Name');
+        Map<String, SObject> actual = (Map<String, SObject>) Collection.mapBy(String.class, records, 'Name');
+        Map<String, SObject> actual2 = (Map<String, SObject>) new Collection(records).mapBy(String.class, 'Name');
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -371,8 +407,10 @@ private class CollectionsTest {
             expected.put(opp.Probability, opp);
         }
 
-        Map<Decimal, Opportunity> actual = (Map<Decimal, Opportunity>) Collections.mapBy(opportunities, Opportunity.Probability);
+        Map<Decimal, Opportunity> actual = (Map<Decimal, Opportunity>) Collection.mapBy(opportunities, Opportunity.Probability);
+        Map<Decimal, Opportunity> actual2 = (Map<Decimal, Opportunity>) new Collection(opportunities).mapBy(Opportunity.Probability);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -386,8 +424,10 @@ private class CollectionsTest {
             expected.put(opp.FiscalQuarter, opp);
         }
 
-        Map<Integer, Opportunity> actual = (Map<Integer, Opportunity>) Collections.mapBy(opportunities, Opportunity.FiscalQuarter);
+        Map<Integer, Opportunity> actual = (Map<Integer, Opportunity>) Collection.mapBy(opportunities, Opportunity.FiscalQuarter);
+        Map<Integer, Opportunity> actual2 = (Map<Integer, Opportunity>) new Collection(opportunities).mapBy(Opportunity.FiscalQuarter);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -401,8 +441,10 @@ private class CollectionsTest {
             expected.put(opp.HasOpenActivity, opp);
         }
 
-        Map<Boolean, Opportunity> actual = (Map<Boolean, Opportunity>) Collections.mapBy(opportunities, Opportunity.HasOpenActivity);
+        Map<Boolean, Opportunity> actual = (Map<Boolean, Opportunity>) Collection.mapBy(opportunities, Opportunity.HasOpenActivity);
+        Map<Boolean, Opportunity> actual2 = (Map<Boolean, Opportunity>) new Collection(opportunities).mapBy(Opportunity.HasOpenActivity);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -416,8 +458,10 @@ private class CollectionsTest {
             expected.put(opp.LastActivityDate, opp);
         }
 
-        Map<Date, Opportunity> actual = (Map<Date, Opportunity>) Collections.mapBy(opportunities, Opportunity.LastActivityDate);
+        Map<Date, Opportunity> actual = (Map<Date, Opportunity>) Collection.mapBy(opportunities, Opportunity.LastActivityDate);
+        Map<Date, Opportunity> actual2 = (Map<Date, Opportunity>) new Collection(opportunities).mapBy(Opportunity.LastActivityDate);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -431,8 +475,10 @@ private class CollectionsTest {
             expected.put(opp.CreatedDate, opp);
         }
 
-        Map<Datetime, Opportunity> actual = (Map<Datetime, Opportunity>) Collections.mapBy(opportunities, Opportunity.CreatedDate);
+        Map<Datetime, Opportunity> actual = (Map<Datetime, Opportunity>) Collection.mapBy(opportunities, Opportunity.CreatedDate);
+        Map<Datetime, Opportunity> actual2 = (Map<Datetime, Opportunity>) new Collection(opportunities).mapBy(Opportunity.CreatedDate);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -446,11 +492,13 @@ private class CollectionsTest {
             expected.put(opp.CreatedDate.time(), opp);
         }
 
-        Map<Time, Opportunity> actual = (Map<Time, Opportunity>) Collections.mapBy(opportunities, new MapByOpportunityCreateTime());
+        Map<Time, Opportunity> actual = (Map<Time, Opportunity>) Collection.mapBy(opportunities, new MapByOpportunityCreateTime());
+        Map<Time, Opportunity> actual2 = (Map<Time, Opportunity>) new Collection(opportunities).mapBy(new MapByOpportunityCreateTime());
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
-    private class MapByOpportunityCreateTime implements Collections.KeyMapper {
+    private class MapByOpportunityCreateTime implements Collection.KeyMapper {
         public Object key(Object item) {
             return ((Opportunity) item).CreatedDate.time();
         }
@@ -471,10 +519,12 @@ private class CollectionsTest {
             expected.put('' + opp.AccountId + opp.FiscalQuarter, opp.Id);
         }
 
-        Map<String, Id> actual = (Map<String, Id>) Collections.mapBy(opportunities, new TestMapper());
+        Map<String, Id> actual = (Map<String, Id>) Collection.mapBy(opportunities, new TestMapper());
+        Map<String, Id> actual2 = (Map<String, Id>) new Collection(opportunities).mapBy(new TestMapper());
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
-    private class TestMapper implements Collections.Mapper {
+    private class TestMapper implements Collection.Mapper {
         public Object key(Object item) {
             Opportunity opp = (Opportunity) item;
             return '' + opp.AccountId + opp.FiscalQuarter;
@@ -493,18 +543,39 @@ private class CollectionsTest {
         }
     }
 
+    /**
+     * CollectionMappers.ByFieldPair can map junction object by both parent Ids.
+     */
+    @IsTest
+    static void testMapByFieldPair() {
+        Map<String, Opportunity> expected = new Map<String, Opportunity>();
+        for (Opportunity opp : opportunities) {
+            expected.put(opp.AccountId + '_' + opp.OwnerId, opp);
+        }
+
+        Map<String, Opportunity> actual = (Map<String, Opportunity>) new Collection(opportunities)
+                .mapBy(new CollectionMappers.ByFieldPair(Opportunity.AccountId, '_', Opportunity.OwnerId));
+
+        System.assertEquals(expected, actual);
+    }
+
     @IsTest
     static void whenEmptyOpportunityListIsMappedThenEmptyOpportunityByStringMapIsReturned() {
         Map<String, Opportunity> expected = new Map<String, Opportunity>();
-        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collections.mapBy(new List<Opportunity>(), Opportunity.Name);
+        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collection.mapBy(new List<Opportunity>(), Opportunity.Name);
+        Map<String, Opportunity> actual2 = (Map<String, Opportunity>) new Collection(new List<Opportunity>()).mapBy(Opportunity.Name);
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     @IsTest
     static void whenEmptySObjectListIsMappedThenEmptySObjectByStringMapIsReturned() {
         Map<String, SObject> expected = new Map<String, SObject>();
-        Map<String, SObject> actual = (Map<String, SObject>) Collections.mapBy(new List<SObject>(), Opportunity.Name);
+        Map<String, SObject> actual = (Map<String, SObject>) Collection.mapBy(new List<SObject>(), Opportunity.Name);
+        Map<String, SObject> actual2 = (Map<String, SObject>) new Collection(new List<SObject>()).mapBy(Opportunity.Name);
+
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
 
@@ -527,9 +598,11 @@ private class CollectionsTest {
                         opportunities[7], opportunities[8], opportunities[9]
                 }
         };
-        Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collections.groupBy(String.class, opportunities, 'NextStep');
+        Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collection.groupBy(String.class, opportunities, 'NextStep');
+        Map<String, List<Opportunity>> actual2 = (Map<String, List<Opportunity>>) new Collection(opportunities).groupBy(String.class, 'NextStep');
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -551,7 +624,8 @@ private class CollectionsTest {
                         opportunities[7], opportunities[8], opportunities[9]
                 }
         };
-        Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.NextStep);
+        Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.NextStep);
+        Map<String, List<Opportunity>> actual2 = (Map<String, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.NextStep);
 
         System.assertEquals(expected, actual);
     }
@@ -569,7 +643,8 @@ private class CollectionsTest {
                         opportunities[2], opportunities[5], opportunities[8]
                 }
         };
-        Map<Id, List<Opportunity>> actual = (Map<Id, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.AccountId);
+        Map<Id, List<Opportunity>> actual = (Map<Id, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.AccountId);
+        Map<Id, List<Opportunity>> actual2 = (Map<Id, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.AccountId);
 
         System.assertEquals(expected, actual);
     }
@@ -590,9 +665,11 @@ private class CollectionsTest {
                         opportunities[3], opportunities[7]
                 }
         };
-        Map<Integer, List<Opportunity>> actual = (Map<Integer, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.FiscalQuarter);
+        Map<Integer, List<Opportunity>> actual = (Map<Integer, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.FiscalQuarter);
+        Map<Integer, List<Opportunity>> actual2 = (Map<Integer, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.FiscalQuarter);
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     @IsTest
@@ -603,10 +680,12 @@ private class CollectionsTest {
                     opportunities[i]
             });
         }
-        Map<Decimal, List<Opportunity>> actual = (Map<Decimal, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.Probability);
-
+        Map<Decimal, List<Opportunity>> actual = (Map<Decimal, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.Probability);
+        Map<Decimal, List<Opportunity>> actual2 = (Map<Decimal, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.Probability);
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
+
     }
 
     @IsTest
@@ -617,10 +696,12 @@ private class CollectionsTest {
                     opportunities[i]
             });
         }
-        Map<Date, List<Opportunity>> actual = (Map<Date, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.LastActivityDate);
+        Map<Date, List<Opportunity>> actual = (Map<Date, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.LastActivityDate);
+        Map<Date, List<Opportunity>> actual2 = (Map<Date, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.LastActivityDate);
 
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     @IsTest
@@ -631,10 +712,12 @@ private class CollectionsTest {
                     opportunities[i]
             });
         }
-        Map<Datetime, List<Opportunity>> actual = (Map<Datetime, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.CreatedDate);
+        Map<Datetime, List<Opportunity>> actual = (Map<Datetime, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.CreatedDate);
+        Map<Datetime, List<Opportunity>> actual2 = (Map<Datetime, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.CreatedDate);
 
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     @IsTest
@@ -647,9 +730,11 @@ private class CollectionsTest {
                         opportunities[1], opportunities[3], opportunities[5], opportunities[7], opportunities[9]
                 }
         };
-        Map<Boolean, List<Opportunity>> actual = (Map<Boolean, List<Opportunity>>) Collections.groupBy(opportunities, Opportunity.HasOpenActivity);
+        Map<Boolean, List<Opportunity>> actual = (Map<Boolean, List<Opportunity>>) Collection.groupBy(opportunities, Opportunity.HasOpenActivity);
+        Map<Boolean, List<Opportunity>> actual2 = (Map<Boolean, List<Opportunity>>) new Collection(opportunities).groupBy(Opportunity.HasOpenActivity);
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
     @IsTest
@@ -662,13 +747,15 @@ private class CollectionsTest {
                         opportunities[2], opportunities[3], opportunities[6], opportunities[7]
                 }
         };
-        Map<Integer, List<Opportunity>> actual = (Map<Integer, List<Opportunity>>) Collections.groupBy(opportunities, new OpportunitiesByYearsHalfMapper());
+        Map<Integer, List<Opportunity>> actual = (Map<Integer, List<Opportunity>>) Collection.groupBy(opportunities, new OpportunitiesByYearsHalfMapper());
+        Map<Integer, List<Opportunity>> actual2 = (Map<Integer, List<Opportunity>>) new Collection(opportunities).groupBy(new OpportunitiesByYearsHalfMapper());
 
 
         System.assertEquals(expected, actual);
+        System.assertEquals(expected, actual2);
     }
 
-    private class OpportunitiesByYearsHalfMapper implements Collections.KeyMapper {
+    private class OpportunitiesByYearsHalfMapper implements Collection.KeyMapper {
         public Object key(Object item) {
             Integer quarter = ((Opportunity) item).FiscalQuarter;
             return quarter <= 1 ? 0 : 1;
@@ -700,10 +787,11 @@ private class CollectionsTest {
                 }
         };
 
-        Map<Integer, List<OpportunityWrapper>> actual = (Map<Integer, List<OpportunityWrapper>>) Collections.groupBy(opportunities, new OppWrapperByHalfYearMapper());
+        Map<Integer, List<OpportunityWrapper>> actual = (Map<Integer, List<OpportunityWrapper>>) Collection.groupBy(opportunities, new OppWrapperByHalfYearMapper());
+        System.assertEquals(JSON.serialize(expected), JSON.serialize(actual));
     }
 
-    private class OppWrapperByHalfYearMapper implements Collections.Mapper {
+    private class OppWrapperByHalfYearMapper implements Collection.Mapper {
         public Type keyType() {
             return Integer.class;
         }
@@ -730,14 +818,14 @@ private class CollectionsTest {
     @IsTest
     static void whenEmptyOpportunityListIsGrouppedThenEmptyOpportunityByStringMapIsReturned() {
         Map<String, List<Opportunity>> expected = new Map<String, List<Opportunity>>();
-        Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collections.groupBy(new List<Opportunity>(), Opportunity.Name);
+        Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collection.groupBy(new List<Opportunity>(), Opportunity.Name);
         System.assertEquals(expected, actual);
     }
 
     @IsTest
     static void whenEmptySObjectListIsGrouppedThenEmptySObjectByStringMapIsReturned() {
         Map<String, List<SObject>> expected = new Map<String, List<SObject>>();
-        Map<String, List<SObject>> actual = (Map<String, List<SObject>>) Collections.groupBy(new List<SObject>(), Opportunity.Name);
+        Map<String, List<SObject>> actual = (Map<String, List<SObject>>) Collection.groupBy(new List<SObject>(), Opportunity.Name);
         System.assertEquals(expected, actual);
     }
 
@@ -747,26 +835,42 @@ private class CollectionsTest {
      * Collections.filterByFieldValue filters input records and return only those which field is the same as specified value.
      */
     @IsTest
-    static void testFilterByFieldValue() {
-        List<Opportunity> expected = new List<Opportunity>{
-                opportunities[0], opportunities[2], opportunities[4], opportunities[6], opportunities[8]
-        };
-        List<Opportunity> actual = Collections.filterByFieldValue(opportunities, Opportunity.HasOpenActivity, true);
-        System.assertEquals(expected, actual);
+    static void tesFiltertFilterByFieldValue() {
+        List<Opportunity> hasOpenActivity = new List<Opportunity>();
+        List<Opportunity> hasNotOpenActivity = new List<Opportunity>();
+        List<Opportunity> fiscalQuarterEquals0 = new List<Opportunity>();
+        List<Opportunity> fiscalQuarterNotEquals0 = new List<Opportunity>();
+        List<Opportunity> nextStepAnalysis = new List<Opportunity>();
+        List<Opportunity> nextStepNotAnalysis = new List<Opportunity>();
 
+        for (Opportunity opp : opportunities) {
+            if (opp.HasOpenActivity) {
+                hasOpenActivity.add(opp);
+            } else {
+                hasNotOpenActivity.add(opp);
+            }
 
-        expected = new List<Opportunity>{
-                opportunities[0], opportunities[4], opportunities[8]
-        };
-        actual = Collections.filterByFieldValue(opportunities, Opportunity.FiscalQuarter, 0);
-        System.assertEquals(expected, actual);
+            if (opp.FiscalQuarter == 0) {
+                fiscalQuarterEquals0.add(opp);
+            } else {
+                fiscalQuarterNotEquals0.add(opp);
+            }
 
+            if (opp.NextStep == 'Analysis') {
+                nextStepAnalysis.add(opp);
+            } else {
+                nextStepNotAnalysis.add(opp);
+            }
+        }
 
-        expected = new List<Opportunity>{
-                opportunities[0], opportunities[1], opportunities[2], opportunities[3]
-        };
-        actual = Collections.filterByFieldValue(opportunities, Opportunity.NextStep, 'Analysis');
-        System.assertEquals(expected, actual);
+        System.assertEquals(hasOpenActivity, Collection.filter(opportunities, Opportunity.HasOpenActivity, '==', true));
+        System.assertEquals(hasNotOpenActivity, Collection.filter(opportunities, Opportunity.HasOpenActivity, '!=', true));
+
+        System.assertEquals(fiscalQuarterEquals0, Collection.filter(opportunities, new CollectionFilters.ByFieldValue(Opportunity.FiscalQuarter, '==', 0)));
+        System.assertEquals(fiscalQuarterNotEquals0, Collection.filter(opportunities, new CollectionFilters.ByFieldValue(Opportunity.FiscalQuarter, '!=', 0)));
+
+        System.assertEquals(nextStepAnalysis, new Collection(opportunities).filter(Opportunity.NextStep, '==', 'Analysis').toList());
+        System.assertEquals(nextStepNotAnalysis, new Collection(opportunities).filter(new CollectionFilters.ByFieldValue(Opportunity.NextStep, '!=', 'Analysis')).toList());
     }
 
 
@@ -775,23 +879,26 @@ private class CollectionsTest {
      * Collections.filterByFieldValues filters input records and return only those which field is one of specified values.
      */
     @IsTest
-    static void testFilterByFieldValues() {
-        Set<String> acceptedStages = new Set<String>{
+    static void tesFiltertFilterByFieldValues() {
+        Set<Object> acceptedStages = new Set<Object>{
                 'Analysis', 'Deal'
         };
+        List<Opportunity> expectedAcceptedOpps = new List<Opportunity>();
+        List<Opportunity> expectedRejectedOpps = new List<Opportunity>();
 
-        List<Opportunity> expected = new List<Opportunity>();
         for (Opportunity opportunity : opportunities) {
             if (acceptedStages.contains(opportunity.StageName)) {
-                expected.add(opportunity);
+                expectedAcceptedOpps.add(opportunity);
+            } else {
+                expectedRejectedOpps.add(opportunity);
             }
         }
 
-        List<Opportunity> actual = Collections.filterByFieldValues(opportunities, Opportunity.StageName, new Set<Object>{
-                'Analysis', 'Deal'
-        });
+        List<Opportunity> actualAcceptedOpps = (List<Opportunity>) Collection.filter(opportunities, new CollectionFilters.ByFieldValues(Opportunity.StageName, 'IN', acceptedStages));
+        List<Opportunity> actualRejectedOpps = (List<Opportunity>) Collection.filter(opportunities, new CollectionFilters.ByFieldValues(Opportunity.StageName, 'NOT IN', acceptedStages));
 
-        System.assertEquals(expected, actual);
+        System.assertEquals(expectedAcceptedOpps, actualAcceptedOpps);
+        System.assertEquals(expectedRejectedOpps, actualRejectedOpps);
     }
 
 
@@ -815,13 +922,102 @@ private class CollectionsTest {
                 opportunities[2]
         };
 
-        List<Opportunity> actual = Collections.filter(opportunities, oldMap, new OpportunityChangedNameFilter());
+        List<Opportunity> actual = Collection.filter(opportunities, oldMap, new OpportunityChangedNameFilter());
         System.assertEquals(expected, actual);
     }
-    private class OpportunityChangedNameFilter implements Collections.UpdateFilter {
+
+    @IsTest
+    static void testFilterByUpdateFilterInstance() {
+        List<Opportunity> opportunities = opportunities;
+        Map<Id, Opportunity> oldMap = new Map<Id, Opportunity>(opportunities.deepClone(true));
+
+        oldMap.get(opportunities[0].Id).Name += '_CHANGED';
+        oldMap.get(opportunities[1].Id).Name += '_CHANGED';
+        oldMap.get(opportunities[2].Id).Name += '_CHANGED';
+
+        List<Opportunity> expected = new List<Opportunity>{
+                opportunities[0],
+                opportunities[1],
+                opportunities[2]
+        };
+
+        List<Opportunity> actual = (List<Opportunity>) new Collection(opportunities)
+                .filter(oldMap, new OpportunityChangedNameFilter())
+                .toList();
+        System.assertEquals(expected, actual);
+    }
+
+    private class OpportunityChangedNameFilter implements Collection.UpdateFilter {
         public Boolean accepts(Object record, Object oldRecord) {
             return ((Opportunity) record).Name != ((Opportunity) oldRecord).Name;
         }
+    }
+
+    /**
+     *@description
+     *
+     */
+    @IsTest
+    static void testFilterFieldChanged() {
+        List<Opportunity> opps = opportunities;
+        List<Opportunity> oldOpps = opps.deepClone(true);
+        Map<Id, Opportunity> oldMap = new Map<Id, Opportunity>(oldOpps);
+
+        opps[0].Name = opps[1].Name = 'Henry';
+        opps[2].Name = opps[3].Name = 'John';
+
+        oldOpps[0].Name = 'Hen';
+        oldOpps[1].Name = oldOpps[2].Name = 'Ken';
+
+
+        System.assertEquals(new List<Opportunity>{
+                opps[0], opps[1], opps[2], opps[3]
+        },
+                Collection.filter(opps, oldMap,
+                        new CollectionFilters.FieldChanged(Opportunity.Name)
+                )
+        );
+
+        System.assertEquals(new List<Opportunity>{
+                opps[2], opps[3]
+        },
+                Collection.filter(opps, oldMap, new CollectionFilters.FieldChanged(Opportunity.Name, Collection.ANY_VALUE, 'John'))
+        );
+
+        System.assertEquals(new List<Opportunity>{
+                opps[1], opps[2]
+        }, Collection.filter(opps, oldMap, new CollectionFilters.FieldChanged(Opportunity.Name, 'Ken', Collection.ANY_VALUE))
+        );
+
+        System.assertEquals(new List<Opportunity>{
+                opps[0]
+        }, Collection.filter(opps, oldMap, new CollectionFilters.FieldChanged(Opportunity.Name, 'Hen', 'Henry'))
+        );
+    }
+
+
+    /**
+     *@description
+     * CollectionsFilter.RelatedTo returns records related to given parents.
+     */
+    @IsTest
+    static void testFilterByRelatedTo() {
+        List<Account> accounts = new List<Account>{
+                new Account(Id = '001000000000000'),
+                new Account(Id = '001000000000001')
+        };
+
+        Set<Id> expected = new Map<Id, Opportunity>(new List<Opportunity>{
+                opportunities[0], opportunities[3], opportunities[6], opportunities[9],
+                opportunities[1], opportunities[4], opportunities[7]
+        }).keySet();
+
+        Set<Id> actual = (Set<Id>)
+                new Collection(opportunities)
+                        .filter(new CollectionFilters.RelatedTo(accounts, Opportunity.AccountId))
+                        .getUniqueValues(Opportunity.Id);
+
+        System.assertEquals(expected, actual);
     }
 
 
@@ -830,23 +1026,49 @@ private class CollectionsTest {
      * Collections.reduce() reduces collection to one object or other collection using Reducer implementation.
      */
     @IsTest
-    static void testReduce() {
+    static void testReduceStatic() {
         Set<Id> expected = new Set<Id>();
         for (Opportunity opportunity : opportunities) {
             expected.add(opportunity.Id);
             expected.add(opportunity.AccountId);
         }
-        Set<Id> actual = (Set<Id>) Collections.reduce(opportunities, new ReducerToIdAndAccountId(), new Set<Id>());
+        Set<Id> actual = (Set<Id>) Collection.reduce(opportunities, new ReducerToIdAndAccountId(), new Set<Id>());
 
         System.assertEquals(expected, actual);
     }
-    private class ReducerToIdAndAccountId implements Collections.Reducer {
-        public void reduce(Object aggregatedValues, Object item) {
+    private class ReducerToIdAndAccountId implements Collection.Reducer {
+        public Object reduce(Object aggregatedValues, Object item, Integer index) {
             Set<Id> ids = (Set<Id>) aggregatedValues;
             Opportunity opp = (Opportunity) item;
 
             ids.add(opp.Id);
             ids.add(opp.AccountId);
+
+            return ids;
+        }
+    }
+
+    /**
+     *@description
+     * List of Opportunities is reduced to total of Amounts
+     */
+    @IsTest
+    static void testReduceInstance() {
+        Decimal expected = 0;
+        for (Opportunity opportunity : opportunities) {
+            expected += opportunity.Amount;
+        }
+
+        Decimal actual = (Decimal) new Collection(opportunities).reduce(new ReducerToOppAmountTotal(), 0);
+
+        System.assertEquals(expected, actual);
+    }
+    private class ReducerToOppAmountTotal implements Collection.Reducer {
+        public Object reduce(Object aggregatedValues, Object item, Integer index) {
+            Decimal soFar = (Decimal) aggregatedValues;
+            Opportunity opp = (Opportunity) item;
+
+            return soFar + opp.Amount;
         }
     }
 
@@ -863,11 +1085,13 @@ private class CollectionsTest {
             expected.add(opportunities[i]);
         }
 
-        List<Opportunity> actual = (List<Opportunity>) Collections.sort(opportunities, new ReverseProbabilityComparator());
+        List<Opportunity> actual = (List<Opportunity>) new Collection(opportunities)
+                .sort(new ReverseProbabilityComparator())
+                .toList();
 
         System.assertEquals(actual, expected);
     }
-    private class ReverseProbabilityComparator implements Collections.Comparator {
+    private class ReverseProbabilityComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             Opportunity thisOpp = (Opportunity) thisItem;
             Opportunity otherOpp = (Opportunity) otherItem;
@@ -893,7 +1117,7 @@ private class CollectionsTest {
     static void testSortByField() {
         Opportunity previous;
 
-        List<Opportunity> sortedOpportunities = Collections.sort(opportunities, Opportunity.CreatedDate, true);
+        List<Opportunity> sortedOpportunities = Collection.sort(opportunities, Opportunity.CreatedDate, true);
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {
                 System.assert(opportunity.CreatedDate >= previous.CreatedDate);
@@ -903,7 +1127,7 @@ private class CollectionsTest {
         previous = null;
 
 
-        sortedOpportunities = Collections.sort(opportunities, Opportunity.Name, false);
+        sortedOpportunities = Collection.sort(opportunities, Opportunity.Name, false);
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {
                 System.assertEquals(-1, opportunity.Name.compareTo(previous.Name));
@@ -913,7 +1137,9 @@ private class CollectionsTest {
         previous = null;
 
 
-        sortedOpportunities = Collections.sort(opportunities, Opportunity.FiscalQuarter, true);
+        sortedOpportunities = (List<Opportunity>) new Collection(opportunities)
+                .sort(Opportunity.FiscalQuarter, true)
+                .toList();
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {
                 System.assert(opportunity.FiscalQuarter >= previous.FiscalQuarter);
@@ -921,5 +1147,162 @@ private class CollectionsTest {
             previous = opportunity;
         }
         previous = null;
+    }
+
+
+    /**
+     *@description
+     * Static wrap method returns given records Wrapped into custom Wrapper class (implementing Collection.Wrapper)
+     */
+    @IsTest
+    static void testWrapStatic() {
+        List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>) Collection.wrap(opportunities, OpportunityWrapper2.class);
+
+        System.assertEquals(wrappers.size(), opportunities.size());
+
+        for (Integer i = 0; i < wrappers.size(); i++) {
+            System.assertEquals(wrappers[i].opportunity, opportunities[i]);
+        }
+    }
+
+    /**
+     * @description
+     * Instance wrap method wraps Collection member list with custom Wrapper class (implementing Collection.Wrapper).
+     * This method can be chained with other Collection methods ex.
+     * <pre>
+     * Map<Id,OpportunityWrapper> ... = new Collection(opportunities)
+     *      .filter(Opportunity.StageName,'==','Analysis')
+     *      .wrap(OpportunityWrapper.class)
+     *      .mapBy(new WrapperByOpportunityIdMapper());
+     * </pre>
+     */
+    @IsTest
+    static void testWrapInstance() {
+        List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>)
+                new Collection(opportunities)
+                        .filter(Opportunity.NextStep, '==', 'Analysis')
+                        .wrap(OpportunityWrapper2.class)
+                        .toList();
+
+        System.assertEquals(wrappers.size(), 4);
+        for (Integer i = 0; i < wrappers.size(); i++) {
+            System.assertEquals(wrappers[i].opportunity, opportunities[i]);
+        }
+    }
+
+    public class OpportunityWrapper2 implements Collection.Wrapper {
+        public Opportunity opportunity;
+
+        public void setItem(Object item) {
+            this.opportunity = (Opportunity) item;
+        }
+
+        public String getName() {
+            return opportunity.Name;
+        }
+    }
+
+
+    /**
+     *@description
+     * Fills in the list with number of clones of provided prototype record.
+     */
+    @IsTest
+    static void testFill() {
+        Contact contact = new Contact(LastName = 'Test');
+
+        List<Account> accounts = (List<Account>)
+                new Collection(new List<Account>())
+                        .fill(10, new Account(Name = 'Test Account', Contact__r = contact))
+                        .fill(10, new Account(Name = 'Other Account', Contact__r = contact),
+                        new Collection.CloneOptions(false, false, false, false))
+                        .toList();
+
+
+        System.assertEquals(20, accounts.size());
+
+        /*Test if clone is deep*/
+        accounts[0].Name += '0';
+        contact.LastName += '0';
+
+        for (Account account : accounts) {
+            System.debug(account.Contact__r.LastName);
+        }
+
+        for (Integer i = 1; i < 20; i++) {
+            if (i < 10) {
+                System.assertEquals('Test Account', accounts[i].Name);
+                System.assertEquals('Test', accounts[i].Contact__r.LastName);
+
+            } else {
+                System.assertEquals('Other Account', accounts[i].Name);
+                System.assertEquals('Test0', accounts[i].Contact__r.LastName);
+            }
+        }
+    }
+
+
+    /**
+     *@description
+     * ForEach executes action on each element in collection and can be chained using instance methods.
+     */
+    @IsTest
+    static void testForEach() {
+        List<Opportunity> opportunities = (List<Opportunity>) new Collection(opportunities)
+                .forEach(new AppendIndexToOpportunityNameWorker())
+                .toList();
+
+        for (Integer i = 0; i < opportunities.size(); i++) {
+            System.assert(opportunities[i].Name.contains('' + i));
+        }
+    }
+
+    private class AppendIndexToOpportunityNameWorker implements Collection.Worker {
+        public void forEach(Object item, Integer index) {
+            ((Opportunity) item).Name += index;
+        }
+    }
+
+
+    /**
+     *@description
+     * find() returns first item accepted by ByFieldValue filter.
+     */
+    @IsTest
+    static void testFindReturnsFirstSObjectOfGivenFieldValue() {
+        Opportunity expected = opportunities[3];
+        Opportunity actual = (Opportunity) new Collection(opportunities).find(Opportunity.FiscalQuarter, '==', 3);
+        System.assertEquals(expected, actual);
+    }
+
+    /**
+     *@description
+     * find() returns null if there's no item accepted by filter.
+     */
+    @IsTest
+    static void testFindReturnsNullWhenThereAreNoItemsAcceptedByFilter() {
+        Opportunity actual = (Opportunity) new Collection(opportunities).find(Opportunity.Probability, '==', 1.5);
+        System.assertEquals(null, actual);
+    }
+
+
+    @IsTest
+    static void testFindByFilter() {
+        Opportunity expected = opportunities[5];
+        Opportunity actual = (Opportunity) new Collection(opportunities).find(new OpportunityNameContainsFilter('5'));
+
+        System.assertEquals(expected, actual);
+    }
+
+    private class OpportunityNameContainsFilter implements Collection.Filter {
+        private String expr;
+
+        public OpportunityNameContainsFilter(String expr) {
+            this.expr = expr;
+        }
+
+        public Boolean accepts(Object item) {
+            return ((Opportunity) item).Name.contains(expr);
+        }
     }
 }

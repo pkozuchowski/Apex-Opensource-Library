@@ -1043,7 +1043,9 @@ private class CollectionTest {
             expected.add(opportunities[i]);
         }
 
-        List<Opportunity> actual = (List<Opportunity>) Collection.sort(opportunities, new ReverseProbabilityComparator());
+        List<Opportunity> actual = (List<Opportunity>) new Collection(opportunities)
+                .sort(new ReverseProbabilityComparator())
+                .toList();
 
         System.assertEquals(actual, expected);
     }
@@ -1093,7 +1095,9 @@ private class CollectionTest {
         previous = null;
 
 
-        sortedOpportunities = Collection.sort(opportunities, Opportunity.FiscalQuarter, true);
+        sortedOpportunities = (List<Opportunity>) new Collection(opportunities)
+                .sort(Opportunity.FiscalQuarter, true)
+                .toList();
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {
                 System.assert(opportunity.FiscalQuarter >= previous.FiscalQuarter);

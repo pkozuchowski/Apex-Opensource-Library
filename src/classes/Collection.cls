@@ -270,6 +270,16 @@ public class Collection {
 
 
     /**
+     * For each element in collection, Worker.forEach action is executed.
+     * @param worker Concrete class implementing Worker interface. Executes action on each element.
+     */
+    public Collection forEach(Worker worker) {
+        Collection.forEach(items, worker);
+        return this;
+    }
+
+
+    /**
      * Fills in the list with number of clones of provided prototype record.
      * By default, clone is deep and Id, timestamps and autonumbers are not preserved.
      *

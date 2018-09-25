@@ -65,6 +65,7 @@ private class CollectionTest {
         Map<String, Object> oppMap = new Map<String, Object>{
                 'Id' => '006' + ('' + i).leftPad(12, '0'),
                 'AccountId' => '001' + ('' + Math.mod(i, 3)).leftPad(12, '0'),
+                'OwnerId' => '005' + ('' + Math.mod(i, 5)).leftPad(12, '0'),
                 'Name' => 'Test Opportunity ' + i,
                 'CreatedDate' => Datetime.now().addDays(-i),
                 'FiscalQuarter' => Math.mod(i, 4),
@@ -540,6 +541,22 @@ private class CollectionTest {
         public Type valueType() {
             return Id.class;
         }
+    }
+
+    /**
+     * CollectionMappers.ByFieldPair can map junction object by both parent Ids.
+     */
+    @IsTest
+    static void testMapByFieldPair() {
+        Map<String, Opportunity> expected = new Map<String, Opportunity>();
+        for (Opportunity opp : opportunities) {
+            expected.put(opp.AccountId + '_' + opp.OwnerId, opp);
+        }
+
+        Map<String, Opportunity> actual = (Map<String, Opportunity>) new Collection(opportunities)
+                .mapBy(new CollectionMappers.ByFieldPair(Opportunity.AccountId, '_', Opportunity.OwnerId));
+
+        System.assertEquals(expected, actual);
     }
 
     @IsTest

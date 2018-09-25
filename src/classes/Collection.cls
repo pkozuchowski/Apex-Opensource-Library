@@ -246,6 +246,16 @@ public class Collection {
 
 
     /**
+     * Filters collection items using ByFieldValue filter.
+     * @see CollectionFilter.ByFieldValue
+     */
+    public Collection filter(SObjectField field, String operator, Object value) {
+        assertSObjectCollection();
+        return filter(new CollectionFilter.ByFieldValue(field, operator, value));
+    }
+
+
+    /**
      * Filters collection items using given Filter implementation.
      * @param filter Filter implementation which for each collection item returns boolean value whether item should
      * be included in the output or not.

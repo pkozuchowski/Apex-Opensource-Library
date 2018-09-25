@@ -1085,10 +1085,11 @@ private class CollectionTest {
     static void testWrapInstance() {
         List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>)
                 new Collection(opportunities)
+                        .filter(Opportunity.NextStep, '==', 'Analysis')
                         .wrap(OpportunityWrapper2.class)
                         .toList();
 
-        System.assertEquals(wrappers.size(), opportunities.size());
+        System.assertEquals(wrappers.size(), 4);
         for (Integer i = 0; i < wrappers.size(); i++) {
             System.assertEquals(wrappers[i].opportunity, opportunities[i]);
         }

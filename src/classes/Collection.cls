@@ -236,12 +236,25 @@ public class Collection {
 
 
     /**
-     * Filters collection items using ByFieldValue filter.
-     * @see CollectionFilter.ByFieldValue
+     * Filters List of SObject by field value.
+     * Operators:
+     * <ul>
+     *  <li>'==' or Collection.EQUALS</li>
+     *  <li>'!=' or Collection.NOT_EQUALS</li>
+     *  <li>'>' or Collection.GREATER_THAN</li>
+     *  <li>'>=' or Collection.GREATER_EQUAL_THAN</li>
+     *  <li>'<' or Collection.LESS_THAN</li>
+     *  <li>'<=' or Collection.LESS_EQUAL_THAN</li>
+     * </ul>
+     *
+     * @example
+     * <pre>
+     *     new Collection(accounts).filter(Account.CreatedDate,'>=', Date.today().addDays(-1));
+     * </pre>
      */
     public Collection filter(SObjectField field, String operator, Object value) {
         assertSObjectCollection();
-        return filter(new CollectionFilter.ByFieldValue(field, operator, value));
+        return new Collection(filter((List<SObject>) items, field, operator, value));
     }
 
 
@@ -732,6 +745,28 @@ public class Collection {
     * */
     public interface UpdateFilter {
         Boolean accepts(SObject record, SObject oldRecord);
+    }
+
+
+    /**
+     * Filters List of SObject by field value.
+     * Operators:
+     * <ul>
+     *  <li>'==' or Collection.EQUALS</li>
+     *  <li>'!=' or Collection.NOT_EQUALS</li>
+     *  <li>'>' or Collection.GREATER_THAN</li>
+     *  <li>'>=' or Collection.GREATER_EQUAL_THAN</li>
+     *  <li>'<' or Collection.LESS_THAN</li>
+     *  <li>'<=' or Collection.LESS_EQUAL_THAN</li>
+     * </ul>
+     *
+     * @example
+     * <pre>
+     *     Collection.filter(accounts, Account.CreatedDate,'>=', Date.today().addDays(-1) );
+     * </pre>
+     */
+    public static List<SObject> filter(List<SObject> records, SObjectField field, String operator, Object value) {
+        return (List<SObject>) filter(records, new CollectionFilter.ByFieldValue(field, operator, value));
     }
 
 

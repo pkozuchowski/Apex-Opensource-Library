@@ -25,27 +25,29 @@
     <aura:attribute access="public" type="Integer" name="colspan" default="1"/>
     <aura:attribute access="public" type="Integer" name="rowspan" default="1"/>
     <aura:attribute access="public" type="Boolean" name="sortable" default="false"/>
+    <aura:attribute access="public" type="Boolean" name="titleCaps" default="true"/>
     <aura:attribute access="public" type="String" name="sortField"/>
     <aura:attribute access="public" type="String" name="value"/>
     <aura:attribute access="public" type="String" name="title"/>
     <aura:attribute access="public" type="Object" name="comparator"/>
-    <aura:attribute access="public" type="Object" name="style"/>
-    <aura:attribute access="public" type="Object" name="class"/>
+    <aura:attribute access="public" type="String" name="style"/>
+    <aura:attribute access="public" type="String" name="class"/>
     <aura:attribute access="private" type="Integer" name="sortDir" default="1" description="1 = Asc, -1 = Desc"/>
 
     <aura:registerEvent type="c:DatatableEvent" name="sort"/>
     <aura:handler name="init" value="{!this}" action="{!c.handleInit}"/>
 
-    <th scope="col" colspan="{#v.colspan}" rowspan="{#v.rowspan}" onclick="{!c.dispatchSortEvent}" style="{#v.style}" class="{#v.class}">
+    <th scope="col" colspan="{#v.colspan}" rowspan="{#v.rowspan}" onclick="{!c.dispatchSortEvent}" style="{#v.style}"
+        class="{#'' + v.class + ' ' +if(v.titleCaps,'slds-text-title_caps')}">
         <!--<a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="-1">-->
-            <span class="slds-truncate" title="{!v.title}">{!if(empty(v.value), v.body, v.value)}</span>
+        <span class="slds-truncate" title="{!v.title}">{!if(empty(v.value), v.body, v.value)}</span>
 
-            <aura:if isTrue="{!v.sortable}">
-                <span class="slds-assistive-text">Sort by: </span>
-                <lightning:icon iconName="{!if(v.sortDir == 1, 'utility:arrowdown','utility:arrowup')}"
-                                size="x-small"
-                                alternativeText="Sort"/>
-            </aura:if>
+        <aura:if isTrue="{!v.sortable}">
+            <span class="slds-assistive-text">Sort by: </span>
+            <lightning:icon iconName="{!if(v.sortDir == 1, 'utility:arrowdown','utility:arrowup')}"
+                            size="x-small"
+                            alternativeText="Sort"/>
+        </aura:if>
         <!--</a>-->
     </th>
 </aura:component>

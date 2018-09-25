@@ -275,14 +275,30 @@ public class Collection {
         return new Collection(Collection.filter((List<SObject>) items, old, filter));
     }
 
+
+    /**
+     * Fills in the list with number of clones of provided prototype record.
+     * By default, clone is deep and Id, timestamps and autonumbers are not preserved.
+     *
+     * @param listToFill List to fill in.
+     * @param count Number of clones in the list
+     * @param prototype Prototype of the record. Clone of this record will be added to the list.
+     */
     public Collection fill(Integer count, SObject prototype) {
         assertSObjectCollection();
+        return new Collection(fill((List<SObject>) items, count, prototype));
+    }
 
-        for (Integer i = 0; i < count; i++) {
-            this.items.add(prototype.clone());
-        }
-
-        return this;
+    /**
+     * Fills in the list with number of clones of provided prototype record.
+     * @param listToFill List to fill in.
+     * @param count Number of clones in the list
+     * @param prototype Prototype of the record. Clone of this record will be added to the list.
+     * @param opts Collection.CloneOptions instance which determine clone operation characteristics.
+     */
+    public Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions) {
+        assertSObjectCollection();
+        return new Collection(fill((List<SObject>) items, count, prototype, cloneOptions));
     }
 
 
@@ -833,15 +849,54 @@ public class Collection {
 
     /**
      * Fills in the list with number of clones of provided prototype record.
+     * By default, clone is deep and Id, timestamps and autonumbers are not preserved.
      *
      * @param listToFill List to fill in.
      * @param count Number of clones in the list
      * @param prototype Prototype of the record. Clone of this record will be added to the list.
      */
-    public static void fill(List<SObject> listToFill, Integer count, SObject prototype) {
+    public static List<SObject> fill(List<SObject> listToFill, Integer count, SObject prototype) {
         for (Integer i = 0; i < count; i++) {
-            SObject clone = prototype.clone();
+            SObject clone = prototype.clone(false, true);
             listToFill.add(clone);
+        }
+        return listToFill;
+    }
+
+    /**
+     * Fills in the list with number of clones of provided prototype record.
+     * @param listToFill List to fill in.
+     * @param count Number of clones in the list
+     * @param prototype Prototype of the record. Clone of this record will be added to the list.
+     * @param opts Collection.CloneOptions instance which determine clone operation characteristics.
+     */
+    public static List<SObject> fill(List<SObject> listToFill, Integer count, SObject prototype, CloneOptions opts) {
+        for (Integer i = 0; i < count; i++) {
+            SObject clone = prototype.clone(
+                    opts.preserveId,
+                    opts.deepClone,
+                    opts.preserveReadonlyTimestamps,
+                    opts.preserveAutonumer
+            );
+            listToFill.add(clone);
+        }
+        return listToFill;
+    }
+
+    public class CloneOptions {
+        public Boolean preserveId = false,
+                deepClone = true,
+                preserveReadonlyTimestamps = false,
+                preserveAutonumer = false;
+
+        public CloneOptions() {
+        }
+
+        public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumer) {
+            this.preserveId = preserveId;
+            this.deepClone = deepClone;
+            this.preserveReadonlyTimestamps = preserveReadonlyTimestamps;
+            this.preserveAutonumer = preserveAutonumer;
         }
     }
 

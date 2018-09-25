@@ -104,17 +104,16 @@ public class CollectionFilters {
         private String field;
         private Boolean valueIn;
 
+        public ByFieldValues(SObjectField field, String operator, Set<Object> values) {
+            this('' + field, operator, values);
+        }
+
         public ByFieldValues(String field, String operator, Set<Object> values) {
             this.values = values;
             this.field = field;
             this.valueIn = operator == Collection.VALUE_IN;
         }
 
-        public ByFieldValues(SObjectField field, String operator, Set<Object> values) {
-            this.values = values;
-            this.field = '' + field;
-            this.valueIn = operator == Collection.VALUE_IN;
-        }
 
         public Boolean accepts(Object record) {
             return valueIn == (values.contains(((SObject) record).get(field)));

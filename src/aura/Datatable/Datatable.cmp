@@ -1,0 +1,71 @@
+<!--
+ MIT License
+
+ Copyright (c) 2018 Piotr Kożuchowski
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+-->
+<aura:component description="Datatable">
+    <aura:attribute access="public" type="Aura.componentdefref[]" name="body" default="[]"/>
+    <aura:attribute access="public" type="Aura.componentdefref[]" name="header" default="[]"/>
+    <aura:attribute access="public" type="Aura.componentdefref[]" name="footer" default="[]"/>
+    <aura:attribute access="public" type="String" name="var"/>
+    <aura:attribute access="public" type="List" name="items"/>
+
+    <aura:attribute access="public" type="Boolean" name="paginate" default="true"/>
+    <aura:attribute access="public" type="Integer" name="pageSize"/>
+    <aura:attribute access="public" type="Integer" name="page"/>
+    <aura:attribute access="public" type="String" name="style"/>
+    <aura:attribute access="public" type="String" name="class"/>
+    <aura:attribute access="public" type="Boolean" name="bordered"/>
+    <aura:attribute access="public" type="Boolean" name="responsive"/>
+
+    <aura:handler event="c:DatatableEvent" name="sort" action="{!c.handleSort}"/>
+
+
+    <table class="{#'slds-table slds-table_bordered slds-table_cell-buffer '
+    + if(v.bordered,' slds-table_col-bordered ')
+    + if(v.responsive,' slds-max-medium-table_stacked-horizontal ') + v.class}"
+           style="{#v.style}">
+        <thead>
+        <!--<tr class="slds-text-title_caps">-->
+        {!v.header}
+        <!--</tr>-->
+        </thead>
+
+        <tbody>
+        <aura:iteration var="{#v.var}"
+                        items="{!v.items}"
+                        template="{!v.body}"
+                        start="{!v.page * v.pageSize}"
+                        end="{!(v.page +1) * v.pageSize}">x
+        </aura:iteration>
+        </tbody>
+
+        <tfoot>
+        {!v.footer}
+        </tfoot>
+    </table>
+
+    <aura:if isTrue="{!v.paginate}">
+        <c:Pagination itemsLength="{!v.items.length}"
+                      pageSize="{!v.pageSize}"
+                      page="{!v.page}"/>
+    </aura:if>
+</aura:component>

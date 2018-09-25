@@ -291,7 +291,8 @@ public class Collection {
      */
     public Collection fill(Integer count, SObject prototype) {
         assertSObjectCollection();
-        return new Collection(fill((List<SObject>) items, count, prototype));
+        this.items = fill((List<SObject>) items, count, prototype);
+        return this;
     }
 
     /**
@@ -303,7 +304,8 @@ public class Collection {
      */
     public Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions) {
         assertSObjectCollection();
-        return new Collection(fill((List<SObject>) items, count, prototype, cloneOptions));
+        this.items = fill((List<SObject>) items, count, prototype, cloneOptions);
+        return this;
     }
 
 

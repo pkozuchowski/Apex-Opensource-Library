@@ -22,5 +22,8 @@
  SOFTWARE.
 -->
 <aura:component description="DatatableRow">
-    <tr>{!v.body}</tr>
+    <aura:attribute access="public" type="String" name="style"/>
+    <aura:attribute access="public" type="String" name="class"/>
+
+    <tr class="{#class}" style="{#style}">{!v.body}</tr>
 </aura:component>

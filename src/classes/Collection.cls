@@ -278,9 +278,7 @@ public class Collection {
      * @param prototype Prototype of the record. Clone of this record will be added to the list.
      */
     public Collection fill(Integer count, SObject prototype) {
-        assertSObjectCollection();
-        this.items = fill((List<SObject>) items, count, prototype);
-        return this;
+        return fill(count, prototype, new CloneOptions());
     }
 
     /**
@@ -853,11 +851,7 @@ public class Collection {
      * @param prototype Prototype of the record. Clone of this record will be added to the list.
      */
     public static List<SObject> fill(List<SObject> listToFill, Integer count, SObject prototype) {
-        for (Integer i = 0; i < count; i++) {
-            SObject clone = prototype.clone(false, true);
-            listToFill.add(clone);
-        }
-        return listToFill;
+        return fill(listToFill, count, prototype, new CloneOptions());
     }
 
     /**
@@ -881,12 +875,14 @@ public class Collection {
     }
 
     public class CloneOptions {
-        public Boolean preserveId = false,
-                deepClone = true,
-                preserveReadonlyTimestamps = false,
-                preserveAutonumer = false;
+        public Boolean
+                preserveId,
+                deepClone,
+                preserveReadonlyTimestamps,
+                preserveAutonumer;
 
         public CloneOptions() {
+            this(false, true, false, false);
         }
 
         public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumer) {

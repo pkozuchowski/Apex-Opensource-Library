@@ -973,7 +973,7 @@ private class CollectionTest {
         System.assertEquals(expected, actual);
     }
     private class ReducerToIdAndAccountId implements Collection.Reducer {
-        public Object reduce(Object aggregatedValues, Object item) {
+        public Object reduce(Object aggregatedValues, Object item, Integer index) {
             Set<Id> ids = (Set<Id>) aggregatedValues;
             Opportunity opp = (Opportunity) item;
 
@@ -1000,7 +1000,7 @@ private class CollectionTest {
         System.assertEquals(expected, actual);
     }
     private class ReducerToOppAmountTotal implements Collection.Reducer {
-        public Object reduce(Object aggregatedValues, Object item) {
+        public Object reduce(Object aggregatedValues, Object item, Integer index) {
             Decimal soFar = (Decimal) aggregatedValues;
             Opportunity opp = (Opportunity) item;
 

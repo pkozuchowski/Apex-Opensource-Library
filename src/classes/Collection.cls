@@ -634,7 +634,7 @@ public class Collection {
      * @return aggregatedValues
      */
     public interface Reducer {
-        Object reduce(Object aggregatedValues, Object item);
+        Object reduce(Object aggregatedValues, Object item, Integer index);
     }
 
     /**
@@ -656,7 +656,7 @@ public class Collection {
      */
     public static Object reduce(List<Object> items, Reducer reducer, Object result) {
         for (Integer i = 0, size = items.size(); i < size; ++i) {
-            result = reducer.reduce(result, items[i]);
+            result = reducer.reduce(result, items[i], i);
         }
 
         return result;

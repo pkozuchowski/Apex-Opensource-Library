@@ -70,7 +70,8 @@ private class CollectionTest {
                 'FiscalQuarter' => Math.mod(i, 4),
                 'HasOpenActivity' => Math.mod(i, 2) == 0,
                 'LastActivityDate' => Date.today().addDays(-i),
-                'Probability' => 1.0 * i / 10
+                'Probability' => 1.0 * i / 10,
+                'Amount' => i * 100
         };
         oppMap.putAll(opp);
 
@@ -972,36 +973,38 @@ private class CollectionTest {
         System.assertEquals(expected, actual);
     }
     private class ReducerToIdAndAccountId implements Collection.Reducer {
-        public void reduce(Object aggregatedValues, Object item) {
+        public Object reduce(Object aggregatedValues, Object item) {
             Set<Id> ids = (Set<Id>) aggregatedValues;
             Opportunity opp = (Opportunity) item;
 
             ids.add(opp.Id);
             ids.add(opp.AccountId);
+
+            return ids;
         }
     }
 
     /**
      *@description
-     * List of Opportunities is reduced to string.
+     * List of Opportunities is reduced to total of Amounts
      */
     @IsTest
     static void testReduceInstance() {
-        String expected = '';
+        Decimal expected = 0;
         for (Opportunity opportunity : opportunities) {
-            expected += ',' + opportunity.Name;
+            expected += opportunity.Amount;
         }
 
-        String actual = (String) new Collection(opportunities).reduce(new ReducerToOppNameCSV(), '');
+        Decimal actual = (Decimal) new Collection(opportunities).reduce(new ReducerToOppAmountTotal(), 0);
 
         System.assertEquals(expected, actual);
     }
-    private class ReducerToOppNameCSV implements Collection.Reducer {
-        public void reduce(Object aggregatedValues, Object item) {
-            String csv = (String) aggregatedValues;
+    private class ReducerToOppAmountTotal implements Collection.Reducer {
+        public Object reduce(Object aggregatedValues, Object item) {
+            Decimal soFar = (Decimal) aggregatedValues;
             Opportunity opp = (Opportunity) item;
 
-            csv += ',' + opp.Name;
+            return soFar + opp.Amount;
         }
     }
 

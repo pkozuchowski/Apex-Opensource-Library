@@ -629,6 +629,15 @@ public class Collection {
     * */
 
     /**
+     * @param aggregatedValues Collection which holds values reduced so far.
+     * @param item currently processed item.
+     * @return aggregatedValues
+     */
+    public interface Reducer {
+        Object reduce(Object aggregatedValues, Object item);
+    }
+
+    /**
      * Reduces collection of objects to other collection or object of given type.
      * @param items input collection to reduce
      * @param reducer Reducer interface implementation. @see Collections.Reducer
@@ -647,17 +656,10 @@ public class Collection {
      */
     public static Object reduce(List<Object> items, Reducer reducer, Object result) {
         for (Integer i = 0, size = items.size(); i < size; ++i) {
-            reducer.reduce(result, items[i]);
+            result = reducer.reduce(result, items[i]);
         }
 
         return result;
-    }
-    /**
-     * @param aggregatedValues Collection which holds values reduced so far.
-     * @param item currently processed item.
-     */
-    public interface Reducer {
-        void reduce(Object aggregatedValues, Object item);
     }
 
 

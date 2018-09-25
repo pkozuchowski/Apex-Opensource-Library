@@ -1053,4 +1053,56 @@ private class CollectionTest {
         }
         previous = null;
     }
+
+
+    /**
+     *@description
+     * Static wrap method returns given records Wrapped into custom Wrapper class (implementing Collection.Wrapper)
+     */
+    @IsTest
+    static void testWrapStatic() {
+        List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>) Collection.wrap(opportunities, OpportunityWrapper2.class);
+
+        System.assertEquals(wrappers.size(), opportunities.size());
+
+        for (Integer i = 0; i < wrappers.size(); i++) {
+            System.assertEquals(wrappers[i].opportunity, opportunities[i]);
+        }
+    }
+
+    /**
+     * @description
+     * Instance wrap method wraps Collection member list with custom Wrapper class (implementing Collection.Wrapper).
+     * This method can be chained with other Collection methods ex.
+     * <pre>
+     * Map<Id,OpportunityWrapper> ... = new Collection(opportunities)
+     *      .filter(Opportunity.StageName,'==','Analysis')
+     *      .wrap(OpportunityWrapper.class)
+     *      .mapBy(new WrapperByOpportunityIdMapper());
+     * </pre>
+     */
+    @IsTest
+    static void testWrapInstance() {
+        List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>)
+                new Collection(opportunities)
+                        .wrap(OpportunityWrapper2.class)
+                        .toList();
+
+        System.assertEquals(wrappers.size(), opportunities.size());
+        for (Integer i = 0; i < wrappers.size(); i++) {
+            System.assertEquals(wrappers[i].opportunity, opportunities[i]);
+        }
+    }
+
+    public class OpportunityWrapper2 implements Collection.Wrapper {
+        public Opportunity opportunity;
+
+        public void setItem(Object item) {
+            this.opportunity = (Opportunity) item;
+        }
+
+        public String getName() {
+            return opportunity.Name;
+        }
+    }
 }

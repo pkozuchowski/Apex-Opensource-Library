@@ -24,6 +24,7 @@
 <aura:event type="COMPONENT" description="DatatableEvent">
     <aura:attribute access="public" type="Object" name="data"/>
     <aura:attribute access="public" type="String" name="sortField"/>
+    <aura:attribute access="public" type="Object" name="sortComparator"/>
     <aura:attribute access="public" type="Integer" name="sortDir" description="1 - Ascending, -1 - Descending"/>
     <aura:attribute access="public" type="Integer" name="paginationPage"/>
     <aura:attribute access="public" type="Integer" name="paginationPageSize"/>

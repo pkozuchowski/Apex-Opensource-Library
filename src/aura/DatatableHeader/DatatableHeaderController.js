@@ -28,12 +28,14 @@
 
     dispatchSortEvent: function (component, event, helper) {
         if (helper.isSortable(component)) {
-            const sortDir = component.get("v.sortDir");
+            const sortEvent = component.getEvent("sort"),
+                sortField = component.get("v.sortField"),
+                sortComparator = component.get("v.comparator"),
+                sortDir = component.get("v.sortDir");
 
-            const sortEvent = component.getEvent("sort");
-            sortEvent.setParam("data", {
-                comparator: component.get("v.comparator"),
-                sortField: component.get("v.sortField"),
+            sortEvent.setParams({
+                sortField: sortField,
+                sortComparator: sortComparator,
                 sortDir: sortDir
             });
             sortEvent.fire();

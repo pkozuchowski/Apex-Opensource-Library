@@ -1,0 +1,102 @@
+<!--
+ MIT License
+
+ Copyright (c) 2018 Piotr Kożuchowski
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+-->
+<aura:component description="Pagination">
+    <aura:attribute access="public" type="Integer" name="itemsLength"/>
+    <aura:attribute access="public" type="Integer" name="pageSize" default="10"/>
+    <aura:attribute access="public" type="Integer" name="page" default="0"/>
+    <aura:attribute access="public" type="List" name="options" default="5,10,25,50,100"/>
+    <aura:attribute access="private" type="Object[]" name="paginationItems"/>
+
+    <!--Handlers-->
+    <aura:handler name="change" value="{!v.itemsLength}" action="{!c.handlePageSizeChange}"/>
+    <aura:handler name="change" value="{!v.pageSize}" action="{!c.handlePageSizeChange}"/>
+    <aura:handler name="change" value="{!v.page}" action="{!c.handlePageChange}"/>
+    <aura:handler name="init" value="{!this}" action="{!c.handleInit}"/>
+
+    <!--Events-->
+    <aura:registerEvent type="c:DatatableEvent" name="pagination"/>
+
+    <!--Component-->
+    <table>
+        <tr>
+            <td style="width: 100px;"></td>
+            <td class="slds-text-align_center">
+                <div class="slds-p-top_small">
+                    <lightning:buttonGroup>
+                        <lightning:button label="First"
+                                          class="slds-show_medium"
+                                          onclick="{!c.goToFirst}"/>
+                        <lightning:buttonIcon class="slds-hide_medium"
+                                              iconName="utility:left"
+                                              title="First"
+                                              alternativeText="First" onclick="{!c.goToFirst}"/>
+
+                        <lightning:button label="Previous"
+                                          class="slds-show_medium"
+                                          onclick="{!c.goToPrevious}"/>
+                        <lightning:buttonIcon title="Previous"
+                                              class="slds-hide_medium"
+                                              iconName="utility:chevronleft"
+                                              alternativeText="Previous"
+                                              onclick="{!c.goToPrevious}"/>
+
+
+                        <aura:iteration items="{!v.paginationItems}" var="item">
+                            <lightning:button class="{!(v.page == item.value?'currentPage':'') }"
+                                              name="{!item.value}"
+                                              onclick="{!c.goToPage}">{!item.label}</lightning:button>
+                        </aura:iteration>
+
+
+                        <lightning:button label="Next"
+                                          class="slds-show_medium"
+                                          onclick="{!c.goToNext}"/>
+                        <lightning:buttonIcon title="Next"
+                                              class="slds-hide_medium"
+                                              iconName="utility:chevronright"
+                                              alternativeText="Next"
+                                              onclick="{!c.goToNext}"/>
+
+
+                        <lightning:button label="Last"
+                                          class="slds-show_medium"
+                                          onclick="{!c.goToLast}"/>
+                        <lightning:buttonIcon title="Last"
+                                              class="slds-hide_medium"
+                                              iconName="utility:right"
+                                              alternativeText="Last"
+                                              onclick="{!c.goToLast}"/>
+                    </lightning:buttonGroup>
+                </div>
+            </td>
+            <td style="width: 100px;">
+                <lightning:select name="select1" label="Show:" value="{!v.pageSize}" class="slds-m-horizontal--small">
+                    <aura:iteration var="opt" items="{!v.options}">
+                        <option value="{!opt}">{!opt}</option>
+                    </aura:iteration>
+                </lightning:select>
+            </td>
+        </tr>
+    </table>
+</aura:component>

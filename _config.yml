@@ -1,6 +1,7 @@
 theme: jekyll-theme-slate
 plugins:
   - jekyll-seo-tag
+
 title: Salesforce Developer Toolkit
-description
+description: Library with common apex / lightning utilities
 author: Piotr Kożuchowski

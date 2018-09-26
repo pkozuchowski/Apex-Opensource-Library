@@ -1,5 +1,6 @@
 public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock {
     private List<HttpCalloutChainMock> registeredMocks = new List<HttpCalloutChainMock>{
+            new UnsupportedRequest()
     };
 
 
@@ -26,7 +27,7 @@ public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock 
             }
         }
 
-        throw new HttpCalloutChainMockBaseException('Unhandled request');
+        return null;
     }
 
 
@@ -37,6 +38,20 @@ public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock 
         return true;
     }
 
+
+    /**
+     * Last Mock in the queue. If request was not handled by now, then exception is thrown.
+     */
+    private class UnsupportedRequest implements HttpCalloutChainMock {
+
+        public Boolean handles(HttpRequest request) {
+            return true;
+        }
+
+        public HttpResponse respond(HttpRequest param1) {
+            throw new HttpCalloutChainMockBaseException('Unhandled request');
+        }
+    }
 
     private class HttpCalloutChainMockBaseException extends Exception {
     }

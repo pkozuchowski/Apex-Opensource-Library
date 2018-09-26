@@ -22,5 +22,7 @@
  SOFTWARE.
 -->
 <aura:event type="COMPONENT" description="DatatableEvent">
-    <aura:attribute access="public" type="Object" name="data" />
+    <aura:attribute access="public" type="Object" name="data"/>
+    <aura:attribute access="public" type="Integer" name="paginationPage"/>
+    <aura:attribute access="public" type="Integer" name="paginationPageSize"/>
 </aura:event>

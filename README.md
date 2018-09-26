@@ -628,7 +628,11 @@ Features:
 - Sorting
 
 
-@see DatatableExample.cmp for full example 
+@see DatatableExample.cmp for full example
+ 
+![Datatable]({{ site.url }}/assets/datatable.jpg)
+
+![Thumbnail of Slate](./assets/datatable.jpg)
 
 ```xhtml
 

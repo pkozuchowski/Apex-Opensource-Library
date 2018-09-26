@@ -31,11 +31,15 @@
         return {
             generate: function () {
                 index++;
+                const rt = recordTypeGenerator.generate();
+                const owner = ownerGenerator.generate();
                 return {
                     Id: "005" + ('' + index).padStart(12, "0"),
                     Name: nameGenerator.generate(),
-                    Owner: ownerGenerator.generate(),
-                    RecordType: recordTypeGenerator.generate()
+                    Owner: owner,
+                    OwnerId: owner.Id,
+                    RecordType: rt,
+                    RecordTypeId: rt.Id
                 };
             }
         };
@@ -66,11 +70,11 @@
 
         function OwnerGenerator() {
             const owners = [
-                {Name: "John Travolta", Id: "005000000000000"},
-                {Name: "Piotr K.", Id: "005000000000001"},
-                {Name: "Bobby M.", Id: "005000000000001"},
-                {Name: "M.M.", Id: "005000000000001"},
-                {Name: "Mr. Pringles", Id: "005000000000001"}
+                {Id: "005000000000000", Name: "John Travolta"},
+                {Id: "005000000000001", Name: "Piotr K."},
+                {Id: "005000000000001", Name: "Bobby M."},
+                {Id: "005000000000001", Name: "M.M."},
+                {Id: "005000000000001", Name: "Mr. Pringles"}
             ];
 
             return {
@@ -82,11 +86,11 @@
 
         function RecordTypeGenerator() {
             const owners = [
-                {Name: "Account"},
-                {Name: "Channel"},
-                {Name: "Competitor"},
-                {Name: "Agency"},
-                {Name: "PersonAccount"}
+                {Id: "012000000000001", Name: "Account"},
+                {Id: "012000000000002", Name: "Channel"},
+                {Id: "012000000000003", Name: "Competitor"},
+                {Id: "012000000000004", Name: "Agency"},
+                {Id: "012000000000005", Name: "PersonAccount"}
             ];
 
             return {

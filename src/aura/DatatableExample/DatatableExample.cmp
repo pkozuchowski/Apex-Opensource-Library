@@ -29,8 +29,11 @@
     <aura:attribute access="private" type="Decimal" name="totalRevenue" default="0"/>
     <aura:attribute access="private" type="Decimal" name="totalEmployees" default="0"/>
 
+    <!--Handlers-->
     <aura:handler name="init" action="{!c.handleInit}" value="{!this}"/>
 
+
+    <!--Component-->
     <lightning:card title="Datatable Example">
 
 

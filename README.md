@@ -1,6 +1,6 @@
 # Salesforce Developer Toolkit
 ## Introduction
-
+Small library for Apex Developers 
 
 ## [Collections](https://github.com/amorek/sfdc-toolkit)
 This utility class contains methods for the most common operations on Salesforce collections:
@@ -444,11 +444,9 @@ Executes reducer implementations on each member of collection resulting in singl
     
     
     private class ReducerToOppAmountTotal implements Collection.Reducer {
-        public Object reduce(Object aggregatedValues, Object item, Integer index) {
-            Decimal soFar = (Decimal) aggregatedValues;
-            Opportunity opp = (Opportunity) item;
-
-            return soFar + opp.Amount;
+        
+        public Object reduce(Object aggregatedAmountSum, Object item, Integer index) {
+            return ((Decimal) aggregatedAmountSum) + ((Opportunity) item).Amount;
         }
     }
 ```    

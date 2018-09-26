@@ -294,17 +294,61 @@ private class OpportunityNameContainsFilter implements Collection.Filter {
 
 
 ##### sort()
+Sorts collection using given comparator. This is different from List.sort() which requires each collection element
+to implement Comparable interface. 
+Instead Comparator interface is used. 
 
 ###### Methods:
 ```apex
+public Collection sort(SObjectField field, Boolean isAscending)
+public Collection sort(Comparator comparator)
+
+static List<SObject> sort(List<SObject> records, SObjectField field, Boolean isAscending)
+static List<Object> sort(List<Object> items, Comparator comparator)
 ```
 
 ###### Interfaces
 ```apex
+    /**
+     * Compares 2 objects to determine their order.
+     * The implementation of this method should return the following values:
+     * 0 if thisItem and otherItem are equal
+     * > 0 if thisItem is greater than otherItem
+     * < 0 if thisItem is less than otherItem
+     */
+    public interface Comparator {
+        Integer compare(Object thisItem, Object otherItem);
+    }
 ```
 
 ###### Examples
 ```apex
+        List<Opportunity> sortedOpportunities = Collection.sort(opportunities, Opportunity.CreatedDate, true);
+        
+        new Collection(opportunities)
+                        .sort(Opportunity.FiscalQuarter, true)
+                        .wrap(OpportunityWrapper.class);
+
+        List<Opportunity> actual = (List<Opportunity>) new Collection(opportunities)
+                .sort(new ReverseProbabilityComparator())
+                .toList();
+
+    private class ReverseProbabilityComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Opportunity thisOpp = (Opportunity) thisItem;
+            Opportunity otherOpp = (Opportunity) otherItem;
+
+            if (thisOpp.Probability < otherOpp.Probability) {
+                return 1;
+
+            } else if (thisOpp.Probability > otherOpp.Probability) {
+                return -1;
+
+            } else {
+                return 0;
+            }
+        }
+    }
 ```    
 
 

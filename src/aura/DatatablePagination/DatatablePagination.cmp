@@ -91,7 +91,7 @@
                 </div>
             </td>
             <td style="width: 100px;">
-                <lightning:select name="select1" label="Show:" value="{!v.pageSize}">
+                <lightning:select name="select1" label="Show:" value="{!v.pageSize}" class="slds-m-horizontal--small">
                     <aura:iteration var="opt" items="{!v.options}">
                         <option value="{!opt}">{!opt}</option>
                     </aura:iteration>

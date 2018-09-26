@@ -44,10 +44,9 @@
     + if(v.bordered,' slds-table_col-bordered ')
     + if(v.responsive,' slds-max-medium-table_stacked-horizontal ') + v.class}"
            style="{#v.style}">
+
         <thead>
-        <!--<tr class="slds-text-title_caps">-->
         {!v.header}
-        <!--</tr>-->
         </thead>
 
         <tbody>
@@ -55,7 +54,8 @@
                         items="{!v.items}"
                         template="{!v.body}"
                         start="{!v.page * v.pageSize}"
-                        end="{!(v.page +1) * v.pageSize}">x
+                        end="{!(v.page +1) * v.pageSize}">
+            Magic strings: Please. Thank you.
         </aura:iteration>
         </tbody>
 

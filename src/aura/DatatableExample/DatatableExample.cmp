@@ -78,8 +78,16 @@
                     <c:DatatableColumn value="{!account.RecordType.Name}"/>
 
                     <!--Contact Information-->
-                    <c:DatatableColumn value="{!account.Phone}"/>
-                    <c:DatatableColumn value="{!account.Website}"/>
+                    <aura:if isTrue="{!account.RecordType.Name != 'Competitor'}">
+                        <c:DatatableColumn value="{!account.Phone}"/>
+                        <c:DatatableColumn value="{!account.Website}"/>
+
+                        <aura:set attribute="else">
+                            <c:DatatableColumn colspan="2" class="slds-text-align_center">
+                                Classified
+                            </c:DatatableColumn>
+                        </aura:set>
+                    </aura:if>
 
 
                     <!--Billing Address-->

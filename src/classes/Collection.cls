@@ -885,7 +885,7 @@ public class Collection {
      * @return Sorted list of records.
      */
     public static List<SObject> sort(List<SObject> records, SObjectField field, Boolean isAscending) {
-        return (List<SObject>) sort(records, new CollectionComparators.SObjectFieldComparator(field, isAscending));
+        return (List<SObject>) sort(records, new CollectionComparators.ByField(field, isAscending));
     }
 
     /**

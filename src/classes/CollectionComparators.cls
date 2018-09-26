@@ -118,12 +118,12 @@ public class CollectionComparators {
     /**
      * Compares records by values of the SObject field.
      */
-    public class SObjectFieldComparator implements Collection.Comparator {
+    public class ByField implements Collection.Comparator {
         private SObjectField field;
         private Integer direction;
         private Collection.Comparator comparator;
 
-        public SObjectFieldComparator(SObjectField field, Boolean isAscending) {
+        public ByField(SObjectField field, Boolean isAscending) {
             this.field = field;
             this.direction = isAscending ? 1 : -1;
             this.comparator = getComparatorByField(field);

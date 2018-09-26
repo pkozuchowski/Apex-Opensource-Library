@@ -35,6 +35,9 @@ Many of these methods are based on Javascript Array methods.
 
 
 
+<br/>
+<br/>
+
 
 ##### getUniqueValues()
 Return Set of values gathered from given collection items.
@@ -159,6 +162,9 @@ private class AccountWrapperByIdMapper implements Mapper{
 
 
 
+<br/>
+<br/>
+
 
 ##### groupBy
 Groups collection items by given Mapper/KeyMapper implementation to Map<Key, List<Value>>, where Key is produced
@@ -196,6 +202,9 @@ Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collect
 ```
 
 
+
+<br/>
+<br/>
 
 
 ##### filter
@@ -268,6 +277,9 @@ new Collection(opportunities)
 
 
 
+<br/>
+<br/>
+
 
 ##### find
 Returns first collection element accepted by filter.
@@ -299,6 +311,9 @@ private class OpportunityNameContainsFilter implements Collection.Filter {
 ```    
 
 
+
+<br/>
+<br/>
 
 
 ##### sort()
@@ -362,6 +377,9 @@ static List<Object> sort(List<Object> items, Comparator comparator)
 
 
 
+<br/>
+<br/>
+
 
 ##### wrap()
 Wraps collection items into wrapper classes.
@@ -411,6 +429,9 @@ static List<Wrapper> wrap(List<Object> items, Type wrapperType);
 
 
  
+<br/>
+<br/>
+
 
 ##### reduce()
 Equivalent of Javascript's Array.reduce.
@@ -456,6 +477,9 @@ Executes reducer implementations on each member of collection resulting in singl
 
 
 
+<br/>
+<br/>
+
 
 ##### forEach()
 Executes action on each item of collection. This method can be useful in chaining.
@@ -492,6 +516,9 @@ static void forEach(List<Object> items, Worker worker)
 
 
 
+
+<br/>
+<br/>
 
 
 ##### fill()
@@ -538,6 +565,8 @@ static List<SObject> fill(List<SObject> listToFill, Integer count, SObject proto
 
 
 
+<br/>
+<br/>
 
 
 ##### Utility methods
@@ -577,7 +606,8 @@ Returns running type of given object.
 
 
 
-
+<br/>
+<br/>
 
 ## Datatable
 Probably the most robust datatable implementation in the world. 
@@ -726,6 +756,8 @@ Datatable will iterate over accounts, in "body" facet, each account can be acces
 
 
 
+<br/>
+<br/>
 
 ## XML Serialization / Deserialization tool
 Small utility class which binds class hierarchies with XmlNode, which allows for automatic 

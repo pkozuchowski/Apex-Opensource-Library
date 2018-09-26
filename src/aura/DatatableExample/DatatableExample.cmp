@@ -32,7 +32,10 @@
     <aura:handler name="init" action="{!c.handleInit}" value="{!this}"/>
 
     <lightning:card title="Datatable Example">
+
+
         <c:Datatable items="{!v.accounts}" var="account" paginate="true" bordered="true" responsive="true">
+
             <aura:set attribute="header">
                 <!--There can be many rows in headers, footers and even in the body-->
                 <c:DatatableRow class="slds-text-align_center">
@@ -69,7 +72,7 @@
                 <c:DatatableRow>
                     <!--Basic Information-->
                     <c:DatatableColumn>
-                        <!--Virtually any content here, inputs, buttons, etc.-->
+                        <!--Virtually any content can be put here, inputs, buttons, etc.-->
                         <a href="{!'/' + account.Id}">{!account.Name}</a>
                     </c:DatatableColumn>
 
@@ -80,13 +83,13 @@
 
                     <!--Contact Information-->
 
-                    <!--DataColumns can be dependant on row's values-->
+                    <!--You can bind both parent component variables/actions and current row fields-->
                     <aura:if isTrue="{!account.RecordType.Name != 'Competitor'}">
                         <c:DatatableColumn value="{!account.Phone}"/>
                         <c:DatatableColumn value="{!account.Website}"/>
 
                         <aura:set attribute="else">
-                            <c:DatatableColumn colspan="2" class="slds-text-align_center">
+                            <c:DatatableColumn colspan="2" class="slds-text-align_center slds-theme--alert-texture">
                                 Classified
                             </c:DatatableColumn>
                         </aura:set>
@@ -121,6 +124,7 @@
                 </c:DatatableRow>
             </aura:set>
 
+
             <aura:set attribute="footer">
                 <!--Totals-->
                 <c:DatatableRow>
@@ -135,7 +139,7 @@
                     <c:DatatableRow>
                         <!--Basic Information-->
                         <c:DatatableColumn>
-                            <lightning:input value="{!newAcc.Name}" variant="label-hidden"/>
+                            <lightning:input value="{!newAcc.Name}" variant="label-hidden" required="true"/>
                         </c:DatatableColumn>
 
                         <!--Owner-->
@@ -145,7 +149,7 @@
 
                         <!--Record Type-->
                         <c:DatatableColumn>
-                            <lightning:select variant="label-hidden" value="{!newAcc.RecordType}">
+                            <lightning:select variant="label-hidden" value="{!newAcc.RecordType}" required="true">
                                 <option>Account</option>
                                 <option>Channel</option>
                                 <option>Competitor</option>
@@ -165,7 +169,7 @@
                             </c:DatatableColumn>
 
                             <aura:set attribute="else">
-                                <c:DatatableColumn colspan="2" class="slds-text-align_center">
+                                <c:DatatableColumn colspan="2" class="slds-text-align_center slds-theme--alert-texture">
                                     Classified
                                 </c:DatatableColumn>
                             </aura:set>
@@ -193,7 +197,8 @@
 
                         <!--Buttons-->
                         <c:DatatableColumn>
-                            <lightning:buttonIcon name="{!i}" iconName="utility:close" onclick="{!c.handleRemoveNewAccount}"/>
+                            <lightning:buttonIcon name="{!i}" iconName="utility:close"
+                                                  onclick="{!c.handleRemoveNewAccount}"/>
                         </c:DatatableColumn>
                     </c:DatatableRow>
                 </aura:iteration>

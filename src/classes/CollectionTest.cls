@@ -1305,4 +1305,47 @@ private class CollectionTest {
             return ((Opportunity) item).Name.contains(expr);
         }
     }
+
+
+    @IsTest
+    static void testMethodChaining() {
+        Map<Boolean, List<OpportunityWrapper2>> expected = new Map<Boolean, List<CollectionTest.OpportunityWrapper2>>{
+                true => new List<OpportunityWrapper2>(),
+                false => new List<OpportunityWrapper2>()
+        };
+
+        for (Integer i = 0; i < opportunities.size(); i++) {
+            Opportunity opp = opportunities[i];
+
+            if (opp.CreatedDate >= Date.today().addDays(-3)) {
+                opp.Name += i;
+
+                OpportunityWrapper2 wrapper = new OpportunityWrapper2();
+                wrapper.setItem(opp);
+
+                expected.get(opp.HasOpenActivity).add(wrapper);
+            }
+        }
+
+
+        Map<Boolean, List<OpportunityWrapper2>> actual = (Map<Boolean, List<OpportunityWrapper2>>)
+                new Collection(opportunities)
+                        .filter(Opportunity.CreatedDate, '>=', Date.today().addDays(-3))
+                        .forEach(new AppendIndexToOpportunityNameWorker())
+                        .wrap(OpportunityWrapper2.class)
+                        .groupBy(new WrapperByOpenActivityMapper());
+
+
+        System.assertEquals(JSON.serialize(expected), JSON.serialize(actual));
+    }
+
+    private class WrapperByOpenActivityMapper implements Collection.KeyMapper {
+        public Object key(Object item) {
+            return ((OpportunityWrapper2) item).opportunity.HasOpenActivity;
+        }
+
+        public Type keyType() {
+            return Boolean.class;
+        }
+    }
 }

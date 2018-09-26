@@ -30,6 +30,13 @@
             accounts.push(accountGenerator.generate());
         }
         component.set("v.accounts", accounts);
+
+        /*Comparator*/
+        component.set("v.comparators", {
+            RecordType: function (thisAccount, otherAccounts) {
+                return thisAccount.RecordType.Name.localeCompare(otherAccounts.RecordType.Name);
+            }
+        })
     },
 
     handleInputChange: function (component, event, helper) {

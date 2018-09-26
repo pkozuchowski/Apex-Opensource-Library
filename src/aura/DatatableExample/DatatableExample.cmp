@@ -24,7 +24,7 @@
 <aura:component description="DatatableExample">
     <aura:attribute access="public" type="Account[]" name="accounts" default="[]"/>
     <aura:attribute access="public" type="Account[]" name="newAccounts" default="[]"/>
-    <aura:attribute access="public" type="Object" name="comparators"/>
+    <aura:attribute access="public" type="Object" name="comparators" default="{}"/>
 
     <aura:attribute access="private" type="Decimal" name="totalRevenue" default="0"/>
     <aura:attribute access="private" type="Decimal" name="totalEmployees" default="0"/>
@@ -57,7 +57,7 @@
                     <!--Basic Information-->
                     <c:DatatableHeader value="Name" sortable="true" sortField="Name"/>
                     <c:DatatableHeader value="Owner"/>
-                    <c:DatatableHeader value="Record Type" sortable="true" sortField="RecordTypeId"/>
+                    <c:DatatableHeader value="Record Type" sortable="true" comparator="{!v.comparators.RecordType}"/>
 
                     <!--Contact Information-->
                     <c:DatatableHeader value="Phone" sortable="true" sortField="Phone"/>

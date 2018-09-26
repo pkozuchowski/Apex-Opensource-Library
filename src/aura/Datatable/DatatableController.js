@@ -35,7 +35,7 @@
         } else if (sortField) {
 
             items.sort((a, b) => {
-                return  ('' + a[sortField]).localeCompare(b[sortField], undefined, {numeric: true}) * sortDir;
+                return ('' + a[sortField]).localeCompare(b[sortField], undefined, {numeric: true}) * sortDir;
             });
         }
 

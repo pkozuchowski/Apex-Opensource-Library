@@ -269,6 +269,11 @@ CollectionFilters.FieldChanged(SObjectField field, Object fromValue, Object toVa
 
 ###### Examples
 ```apex
+new Collection(opportunities).filter(Opportunity.Name, '==', 'Something');
+new Collection(opportunities).filter(Opportunity.Amount, '>', 1000);
+new Collection(opportunities).filter(Opportunity.CreatedDate, '<=', Datetime.now().addMonth(1));
+
+
 List<Opportunity> opportunities = Collection.filter(opportunities, oldMap, new OpportunityChangedNameFilter());
 List<Opportunity> opportunities = (List<Opportunity>) new Collection(opportunities)
         .filter(oldMap, new OpportunityChangedNameFilter())

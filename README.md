@@ -106,8 +106,8 @@ static Object mapBy(List<Object> items, Mapper mapper)
 
 ###### Inbuilt implementations:
 ```apex
-CollectionMappers.ByField - Maps SObject by given field
-CollectionMappers.ByFieldPair - Maps SObject by pair of fields
+CollectionMappers.ByField(SObjectField field) - Maps SObject by given field
+CollectionMappers.ByFieldPair(SObjectField fieldLeft, String separator, SObjectField fieldRight) - Maps SObject by pair of fields
 ```
 
 ###### Interfaces
@@ -222,16 +222,6 @@ static List<Object> filter(List<Object> items, Filter filter)
 static List<SObject> filter(List<SObject> records, Map<Id, SObject> oldRecords, UpdateFilter filter)
 ```    
 
-###### Inbuilt Implementations (CollectionFilters)
-```apex
-ByFieldValue(SObjectField field, String operator, Object value)
-ByFieldValues(SObjectField field, String operator, Set<Object> values)
-ByPrototype(SObject prototype)
-RelatedTo(List<SObject> parents, SObjectField relationshipField)
-ByDistance(SObjectField locationField, Location targetLocation, Double maxDistance, String unit)
-FieldChanged(SObjectField field, Object fromValue, Object toValue)
-```    
-
 ###### Interfaces
 ```apex
 /*
@@ -249,6 +239,33 @@ public interface UpdateFilter {
     Boolean accepts(SObject record, SObject oldRecord);
 }
 ```    
+
+
+###### Inbuilt Implementations (CollectionFilters)
+```apex
+// Returns records with given field value
+CollectionFilters.ByFieldValue(SObjectField field, String operator, Object value)
+
+// Returns records where field may have one of many values
+CollectionFilters.ByFieldValues(SObjectField field, String operator, Set<Object> values)
+
+// Returns records with fields same as in prototype record
+CollectionFilters.ByPrototype(SObject prototype)
+
+// Returns records related to given parents
+CollectionFilters.RelatedTo(List<SObject> parents, SObjectField relationshipField)
+
+// Returns records close to given distance
+CollectionFilters.ByDistance(SObjectField locationField, Location targetLocation, Double maxDistance, String unit)
+
+
+Update Filters:
+
+// Returns records that changed value /technical filter used in U
+CollectionFilters.FieldChanged(SObjectField field, Object fromValue, Object toValue)
+```    
+
+
 
 ###### Examples
 ```apex
@@ -342,6 +359,15 @@ static List<Object> sort(List<Object> items, Comparator comparator)
     public interface Comparator {
         Integer compare(Object thisItem, Object otherItem);
     }
+```
+
+###### Inbuilt Implementations (CollectionFilters)
+```apex
+//Compares 2 records by given field and order
+CollectionComparators.ByField(SObjectField field, Boolean isAscending)
+
+//Compares 2 records by distance to given geolocation
+CollectionComparators.ByDistance(SObjectField field, Location geoLocation, Boolean closestFirst, Boolean nullFirst)
 ```
 
 ###### Examples

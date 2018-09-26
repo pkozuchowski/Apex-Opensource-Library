@@ -132,11 +132,11 @@
             <aura:set attribute="footer">
                 <!--Totals-->
                 <c:DatatableRow>
-                    <c:DatatableColumn colspan="7"></c:DatatableColumn>
+                    <c:DatatableColumn colspan="7"/>
                     <c:DatatableColumn value="Total"/>
                     <c:DatatableColumn value="{!v.totalRevenue}"/>
                     <c:DatatableColumn value="{!v.totalEmployees}"/>
-                    <c:DatatableColumn></c:DatatableColumn>
+                    <c:DatatableColumn/>
                 </c:DatatableRow>
 
                 <aura:iteration items="{!v.newAccounts}" var="newAcc" indexVar="i">

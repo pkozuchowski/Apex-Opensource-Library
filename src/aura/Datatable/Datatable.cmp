@@ -59,6 +59,7 @@
                         template="{!v.body}"
                         start="{!v.page * v.pageSize}"
                         end="{!(v.page +1) * v.pageSize}">
+
             Magic strings: Please. Thank you.
         </aura:iteration>
         </tbody>

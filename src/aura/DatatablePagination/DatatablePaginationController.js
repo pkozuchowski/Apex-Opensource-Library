@@ -25,6 +25,7 @@
     handleInit: function (component, event, helper) {
         component.set("v.page", 0);
         helper.getPaginationItems(component);
+        helper.firePaginationEvent(component)
     },
 
     handlePageChange: function (component, event, helper) {
@@ -35,7 +36,7 @@
         const value = event.getParam("value");
         const oldValue = event.getParam("oldValue");
 
-        if (!oldValue || value.length != oldValue.length) {
+        if (!oldValue || value != oldValue) {
             component.set("v.page", 0);
             helper.getPaginationItems(component);
             helper.firePaginationEvent(component)

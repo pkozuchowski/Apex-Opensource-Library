@@ -405,17 +405,46 @@ static List<Wrapper> wrap(List<Object> items, Type wrapperType);
  
 
 ##### reduce()
-
+Equivalent of Javascript's Array.reduce.
+Executes reducer implementations on each member of collection resulting in single output value.
 ###### Methods:
 ```apex
+    Object reduce(Reducer reducer, Object result)
+    static Object reduce(List<Object> items, Reducer reducer, Object result)
 ```
 
 ###### Interfaces
 ```apex
+    /**
+     * @param aggregatedValues Collection which holds values reduced so far.
+     * @param item currently processed item.
+     * @return aggregatedValues
+     */
+    public interface Reducer {
+        Object reduce(Object aggregatedValues, Object item, Integer index);
+    }
 ```
 
 ###### Examples
 ```apex
+    Decimal expected = 0;
+    for (Opportunity opportunity : opportunities) {
+        expected += opportunity.Amount;
+    }
+
+    Decimal actual = (Decimal) new Collection(opportunities).reduce(new ReducerToOppAmountTotal(), 0);
+
+    System.assertEquals(expected, actual);
+    
+    
+    private class ReducerToOppAmountTotal implements Collection.Reducer {
+        public Object reduce(Object aggregatedValues, Object item, Integer index) {
+            Decimal soFar = (Decimal) aggregatedValues;
+            Opportunity opp = (Opportunity) item;
+
+            return soFar + opp.Amount;
+        }
+    }
 ```    
 
 

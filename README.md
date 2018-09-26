@@ -41,7 +41,7 @@ Return Set of values gathered from given collection items.
 Values are gathered by implementation of KeyMapper, which extracts value from entity, but it's also possible
 to use shorthand methods for SObjects, which call in-built implementations.
 
-Methods:
+###### Methods:
 ```apex
 Object getUniqueValues(SObjectField field)
 Object getUniqueValues(Type valueType, String field)
@@ -85,7 +85,7 @@ Map collection items using:
     - Map by SObject field
     
 
-Methods:
+###### Methods:
 ```apex
 Object mapBy(SObjectField field)
 Object mapBy(Type keyType, String field)
@@ -98,9 +98,12 @@ static Object mapBy(List<Object> items, KeyMapper mapper)
 static Object mapBy(List<Object> items, Mapper mapper)
 ```
 
-Inbuilt implementations:
-- CollectionMappers.ByField - Maps SObject by given field
-- CollectionMappers.ByFieldPair - Maps SObject by pair of fields
+
+###### Inbuilt implementations:
+```apex
+CollectionMappers.ByField - Maps SObject by given field
+CollectionMappers.ByFieldPair - Maps SObject by pair of fields
+```
 
 ###### Interfaces
 ```
@@ -165,7 +168,7 @@ This method can be used with:
     - Map by SObject field
 
     
-Methods:
+###### Methods:
 ```apex
 Object groupBy(SObjectField field)
 Object groupBy(Type keyType, String field)
@@ -178,9 +181,12 @@ static Object groupBy(List<Object> items, KeyMapper keyMapper)
 static Object groupBy(List<Object> items, Mapper mapper) 
 ```
     
-Inbuilt implementations:
-- CollectionMappers.ByField - Maps SObject by given field
-- CollectionMappers.ByFieldPair - Maps SObject by pair of fields
+###### Inbuilt implementations:
+```apex
+CollectionMappers.ByField - Maps SObject by given field
+CollectionMappers.ByFieldPair - Maps SObject by pair of fields
+```
+
 ###### Examples
 ```apex
 //Shorthand method using SObject field
@@ -189,11 +195,12 @@ Map<String, List<Opportunity>> actual = (Map<String, List<Opportunity>>) Collect
 
 
 
+
 ##### filter
 Filters records and return only these accepted by Filter implementation.
 SObject collections can be filtered by shorthand methods that use inbuilt Filter implementations (CollectionFilters.cls).
 
-Methods:
+###### Methods:
 ```apex
 Collection filter(SObjectField field, String operator, Object value)
 Collection filter(Filter filter)
@@ -204,7 +211,7 @@ static List<Object> filter(List<Object> items, Filter filter)
 static List<SObject> filter(List<SObject> records, Map<Id, SObject> oldRecords, UpdateFilter filter)
 ```    
 
-Inbuilt Implementations (CollectionFilters)
+###### Inbuilt Implementations (CollectionFilters)
 ```apex
 ByFieldValue(SObjectField field, String operator, Object value)
 ByFieldValues(SObjectField field, String operator, Set<Object> values)
@@ -255,34 +262,126 @@ Collection.filter(opportunities, new CollectionFilters.ByFieldValues(Opportunity
 
 
 ##### find
+Returns first collection element accepted by filter.
+
+###### Methods:
+```apex
+SObject find(SObjectField field, String operator, Object value) 
+Object find(Filter filter)
+static SObject find(List<SObject> records, SObjectField field, String operator, Object value)
+static Object find(List<Object> items, Filter filter)
+```
+ 
 ###### Examples
 ```apex
+Opportunity actual = (Opportunity) new Collection(opportunities).find(Opportunity.FiscalQuarter, '==', 3);
+Opportunity actual = (Opportunity) new Collection(opportunities).find(new OpportunityNameContainsFilter('5'));
+
+private class OpportunityNameContainsFilter implements Collection.Filter {
+    private String expr;
+
+    public OpportunityNameContainsFilter(String expr) {
+        this.expr = expr;
+    }
+
+    public Boolean accepts(Object item) {
+        return ((Opportunity) item).Name.contains(expr);
+    }
+}
 ```    
+
+
+
 
 ##### sort()
+
+###### Methods:
+```apex
+```
+
+###### Interfaces
+```apex
+```
+
 ###### Examples
 ```apex
 ```    
+
+
+
+
 
 ##### wrap()
+
+###### Methods:
+```apex
+```
+
+###### Interfaces
+```apex
+```
+
 ###### Examples
 ```apex
 ```    
+
+
+
+ 
 
 ##### reduce()
+
+###### Methods:
+```apex
+```
+
+###### Interfaces
+```apex
+```
+
 ###### Examples
 ```apex
 ```    
+
+
+
+
 
 ##### forEach()
+
+###### Methods:
+```apex
+```
+
+###### Interfaces
+```apex
+```
+
 ###### Examples
 ```apex
 ```    
 
+
+
+
+
 ##### fill()
+
+###### Methods:
+```apex
+```
+
+###### Interfaces
+```apex
+```
+
 ###### Examples
 ```apex
 ```    
+
+
+
+
 
 ##### Utility methods
 ###### Examples

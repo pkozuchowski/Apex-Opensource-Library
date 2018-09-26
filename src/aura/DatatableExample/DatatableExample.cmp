@@ -60,9 +60,6 @@
                     <!--Finance-->
                     <c:DatatableHeader value="Annual Revenue" sortable="true" sortField="AnnualRevenue"/>
                     <c:DatatableHeader value="Employees" sortable="true" sortField="NumberOfEmployees"/>
-
-                    <!--Buttons-->
-                    <!--<c:DatatableHeader colspan="2"/>-->
                 </c:DatatableRow>
             </aura:set>
 
@@ -91,11 +88,13 @@
 
                     <!--Finance-->
                     <c:DatatableColumn>
-                        <lightning:input type="number" value="{!account.AnnualRevenue}" variant="label-hidden" onchange="{!c.handleInputChange}"/>
+                        <lightning:input type="number" value="{!account.AnnualRevenue}" variant="label-hidden"
+                                         onchange="{!c.handleInputChange}"/>
                     </c:DatatableColumn>
 
                     <c:DatatableColumn>
-                        <lightning:input type="number" value="{!account.NumberOfEmployees}" variant="label-hidden" onchange="{!c.handleInputChange}"/>
+                        <lightning:input type="number" value="{!account.NumberOfEmployees}" variant="label-hidden"
+                                         onchange="{!c.handleInputChange}"/>
                     </c:DatatableColumn>
 
                     <!--Buttons-->

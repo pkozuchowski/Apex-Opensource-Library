@@ -1,11 +1,10 @@
 ({
     handleInit: function (component, event, helper) {
         const accounts = [];
-        for (var i = 0; i < 100; i++) {
-            accounts.push({
-                Name: 'Test Account ' + i,
 
-            });
+        const accountGenerator = new helper.AccountGenerator(helper);
+        for (var i = 0; i < 100; i++) {
+            accounts.push(accountGenerator.generate());
         }
         component.set("v.accounts", accounts);
     },

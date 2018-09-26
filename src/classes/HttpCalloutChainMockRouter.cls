@@ -1,6 +1,7 @@
 /**
  * Base Router class for HttpCalloutChainMocks.
- * This class
+ * This class iterates through registered HttpCalloutChainMocks and responds
+ * with the first mock that can handle the request.
  */
 public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock {
     private List<HttpCalloutChainMock> registeredMocks = new List<HttpCalloutChainMock>{

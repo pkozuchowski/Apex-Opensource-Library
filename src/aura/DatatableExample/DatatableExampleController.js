@@ -28,7 +28,9 @@
     },
 
     handleAddNewAccount: function (component, event, helper) {
-
+        const newAccounts = component.get("v.newAccounts").slice();
+        newAccounts.push({});
+        component.set("v.newAccounts", newAccounts);
     },
 
     handleDeleteAccount: function (component, event, helper) {
@@ -38,10 +40,19 @@
 
         accounts.splice(accountIndex, 1);
         component.set("v.accounts", accounts);
-
     },
 
-    handleUpdateAccount: function (component, event, helper) {
-
+    handleSaveNewAccounts: function (component, event, helper) {
+        const accounts = [...component.get("v.accounts").slice(), ...component.get("v.newAccounts").slice()];
+        component.set("v.accounts", accounts);
+        component.set("v.newAccounts", []);
     },
+
+    handleRemoveNewAccount: function (component, event, helper) {
+        const index = event.getSource().get("v.name");
+        const newAccounts = component.get("v.newAccounts").slice();
+
+        newAccounts.splice(index, 1);
+        component.set("v.newAccounts", newAccounts);
+    }
 })

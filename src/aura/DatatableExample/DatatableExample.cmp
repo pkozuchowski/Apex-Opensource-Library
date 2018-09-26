@@ -23,6 +23,7 @@
 -->
 <aura:component description="DatatableExample">
     <aura:attribute access="public" type="Account[]" name="accounts" default="[]"/>
+    <aura:attribute access="public" type="Account[]" name="newAccounts" default="[]"/>
     <aura:attribute access="public" type="Object" name="comparators"/>
 
     <aura:attribute access="private" type="Decimal" name="totalRevenue" default="0"/>
@@ -130,9 +131,78 @@
                     <c:DatatableColumn></c:DatatableColumn>
                 </c:DatatableRow>
 
+                <aura:iteration items="{!v.newAccounts}" var="newAcc" indexVar="i">
+                    <c:DatatableRow>
+                        <!--Basic Information-->
+                        <c:DatatableColumn>
+                            <lightning:input value="{!newAcc.Name}" variant="label-hidden"/>
+                        </c:DatatableColumn>
+
+                        <!--Owner-->
+                        <c:DatatableColumn>
+                            <lightning:input value="{!newAcc.Owner}" variant="label-hidden"/>
+                        </c:DatatableColumn>
+
+                        <!--Record Type-->
+                        <c:DatatableColumn>
+                            <lightning:select variant="label-hidden" value="{!newAcc.RecordType}">
+                                <option>Account</option>
+                                <option>Channel</option>
+                                <option>Competitor</option>
+                                <option>Agency</option>
+                                <option>PersonAccount</option>
+                            </lightning:select>
+                        </c:DatatableColumn>
+
+                        <!--Contact Information-->
+                        <aura:if isTrue="{!newAcc.RecordType != 'Competitor'}">
+                            <c:DatatableColumn>
+                                <lightning:input value="{!newAcc.Phone}" variant="label-hidden"/>
+                            </c:DatatableColumn>
+
+                            <c:DatatableColumn>
+                                <lightning:input value="{!newAcc.Website}" variant="label-hidden"/>
+                            </c:DatatableColumn>
+
+                            <aura:set attribute="else">
+                                <c:DatatableColumn colspan="2" class="slds-text-align_center">
+                                    Classified
+                                </c:DatatableColumn>
+                            </aura:set>
+                        </aura:if>
+
+
+                        <!--Billing Address-->
+                        <c:DatatableColumn>
+                            <lightning:input variant="label-hidden" value="{!newAcc.BillingCountry}"/>
+                        </c:DatatableColumn>
+
+                        <c:DatatableColumn>
+                            <lightning:input variant="label-hidden" value="{!newAcc.BillingCity}"/>
+                        </c:DatatableColumn>
+
+
+                        <!--Finance-->
+                        <c:DatatableColumn>
+                            <lightning:input type="number" value="{!newAcc.AnnualRevenue}" variant="label-hidden"/>
+                        </c:DatatableColumn>
+
+                        <c:DatatableColumn>
+                            <lightning:input type="number" value="{!newAcc.NumberOfEmployees}" variant="label-hidden"/>
+                        </c:DatatableColumn>
+
+                        <!--Buttons-->
+                        <c:DatatableColumn>
+                            <lightning:buttonIcon name="{!i}" iconName="utility:close" onclick="{!c.handleRemoveNewAccount}"/>
+                        </c:DatatableColumn>
+                    </c:DatatableRow>
+                </aura:iteration>
+
                 <c:DatatableRow>
-                    <c:DatatableColumn colspan="10">
+                    <c:DatatableColumn colspan="9"/>
+                    <c:DatatableColumn colspan="1">
                         <lightning:buttonIcon iconName="utility:add" onclick="{!c.handleAddNewAccount}"/>
+                        <lightning:buttonIcon iconName="utility:save" onclick="{!c.handleSaveNewAccounts}"/>
                     </c:DatatableColumn>
                 </c:DatatableRow>
             </aura:set>

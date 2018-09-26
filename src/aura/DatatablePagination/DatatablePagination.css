@@ -1,0 +1,11 @@
+.THIS {
+    text-align: center;
+}
+
+.THIS .inline {
+    display: inline-block;
+}
+
+.THIS .currentPage {
+    margin-top: -5px;
+}

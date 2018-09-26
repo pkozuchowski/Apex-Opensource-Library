@@ -69,7 +69,7 @@
             {!v.pagination}
 
             <aura:set attribute="else">
-                <c:Pagination itemsLength="{!v.items.length}"
+                <c:DatatablePagination itemsLength="{!v.items.length}"
                               pageSize="{!v.pageSize}"
                               page="{!v.page}"/>
             </aura:set>

@@ -34,9 +34,14 @@
     <aura:attribute access="public" type="String" name="class"/>
     <aura:attribute access="private" type="Integer" name="sortDir" default="1" description="1 = Asc, -1 = Desc"/>
 
-    <aura:registerEvent type="c:DatatableEvent" name="sort"/>
+    <!--Handlers-->
     <aura:handler name="init" value="{!this}" action="{!c.handleInit}"/>
 
+    <!--Events-->
+    <aura:registerEvent type="c:DatatableEvent" name="sort"/>
+
+
+    <!--Component-->
     <th scope="col" colspan="{#v.colspan}" rowspan="{#v.rowspan}" onclick="{!c.dispatchSortEvent}" style="{#v.style}"
         class="{#'' + v.class + ' ' +if(v.titleCaps,'slds-text-title_caps')}">
         <!--<a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="-1">-->

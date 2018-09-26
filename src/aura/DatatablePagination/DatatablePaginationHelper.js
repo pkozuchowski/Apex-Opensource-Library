@@ -51,4 +51,15 @@
         }
         component.set("v.paginationItems", paginationItems);
     },
+
+    firePaginationEvent: function (component) {
+        const event = component.getEvent("pagination");
+
+        event.setParams({
+            paginationPage: component.get("v.page"),
+            paginationPageSize: component.get("v.pageSize")
+        });
+
+        event.fire();
+    }
 })

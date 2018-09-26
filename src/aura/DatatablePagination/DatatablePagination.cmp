@@ -34,13 +34,16 @@
     <aura:handler name="change" value="{!v.page}" action="{!c.handlePageChange}"/>
     <aura:handler name="init" value="{!this}" action="{!c.handleInit}"/>
 
+    <!--Register-->
+    <aura:registerEvent type="c:DatatableEvent" name="pagination"/>
 
+    <!--Component-->
     <table>
         <tr>
             <td style="width: 100px;"></td>
             <td class="slds-text-align_center">
                 <div class="slds-p-top_small">
-                    <lightning:buttonGroup >
+                    <lightning:buttonGroup>
                         <lightning:button label="First"
                                           class="slds-show_medium"
                                           onclick="{!c.goToFirst}"/>

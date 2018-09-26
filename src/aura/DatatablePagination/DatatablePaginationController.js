@@ -38,18 +38,21 @@
         if (!oldValue || value.length != oldValue.length) {
             component.set("v.page", 0);
             helper.getPaginationItems(component);
+            helper.firePaginationEvent(component)
         }
     },
 
-    goToFirst: function (component) {
+    goToFirst: function (component, event, helper) {
         component.set("v.page", 0);
+        helper.firePaginationEvent(component)
     },
 
-    goToPrevious: function (component) {
+    goToPrevious: function (component, event, helper) {
         var currentPage = component.get("v.page");
 
         if (currentPage > 0) {
             component.set("v.page", currentPage - 1);
+            helper.firePaginationEvent(component)
         }
     },
 
@@ -59,15 +62,18 @@
 
         if (currentPage < lastPage) {
             component.set("v.page", currentPage + 1);
+            helper.firePaginationEvent(component)
         }
     },
 
     goToLast: function (component, event, helper) {
         component.set("v.page", helper.getLastPage(component));
+        helper.firePaginationEvent(component)
     },
 
-    goToPage: function (component, event) {
+    goToPage: function (component, event, helper) {
         var page = event.getSource().get("v.name");
         component.set("v.page", parseInt(page));
+        helper.firePaginationEvent(component)
     }
 })

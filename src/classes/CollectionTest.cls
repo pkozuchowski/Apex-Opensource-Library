@@ -1023,6 +1023,29 @@ private class CollectionTest {
 
     /**
      *@description
+     * Returns Opportunities that have the same field values as prototype
+     */
+    @IsTest
+    static void testFilterByPrototype() {
+        Opportunity prototype = new Opportunity(
+                AccountId = '001000000000000'
+        );
+
+        List<Opportunity> expected = new List<Opportunity>();
+        for (Opportunity opportunity : opportunities) {
+            if (opportunity.AccountId == prototype.AccountId) {
+                expected.add(opportunity);
+            }
+        }
+
+
+        List<Opportunity> actual = (List<Opportunity>) new Collection(opportunities).filter(prototype).toList();
+        System.assertEquals(expected, actual);
+    }
+
+
+    /**
+     *@description
      * Collections.reduce() reduces collection to one object or other collection using Reducer implementation.
      */
     @IsTest

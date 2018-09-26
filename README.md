@@ -215,6 +215,7 @@ static List<SObject> filter(List<SObject> records, Map<Id, SObject> oldRecords, 
 ```apex
 ByFieldValue(SObjectField field, String operator, Object value)
 ByFieldValues(SObjectField field, String operator, Set<Object> values)
+ByPrototype(SObject prototype)
 RelatedTo(List<SObject> parents, SObjectField relationshipField)
 ByDistance(SObjectField locationField, Location targetLocation, Double maxDistance, String unit)
 FieldChanged(SObjectField field, Object fromValue, Object toValue)
@@ -256,6 +257,11 @@ Set<Datetime> relatedOppCreatedDates = (Set<Datetime>)
                 
 Collection.filter(opportunities, new CollectionFilters.ByFieldValues(Opportunity.StageName, 'IN', acceptedStages));
 Collection.filter(opportunities, new CollectionFilters.ByFieldValues(Opportunity.StageName, 'NOT IN', acceptedStages));
+
+new Collection(opportunities)
+    .filter(new Opportunity(AccountId = account.Id, Parent__c = parent.Id, Amount = 1000))
+    .toList();
+
 ```    
 
 

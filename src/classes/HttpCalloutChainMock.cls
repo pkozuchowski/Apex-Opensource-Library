@@ -1,3 +1,3 @@
 public interface HttpCalloutChainMock extends HttpCalloutMock {
-    Boolean accepts(HttpRequest request);
+    Boolean handles(HttpRequest request);
 }

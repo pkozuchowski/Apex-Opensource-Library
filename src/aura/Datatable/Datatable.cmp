@@ -30,14 +30,16 @@
     <aura:attribute access="public" type="List" name="items"/>
 
     <aura:attribute access="public" type="Boolean" name="paginate" default="true"/>
-    <aura:attribute access="public" type="Integer" name="pageSize"/>
-    <aura:attribute access="public" type="Integer" name="page"/>
+    <aura:attribute access="public" type="Integer" name="pageSize" default="5"/>
+    <aura:attribute access="public" type="Integer" name="page" default="0"/>
     <aura:attribute access="public" type="String" name="style"/>
     <aura:attribute access="public" type="String" name="class"/>
     <aura:attribute access="public" type="Boolean" name="bordered"/>
     <aura:attribute access="public" type="Boolean" name="responsive"/>
 
+    <!--Handlers-->
     <aura:handler event="c:DatatableEvent" name="sort" action="{!c.handleSort}"/>
+    <aura:handler event="c:DatatableEvent" name="pagination" action="{!c.handlePagination}"/>
 
 
     <table class="{#'slds-table slds-table_bordered slds-table_cell-buffer '
@@ -70,8 +72,8 @@
 
             <aura:set attribute="else">
                 <c:DatatablePagination itemsLength="{!v.items.length}"
-                              pageSize="{!v.pageSize}"
-                              page="{!v.page}"/>
+                              pageSize="{#v.pageSize}"
+                              page="{#v.page}"/>
             </aura:set>
         </aura:if>
     </aura:if>

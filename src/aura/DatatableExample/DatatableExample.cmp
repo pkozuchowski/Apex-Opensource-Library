@@ -34,11 +34,13 @@
     <lightning:card title="Datatable Example">
 
 
-        <c:Datatable items="{!v.accounts}" var="account" paginate="true" bordered="true" responsive="true">
+        <c:Datatable items="{!v.accounts}" var="account" paginate="true" bordered="true" responsive="true"
+                     indexVar="index">
 
             <aura:set attribute="header">
                 <!--There can be many rows in headers, footers and even in the body-->
                 <c:DatatableRow class="slds-text-align_center">
+                    <c:DatatableHeader/>
                     <c:DatatableHeader value="Basic Information" colspan="3"/>
                     <c:DatatableHeader value="Contact Information" colspan="2"/>
                     <c:DatatableHeader value="Billing Address" colspan="2"/>
@@ -48,6 +50,7 @@
                 </c:DatatableRow>
 
                 <c:DatatableRow>
+                    <c:DatatableColumn/>
                     <!--Basic Information-->
                     <c:DatatableHeader value="Name" sortable="true" sortField="Name"/>
                     <c:DatatableHeader value="Owner"/>
@@ -71,9 +74,10 @@
                 <!--These row/s are rendered for each Account-->
                 <c:DatatableRow>
                     <!--Basic Information-->
+                    <c:DatatableColumn value="{!index}"/>
                     <c:DatatableColumn>
                         <!--Virtually any content can be put here, inputs, buttons, etc.-->
-                        <a href="{!'/' + account.Id}">{!account.Name}</a>
+                        <a href="{!'/' + account.Id}">{!account.Name}</a>{!i}
                     </c:DatatableColumn>
 
                     <c:DatatableColumn>
@@ -128,7 +132,7 @@
             <aura:set attribute="footer">
                 <!--Totals-->
                 <c:DatatableRow>
-                    <c:DatatableColumn colspan="6"></c:DatatableColumn>
+                    <c:DatatableColumn colspan="7"></c:DatatableColumn>
                     <c:DatatableColumn value="Total"/>
                     <c:DatatableColumn value="{!v.totalRevenue}"/>
                     <c:DatatableColumn value="{!v.totalEmployees}"/>
@@ -137,6 +141,7 @@
 
                 <aura:iteration items="{!v.newAccounts}" var="newAcc" indexVar="i">
                     <c:DatatableRow>
+                        <c:DatatableColumn/>
                         <!--Basic Information-->
                         <c:DatatableColumn>
                             <lightning:input value="{!newAcc.Name}" variant="label-hidden" required="true"/>

@@ -25,6 +25,7 @@
     <aura:attribute access="public" type="Aura.componentdefref[]" name="body" default="[]"/>
     <aura:attribute access="public" type="Aura.componentdefref[]" name="header" default="[]"/>
     <aura:attribute access="public" type="Aura.componentdefref[]" name="footer" default="[]"/>
+    <aura:attribute access="public" type="Aura.componentdefref[]" name="pagination"/>
     <aura:attribute access="public" type="String" name="var"/>
     <aura:attribute access="public" type="List" name="items"/>
 
@@ -64,8 +65,14 @@
     </table>
 
     <aura:if isTrue="{!v.paginate}">
-        <c:Pagination itemsLength="{!v.items.length}"
-                      pageSize="{!v.pageSize}"
-                      page="{!v.page}"/>
+        <aura:if isTrue="{!not(empty(v.pagination))}">
+            {!v.pagination}
+
+            <aura:set attribute="else">
+                <c:Pagination itemsLength="{!v.items.length}"
+                              pageSize="{!v.pageSize}"
+                              page="{!v.page}"/>
+            </aura:set>
+        </aura:if>
     </aura:if>
 </aura:component>

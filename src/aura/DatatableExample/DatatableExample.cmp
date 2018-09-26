@@ -53,7 +53,7 @@
                 </c:DatatableRow>
 
                 <c:DatatableRow>
-                    <c:DatatableColumn/>
+                    <c:DatatableHeader/>
                     <!--Basic Information-->
                     <c:DatatableHeader value="Name" sortable="true" sortField="Name"/>
                     <c:DatatableHeader value="Owner"/>

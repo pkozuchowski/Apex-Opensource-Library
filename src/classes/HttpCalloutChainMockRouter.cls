@@ -1,7 +1,53 @@
 /**
- * Base Router class for HttpCalloutChainMocks.
+* MIT License
+*
+* Copyright (c) 2018 Piotr Kożuchowski
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
+
+/**
+ * Base Router class for HttpCalloutChainMocks based on Chain of Responsibility design pattern.
  * This class iterates through registered HttpCalloutChainMocks and responds
  * with the first mock that can handle the request.
+ * Other routers can also be registered, therefore it's possible to create a whole hierarchy of mocks for
+ * entire organization:
+ * <pre>
+ *     HttpCalloutChainMockRouter
+ *         - Integration #1 Router
+ *              - Auth Mock
+ *              - Other Mocks...
+ *
+ *         - Integration #2 Router
+ *              - Auth Mock
+ *              - Other Mocks...
+ *
+ *         - Integration #3 Router
+ *              - Auth Mock
+ *              - Other Mocks...
+ *
+ *
+ * </pre>
+ *
+ * Mocks queue is a LIFO queue, the most recently added mock will be the first to handle the request.
+ * This way, routers can have predefined list of default registered mocks, which can be overridden
+ * in partial unit tests with custom response mocks.
  */
 public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock {
     private List<HttpCalloutChainMock> registeredMocks = new List<HttpCalloutChainMock>{

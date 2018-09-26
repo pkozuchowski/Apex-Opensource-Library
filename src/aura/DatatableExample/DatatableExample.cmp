@@ -78,6 +78,8 @@
                     <c:DatatableColumn value="{!account.RecordType.Name}"/>
 
                     <!--Contact Information-->
+
+                    <!--DataColumns can be dependant on row's values-->
                     <aura:if isTrue="{!account.RecordType.Name != 'Competitor'}">
                         <c:DatatableColumn value="{!account.Phone}"/>
                         <c:DatatableColumn value="{!account.Website}"/>
@@ -111,7 +113,8 @@
                                               variant="bare"/>
                         <lightning:buttonIcon alternativeText="Update" iconName="utility:save" size="large"
                                               variant="bare"/>
-                        <lightning:buttonIcon alternativeText="Delete" iconName="utility:close" size="large"
+                        <lightning:buttonIcon name="{!account.Id}" alternativeText="Delete" iconName="utility:close"
+                                              size="large" onclick="{!c.handleDeleteAccount}"
                                               variant="bare"/>
                     </c:DatatableColumn>
                 </c:DatatableRow>

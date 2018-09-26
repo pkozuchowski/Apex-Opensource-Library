@@ -1,12 +1,15 @@
 ({
     AccountGenerator: function (helper) {
+        let index = 0;
         const nameGenerator = new NameGenerator();
         const ownerGenerator = new OwnerGenerator();
         const recordTypeGenerator = new RecordTypeGenerator();
 
         return {
             generate: function () {
+                index++;
                 return {
+                    Id: "005" + ('' + index).padStart(12, "0"),
                     Name: nameGenerator.generate(),
                     Owner: ownerGenerator.generate(),
                     RecordType: recordTypeGenerator.generate()

@@ -32,6 +32,12 @@
     },
 
     handleDeleteAccount: function (component, event, helper) {
+        const accountId = event.getSource().get("v.name");
+        const accounts = component.get("v.accounts").slice();
+        const accountIndex = accounts.findIndex(acc => acc.Id === accountId);
+
+        accounts.splice(accountIndex, 1);
+        component.set("v.accounts", accounts);
 
     },
 

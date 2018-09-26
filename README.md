@@ -630,9 +630,7 @@ Features:
 
 @see DatatableExample.cmp for full example
  
-![Datatable]({{ site.url }}/assets/datatable.jpg)
-
-![Thumbnail of Slate](./assets/datatable.jpg)
+![Datatable](./assets/datatable.jpg)
 
 ```xhtml
 

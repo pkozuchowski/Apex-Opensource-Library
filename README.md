@@ -575,7 +575,157 @@ Return running type of Collections single item.
 Returns running type of given object.
 
 
+
+
+
+
 ## Datatable
-tbc
+Probably the most robust datatable implementation in the world. 
+There are like 50% chances that it's the best, otherwise it's not.
+
+In my opinion, this is how standard lightning:datatable should have looked like.
+It's declarative datatable design where all headers, footers and rows are declared in the component markup.
+
+Nothing is configured in the controller. User can bind rendered rows with container component's variables, controller
+or even control table columns rendering based on row's item values.
+
+Features:
+- Configured through markdown
+- Fully customizable header and footer
+- Datatable column can take expressions or components as body
+- Column's components can be bound to container controller actions
+- Pagination (can be replaced with custom implementation)
+- Sorting
+
+
+@see DatatableExample.cmp for full example 
+
+```xhtml
+
+<!--
+Items, var and itemVar corresponds to aura:iteration attributes with the same names.
+Datatable will iterate over accounts, in "body" facet, each account can be access by "account" variable.
+-->
+<c:Datatable items="{!v.accounts}" var="account" paginate="true" bordered="true" responsive="true"
+                     indexVar="index">
+
+            <aura:set attribute="header">
+            
+                <!--<tr> can be used instead of c:DatatableRow-->
+                <c:DatatableRow>
+                    <c:DatatableColumn/>
+                    <!--Basic Information-->
+                    <c:DatatableHeader value="Name" sortable="true" sortField="Name"/>
+                    <c:DatatableHeader value="Owner"/>
+                    
+                    <!--Comparator is a function(a,b) which returns integer with comparision result
+                    Comparator functions has to be declared in "init" and saved in view variable.
+                    -->
+                    <c:DatatableHeader value="Record Type" sortable="true" comparator="{!v.comparators.RecordType}"/>
+
+                    <!--Contact Information-->
+                    <c:DatatableHeader value="Phone" sortable="true" sortField="Phone"/>
+                    <c:DatatableHeader value="Website" sortable="true" sortField="Website"/>
+
+                    <!--Billing Address-->
+                    <c:DatatableHeader value="Country" sortable="true" sortField="BillingCountry"/>
+                    <c:DatatableHeader value="City" sortable="true" sortField="BillingCity"/>
+
+                    <!--Finance-->
+                    <c:DatatableHeader value="Annual Revenue" sortable="true" sortField="AnnualRevenue"/>
+                    <c:DatatableHeader value="Employees" sortable="true" sortField="NumberOfEmployees"/>
+                </c:DatatableRow>
+            </aura:set>
+
+
+            <aura:set attribute="body">
+                <!--These row/s are rendered for each Account-->
+                <c:DatatableRow>
+                    <!--Basic Information-->
+                    
+                    <!--Value attribute is shorthand for specifying value in DatatableColumn body-->
+                    <c:DatatableColumn label="Index" value="{!index}"/>
+                    
+                    <c:DatatableColumn label="Name">
+                        <!--Virtually any content can be put here, inputs, buttons, other datatable etc.-->
+                        <a href="{!'/' + account.Id}">{!account.Name}</a>{!i}
+                    </c:DatatableColumn>
+
+                    <c:DatatableColumn label="Owner">
+                        <a href="{!'/' + account.OwnerId}">{!account.Owner.Name}</a>
+                    </c:DatatableColumn>
+
+                    <c:DatatableColumn label="Record Type" value="{!account.RecordType.Name}"/>
+
+
+                    <!--Contact Information-->
+
+                    <!--You can bind both parent component variables/actions and current row fields-->
+                    <aura:if isTrue="{!account.RecordType.Name != 'Competitor'}">
+                        <c:DatatableColumn label="Phone" value="{!account.Phone}"/>
+                        <c:DatatableColumn label="Website" value="{!account.Website}"/>
+
+                        <aura:set attribute="else">
+                            <c:DatatableColumn label="Contact Information" colspan="2"
+                                               class="slds-text-align_center slds-theme--alert-texture">
+                                Classified
+                            </c:DatatableColumn>
+                        </aura:set>
+                    </aura:if>
+
+
+                    <!--Billing Address-->
+                    <c:DatatableColumn label="Billing Country" value="{!account.BillingCountry}"/>
+                    <c:DatatableColumn label="Billing City" value="{!account.BillingCity}"/>
+
+                    <!--Finance-->
+                    <c:DatatableColumn label="Annual Revenue">
+                        <!--Input will be bound to row's account field and to controller's action-->
+                        <lightning:input type="number" 
+                                         value="{!account.AnnualRevenue}" 
+                                         variant="label-hidden"
+                                         onchange="{!c.handleInputChange}"/>
+                    </c:DatatableColumn>
+
+                    <c:DatatableColumn label="Number of Employees">
+                        <lightning:input type="number" 
+                                         value="{!account.NumberOfEmployees}" 
+                                         variant="label-hidden"
+                                         onchange="{!c.handleInputChange}"/>
+                    </c:DatatableColumn>
+
+                    <!--Buttons-->
+                    <c:DatatableColumn label="Buttons">
+                        <lightning:buttonIcon alternativeText="Report" iconName="utility:graph" size="large"
+                                              variant="bare"/>
+                        <lightning:buttonIcon alternativeText="Update" iconName="utility:save" size="large"
+                                              variant="bare"/>
+                        <lightning:buttonIcon name="{!account.Id}" alternativeText="Delete" iconName="utility:close"
+                                              size="large" onclick="{!c.handleDeleteAccount}"
+                                              variant="bare"/>
+                    </c:DatatableColumn>
+                </c:DatatableRow>
+            </aura:set>
+
+
+            <aura:set attribute="footer">
+                <!--Totals-->
+                <c:DatatableRow>
+                    <c:DatatableColumn colspan="7"/>
+                    <c:DatatableColumn label="Total" value="Total"/>
+                    <c:DatatableColumn label="Total Revenue" value="{!v.totalRevenue}"/>
+                    <c:DatatableColumn label="Total Employees" value="{!v.totalEmployees}"/>
+                    <c:DatatableColumn/>
+                </c:DatatableRow>
+            </aura:set>
+
+        </c:Datatable>
+
+```
+ 
+
+
+
+
 ## XML Parser
 tbc

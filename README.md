@@ -356,17 +356,48 @@ static List<Object> sort(List<Object> items, Comparator comparator)
 
 
 ##### wrap()
+Wraps collection items into wrapper classes.
 
 ###### Methods:
 ```apex
+Collection wrap(Type wrapperType);
+static List<Wrapper> wrap(List<Object> items, Type wrapperType);
 ```
 
 ###### Interfaces
 ```apex
+    /**
+     * Wrapper interface.
+     * Concrete method implementing this interface should have a member variable for wrapped item.
+     * setItem method should set that member variable.
+     */
+    public interface Wrapper {
+        void setItem(Object item);
+    }
 ```
 
 ###### Examples
 ```apex
+    List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>) Collection.wrap(opportunities, OpportunityWrapper2.class);
+    
+    List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>)
+        new Collection(opportunities)
+                .filter(Opportunity.NextStep, '==', 'Analysis')
+                .wrap(OpportunityWrapper2.class)
+                .toList();
+
+
+    public class OpportunityWrapper2 implements Collection.Wrapper {
+        public Opportunity opportunity;
+
+        public void setItem(Object item) {
+            this.opportunity = (Opportunity) item;
+        }
+
+        public String getName() {
+            return opportunity.Name;
+        }
+    }
 ```    
 
 

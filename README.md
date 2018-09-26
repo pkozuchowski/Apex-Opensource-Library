@@ -1113,3 +1113,192 @@ private final static String
     }
 ```
 
+
+##Mock Router
+Very simple implementation for very common problem in Salesforce. 
+
+While writing Unit Tests in Salesforce, we often have to ensure that Http Mocks will handle many different types of callouts.
+It's not always possible to switch mock before another callout is executed, sometimes one class or trigger will 
+attempt to authenticate with one callout and then send another authenticated callout.
+Sometimes there are many different integrations and many different callouts called from trigger.
+
+This is very simple, yet very robust, Chain of Responsibility design pattern implementation that handles this problem.
+
+ 
+I've introduced this new interface which will replace default HttpCalloutMock in our implementations.
+The only differences is the new handles() methods.
+Mocks will decide whether they can handle the request in this method.
+ ```apex
+public interface HttpCalloutChainMock extends HttpCalloutMock {
+    Boolean handles(HttpRequest request);
+}
+```
+
+Then we have this Router class, which also implements HttpCalloutChainMock.
+
+Router contains LIFO queue of HttpCalloutChainMock implementations, which are registered through registerMock method. 
+When http request is issued, router will 
+iterate over registered mocks and use the first one that can handle request. Since this is LIFO queue, the most recently 
+registered mock will be the first one to respond to request.
+
+Other routers can also be registered as part of routing, which lets us create whole hierarhies of routers:
+ ```
+     HttpCalloutChainMockRouter
+         - Integration #1 Router
+              - Auth Mock
+              - Other Mocks...
+         - Integration #2 Router
+              - Auth Mock
+              - Other Mocks...
+         - Integration #3 Router
+              - Auth Mock
+              - Other Mocks...
+ ```
+      
+ LIFO queue gives us opportunity to override default mocks. For example if we have SalesforceRestAPIMockRouter,
+  which always have AuthenticationMock registered as default, 
+  with LIFO queue we are able to override this mock with unsuccessfull authentication mock.   
+ ```apex
+ public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock {
+     private List<HttpCalloutChainMock> registeredMocks = new List<HttpCalloutChainMock>{
+             new UnsupportedRequest()
+     };
+ 
+ 
+     /**
+     * Register HttpCalloutChainMock implementation.
+     * Each registered mock in queue will be asked if it can handle the request, until the first mock that can handle.
+     * New mocks are registered at the beginning of the mock queue.
+     * */
+     public HttpCalloutChainMockRouter registerMock(HttpCalloutChainMock handler) {
+         registeredMocks.add(0, handler);
+         return this;
+     }
+ 
+ 
+     /**
+      * Responds with first registered mock which can handle the request.
+      * If none if the registered mocks can handle the request, then exception is thrown.
+      */
+     public HttpResponse respond(HttpRequest request) {
+ 
+         for (HttpCalloutChainMock mock : registeredMocks) {
+             if (mock.handles(request)) {
+                 return mock.respond(request);
+             }
+         }
+ 
+         return null;
+     }
+ 
+ 
+     /**
+      * @return Boolean whether this mock class can handle the request.
+      */
+     public virtual Boolean handles(HttpRequest request) {
+         return true;
+     }
+     
+     ...
+```
+
+##### Example
+See HttpCalloutChainMockRouterTest
+```apex
+        /* Default mocks can be registered directly in Router of each API, 
+        but I decided to explicitly register all mocks in this example
+        */
+        Test.setMock(HttpCalloutMock.class,
+                new HttpCalloutChainMockRouter()
+                        .registerMock(
+                        new AcmeMocksRouter()
+                                .registerMock(new AcmeAuthenticationMock())
+                                .registerMock(new AcmeGetAccountsMock())
+                                .registerMock(new AcmePostAccountsMock()))
+
+                        .registerMock(
+                        new ExampleMocksRouter()
+                                .registerMock(new ExampleAuthenticationMock())
+                                .registerMock(new ExampleGetAccountsMock())
+                                .registerMock(new ExamplePostAccountsMock()))
+                                
+                                
+                        .registerMock(
+                        new SalesforceRestAPIMocks()
+                                .registerMock(new SalesforceRestAPIMocks.FailAuthenticateMock())
+                                .registerMock(new SalesforceRestAPIMocks.CompositeSObjectsUpdateMock())
+        );
+        
+        ...
+
+        /**
+        * Mock Router for ACME callouts.
+        * */
+        private class AcmeMocksRouter extends HttpCalloutChainMockRouter {
+    
+            public override Boolean handles(HttpRequest request) {
+                return request.getEndpoint().contains('acme.com/rest');
+            }
+        }
+    
+        private class AcmeAuthenticationMock implements HttpCalloutChainMock {
+    
+            public Boolean handles(HttpRequest request) {
+                return request.getEndpoint().contains('/auth');
+            }
+    
+            public HttpResponse respond(HttpRequest param1) {
+                HttpResponse response = new HttpResponse();
+                response.setBody('sessionToken: abc');
+                response.setStatusCode(200);
+    
+                return response;
+            }
+        }
+    
+        private class AcmeGetAccountsMock implements HttpCalloutChainMock {
+    
+            public Boolean handles(HttpRequest request) {
+                return request.getEndpoint().contains('/accounts') && request.getMethod() == 'GET';
+            }
+    
+            public HttpResponse respond(HttpRequest param1) {
+                HttpResponse response = new HttpResponse();
+                response.setStatusCode(200);
+                response.setBody(JSON.serialize(new Account[]{
+                        new Account(Name = 'ACME Account 1'),
+                        new Account(Name = 'ACME Account 2'),
+                        new Account(Name = 'ACME Account 3')
+                }));
+    
+                return response;
+            }
+        }
+    
+        private class AcmePostAccountsMock implements HttpCalloutChainMock {
+    
+            public Boolean handles(HttpRequest request) {
+                return request.getEndpoint().contains('/accounts') && request.getMethod() == 'POST';
+            }
+    
+            public HttpResponse respond(HttpRequest param1) {
+                HttpResponse response = new HttpResponse();
+                response.setStatusCode(200);
+                response.setBody('{"success":"true"}');
+    
+                return response;
+            }
+        }
+        ....
+        
+        /**
+        * Mock Router for Dacme callouts.
+        * */
+        private class ExampleMocksRouter extends HttpCalloutChainMockRouter {
+    
+            public override Boolean handles(HttpRequest request) {
+                return request.getEndpoint().contains('example.com/rest');
+            }
+        }
+        
+```

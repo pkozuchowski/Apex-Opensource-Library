@@ -489,17 +489,45 @@ static void forEach(List<Object> items, Worker worker)
 
 
 ##### fill()
+Fills in the list with number of clones of provided prototype record.
+By default, clone is deep and Id, timestamps and autonumbers are not preserved.
 
 ###### Methods:
 ```apex
+Collection fill(Integer count, SObject prototype)
+Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions)
+
+static List<SObject> fill(List<SObject> listToFill, Integer count, SObject prototype)
+static List<SObject> fill(List<SObject> listToFill, Integer count, SObject prototype, CloneOptions opts)
+
 ```
 
-###### Interfaces
+###### Options
 ```apex
+    public class CloneOptions {
+        public Boolean
+                preserveId,
+                deepClone,
+                preserveReadonlyTimestamps,
+                preserveAutonumer;
+
+        public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumer) {
+            this.preserveId = preserveId;
+            this.deepClone = deepClone;
+            this.preserveReadonlyTimestamps = preserveReadonlyTimestamps;
+            this.preserveAutonumer = preserveAutonumer;
+        }
+    }
 ```
 
 ###### Examples
 ```apex
+        List<Account> accounts = (List<Account>)
+                new Collection(new List<Account>())
+                        .fill(10, new Account(Name = 'Test Account', Contact__r = contact))
+                        .fill(10, new Account(Name = 'Other Account', Contact__r = contact),
+                        new Collection.CloneOptions(false, false, false, false))
+                        .toList();
 ```    
 
 

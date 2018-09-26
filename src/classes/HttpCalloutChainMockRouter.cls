@@ -1,4 +1,4 @@
-public virtual class HttpCalloutChainMockBase implements HttpCalloutChainMock {
+public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock {
     private List<HttpCalloutChainMock> registeredMocks = new List<HttpCalloutChainMock>{
     };
 
@@ -8,7 +8,7 @@ public virtual class HttpCalloutChainMockBase implements HttpCalloutChainMock {
     * Each registered mock in queue will be asked if it can handle the request, until the first mock that can handle.
     * New mocks are registered at the beginning of the mock queue.
     * */
-    public HttpCalloutChainMockBase registerMock(HttpCalloutChainMock handler) {
+    public HttpCalloutChainMockRouter registerMock(HttpCalloutChainMock handler) {
         registeredMocks.add(0, handler);
         return this;
     }

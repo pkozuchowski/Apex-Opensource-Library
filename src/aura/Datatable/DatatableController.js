@@ -23,11 +23,11 @@
  */
 ({
     handleSort: function (component, event, helper) {
-        const items = component.get("v.items").slice();
-        const sortOpts = event.getParam("data");
-        const comparator = sortOpts.comparator;
-        const sortField = sortOpts.sortField;
-        const sortDir = sortOpts.sortDir;
+        const items = component.get("v.items").slice(),
+            comparator = event.getParam("sortComparator"),
+            sortField = event.getParam("sortField"),
+            sortDir = event.getParam("sortDir");
+
 
         if (comparator) {
             items.sort((a, b) => (comparator(a, b)) * sortDir);

@@ -39,8 +39,8 @@
     <aura:attribute access="public" type="Boolean" name="responsive"/>
 
     <!--Handlers-->
-    <aura:handler event="c:DatatableEvent" name="sort" action="{!c.handleSort}"/>
-    <aura:handler event="c:DatatableEvent" name="pagination" action="{!c.handlePagination}"/>
+    <aura:handler event="c:DatatableEvent" name="sort" action="{!c.handleSort}" includeFacets="true"/>
+    <aura:handler event="c:DatatableEvent" name="pagination" action="{!c.handlePagination}" includeFacets="true"/>
 
 
     <table class="{#'slds-table slds-table_bordered slds-table_cell-buffer '

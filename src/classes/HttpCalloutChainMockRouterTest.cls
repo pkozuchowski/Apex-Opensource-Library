@@ -29,6 +29,12 @@ private class HttpCalloutChainMockRouterTest {
     static void testRouter() {
         Test.startTest();
 
+        /*
+        Default mocks can be registered directly in Router of each API,
+        but I decided to explicitly register all mocks in this example.
+
+        In reality, you could have only overrides here + top most mock for whole organization.
+        */
         Test.setMock(HttpCalloutMock.class,
                 new HttpCalloutChainMockRouter()
                         .registerMock(

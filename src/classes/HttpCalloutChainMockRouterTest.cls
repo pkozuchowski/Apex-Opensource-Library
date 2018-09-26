@@ -9,24 +9,84 @@ private class HttpCalloutChainMockRouterTest {
         Test.setMock(HttpCalloutMock.class,
                 new HttpCalloutChainMockRouter()
                         .registerMock(
-                        new AcmeMocks()
+                        new AcmeMocksRouter()
                                 .registerMock(new AcmeAuthenticationMock())
                                 .registerMock(new AcmeGetAccountsMock())
                                 .registerMock(new AcmePostAccountsMock()))
 
                         .registerMock(
-                        new DacmeMocks()
-                                .registerMock(new DacmeAuthenticationMock())
-                                .registerMock(new DacmeGetAccountsMock())
-                                .registerMock(new DacmePostAccountsMock()))
+                        new ExampleMocksRouter()
+                                .registerMock(new ExampleAuthenticationMock())
+                                .registerMock(new ExampleGetAccountsMock())
+                                .registerMock(new ExamplePostAccountsMock()))
         );
 
         Http http = new Http();
 
-        HttpRequest request = new HttpRequest();
-        request.setEndpoint('www.acme.com/rest/auth');
-        System.assertEquals('sessionToken: abc', http.send(request).getBody());
+        /*Acme Requests*/
+        HttpRequest acmeAuthRequest = new HttpRequest();
+        acmeAuthRequest.setEndpoint('www.acme.com/rest/auth');
+        System.assertEquals('sessionToken: abc', http.send(acmeAuthRequest).getBody());
 
+
+        HttpRequest acmeGetAccountsRequest = new HttpRequest();
+        acmeGetAccountsRequest.setMethod('GET');
+        acmeGetAccountsRequest.setEndpoint('www.acme.com/rest/accounts');
+
+        HttpResponse acmeGetAccountsResponse = http.send(acmeGetAccountsRequest);
+        List<Account> acmeAccounts = (List<Account>) JSON.deserialize(acmeGetAccountsResponse.getBody(), Account[].class);
+        System.assertEquals(3, acmeAccounts.size());
+
+        for (Account account : acmeAccounts) {
+            System.assert(account.Name.contains('ACME'));
+        }
+
+
+        HttpRequest acmePostAccountsRequest = new HttpRequest();
+        acmePostAccountsRequest.setMethod('POST');
+        acmePostAccountsRequest.setEndpoint('www.acme.com/rest/accounts');
+        acmePostAccountsRequest.setBody(JSON.serialize(acmeAccounts));
+        System.assertEquals('{"success":"true"}', http.send(acmePostAccountsRequest).getBody());
+
+
+        /*
+        * Example requests
+        * */
+        HttpRequest exampleAuthRequest = new HttpRequest();
+        exampleAuthRequest.setEndpoint('www.example.com/rest/auth');
+        System.assertEquals('sessionToken: xyz', http.send(exampleAuthRequest).getBody());
+
+
+        HttpRequest exampleGetAccountsRequest = new HttpRequest();
+        exampleGetAccountsRequest.setMethod('GET');
+        exampleGetAccountsRequest.setEndpoint('www.example.com/rest/accounts');
+
+        HttpResponse exampleGetAccountsResponse = http.send(exampleGetAccountsRequest);
+        List<Account> exampleAccounts = (List<Account>) JSON.deserialize(exampleGetAccountsResponse.getBody(), Account[].class);
+        System.assertEquals(3, exampleAccounts.size());
+
+        for (Account account : exampleAccounts) {
+            System.assert(account.Name.contains('Example'));
+        }
+
+
+        HttpRequest examplePostAccountsRequest = new HttpRequest();
+        examplePostAccountsRequest.setMethod('POST');
+        examplePostAccountsRequest.setEndpoint('www.example.com/rest/accounts');
+        examplePostAccountsRequest.setBody(JSON.serialize(exampleAccounts));
+        System.assertEquals('{"success":"true"}', http.send(examplePostAccountsRequest).getBody());
+
+
+        /*Other Requests*/
+        HttpRequest otherRequest = new HttpRequest();
+        otherRequest.setMethod('POST');
+        otherRequest.setEndpoint('www.test.com');
+
+        try {
+            http.send(otherRequest);
+            System.assert(false, 'Router did not throw exception for unhandled request.');
+        } catch (HttpCalloutChainMockRouter.HttpCalloutChainMockBaseException ex) {
+        }
 
         Test.stopTest();
     }
@@ -35,7 +95,7 @@ private class HttpCalloutChainMockRouterTest {
     /**
     * Mock Router for ACME callouts.
     * */
-    private class AcmeMocks extends HttpCalloutChainMockRouter {
+    private class AcmeMocksRouter extends HttpCalloutChainMockRouter {
 
         public override Boolean handles(HttpRequest request) {
             return request.getEndpoint().contains('acme.com/rest');
@@ -64,7 +124,15 @@ private class HttpCalloutChainMockRouterTest {
         }
 
         public HttpResponse respond(HttpRequest param1) {
-            return null;
+            HttpResponse response = new HttpResponse();
+            response.setStatusCode(200);
+            response.setBody(JSON.serialize(new Account[]{
+                    new Account(Name = 'ACME Account 1'),
+                    new Account(Name = 'ACME Account 2'),
+                    new Account(Name = 'ACME Account 3')
+            }));
+
+            return response;
         }
     }
 
@@ -75,7 +143,11 @@ private class HttpCalloutChainMockRouterTest {
         }
 
         public HttpResponse respond(HttpRequest param1) {
-            return null;
+            HttpResponse response = new HttpResponse();
+            response.setStatusCode(200);
+            response.setBody('{"success":"true"}');
+
+            return response;
         }
     }
 
@@ -83,43 +155,59 @@ private class HttpCalloutChainMockRouterTest {
     /**
     * Mock Router for Dacme callouts.
     * */
-    private class DacmeMocks extends HttpCalloutChainMockRouter {
+    private class ExampleMocksRouter extends HttpCalloutChainMockRouter {
 
         public override Boolean handles(HttpRequest request) {
-            return request.getEndpoint().contains('dacme.com/rest');
+            return request.getEndpoint().contains('example.com/rest');
         }
     }
 
-    private class DacmeAuthenticationMock implements HttpCalloutChainMock {
+    private class ExampleAuthenticationMock implements HttpCalloutChainMock {
 
         public Boolean handles(HttpRequest request) {
             return request.getEndpoint().contains('/auth');
         }
 
         public HttpResponse respond(HttpRequest param1) {
-            return null;
+            HttpResponse response = new HttpResponse();
+            response.setBody('sessionToken: xyz');
+            response.setStatusCode(200);
+
+            return response;
         }
     }
 
-    private class DacmeGetAccountsMock implements HttpCalloutChainMock {
+    private class ExampleGetAccountsMock implements HttpCalloutChainMock {
 
         public Boolean handles(HttpRequest request) {
             return request.getEndpoint().contains('/accounts') && request.getMethod() == 'GET';
         }
 
         public HttpResponse respond(HttpRequest param1) {
-            return null;
+            HttpResponse response = new HttpResponse();
+            response.setStatusCode(200);
+            response.setBody(JSON.serialize(new Account[]{
+                    new Account(Name = 'Example Account 1'),
+                    new Account(Name = 'Example Account 2'),
+                    new Account(Name = 'Example Account 3')
+            }));
+
+            return response;
         }
     }
 
-    private class DacmePostAccountsMock implements HttpCalloutChainMock {
+    private class ExamplePostAccountsMock implements HttpCalloutChainMock {
 
         public Boolean handles(HttpRequest request) {
             return request.getEndpoint().contains('/accounts') && request.getMethod() == 'POST';
         }
 
         public HttpResponse respond(HttpRequest param1) {
-            return null;
+            HttpResponse response = new HttpResponse();
+            response.setStatusCode(200);
+            response.setBody('{"success":"true"}');
+
+            return response;
         }
     }
 

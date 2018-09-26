@@ -86,7 +86,9 @@
                     <c:DatatableColumn label="Owner">
                         <a href="{!'/' + account.OwnerId}">{!account.Owner.Name}</a>
                     </c:DatatableColumn>
+
                     <c:DatatableColumn label="Record Type" value="{!account.RecordType.Name}"/>
+
 
                     <!--Contact Information-->
 

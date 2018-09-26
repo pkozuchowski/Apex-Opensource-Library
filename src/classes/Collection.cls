@@ -633,7 +633,7 @@ public class Collection {
         IMap imap = CollectionIMaps.newMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
-            SObject item = (SObject) items[i];
+            Object item = (Object) items[i];
             Object key = mapper.key(item);
             Object value = mapper.value(item);
 

@@ -259,6 +259,15 @@ public class Collection {
 
 
     /**
+     * Filters List of SObject by given Prototype record.
+     * @return SObject that have the same values in fields as given prototype
+     */
+    public Collection filter(SObject prototype) {
+        return new Collection(filter((List<SObject>) items, prototype));
+    }
+
+
+    /**
      * Filters collection items using given Filter implementation.
      * @param filter Filter implementation which for each collection item returns boolean value whether item should
      * be included in the output or not.
@@ -633,7 +642,7 @@ public class Collection {
         IMap imap = CollectionIMaps.newMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
-            SObject item = (SObject) items[i];
+            Object item = (Object) items[i];
             Object key = mapper.key(item);
             Object value = mapper.value(item);
 
@@ -785,6 +794,15 @@ public class Collection {
      */
     public static List<SObject> filter(List<SObject> records, SObjectField field, String operator, Object value) {
         return (List<SObject>) filter(records, new CollectionFilters.ByFieldValue(field, operator, value));
+    }
+
+
+    /**
+     * Filters List of SObject by given Prototype record.
+     * @return SObject that have the same values in fields as given prototype
+     */
+    public static List<SObject> filter(List<SObject> records, SObject prototype) {
+        return (List<SObject>) filter(records, new CollectionFilters.ByPrototype(prototype));
     }
 
 

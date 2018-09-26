@@ -87,6 +87,37 @@ public class CollectionFilters {
 
 
     /**
+     *Filters SObject collection by SObject prototype.
+     * Collection sobject that have the same field values as prototype are accepted.
+     *
+     * @example
+     * <pre>
+     *     new ByPrototype(new Opportunity(Name = 'Test Opportunity', StageNem='Analysis'))
+     *     would return Opportunities with Name = 'Test Opportunity' and Stage Analysis.
+     * </pre>
+     */
+    public class ByPrototype implements Collection.Filter {
+        private Map<String, Object> fieldsValues;
+
+        public ByPrototype(SObject prototype) {
+            this.fieldsValues = prototype.getPopulatedFieldsAsMap();
+        }
+
+        public Boolean accepts(Object item) {
+            SObject record = (SObject) item;
+
+            for (String field : fieldsValues.keySet()) {
+                if (record.get(field) != fieldsValues.get(field)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+
+    /**
      * Filters List of SObject by one of many possible field values.
      * Operators:
      * <ul>

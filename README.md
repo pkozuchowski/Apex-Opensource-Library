@@ -452,17 +452,36 @@ Executes reducer implementations on each member of collection resulting in singl
 
 
 ##### forEach()
+Executes action on each item of collection. This method can be useful in chaining.
 
 ###### Methods:
 ```apex
+Collection forEach(Worker worker)
+static void forEach(List<Object> items, Worker worker)
 ```
 
 ###### Interfaces
 ```apex
+    /**
+     * Worker performs action on each item in collection.
+     */
+    public interface Worker {
+        void forEach(Object item, Integer index);
+    }
 ```
 
 ###### Examples
 ```apex
+    new Collection(opportunities)
+            .filter(Opportunity.CreatedDate, '>=', Date.today().addDays(-3))
+            .forEach(new AppendIndexToOpportunityNameWorker())
+            .wrap(OpportunityWrapper2.class);
+            
+    private class AppendIndexToOpportunityNameWorker implements Collection.Worker {
+        public void forEach(Object item, Integer index) {
+            ((Opportunity) item).Name += index;
+        }
+    }
 ```    
 
 

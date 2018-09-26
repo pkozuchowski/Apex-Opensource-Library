@@ -40,10 +40,12 @@
         }
 
         component.set("v.items", items);
+        event.stopPropagation();
     },
 
     handlePagination: function (component, event, helper) {
         component.set("v.page", event.getParam("paginationPage"));
         component.set("v.pageSize", event.getParam("paginationPageSize"));
+        event.stopPropagation();
     }
 })

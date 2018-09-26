@@ -274,8 +274,23 @@ List<Opportunity> opportunities = (List<Opportunity>) new Collection(opportuniti
         .filter(oldMap, new OpportunityChangedNameFilter())
         .toList();
         
+
+private class OpportunityChangedNameFilter implements Collection.UpdateFilter {
+    public Boolean accepts(Object record, Object oldRecord) {
+        return ((Opportunity) record).Name != ((Opportunity) oldRecord).Name;
+    }
+}
+ 
+ 
+        
 Collection.filter(opportunities, oldMap, new CollectionFilters.FieldChanged(Opportunity.Name, 'from', 'to'));
 Collection.filter(opportunities, oldMap, new CollectionFilters.FieldChanged(Opportunity.Name, Collection.ANY_VALUE, Collection.ANY_VALUE));
+
+new Collection(opportunities)
+    .filter(new CollectionFilters.FieldChanged(Opportunity.Name, Collection.ANY_VALUE, 'Aqua Opportunities'))
+    .mapBy(Opportunity.Name);
+
+
 
 Set<Datetime> relatedOppCreatedDates = (Set<Datetime>)
         new Collection(opportunities)

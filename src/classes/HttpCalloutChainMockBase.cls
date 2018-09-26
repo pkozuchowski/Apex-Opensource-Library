@@ -4,7 +4,7 @@ public virtual class HttpCalloutChainMockBase implements HttpCalloutChainMock {
 
 
     /**
-    * Register mock to Salesforce REST API callout.
+    * Register HttpCalloutChainMock implementation.
     * Each registered mock in queue will be asked if it can handle the request, until the first mock that can handle.
     * New mocks are registered at the beginning of the mock queue.
     * */
@@ -15,7 +15,8 @@ public virtual class HttpCalloutChainMockBase implements HttpCalloutChainMock {
 
 
     /**
-     * Responds with first registered mock which can handle the request
+     * Responds with first registered mock which can handle the request.
+     * If none if the registered mocks can handle the request, then exception is thrown.
      */
     public HttpResponse respond(HttpRequest request) {
 
@@ -29,6 +30,9 @@ public virtual class HttpCalloutChainMockBase implements HttpCalloutChainMock {
     }
 
 
+    /**
+     * @return Boolean whether this mock class can handle the request.
+     */
     public virtual Boolean handles(HttpRequest request) {
         return true;
     }

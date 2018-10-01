@@ -294,7 +294,16 @@ public class Collection {
      * @see Collection.filter(SObjectField field, String operator, Object value)
      */
     public SObject find(SObjectField field, String operator, Object value) {
+        assertSObjectCollection();
         return find((List<SObject>) items, field, operator, value);
+    }
+
+    /**
+     * @return First collection item which matches all fields specified on prototype.
+     */
+    public SObject find(SObject prototype) {
+        assertSObjectCollection();
+        return (SObject) find((List<SObject>) items, new CollectionFilters.ByPrototype(prototype));
     }
 
     /**
@@ -861,6 +870,13 @@ public class Collection {
      */
     public static SObject find(List<SObject> records, SObjectField field, String operator, Object value) {
         return (SObject) find(records, new CollectionFilters.ByFieldValue(field, operator, value));
+    }
+
+    /**
+     * @return First collection item which matches all fields specified on prototype.
+     */
+    public static SObject find(List<SObject> records, SObject prototype) {
+        return (SObject) find(records, new CollectionFilters.ByPrototype(prototype));
     }
 
     /**

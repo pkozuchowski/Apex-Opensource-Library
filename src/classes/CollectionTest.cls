@@ -1216,7 +1216,7 @@ private class CollectionTest {
     public class OpportunityWrapper2 implements Collection.Wrapper {
         public Opportunity opportunity;
 
-        public void setItem(Object item) {
+        public void wrap(Object item) {
             this.opportunity = (Opportunity) item;
         }
 
@@ -1344,7 +1344,7 @@ private class CollectionTest {
                 opp.Name += i;
 
                 OpportunityWrapper2 wrapper = new OpportunityWrapper2();
-                wrapper.setItem(opp);
+                wrapper.wrap(opp);
 
                 expected.get(opp.HasOpenActivity).add(wrapper);
             }

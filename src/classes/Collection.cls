@@ -713,10 +713,10 @@ public class Collection {
     /**
      * Wrapper interface.
      * Concrete method implementing this interface should have a member variable for wrapped item.
-     * setItem method should set that member variable.
+     * wrap method should set that member variable or set other data from the record.
      */
     public interface Wrapper {
-        void setItem(Object item);
+        void wrap(Object item);
     }
 
     /**
@@ -732,7 +732,7 @@ public class Collection {
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
             Wrapper wrapper = (Wrapper) wrapperType.newInstance();
-            wrapper.setItem(items[i]);
+            wrapper.wrap(items[i]);
             wrappers.add(wrapper);
         }
 

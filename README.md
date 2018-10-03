@@ -441,10 +441,10 @@ static List<Wrapper> wrap(List<Object> items, Type wrapperType);
 /**
  * Wrapper interface.
  * Concrete method implementing this interface should have a member variable for wrapped item.
- * setItem method should set that member variable.
+ * wrap method should set that member variable or wrapper fields.
  */
 public interface Wrapper {
-    void setItem(Object item);
+    void wrap(Object item);
 }
 ```
 
@@ -462,7 +462,7 @@ List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>)
 public class OpportunityWrapper2 implements Collection.Wrapper {
     public Opportunity opportunity;
 
-    public void setItem(Object item) {
+    public void wrap(Object item) {
         this.opportunity = (Opportunity) item;
     }
 

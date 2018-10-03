@@ -1237,8 +1237,7 @@ private class CollectionTest {
         List<Account> accounts = (List<Account>)
                 new Collection(new List<Account>())
                         .fill(10, new Account(Name = 'Test Account', Contact__r = contact))
-                        .fill(10, new Account(Name = 'Other Account', Contact__r = contact),
-                        new Collection.CloneOptions(false, false, false, false))
+                        .fill(10, new Account(Name = 'Other Account', Contact__r = contact), new Collection.CloneOptions(false, false, false, false))
                         .toList();
 
 

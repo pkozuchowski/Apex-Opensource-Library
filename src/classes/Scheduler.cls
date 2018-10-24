@@ -2,10 +2,10 @@
  * Scheduling helper class for the most common schedule patterns.
  */
 public class Scheduler {
-    public Integer
-            defaultSecond = 0,
-            defaultMinute = 0,
-            defaultHour = 0;
+    public String
+            defaultSecond = '0',
+            defaultMinute = '0',
+            defaultHour = '0';
 
     /**
      * Schedules a few jobs to run every X minutes in an hour.
@@ -16,8 +16,8 @@ public class Scheduler {
      * @return Scheduled jobs IDs (CronTrigger IDs) in chronological order.
      */
     public List<Id> scheduleEveryXMinutes(String jobName, Integer everyMinutes, Schedulable job) {
-        expect(everyMinutes <= 30, 'Cannot schedule jobs to run less than twice an hour, ' +
-                'use sheduleHourly() instead.');
+        expect(everyMinutes <= 30, 'Cannot schedule jobs to run less than twice an hour - every 30 minutes is maximum value.' +
+                'Use sheduleHourly() instead.');
 
         List<Id> jobIds = new List<Id>();
 
@@ -35,7 +35,7 @@ public class Scheduler {
      * @return Scheduled job ID (CronTrigger ID).
      */
     public Id scheduleHourly(String jobName, Integer minute, Schedulable job) {
-        return schedule(jobName, '0', '' + minute, '*', '?', '*', '*', '*', job);
+        return schedule(jobName, defaultSecond, '' + minute, '*', '?', '*', '*', '*', job);
     }
 
 
@@ -44,7 +44,7 @@ public class Scheduler {
      * @return Scheduled job ID (CronTrigger ID).
      */
     public Id scheduleDaily(String jobName, Integer hour, Integer minute, Schedulable job) {
-        return schedule(jobName, '0', '' + minute, '' + hour, '?', '*', '*', '*', job);
+        return schedule(jobName, defaultSecond, '' + minute, '' + hour, '?', '*', '*', '*', job);
     }
 
 
@@ -54,7 +54,7 @@ public class Scheduler {
      * @return Scheduled job ID (CronTrigger ID).
      */
     public Id scheduleWeekly(String jobName, String dayOfWeek, Schedulable job) {
-        return schedule(jobName, '0', '0', '0', '?', '*', dayOfWeek, '*', job);
+        return schedule(jobName, defaultSecond, defaultMinute, defaultHour, '?', '*', dayOfWeek, '*', job);
     }
 
 
@@ -72,7 +72,7 @@ public class Scheduler {
      * @return Scheduled job ID (CronTrigger ID).
      */
     public Id scheduleMonthly(String jobName, String dayOfMonth, Schedulable job) {
-        return schedule(jobName, '0', '0', '0', dayOfMonth, '*', '?', '*', job);
+        return schedule(jobName, defaultSecond, defaultMinute, defaultHour, dayOfMonth, '*', '?', '*', job);
     }
 
 

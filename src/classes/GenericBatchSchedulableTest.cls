@@ -38,7 +38,7 @@ public class GenericBatchSchedulableTest implements Database.Batchable<Integer> 
 
     @IsTest
     static void testSchedulableUsingNameConstructor() {
-        GenericBatchSchedulable schedulable = new GenericBatchSchedulable('SObjectBatchSchedulableTest');
+        GenericBatchSchedulable schedulable = new GenericBatchSchedulable('GenericBatchSchedulableTest');
 
         Test.startTest();
         System.schedule('Test Batch Schedulable', '0 0 0 ? * * *', schedulable);
@@ -47,7 +47,7 @@ public class GenericBatchSchedulableTest implements Database.Batchable<Integer> 
 
     @IsTest
     static void testSchedulableUsingNameAndBatchSizeConstructor() {
-        GenericBatchSchedulable schedulable = new GenericBatchSchedulable('SObjectBatchSchedulableTest', 10);
+        GenericBatchSchedulable schedulable = new GenericBatchSchedulable('GenericBatchSchedulableTest', 10);
 
         Test.startTest();
         System.schedule('Test Batch Schedulable', '0 0 0 ? * * *', schedulable);

@@ -1,0 +1,14 @@
+<apex:component id="LightningIcon">
+    <apex:attribute access="public" type="String" name="ns" description="utility/standard" required="true"/>
+    <apex:attribute access="public" type="String" name="iconName" description="Icon name" required="true"/>
+    <apex:attribute access="public" type="String" name="assistiveText" description="Assistive Text"/>
+    <apex:attribute access="public" type="String" name="size" description="Icon size as in SLDS" default="medium"/>
+
+    <span class="slds-icon_container slds-icon-{!ns}-{!iconName}" title="{!assistiveText}">
+        <svg aria-hidden="true" class="slds-icon slds-icon-text-default slds-icon_{!size}" xmlns="http://www.w3.org/2000/svg"
+             xmlns:xlink="http://www.w3.org/1999/xlink">
+            <use xlink:href="/apexpages/slds/latest/assets/icons/{!ns}-sprite/svg/symbols.svg#{!iconName}"></use>
+        </svg>
+        <span class="slds-assistive-text">{!assistiveText}</span>
+    </span>
+</apex:component>

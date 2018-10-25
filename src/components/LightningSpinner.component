@@ -1,0 +1,14 @@
+<apex:component id="LightningModal">
+    <apex:attribute access="public" type="String" name="id" description="Spinner's Id"/>
+    <apex:attribute access="public" type="Boolean" name="show" default="true" description="Show spinner"/>
+
+    <div id="{!id}" class="{!IF(show, null, 'slds-hide')}">
+        <div class="slds-spinner_container">
+            <div role="status" class="slds-spinner slds-spinner_medium">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </div>
+</apex:component>

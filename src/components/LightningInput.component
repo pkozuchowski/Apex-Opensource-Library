@@ -1,0 +1,17 @@
+<apex:component id="LightningInput">
+    <apex:attribute name="value" type="Object" description="test"/>
+    <apex:attribute name="label" type="String" description="test"/>
+    <apex:attribute name="required" type="Boolean" description="Is the field required" default="false"/>
+
+    <div class="slds-form-element">
+        <label class="slds-form-element__label" for="input">
+            <apex:outputPanel rendered="{!required}" layout="inline">
+                <abbr class="slds-required" title="Required">*</abbr>
+            </apex:outputPanel>
+            {!label}
+        </label>
+        <div class="slds-form-element__control">
+            <apex:input id="input" value="{!value}" styleClass="slds-input" required="{!required}"/>
+        </div>
+    </div>
+</apex:component>

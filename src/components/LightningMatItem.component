@@ -1,0 +1,21 @@
+<apex:component id="MatItem">
+    <apex:attribute access="public" type="PageReference" name="target" description="Target URL"/>
+    <apex:attribute access="public" type="String" name="iconNamespace" description="standard/utility"/>
+    <apex:attribute access="public" type="String" name="iconName" description="SLDS Icon Name"/>
+    <apex:attribute access="public" type="String" name="label" description="Item Label"/>
+    <apex:attribute access="public" type="String" name="description" description="Item Description"/>
+
+    <div style="margin-bottom: 16px;">
+        <a href="{!target}" class="slds-box slds-box_link slds-box_x-small slds-media slds-welcome-mat__tile">
+            <div class="slds-media__figure slds-media__figure_fixed-width slds-align_absolute-center slds-m-left_xx-small">
+                <div class="slds-welcome-mat__tile-icon-container">
+                    <c:LightningIcon ns="{!iconNamespace}" iconName="{!iconName}"/>
+                </div>
+            </div>
+            <div class="slds-media__body slds-border_left slds-p-around_small">
+                <h3 class="slds-welcome-mat__tile-title">{!label}</h3>
+                <p class="slds-welcome-mat__tile-description">{!description}</p>
+            </div>
+        </a>
+    </div>
+</apex:component>

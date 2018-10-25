@@ -1,0 +1,20 @@
+<apex:component id="LightningAlert">
+    <apex:attribute access="public" type="String" name="message" description="Message of the alert"/>
+    <apex:attribute access="public" type="String" name="severity"
+                    description="Severity of the alert: info/error/warning/offline"/>
+
+
+    <div class="slds-notify slds-notify_alert slds-theme_alert-texture
+                {!CASE(severity,
+                'error','slds-theme_error',
+                'warning','slds-theme_warning',
+                'offline','slds-theme_offline',
+                'slds-theme_info')}"
+         role="alert">
+        <span class="slds-assistive-text">{!severity}</span>
+        <span class="slds-icon_container slds-icon-utility-user slds-m-right_x-small"
+              title="Description of icon when needed">
+        </span>
+        <h2>{!message}</h2>
+    </div>
+</apex:component>

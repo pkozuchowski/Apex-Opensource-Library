@@ -36,7 +36,7 @@ public class DMLOptionsBuilder {
      * If specified as true for a case or lead, the system uses the default (active) assignment rule for the case or lead.
      * If specified, do not specify an assignmentRuleId.
      */
-    public DMLOptionsBuilder useDefaultRule() {
+    public DMLOptionsBuilder useDefaultAssignmentRule() {
         dmlOptions.AssignmentRuleHeader.useDefaultRule = true;
         dmlOptions.AssignmentRuleHeader.assignmentRuleID = null;
         return this;

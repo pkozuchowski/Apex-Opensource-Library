@@ -289,8 +289,8 @@ public class Collection {
 
 
     /**
-     * @return First collection item accepted by CollectionFilter.ByFieldValue, or null.
-     * @see CollectionFilter.ByFieldValue
+     * @return First collection item accepted by Collection.FilterByFieldValue, or null.
+     * @see Collection.FilterByFieldValue
      * @see Collection.filter(SObjectField field, String operator, Object value)
      */
     public SObject find(SObjectField field, String operator, Object value) {
@@ -303,7 +303,7 @@ public class Collection {
      */
     public SObject find(SObject prototype) {
         assertSObjectCollection();
-        return (SObject) find((List<SObject>) items, new CollectionFilters.ByPrototype(prototype));
+        return (SObject) find((List<SObject>) items, new FilterByPrototype(prototype));
     }
 
     /**
@@ -802,7 +802,7 @@ public class Collection {
      * </pre>
      */
     public static List<SObject> filter(List<SObject> records, SObjectField field, String operator, Object value) {
-        return (List<SObject>) filter(records, new CollectionFilters.ByFieldValue(field, operator, value));
+        return (List<SObject>) filter(records, new FilterByFieldValue(field, operator, value));
     }
 
 
@@ -811,12 +811,12 @@ public class Collection {
      * @return SObject that have the same values in fields as given prototype
      */
     public static List<SObject> filter(List<SObject> records, SObject prototype) {
-        return (List<SObject>) filter(records, new CollectionFilters.ByPrototype(prototype));
+        return (List<SObject>) filter(records, new FilterByPrototype(prototype));
     }
 
 
     /**
-     * @param items List of items to filter.
+     * @param items List of items to Filter
      * @param filter Filter implementation which for each collection item returns boolean value whether item should
      * be included in the output or not.
      *
@@ -865,18 +865,18 @@ public class Collection {
     * */
 
     /**
-     * @return First collection item accepted by CollectionFilter.ByFieldValue, or null.
-     * @see CollectionFilter.ByFieldValue
+     * @return First collection item accepted by Collection.FilterByFieldValue, or null.
+     * @see Collection.FilterByFieldValue
      */
     public static SObject find(List<SObject> records, SObjectField field, String operator, Object value) {
-        return (SObject) find(records, new CollectionFilters.ByFieldValue(field, operator, value));
+        return (SObject) find(records, new FilterByFieldValue(field, operator, value));
     }
 
     /**
      * @return First collection item which matches all fields specified on prototype.
      */
     public static SObject find(List<SObject> records, SObject prototype) {
-        return (SObject) find(records, new CollectionFilters.ByPrototype(prototype));
+        return (SObject) find(records, new FilterByPrototype(prototype));
     }
 
     /**
@@ -1014,5 +1014,253 @@ public class Collection {
 
 
     private class CollectionException extends Exception {
+    }
+
+
+    /*
+    * 
+    * 
+    * 
+    * Beyond this point are interfaces implementations.
+    *
+    *  
+    * 
+    * 
+    * */
+
+
+    /*
+    * 
+    * Filters
+    * 
+    * */
+    private final static Map<String, Set<Integer>> COMPARATOR_OUTCOMES = new Map<String, Set<Integer>>{
+            Collection.GREATER_THAN => new Set<Integer>{
+                    1
+            },
+            Collection.GREATER_EQUAL_THAN => new Set<Integer>{
+                    0, 1
+            },
+            Collection.LESS_THAN => new Set<Integer>{
+                    -1
+            },
+            Collection.LESS_EQUAL_THAN => new Set<Integer>{
+                    0, -1
+            },
+            Collection.EQUALS => new Set<Integer>{
+                    0
+            },
+            Collection.NOT_EQUALS => new Set<Integer>{
+                    1, -1
+            }
+    };
+
+    /**
+     * Filters List of SObject by field value.
+     * Operators:
+     * <ul>
+     *  <li>'==' or Collection.EQUALS</li>
+     *  <li>'!=' or Collection.NOT_EQUALS</li>
+     *  <li>'>' or Collection.GREATER_THAN</li>
+     *  <li>'>=' or Collection.GREATER_EQUAL_THAN</li>
+     *  <li>'<' or Collection.LESS_THAN</li>
+     *  <li>'<=' or Collection.LESS_EQUAL_THAN</li>
+     * </ul>
+     *
+     * @example
+     * <pre>
+     *     new Collection(accounts).filter(new Collection.FilterByFieldValue(Account.CreatedDate,'>=', Date.today().addDays(-1)));
+     *     Collection.filter(accounts, new Collection.FilterByFieldValue(Account.CreatedDate,'>=', Date.today().addDays(-1) ));
+     * </pre>
+     */
+    public class FilterByFieldValue implements Collection.Filter {
+        private Object value;
+        private String field;
+        private String operator;
+        private Collection.Comparator comparator;
+        private final Set<Integer> acceptedCompareValues;
+
+        public FilterByFieldValue(SObjectField field, String operator, Object value) {
+            this.field = '' + field;
+            this.operator = operator;
+            this.value = value;
+            this.acceptedCompareValues = COMPARATOR_OUTCOMES.get(operator);
+            this.comparator = CollectionComparators.getComparatorByField(field);
+        }
+
+        public Boolean accepts(Object record) {
+            Object fieldValue = ((SObject) record).get(field);
+            Integer outcome = comparator.compare(fieldValue, value);
+
+            return acceptedCompareValues.contains(outcome);
+        }
+    }
+
+
+    /**
+     *Filters SObject collection by SObject prototype.
+     * Collection sobject that have the same field values as prototype are accepted.
+     *
+     * @example
+     * <pre>
+     *     new ByPrototype(new Opportunity(Name = 'Test Opportunity', StageNem='Analysis'))
+     *     would return Opportunities with Name = 'Test Opportunity' and Stage Analysis.
+     * </pre>
+     */
+    public class FilterByPrototype implements Collection.Filter {
+        private Map<String, Object> fieldsValues;
+
+        public FilterByPrototype(SObject prototype) {
+            this.fieldsValues = prototype.getPopulatedFieldsAsMap();
+        }
+
+        public Boolean accepts(Object item) {
+            SObject record = (SObject) item;
+
+            for (String field : fieldsValues.keySet()) {
+                if (record.get(field) != fieldsValues.get(field)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+
+    /**
+     * Filters List of SObject by one of many possible field values.
+     * Operators:
+     * <ul>
+     *  <li>'IN' or Collection.VALUE_IN</li>
+     *  <li>'NOT IN' or Collection.VALUE_NOT_IN</li>
+     * </ul>
+     *
+     * @example
+     * <pre>
+     *     new Collection(accounts).filter(new Collection.FilterByFieldValues(Account.Name,'IN',new Set<Object>{'Test Account', 'Other Account'}));
+     * </pre>
+     */
+    public class FilterByFieldValues implements Collection.Filter {
+        private Set<Object> values;
+        private String field;
+        private Boolean valueIn;
+
+        public FilterByFieldValues(SObjectField field, String operator, Set<Object> values) {
+            this('' + field, operator, values);
+        }
+
+        public FilterByFieldValues(String field, String operator, Set<Object> values) {
+            this.values = values;
+            this.field = field;
+            this.valueIn = operator == Collection.VALUE_IN;
+        }
+
+
+        public Boolean accepts(Object record) {
+            return valueIn == (values.contains(((SObject) record).get(field)));
+        }
+    }
+
+
+    /**
+     * Filters SObject list to those related to given parents by given relationship field.
+     *
+     * @example
+     * <pre>
+     *     Collection.filter(contacts, new Collection.FilterRelatedTo(accounts, Contact.AccountId));
+     * </pre>
+     */
+    public class FilterRelatedTo implements Collection.Filter {
+        private Map<Id, SObject> parents;
+        private SObjectField relationshipField;
+
+        public FilterRelatedTo(List<SObject> parents, SObjectField relationshipField) {
+            this(new Map<Id, SObject>(parents), relationshipField);
+        }
+
+        public FilterRelatedTo(Map<Id, SObject> parents, SObjectField relationshipField) {
+            this.parents = new Map<Id, SObject>(parents);
+            this.relationshipField = relationshipField;
+        }
+
+        public Boolean accepts(Object record) {
+            return parents.containsKey((Id) ((SObject) record).get(relationshipField));
+        }
+    }
+
+
+    /**
+     * Filters SObjects by distance to given Geolocation.
+     */
+    public class FilterByDistance implements Collection.Filter {
+        private Location targetLocation;
+        private String field;
+        private String unit;
+        private Double maxDistance;
+
+        /**
+         * @param locationField Geolocation field to filter by.
+         * @param targetLocation Target geolocation to filter by distance to.
+         * @param maxDistance Max. distance from the target location
+         * @param unit Distance unit 'km'/'mi'
+         */
+        public FilterByDistance(SObjectField locationField, Location targetLocation, Double maxDistance, String unit) {
+            this.field = '' + locationField;
+            this.targetLocation = targetLocation;
+            this.unit = unit;
+            this.maxDistance = maxDistance;
+        }
+
+        public Boolean accepts(Object record) {
+            Location fieldValue = (Location) ((SObject) record).get(field);
+            return Location.getDistance(fieldValue, targetLocation, unit) <= maxDistance;
+        }
+    }
+
+
+    /**
+     * Filter records that changed field value to other value.
+     * Developer can specify any value by using Collection.ANY_VALUE, keep in mind though
+     * that using "true" or "false" will not work.
+     *
+     * @example
+     * <pre>
+     *     new Collection(accounts).filter(new Collection.FilterFieldChanged(Opportunity.StageName, Collection.ANY_VALUE, 'Closed'));
+     * </pre>
+     */
+    public class FilterByFieldChanged implements Collection.UpdateFilter {
+        private Object fromValue;
+        private Object toValue;
+        private SObjectField field;
+
+        public FilterByFieldChanged(SObjectField field) {
+            this.field = field;
+            this.fromValue = this.toValue = Collection.ANY_VALUE;
+        }
+
+        public FilterByFieldChanged(SObjectField field, Object fromValue, Object toValue) {
+            this.field = field;
+            this.fromValue = fromValue;
+            this.toValue = toValue;
+        }
+
+        public Boolean accepts(SObject record, SObject old) {
+            Object currentValue = record.get(field),
+                    oldValue = old.get(field);
+
+            if (fromValue === Collection.ANY_VALUE && toValue === Collection.ANY_VALUE) {
+                return currentValue != oldValue;
+
+            } else if (fromValue !== Collection.ANY_VALUE && toValue === Collection.ANY_VALUE) {
+                return oldValue == fromValue;
+
+            } else if (fromValue === Collection.ANY_VALUE && toValue !== Collection.ANY_VALUE) {
+                return currentValue == toValue;
+
+            } else {
+                return oldValue == fromValue && currentValue == toValue;
+            }
+        }
     }
 }

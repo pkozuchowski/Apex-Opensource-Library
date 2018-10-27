@@ -866,11 +866,11 @@ private class CollectionTest {
         System.assertEquals(hasOpenActivity, Collection.filter(opportunities, Opportunity.HasOpenActivity, '==', true));
         System.assertEquals(hasNotOpenActivity, Collection.filter(opportunities, Opportunity.HasOpenActivity, '!=', true));
 
-        System.assertEquals(fiscalQuarterEquals0, Collection.filter(opportunities, new CollectionFilters.ByFieldValue(Opportunity.FiscalQuarter, '==', 0)));
-        System.assertEquals(fiscalQuarterNotEquals0, Collection.filter(opportunities, new CollectionFilters.ByFieldValue(Opportunity.FiscalQuarter, '!=', 0)));
+        System.assertEquals(fiscalQuarterEquals0, Collection.filter(opportunities, new Collection.FilterByFieldValue(Opportunity.FiscalQuarter, '==', 0)));
+        System.assertEquals(fiscalQuarterNotEquals0, Collection.filter(opportunities, new Collection.FilterByFieldValue(Opportunity.FiscalQuarter, '!=', 0)));
 
         System.assertEquals(nextStepAnalysis, new Collection(opportunities).filter(Opportunity.NextStep, '==', 'Analysis').toList());
-        System.assertEquals(nextStepNotAnalysis, new Collection(opportunities).filter(new CollectionFilters.ByFieldValue(Opportunity.NextStep, '!=', 'Analysis')).toList());
+        System.assertEquals(nextStepNotAnalysis, new Collection(opportunities).filter(new Collection.FilterByFieldValue(Opportunity.NextStep, '!=', 'Analysis')).toList());
     }
 
 
@@ -894,8 +894,8 @@ private class CollectionTest {
             }
         }
 
-        List<Opportunity> actualAcceptedOpps = (List<Opportunity>) Collection.filter(opportunities, new CollectionFilters.ByFieldValues(Opportunity.StageName, 'IN', acceptedStages));
-        List<Opportunity> actualRejectedOpps = (List<Opportunity>) Collection.filter(opportunities, new CollectionFilters.ByFieldValues(Opportunity.StageName, 'NOT IN', acceptedStages));
+        List<Opportunity> actualAcceptedOpps = (List<Opportunity>) Collection.filter(opportunities, new Collection.FilterByFieldValues(Opportunity.StageName, 'IN', acceptedStages));
+        List<Opportunity> actualRejectedOpps = (List<Opportunity>) Collection.filter(opportunities, new Collection.FilterByFieldValues(Opportunity.StageName, 'NOT IN', acceptedStages));
 
         System.assertEquals(expectedAcceptedOpps, actualAcceptedOpps);
         System.assertEquals(expectedRejectedOpps, actualRejectedOpps);
@@ -974,24 +974,24 @@ private class CollectionTest {
                 opps[0], opps[1], opps[2], opps[3]
         },
                 Collection.filter(opps, oldMap,
-                        new CollectionFilters.FieldChanged(Opportunity.Name)
+                        new Collection.FilterByFieldChanged(Opportunity.Name)
                 )
         );
 
         System.assertEquals(new List<Opportunity>{
                 opps[2], opps[3]
         },
-                Collection.filter(opps, oldMap, new CollectionFilters.FieldChanged(Opportunity.Name, Collection.ANY_VALUE, 'John'))
+                Collection.filter(opps, oldMap, new Collection.FilterByFieldChanged(Opportunity.Name, Collection.ANY_VALUE, 'John'))
         );
 
         System.assertEquals(new List<Opportunity>{
                 opps[1], opps[2]
-        }, Collection.filter(opps, oldMap, new CollectionFilters.FieldChanged(Opportunity.Name, 'Ken', Collection.ANY_VALUE))
+        }, Collection.filter(opps, oldMap, new Collection.FilterByFieldChanged(Opportunity.Name, 'Ken', Collection.ANY_VALUE))
         );
 
         System.assertEquals(new List<Opportunity>{
                 opps[0]
-        }, Collection.filter(opps, oldMap, new CollectionFilters.FieldChanged(Opportunity.Name, 'Hen', 'Henry'))
+        }, Collection.filter(opps, oldMap, new Collection.FilterByFieldChanged(Opportunity.Name, 'Hen', 'Henry'))
         );
     }
 
@@ -1014,7 +1014,7 @@ private class CollectionTest {
 
         Set<Id> actual = (Set<Id>)
                 new Collection(opportunities)
-                        .filter(new CollectionFilters.RelatedTo(accounts, Opportunity.AccountId))
+                        .filter(new Collection.FilterRelatedTo(accounts, Opportunity.AccountId))
                         .getUniqueValues(Opportunity.Id);
 
         System.assertEquals(expected, actual);

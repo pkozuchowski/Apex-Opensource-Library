@@ -1409,7 +1409,7 @@ public class Collection {
     }
 
 
-    public class AnyComparator implements Collection.Comparator {
+    private class AnyComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             String a = thisItem == null ? '' : '' + thisItem;
             String b = otherItem == null ? '' : '' + otherItem;
@@ -1417,13 +1417,13 @@ public class Collection {
             return a.compareTo(b);
         }
     }
-    public class BooleanComparator implements Collection.Comparator {
+    private class BooleanComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             Boolean a = (Boolean) thisItem, b = (Boolean) otherItem;
             return a == b ? 0 : 1;
         }
     }
-    public class DateComparator implements Collection.Comparator {
+    private class DateComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             Date a = (Date) thisItem, b = (Date) otherItem;
             if (a > b) return 1;
@@ -1431,7 +1431,7 @@ public class Collection {
             return 0;
         }
     }
-    public class DateTimeComparator implements Collection.Comparator {
+    private class DateTimeComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             Datetime a = (Datetime) thisItem, b = (Datetime) otherItem;
             if (a > b) return 1;
@@ -1439,7 +1439,7 @@ public class Collection {
             return 0;
         }
     }
-    public class DecimalComparator implements Collection.Comparator {
+    private class DecimalComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             Decimal a = (Decimal) thisItem, b = (Decimal) otherItem;
             if (a > b) return 1;
@@ -1447,7 +1447,7 @@ public class Collection {
             return 0;
         }
     }
-    public class DoubleComparator implements Collection.Comparator {
+    private class DoubleComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             Double a = (Double) thisItem, b = (Double) otherItem;
             if (a > b) return 1;
@@ -1455,7 +1455,7 @@ public class Collection {
             return 0;
         }
     }
-    public class IntegerComparator implements Collection.Comparator {
+    private class IntegerComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             Integer a = (Integer) thisItem, b = (Integer) otherItem;
             if (a > b) return 1;
@@ -1463,7 +1463,7 @@ public class Collection {
             return 0;
         }
     }
-    public class StringComparator implements Collection.Comparator {
+    private class StringComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             String a = (String) thisItem, b = (String) otherItem;
             if (a > b) return 1;
@@ -1471,7 +1471,7 @@ public class Collection {
             return 0;
         }
     }
-    public class TimeComparator implements Collection.Comparator {
+    private class TimeComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             Time a = (Time) thisItem, b = (Time) otherItem;
             if (a > b) return 1;

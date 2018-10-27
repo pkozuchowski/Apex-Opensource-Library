@@ -465,7 +465,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public static Object getUniqueValues(List<SObject> records, SObjectField field) {
-        return getUniqueValues(records, new CollectionMappers.ByField(field));
+        return getUniqueValues(records, new MapByField(field));
     }
 
     /**
@@ -475,7 +475,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public static Object getUniqueValues(Type valueType, List<SObject> records, String field) {
-        return getUniqueValues(records, new CollectionMappers.ByField(valueType, field));
+        return getUniqueValues(records, new MapByField(valueType, field));
     }
 
     /**
@@ -484,7 +484,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public static Object getUniqueValues(List<Object> records, KeyMapper keyMapper) {
-        return mapByFieldToIMap(records, new CollectionMappers.ByKeyMapper(keyMapper, getListItemType(records))).keySet();
+        return mapByFieldToIMap(records, new MapByKeyMapper(keyMapper, getListItemType(records))).keySet();
     }
 
     /**
@@ -554,7 +554,7 @@ public class Collection {
      * Map's key type is derived from field's DisplayType.
      */
     public static Object mapBy(List<SObject> records, SObjectField field) {
-        return mapBy(records, new CollectionMappers.ByField(field));
+        return mapBy(records, new MapByField(field));
     }
 
     /**
@@ -564,7 +564,7 @@ public class Collection {
      * @return Map of items where record is map's value and field's value is map's key.
      */
     public static Object mapBy(Type keyType, List<SObject> records, String field) {
-        return mapBy(records, new CollectionMappers.ByField(keyType, field));
+        return mapBy(records, new MapByField(keyType, field));
     }
 
     /**
@@ -573,7 +573,7 @@ public class Collection {
      * @return Map of items where list item is map's value and key is produced by KeyMapper.
      */
     public static Object mapBy(List<Object> items, KeyMapper mapper) {
-        return mapByFieldToIMap(items, new CollectionMappers.ByKeyMapper(mapper, getListItemType(items))).toMap();
+        return mapByFieldToIMap(items, new MapByKeyMapper(mapper, getListItemType(items))).toMap();
     }
 
     /**
@@ -613,7 +613,7 @@ public class Collection {
     * @return Map<FieldValue : FieldType, List<SObject>>
     */
     public static Object groupBy(List<SObject> records, SObjectField field) {
-        return groupBy(records, new CollectionMappers.ByField(field));
+        return groupBy(records, new MapByField(field));
     }
 
     /**
@@ -625,7 +625,7 @@ public class Collection {
      * @return Map<FieldValue : keyType, List<SObject>>
      */
     public static Object groupBy(Type keyType, List<SObject> records, String field) {
-        return groupBy(records, new CollectionMappers.ByField(keyType, field));
+        return groupBy(records, new MapByField(keyType, field));
     }
 
     /**
@@ -636,7 +636,7 @@ public class Collection {
      * @return Map<KeyMapper.key() : KeyMapper.keyType(), List<Object>>
      */
     public static Object groupBy(List<Object> items, KeyMapper keyMapper) {
-        return groupBy(items, new CollectionMappers.ByKeyMapper(keyMapper, getListItemType(items)));
+        return groupBy(items, new MapByKeyMapper(keyMapper, getListItemType(items)));
     }
 
     /**
@@ -1261,6 +1261,122 @@ public class Collection {
             } else {
                 return oldValue == fromValue && currentValue == toValue;
             }
+        }
+    }
+
+
+    /*
+    *
+    * Mappers
+    *
+    * */
+    private final static Map<Schema.SoapType, Type> FIELD_TYPE_MAP = new Map<SoapType, Type>{
+            Schema.SoapType.ID => Id.class,
+            Schema.SoapType.INTEGER => Integer.class,
+            Schema.SoapType.BOOLEAN => Boolean.class,
+            Schema.SoapType.DATE => Date.class,
+            Schema.SoapType.DATETIME => Datetime.class,
+            Schema.SoapType.DOUBLE => Decimal.class,
+            Schema.SoapType.STRING => String.class,
+            Schema.SoapType.TIME => Time.class
+    };
+    private static Type getSObjectFieldType(SObjectField field) {
+        return FIELD_TYPE_MAP.get(field.getDescribe().getSoapType());
+    }
+
+
+    /**
+    * Maps SObject collection by SObject field.
+    * */
+    public virtual class MapByField implements Collection.KeyMapper {
+        private String field;
+        private Type keyType;
+
+        public MapByField(Type keyType, String field) {
+            this.keyType = keyType;
+            this.field = field;
+        }
+
+        public MapByField(SObjectField field) {
+            this.keyType = getSObjectFieldType(field);
+            this.field = '' + field;
+        }
+
+        public Object key(Object item) {
+            return ((SObject) item).get(field);
+        }
+
+        public Type keyType() {
+            return keyType;
+        }
+    }
+
+
+    /**
+    * Maps collection by pair of fields and separator. ex.
+    * Junction object by both parent fields.
+    * This mapper will always map by String key.
+    *
+    * @example
+    * <pre>
+    *       Map<String, JunctionObject> junctionRecordsByParents =
+    *           Collection.mapBy(junctionRecords,
+    *               new Collection.MapByFieldPair(JunctionObject.ParentId1, '_', JunctionObject.ParentId2)
+    *           );
+    * </pre>
+    * */
+    public virtual class MapByFieldPair implements Collection.KeyMapper {
+        private String fieldLeft;
+        private String fieldRight;
+        private String separator = '';
+
+        public MapByFieldPair(SObjectField fieldLeft, String separator, SObjectField fieldRight) {
+            this('' + fieldLeft, separator, '' + fieldRight);
+        }
+
+        public MapByFieldPair(String fieldLeft, String separator, String fieldRight) {
+            this.separator = separator;
+            this.fieldLeft = fieldLeft;
+            this.fieldRight = fieldRight;
+        }
+
+        public Object key(Object item) {
+            return ((SObject) item).get(fieldLeft) + separator + ((SObject) item).get(fieldRight);
+        }
+
+        public Type keyType() {
+            return String.class;
+        }
+    }
+
+
+    /**
+    * Mapper implementation which uses given KeyMapper for producing key,
+    * and returns collection item as mapped value.
+    * */
+    public class MapByKeyMapper implements Collection.Mapper {
+        private Collection.KeyMapper keyMapper;
+        private Type valueType;
+
+        public MapByKeyMapper(Collection.KeyMapper keyMapper, Type valueType) {
+            this.keyMapper = keyMapper;
+            this.valueType = valueType;
+        }
+
+        public Type keyType() {
+            return keyMapper.keyType();
+        }
+
+        public Type valueType() {
+            return valueType;
+        }
+
+        public Object key(Object item) {
+            return keyMapper.key(item);
+        }
+
+        public Object value(Object item) {
+            return item;
         }
     }
 

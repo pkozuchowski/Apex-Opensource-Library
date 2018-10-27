@@ -554,7 +554,7 @@ private class CollectionTest {
         }
 
         Map<String, Opportunity> actual = (Map<String, Opportunity>) new Collection(opportunities)
-                .mapBy(new CollectionMappers.ByFieldPair(Opportunity.AccountId, '_', Opportunity.OwnerId));
+                .mapBy(new Collection.MapByFieldPair(Opportunity.AccountId, '_', Opportunity.OwnerId));
 
         System.assertEquals(expected, actual);
     }

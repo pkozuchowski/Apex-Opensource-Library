@@ -149,16 +149,26 @@ public class CollectionComparators {
         private Map<Id, Double> distanceCache;
 
         /**
+         * By default, nulls and closest are first.
          * @param field Location field
          * @param geoLocation Target geolocation. Records are sorted by distance to this location.
-         * @param closestFirst true - Closest are first / false - farthest first
          */
-        public ByDistance(SObjectField field, Location geoLocation, Boolean closestFirst, Boolean nullFirst) {
+        public ByDistance(SObjectField field, Location geoLocation) {
             this.distanceCache = new Map<Id, Double>();
             this.field = field;
-            this.direction = closestFirst ? -1 : 1;
-            this.nullsPosition = nullFirst ? -1 : 1;
+            this.direction = -1;
+            this.nullsPosition = -1;
             this.target = geoLocation;
+        }
+
+        public ByDistance closestFirst(Boolean closestFirst) {
+            this.nullsPosition = closestFirst ? -1 : 1;
+            return this;
+        }
+
+        public ByDistance nullFirst(Boolean nullFirst) {
+            this.direction = nullFirst ? -1 : 1;
+            return this;
         }
 
         public Integer compare(Object thisItem, Object otherItem) {

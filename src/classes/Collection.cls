@@ -1474,7 +1474,9 @@ public class Collection {
     public class TimeComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             Time a = (Time) thisItem, b = (Time) otherItem;
-            return a == b ? 0 : 1;
+            if (a > b) return 1;
+            if (a < b) return -1;
+            return 0;
         }
     }
 

@@ -919,7 +919,7 @@ public class Collection {
      * @return Sorted list of records.
      */
     public static List<SObject> sort(List<SObject> records, SObjectField field, Boolean isAscending) {
-        return (List<SObject>) sort(records, new CollectionComparators.ByField(field, isAscending));
+        return (List<SObject>) sort(records, new CompareByField(field, isAscending));
     }
 
     /**
@@ -1085,7 +1085,7 @@ public class Collection {
             this.operator = operator;
             this.value = value;
             this.acceptedCompareValues = COMPARATOR_OUTCOMES.get(operator);
-            this.comparator = CollectionComparators.getComparatorByField(field);
+            this.comparator = getComparatorByField(field);
         }
 
         public Boolean accepts(Object record) {
@@ -1261,6 +1261,190 @@ public class Collection {
             } else {
                 return oldValue == fromValue && currentValue == toValue;
             }
+        }
+    }
+
+
+    /*
+    *
+    * Comparators
+    *
+    * */
+    private final static Map<Schema.SoapType, Collection.Comparator> comparatorsByFieldType = new Map<SoapType, Collection.Comparator>{
+            SoapType.ID => new StringComparator(),
+            SoapType.STRING => new StringComparator(),
+            SoapType.DATE => new DateComparator(),
+            SoapType.DATETIME => new DateTimeComparator(),
+            SoapType.INTEGER => new IntegerComparator(),
+            SoapType.DECIMAL => new DecimalComparator(),
+            SoapType.DOUBLE => new DoubleComparator(),
+            SoapType.BOOLEAN => new BooleanComparator(),
+            SoapType.TIME => new BooleanComparator()
+    };
+
+    private static Collection.Comparator getComparatorByField(SObjectField field) {
+        Collection.Comparator comparator = comparatorsByFieldType.get(field.getDescribe().getSoapType());
+
+        if (comparator == null) {
+            comparator = new AnyComparator();
+        }
+
+        return comparator;
+    }
+
+
+    public class AnyComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            String a = thisItem == null ? '' : '' + thisItem;
+            String b = otherItem == null ? '' : '' + otherItem;
+
+            return a.compareTo(b);
+        }
+    }
+    public class BooleanComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Boolean a = (Boolean) thisItem, b = (Boolean) otherItem;
+            return a == b ? 0 : 1;
+        }
+    }
+    public class DateComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Date a = (Date) thisItem, b = (Date) otherItem;
+            if (a > b) return 1;
+            if (a < b) return -1;
+            return 0;
+        }
+    }
+    public class DateTimeComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Datetime a = (Datetime) thisItem, b = (Datetime) otherItem;
+            if (a > b) return 1;
+            if (a < b) return -1;
+            return 0;
+        }
+    }
+    public class DecimalComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Decimal a = (Decimal) thisItem, b = (Decimal) otherItem;
+            if (a > b) return 1;
+            if (a < b) return -1;
+            return 0;
+        }
+    }
+    public class DoubleComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Double a = (Double) thisItem, b = (Double) otherItem;
+            if (a > b) return 1;
+            if (a < b) return -1;
+            return 0;
+        }
+    }
+    public class IntegerComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Integer a = (Integer) thisItem, b = (Integer) otherItem;
+            if (a > b) return 1;
+            if (a < b) return -1;
+            return 0;
+        }
+    }
+    public class StringComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            String a = (String) thisItem, b = (String) otherItem;
+            if (a > b) return 1;
+            if (a < b) return -1;
+            return 0;
+        }
+    }
+    public class TimeComparator implements Collection.Comparator {
+        public Integer compare(Object thisItem, Object otherItem) {
+            Time a = (Time) thisItem, b = (Time) otherItem;
+            return a == b ? 0 : 1;
+        }
+    }
+
+
+    /**
+     * Compares records by values of the SObject field.
+     */
+    public class CompareByField implements Collection.Comparator {
+        private SObjectField field;
+        private Integer direction;
+        private Collection.Comparator comparator;
+
+        public CompareByField(SObjectField field, Boolean isAscending) {
+            this.field = field;
+            this.direction = isAscending ? 1 : -1;
+            this.comparator = getComparatorByField(field);
+        }
+
+        public Integer compare(Object thisItem, Object otherItem) {
+            Object thisValue = ((SObject) thisItem).get(field);
+            Object otherValue = ((SObject) otherItem).get(field);
+
+            return comparator.compare(thisValue, otherValue) * direction;
+        }
+    }
+
+
+    /**
+     * Compares SObjects by distance to given geolocation.
+     */
+    public class CompareByDistance implements Collection.Comparator {
+        private SObjectField field;
+        private Integer direction;
+        private Integer nullsPosition = 1;
+        private Location target;
+        private Map<Id, Double> distanceCache;
+
+        /**
+         * By default, nulls and closest are first.
+         * @param field Location field
+         * @param geoLocation Target geolocation. Records are sorted by distance to this location.
+         */
+        public CompareByDistance(SObjectField field, Location geoLocation) {
+            this.distanceCache = new Map<Id, Double>();
+            this.field = field;
+            this.direction = -1;
+            this.nullsPosition = -1;
+            this.target = geoLocation;
+        }
+
+        public CompareByDistance closestFirst(Boolean closestFirst) {
+            this.nullsPosition = closestFirst ? -1 : 1;
+            return this;
+        }
+
+        public CompareByDistance nullFirst(Boolean nullFirst) {
+            this.direction = nullFirst ? -1 : 1;
+            return this;
+        }
+
+        public Integer compare(Object thisItem, Object otherItem) {
+            Double thisDistance = getDistance((SObject) thisItem);
+            if (thisDistance == null) return nullsPosition;
+
+            Double otherDistance = getDistance((SObject) otherItem);
+            if (otherDistance == null) return -nullsPosition;
+
+            return direction * (thisDistance > otherDistance ? 1 :
+                    thisDistance < otherDistance ? -1
+                            : 0);
+        }
+
+        private Double getDistance(SObject record) {
+            if (distanceCache.containsKey(record.Id)) {
+                return distanceCache.get(record.Id);
+            }
+
+            Location loc = (Location) record.get(field);
+            if (loc == null) {
+                return null;
+            }
+
+            Double distance = this.target.getDistance((Location) record.get(field), 'km');
+            distanceCache.put(record.Id, distance);
+
+            return distance;
         }
     }
 }

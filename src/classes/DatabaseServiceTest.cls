@@ -43,14 +43,7 @@ private class DatabaseServiceTest {
         DatabaseService databaseService = new DatabaseService()
                 .setDMLIssuer(new DatabaseService.WithSharingDMLIssuer())
                 .setDMLOptions(new DMLOptionsBuilder()
-                        .allOrNone(false)
                         .allowDuplicates(true)
-                        .runDuplicateRulesAsCurrentUser(true)
-                        .useDefaultAssignmentRule()
-                        .triggerAutoResponseEmail(false)
-                        .triggerOtherEmail(false)
-                        .triggerUserEmail(false)
-                        .allowFieldTruncation(true)
                         .build()
                 );
 
@@ -58,6 +51,7 @@ private class DatabaseServiceTest {
         databaseService.doUpdate(acc);
         databaseService.doUpsert(acc, Account.Id);
         databaseService.doDelete(acc);
+        databaseService.doUndelete(acc);
     }
 
     @IsTest
@@ -68,9 +62,7 @@ private class DatabaseServiceTest {
         DatabaseService databaseService = new DatabaseService()
                 .setDMLIssuer(new DatabaseService.WithoutSharingDMLIssuer())
                 .setDMLOptions(new DMLOptionsBuilder()
-                        .allOrNone(false)
                         .allowDuplicates(true)
-                        .allowFieldTruncation(true)
                         .build()
                 );
 
@@ -78,6 +70,7 @@ private class DatabaseServiceTest {
         databaseService.doUpdate(acc);
         databaseService.doUpsert(acc, Account.Id);
         databaseService.doDelete(acc);
+        databaseService.doUndelete(acc);
     }
 
     @IsTest
@@ -88,9 +81,7 @@ private class DatabaseServiceTest {
         DatabaseService databaseService = new DatabaseService()
                 .setDMLIssuer(new DatabaseService.InheritedSharingDMLIssuer())
                 .setDMLOptions(new DMLOptionsBuilder()
-                        .allOrNone(false)
                         .allowDuplicates(true)
-                        .allowFieldTruncation(true)
                         .build()
                 );
 
@@ -98,5 +89,6 @@ private class DatabaseServiceTest {
         databaseService.doUpdate(acc);
         databaseService.doUpsert(acc, Account.Id);
         databaseService.doDelete(acc);
+        databaseService.doUndelete(acc);
     }
 }

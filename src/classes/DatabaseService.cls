@@ -69,15 +69,21 @@ public class DatabaseService {
     }
 
 
-    /*
-    * Delete methods
-    * */
     public Database.DeleteResult doDelete(SObject record) {
         return doDelete(new List<SObject>{record})[0];
     }
 
     public List<Database.DeleteResult> doDelete(List<SObject> records) {
         return dmlIssuer.doDelete(records, isAllOrNone());
+    }
+
+
+    public Database.UndeleteResult doUndelete(SObject record) {
+        return doUndelete(new List<SObject>{record})[0];
+    }
+
+    public List<Database.UndeleteResult> doUndelete(List<SObject> records) {
+        return dmlIssuer.doUndelete(records, isAllOrNone());
     }
 
 
@@ -104,6 +110,7 @@ public class DatabaseService {
         List<Database.SaveResult> doUpdate(List<SObject> records, Database.DMLOptions options);
         List<Database.UpsertResult> doUpsert(List<SObject> records, SObjectField field);
         List<Database.DeleteResult> doDelete(List<SObject> records, Boolean allOrNone);
+        List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone);
     }
 
 
@@ -128,6 +135,9 @@ public class DatabaseService {
             return Database.delete(records, allOrNone);
         }
 
+        public List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone) {
+            return Database.undelete(records, allOrNone);
+        }
     }
 
 
@@ -151,6 +161,10 @@ public class DatabaseService {
         public List<Database.DeleteResult> doDelete(List<SObject> records, Boolean allOrNone) {
             return Database.delete(records, allOrNone);
         }
+
+        public List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone) {
+            return Database.undelete(records, allOrNone);
+        }
     }
 
 
@@ -173,6 +187,10 @@ public class DatabaseService {
 
         public List<Database.DeleteResult> doDelete(List<SObject> records, Boolean allOrNone) {
             return Database.delete(records, allOrNone);
+        }
+
+        public List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone) {
+            return Database.undelete(records, allOrNone);
         }
     }
 }

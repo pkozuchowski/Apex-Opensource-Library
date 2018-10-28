@@ -77,7 +77,7 @@ public class DatabaseService {
     }
 
     public List<Database.DeleteResult> doDelete(List<SObject> records) {
-        return dmlIssuer.doDelete(records, dmlOptions.OptAllOrNone);
+        return dmlIssuer.doDelete(records, isAllOrNone());
     }
 
 
@@ -89,6 +89,10 @@ public class DatabaseService {
                 .newInstance();
         records.add(record);
         return records;
+    }
+
+    private Boolean isAllOrNone() {
+        return dmlOptions.OptAllOrNone == null ? true : dmlOptions.OptAllOrNone;
     }
 
 

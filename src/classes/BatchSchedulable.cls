@@ -28,23 +28,23 @@
  *
  * Batches scheduled with this class are not locked for editing.
  */
-public class GenericBatchSchedulable implements Schedulable {
+public class BatchSchedulable implements Schedulable {
     private Database.Batchable<SObject> batchInstance;
     private Integer batchSize;
 
-    public GenericBatchSchedulable(String batchName) {
+    public BatchSchedulable(String batchName) {
         this(getInstance(batchName));
     }
 
-    public GenericBatchSchedulable(String batchName, Integer batchSize) {
+    public BatchSchedulable(String batchName, Integer batchSize) {
         this(getInstance(batchName), batchSize);
     }
 
-    public GenericBatchSchedulable(Database.Batchable<SObject> batchInstance) {
+    public BatchSchedulable(Database.Batchable<SObject> batchInstance) {
         this(batchInstance, 200);
     }
 
-    public GenericBatchSchedulable(Database.Batchable<SObject> batchInstance, Integer batchSize) {
+    public BatchSchedulable(Database.Batchable<SObject> batchInstance, Integer batchSize) {
         this.batchInstance = batchInstance;
         this.batchSize = batchSize;
     }

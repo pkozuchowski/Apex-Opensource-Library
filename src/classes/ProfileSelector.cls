@@ -35,6 +35,7 @@ public class ProfileSelector {
         ];
 
         for (Profile profile : profiles) {
+            cachedProfiles.put(profile.Id, profile);
             cachedProfiles.put(profile.Name, profile);
         }
     }
@@ -43,14 +44,28 @@ public class ProfileSelector {
     /**
      * @return Id of profile with given name or null
      */
-    public Id getProfileId(String name) {
+    public Id getProfileIdByName(String name) {
         return cachedProfiles.containsKey(name) ? cachedProfiles.get(name).Id : null;
     }
 
     /**
      * @return Profile record by given name or null
      */
-    public Profile getProfile(String name) {
+    public Profile getProfileByName(String name) {
         return cachedProfiles.get(name);
+    }
+
+    /**
+     * @return Profile record with given Id
+     */
+    public Profile getProfileById(Id profileId) {
+        return cachedProfiles.get(profileId);
+    }
+
+    /**
+     * @return Name of profile with given Id.
+     */
+    public String getProfileNameById(Id profileId) {
+        return cachedProfiles.containsKey(profileId) ? cachedProfiles.get(profileId).Name : null;
     }
 }

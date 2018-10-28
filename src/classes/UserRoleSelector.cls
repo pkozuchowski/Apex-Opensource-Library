@@ -45,14 +45,14 @@ public class UserRoleSelector {
     /**
      * @return Id of UserRole with given developer name or null
      */
-    public Id getUserRoleIdByDevName(String developerName) {
+    public Id getUserRoleIdByDeveloperName(String developerName) {
         return cachedRoles.containsKey(developerName) ? cachedRoles.get(developerName).Id : null;
     }
 
     /**
      * @return UserRole record by given name or null
      */
-    public UserRole getUserRoleByDevName(String developerName) {
+    public UserRole getUserRoleByDeveloperName(String developerName) {
         return cachedRoles.get(developerName);
     }
 
@@ -61,5 +61,12 @@ public class UserRoleSelector {
      */
     public UserRole getUserRoleById(Id userRoleId) {
         return cachedRoles.get(userRoleId);
+    }
+
+    /**
+     * @return DeveloperName of UserRole with given Id
+     */
+    public String getUserRoleDeveloperNameById(Id userRoleId) {
+        return cachedRoles.get(userRoleId).DeveloperName;
     }
 }

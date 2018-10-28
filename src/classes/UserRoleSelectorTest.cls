@@ -30,7 +30,7 @@ private class UserRoleSelectorTest {
         UserRoleSelector selector = new UserRoleSelector();
 
         for (UserRole userRole : userRoles) {
-            System.assertEquals(userRole.Id, selector.getUserRoleIdByDevName(userRole.DeveloperName));
+            System.assertEquals(userRole.Id, selector.getUserRoleIdByDeveloperName(userRole.DeveloperName));
         }
 
         System.assertEquals(2, Limits.getQueries());
@@ -42,7 +42,7 @@ private class UserRoleSelectorTest {
         UserRoleSelector selector = new UserRoleSelector();
 
         for (UserRole userRole : userRoles) {
-            System.assertEquals(userRole.DeveloperName, selector.getUserRoleByDevName(userRole.DeveloperName).DeveloperName);
+            System.assertEquals(userRole.DeveloperName, selector.getUserRoleByDeveloperName(userRole.DeveloperName).DeveloperName);
         }
 
         System.assertEquals(2, Limits.getQueries());
@@ -55,6 +55,18 @@ private class UserRoleSelectorTest {
 
         for (UserRole userRole : userRoles) {
             System.assertEquals(userRole.DeveloperName, selector.getUserRoleById(userRole.Id).DeveloperName);
+        }
+
+        System.assertEquals(2, Limits.getQueries());
+    }
+
+    @IsTest
+    static void testGetUserRoleDeveloperNameById() {
+        List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
+        UserRoleSelector selector = new UserRoleSelector();
+
+        for (UserRole userRole : userRoles) {
+            System.assertEquals(userRole.DeveloperName, selector.getUserRoleDeveloperNameById(userRole.Id));
         }
 
         System.assertEquals(2, Limits.getQueries());

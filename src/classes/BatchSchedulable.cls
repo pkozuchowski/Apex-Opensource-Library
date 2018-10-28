@@ -60,7 +60,7 @@ public class BatchSchedulable implements Schedulable {
             return (Database.Batchable<SObject>) batchType.newInstance();
         } catch (Exception ex) {
             throw new GenericBatchSchedulableException('Failed to create instance of "' + name + '".\n' +
-                    'Make sure that class has public accessor and no-args constructor.');
+                    'Make sure that class name is correct and class has public accessor and no-args constructor.');
         }
     }
 

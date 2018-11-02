@@ -26,16 +26,22 @@ private class GroupSelectorTest {
 
     @IsTest
     static void testQueueSelector() {
-        List<Group> queues = getGroups('Queue');
+        Map<Id, Group> queues = getGroups('Queue');
 
-        for (Group queue : queues) {
+        Set<String> developerNames = new Set<String>();
+        for (Group queue : queues.values()) {
+            developerNames.add(queue.DeveloperName);
+
             System.assertEquals(queue.DeveloperName, new GroupSelector().selectQueueById(queue.Id).DeveloperName);
             System.assertEquals(queue.Id, new GroupSelector().selectQueueByDeveloperName(queue.DeveloperName).Id);
             System.assertEquals(queue.Id, new GroupSelector().selectQueueByName(queue.Name).Id);
         }
+
+        System.assertEquals(queues.size(), new GroupSelector().selectQueuesByDeveloperNames(developerNames).size());
+        System.assertEquals(queues.size(), new GroupSelector().selectQueuesByIds(queues.keySet()).size());
     }
 
-    private static List<Group> getGroups(String type) {
-        return [SELECT Id,Name,DeveloperName FROM Group WHERE Type = :type LIMIT 10];
+    private static Map<Id, Group> getGroups(String type) {
+        return new Map<Id, Group>([SELECT Id,Name,DeveloperName FROM Group WHERE Type = :type LIMIT 10]);
     }
 }

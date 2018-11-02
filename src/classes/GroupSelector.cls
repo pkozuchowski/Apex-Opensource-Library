@@ -46,6 +46,21 @@ public class GroupSelector {
         return groupsByDevName.get(developerName);
     }
 
+
+    /**
+     * @return List of Queues for given Developer Names.
+     */
+    public Group[] selectQueuesByDeveloperNames(Set<String> developerNames) {
+        queryQueues();
+        List<Group> result = new List<Group>();
+
+        for (String name : developerNames) {
+            result.add(groupsByDevName.get(name));
+        }
+
+        return result;
+    }
+
     /**
      * Returns Queue for given Name (label). If there is no such Queue, null is returned
      * @param name Name/Label of a Group
@@ -60,6 +75,18 @@ public class GroupSelector {
         queryQueues();
         return groupsByIds.get(groupId);
     }
+
+    public Group[] selectQueuesByIds(Set<Id> Ids) {
+        queryQueues();
+        List<Group> result = new List<Group>();
+
+        for (Id id : Ids) {
+            result.add(groupsByIds.get(id));
+        }
+
+        return result;
+    }
+
 
     private static void queryQueues() {
         if (!areQueuesQueried) {

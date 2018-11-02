@@ -24,8 +24,6 @@
 
 /**
  * Selector layer for User sObject
- * @author Piotr Kozuchowski <piotr.kozuchowski@weare4c.com>
- * @date 2018-08-09
  */
 public class UserSelector {
 
@@ -43,6 +41,28 @@ public class UserSelector {
         return userByUsername;
     }
 
+    /**
+     * @return User with given usernames.
+     */
+    public List<User> getUsersByUsernames(List<String> usernames) {
+        return [
+                SELECT Id,
+                        Name,
+                        Username
+                FROM User
+                WHERE Username IN :usernames
+        ];
+    }
+
+    /**
+     * @return User records with given UserName or null if user does not exist.
+     */
+    public User getUserByUsername(String username) {
+        List<User> users = getUsersByUsernames(new List<String>{username});
+        return users.isEmpty() ? null : users.get(0);
+    }
+
+
     public User getCurrentUser() {
         return getUserById(UserInfo.getUserId());
     }
@@ -59,26 +79,5 @@ public class UserSelector {
                 WHERE Id = :userId
         ];
         return users.isEmpty() ? null : users.get(0);
-    }
-
-    /**
-     * @return User records with given UserName or null if user does not exist.
-     */
-    public User getUserByUsername(String username) {
-        List<User> users = getUsersByUsernames(new List<String>{username});
-        return users.isEmpty() ? null : users.get(0);
-    }
-
-    /**
-     * @return User with given usernames.
-     */
-    public List<User> getUsersByUsernames(List<String> usernames) {
-        return [
-                SELECT Id,
-                        Name,
-                        Username
-                FROM User
-                WHERE Username IN :usernames
-        ];
     }
 }

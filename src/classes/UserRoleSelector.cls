@@ -49,6 +49,7 @@ public class UserRoleSelector {
         return cachedRoles.containsKey(developerName) ? cachedRoles.get(developerName).Id : null;
     }
 
+
     /**
      * @return UserRole record by given name or null
      */
@@ -56,12 +57,50 @@ public class UserRoleSelector {
         return cachedRoles.get(developerName);
     }
 
+
+    /**
+     * @return UserRoles by given developer names
+     */
+    public UserRole[] selectByDeveloperNames(Set<String> developerNames) {
+        List<UserRole> result = new List<UserRole>();
+
+        for (String devName : developerNames) {
+            result.add(cachedRoles.get(devName));
+        }
+
+        return result;
+    }
+
+
     /**
      * @return UserRole record by given Id or null
      */
     public UserRole selectById(Id userRoleId) {
         return cachedRoles.get(userRoleId);
     }
+
+
+    /**
+     * @return UserRoles Map (mapped by Id) by given ids
+     */
+    public Map<Id, UserRole> selectMapByIds(Set<Id> userRoleIds) {
+        return new Map<Id, UserRole>(selectByIds(userRoleIds));
+    }
+
+
+    /**
+     * @return UserRoles by given ids
+     */
+    public UserRole[] selectByIds(Set<Id> userRoleIds) {
+        List<UserRole> result = new List<UserRole>();
+
+        for (Id userRoleId : userRoleIds) {
+            result.add(cachedRoles.get(userRoleId));
+        }
+
+        return result;
+    }
+
 
     /**
      * @return DeveloperName of UserRole with given Id

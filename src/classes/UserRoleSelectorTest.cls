@@ -67,4 +67,22 @@ private class UserRoleSelectorTest {
 
         System.assertEquals(2, Limits.getQueries());
     }
+
+    @IsTest
+    static void testSelectMapByIds() {
+        Map<Id, UserRole> expected = new Map<Id, UserRole>([SELECT Id,DeveloperName FROM UserRole]);
+        Map<Id, UserRole> actual = new UserRoleSelector().selectMapByIds(expected.keySet());
+
+        System.assertEquals(expected.keySet(), actual.keySet());
+    }
+
+    @IsTest
+    static void testSelectByDeveloperNames() {
+        Collection userRoles = new Collection([SELECT Id,DeveloperName FROM UserRole]);
+
+        System.assertEquals(
+                userRoles.size(),
+                new UserRoleSelector().selectByDeveloperNames((Set<String>) userRoles.getUniqueValues(UserRole.DeveloperName)).size()
+        );
+    }
 }

@@ -26,15 +26,15 @@ private class UserSelectorTest {
 
 
     @IsTest
-    static void testGetCurrentUser() {
-        User currentUser = new UserSelector().getCurrentUser();
+    static void testSelectCurrentUser() {
+        User currentUser = new UserSelector().selectCurrentUser();
         System.assertEquals(currentUser.Id, UserInfo.getUserId());
     }
 
     @IsTest
-    static void testGetUsersByUsernamesMap() {
-        User currentUser = new UserSelector().getCurrentUser();
-        Map<String, User> userByUsernames = new UserSelector().getUsersByUsernamesMap(
+    static void testSelectUsersByUsernamesMap() {
+        User currentUser = new UserSelector().selectCurrentUser();
+        Map<String, User> userByUsernames = new UserSelector().selectMapByUsernames(
                 new List<String>{currentUser.Username}
         );
 
@@ -42,8 +42,8 @@ private class UserSelectorTest {
     }
 
     @IsTest
-    static void testGetUserByUsername() {
-        User currentUser = new UserSelector().getCurrentUser();
-        System.assertEquals(currentUser.Id, new UserSelector().getUserByUsername(currentUser.Username).Id);
+    static void testSelectUserByUsername() {
+        User currentUser = new UserSelector().selectCurrentUser();
+        System.assertEquals(currentUser.Id, new UserSelector().selectByUsername(currentUser.Username).Id);
     }
 }

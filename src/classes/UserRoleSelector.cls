@@ -45,28 +45,28 @@ public class UserRoleSelector {
     /**
      * @return Id of UserRole with given developer name or null
      */
-    public Id getUserRoleIdByDeveloperName(String developerName) {
+    public Id selectIdByDeveloperName(String developerName) {
         return cachedRoles.containsKey(developerName) ? cachedRoles.get(developerName).Id : null;
     }
 
     /**
      * @return UserRole record by given name or null
      */
-    public UserRole getUserRoleByDeveloperName(String developerName) {
+    public UserRole selectByDeveloperName(String developerName) {
         return cachedRoles.get(developerName);
     }
 
     /**
      * @return UserRole record by given Id or null
      */
-    public UserRole getUserRoleById(Id userRoleId) {
+    public UserRole selectById(Id userRoleId) {
         return cachedRoles.get(userRoleId);
     }
 
     /**
      * @return DeveloperName of UserRole with given Id
      */
-    public String getUserRoleDeveloperNameById(Id userRoleId) {
+    public String selectDeveloperNameById(Id userRoleId) {
         return cachedRoles.get(userRoleId).DeveloperName;
     }
 }

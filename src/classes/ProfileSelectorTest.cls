@@ -27,24 +27,24 @@ private class ProfileSelectorTest {
     @IsTest
     static void testProfileSelectorReturnsSystemAdminId() {
         Profile sysAdmin = [SELECT Id FROM Profile WHERE Name = 'System Administrator'];
-        System.assertEquals(new ProfileSelector().getProfileIdByName('System Administrator'), sysAdmin.Id);
+        System.assertEquals(new ProfileSelector().selectIdByName('System Administrator'), sysAdmin.Id);
     }
 
     @IsTest
     static void testProfileSelectorReturnsStandardUser() {
         Profile stdUser = [SELECT Id FROM Profile WHERE Name = 'Standard User'];
-        System.assertEquals(new ProfileSelector().getProfileByName('Standard User').Id, stdUser.Id);
+        System.assertEquals(new ProfileSelector().selectByName('Standard User').Id, stdUser.Id);
     }
 
     @IsTest
     static void testProfileSelectorReturnsStandardUserById() {
         Profile stdUser = [SELECT Id FROM Profile WHERE Name = 'Standard User'];
-        System.assertEquals(new ProfileSelector().getProfileById(stdUser.Id).Id, stdUser.Id);
+        System.assertEquals(new ProfileSelector().selectById(stdUser.Id).Id, stdUser.Id);
     }
 
     @IsTest
     static void testProfileSelectorReturnsStandardUserNameById() {
         Profile stdUser = [SELECT Id FROM Profile WHERE Name = 'Standard User'];
-        System.assertEquals(new ProfileSelector().getProfileNameById(stdUser.Id), 'Standard User');
+        System.assertEquals(new ProfileSelector().selectNameById(stdUser.Id), 'Standard User');
     }
 }

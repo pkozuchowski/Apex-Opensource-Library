@@ -30,8 +30,8 @@ public class UserSelector {
     /**
      * @return Map of Users by Usernames for given usernames
      */
-    public Map<String, User> getUsersByUsernamesMap(List<String> usernames) {
-        List<User> users = getUsersByUsernames(usernames);
+    public Map<String, User> selectMapByUsernames(List<String> usernames) {
+        List<User> users = selectByUsernames(usernames);
 
         Map<String, User> userByUsername = new Map<String, User>();
         for (User user : users) {
@@ -42,9 +42,17 @@ public class UserSelector {
     }
 
     /**
+     * @return User records with given UserName or null if user does not exist.
+     */
+    public User selectByUsername(String username) {
+        List<User> users = selectByUsernames(new List<String>{username});
+        return users.isEmpty() ? null : users.get(0);
+    }
+
+    /**
      * @return User with given usernames.
      */
-    public List<User> getUsersByUsernames(List<String> usernames) {
+    public List<User> selectByUsernames(List<String> usernames) {
         return [
                 SELECT Id,
                         Name,
@@ -55,29 +63,30 @@ public class UserSelector {
     }
 
     /**
-     * @return User records with given UserName or null if user does not exist.
+     * @return User record identified by UserInfo.getUserId().
      */
-    public User getUserByUsername(String username) {
-        List<User> users = getUsersByUsernames(new List<String>{username});
-        return users.isEmpty() ? null : users.get(0);
-    }
-
-
-    public User getCurrentUser() {
-        return getUserById(UserInfo.getUserId());
+    public User selectCurrentUser() {
+        return selectById(UserInfo.getUserId());
     }
 
     /**
      * @return User records with given Id or null if user does not exist.
      */
-    public User getUserById(Id userId) {
-        List<User> users = [
+    public User selectById(Id userId) {
+        List<User> users = selectByIds(new Set<Id>{userId});
+        return users.isEmpty() ? null : users.get(0);
+    }
+
+    /**
+     * @return User records with given Id or null if user does not exist.
+     */
+    public User[] selectByIds(Set<Id> userIds) {
+        return [
                 SELECT Id,
                         Name,
                         Username
                 FROM User
-                WHERE Id = :userId
+                WHERE Id IN :userIds
         ];
-        return users.isEmpty() ? null : users.get(0);
     }
 }

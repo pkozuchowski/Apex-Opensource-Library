@@ -27,16 +27,15 @@ private class RecordTypeSelectorTest {
 
     @IsTest
     static void whenRecordTypeDoesNotExistThenSelectorReturnsNullId() {
-        System.assertEquals(null, new RecordTypeSelector().getRecordTypeId(Account.SObjectType, '**Unit Test Record Type**'));
+        System.assertEquals(null, new RecordTypeSelector().selectIdByDeveloperName(Account.SObjectType, '**Unit Test Record Type**'));
     }
 
     @IsTest
     static void testRecordTypeSelector() {
         Map<String, RecordTypeInfo> accountRTs = Account.SObjectType.getDescribe().getRecordTypeInfosByDeveloperName();
 
-        RecordTypeSelector recordTypeSelector = new RecordTypeSelector();
         for (String devName : accountRTs.keySet()) {
-            System.assertEquals(accountRTs.get(devName).getRecordTypeId(), recordTypeSelector.getRecordTypeId(Account.SObjectType, devName));
+            System.assertEquals(accountRTs.get(devName).getRecordTypeId(), new RecordTypeSelector().selectIdByDeveloperName(Account.SObjectType, devName));
         }
     }
 }

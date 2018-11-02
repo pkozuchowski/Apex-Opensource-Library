@@ -25,48 +25,44 @@
 private class UserRoleSelectorTest {
 
     @IsTest
-    static void testGetUserRoleId() {
+    static void testSelectUserRoleId() {
         List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
-        UserRoleSelector selector = new UserRoleSelector();
 
         for (UserRole userRole : userRoles) {
-            System.assertEquals(userRole.Id, selector.getUserRoleIdByDeveloperName(userRole.DeveloperName));
+            System.assertEquals(userRole.Id, new UserRoleSelector().selectIdByDeveloperName(userRole.DeveloperName));
         }
 
         System.assertEquals(2, Limits.getQueries());
     }
 
     @IsTest
-    static void testGetUserRoleByDeveloperName() {
+    static void testSelectUserRoleByDeveloperName() {
         List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
-        UserRoleSelector selector = new UserRoleSelector();
 
         for (UserRole userRole : userRoles) {
-            System.assertEquals(userRole.DeveloperName, selector.getUserRoleByDeveloperName(userRole.DeveloperName).DeveloperName);
+            System.assertEquals(userRole.DeveloperName, new UserRoleSelector().selectByDeveloperName(userRole.DeveloperName).DeveloperName);
         }
 
         System.assertEquals(2, Limits.getQueries());
     }
 
     @IsTest
-    static void testGetUserRoleById() {
+    static void testSelectUserRoleById() {
         List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
-        UserRoleSelector selector = new UserRoleSelector();
 
         for (UserRole userRole : userRoles) {
-            System.assertEquals(userRole.DeveloperName, selector.getUserRoleById(userRole.Id).DeveloperName);
+            System.assertEquals(userRole.DeveloperName, new UserRoleSelector().selectById(userRole.Id).DeveloperName);
         }
 
         System.assertEquals(2, Limits.getQueries());
     }
 
     @IsTest
-    static void testGetUserRoleDeveloperNameById() {
+    static void testSelectUserRoleDeveloperNameById() {
         List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
-        UserRoleSelector selector = new UserRoleSelector();
 
         for (UserRole userRole : userRoles) {
-            System.assertEquals(userRole.DeveloperName, selector.getUserRoleDeveloperNameById(userRole.Id));
+            System.assertEquals(userRole.DeveloperName, new UserRoleSelector().selectDeveloperNameById(userRole.Id));
         }
 
         System.assertEquals(2, Limits.getQueries());

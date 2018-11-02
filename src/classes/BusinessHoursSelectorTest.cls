@@ -25,9 +25,9 @@
 private class BusinessHoursSelectorTest {
 
     @IsTest
-    static void testGetDefault() {
+    static void testSelectDefault() {
         BusinessHours[] expected = [SELECT Id FROM BusinessHours WHERE IsDefault = TRUE];
-        BusinessHours actual = new BusinessHoursSelector().getDefault();
+        BusinessHours actual = new BusinessHoursSelector().selectDefault();
 
         if (!expected.isEmpty()) {
             System.assertEquals(expected[0].Id, actual.Id);
@@ -36,25 +36,25 @@ private class BusinessHoursSelectorTest {
 
 
     @IsTest
-    static void testGetByName() {
+    static void testSelectByName() {
         BusinessHours[] expected = [SELECT Id,Name FROM BusinessHours WHERE IsActive = TRUE];
 
         if (!expected.isEmpty()) {
             System.assertEquals(
                     expected[0].Id,
-                    new BusinessHoursSelector().getByName(expected[0].Name).Id
+                    new BusinessHoursSelector().selectByName(expected[0].Name).Id
             );
         }
     }
 
     @IsTest
-    static void testGetById() {
+    static void testSelectById() {
         BusinessHours[] expected = [SELECT Id,Name FROM BusinessHours WHERE IsActive = TRUE];
 
         if (!expected.isEmpty()) {
             System.assertEquals(
                     expected[0].Id,
-                    new BusinessHoursSelector().getById(expected[0].Id).Id
+                    new BusinessHoursSelector().selectById(expected[0].Id).Id
             );
         }
     }

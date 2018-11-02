@@ -32,15 +32,15 @@ public without sharing class RecordTypeSelector {
     /**
      * @return Id of Record Type for given sObjectType and Record Type's Developer Name
      */
-    public Id getRecordTypeId(SObjectType sObjType, String devName) {
-        RecordTypeInfo recordTypeInfo = getRecordType(sObjType, devName);
+    public Id selectIdByDeveloperName(SObjectType sObjType, String devName) {
+        RecordTypeInfo recordTypeInfo = selectByDeveloperName(sObjType, devName);
         return recordTypeInfo == null ? null : recordTypeInfo.getRecordTypeId();
     }
 
     /**
      * @return Id of Record Type for given sObjectType and Record Type's Developer Name
      */
-    public RecordTypeInfo getRecordType(SObjectType sObjType, String devName) {
+    public RecordTypeInfo selectByDeveloperName(SObjectType sObjType, String devName) {
         if (!recordTypeInfoMap.containsKey(sObjType)) {
             recordTypeInfoMap.put(sObjType, sObjType.getDescribe().getRecordTypeInfosByDeveloperName());
         }

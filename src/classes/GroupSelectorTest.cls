@@ -29,9 +29,9 @@ private class GroupSelectorTest {
         List<Group> queues = getGroups('Queue');
 
         for (Group queue : queues) {
-            System.assertEquals(queue.DeveloperName, new GroupSelector().getQueueById(queue.Id).DeveloperName);
-            System.assertEquals(queue.Id, new GroupSelector().getQueueByDeveloperName(queue.DeveloperName).Id);
-            System.assertEquals(queue.Id, new GroupSelector().getQueueByName(queue.Name).Id);
+            System.assertEquals(queue.DeveloperName, new GroupSelector().selectQueueById(queue.Id).DeveloperName);
+            System.assertEquals(queue.Id, new GroupSelector().selectQueueByDeveloperName(queue.DeveloperName).Id);
+            System.assertEquals(queue.Id, new GroupSelector().selectQueueByName(queue.Name).Id);
         }
     }
 

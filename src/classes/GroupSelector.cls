@@ -41,7 +41,7 @@ public class GroupSelector {
      * @param developerName DeveloperName of a Group
      * @return Group record or null
      */
-    public Group getQueueByDeveloperName(String developerName) {
+    public Group selectQueueByDeveloperName(String developerName) {
         queryQueues();
         return groupsByDevName.get(developerName);
     }
@@ -51,12 +51,12 @@ public class GroupSelector {
      * @param name Name/Label of a Group
      * @return Group record or null
      */
-    public Group getQueueByName(String name) {
+    public Group selectQueueByName(String name) {
         queryQueues();
         return groupsByName.get(name);
     }
 
-    public Group getQueueById(Id groupId) {
+    public Group selectQueueById(Id groupId) {
         queryQueues();
         return groupsByIds.get(groupId);
     }

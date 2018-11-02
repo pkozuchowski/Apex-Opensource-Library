@@ -44,28 +44,28 @@ public class ProfileSelector {
     /**
      * @return Id of profile with given name or null
      */
-    public Id getProfileIdByName(String name) {
+    public Id selectIdByName(String name) {
         return cachedProfiles.containsKey(name) ? cachedProfiles.get(name).Id : null;
     }
 
     /**
      * @return Profile record by given name or null
      */
-    public Profile getProfileByName(String name) {
+    public Profile selectByName(String name) {
         return cachedProfiles.get(name);
     }
 
     /**
      * @return Profile record with given Id
      */
-    public Profile getProfileById(Id profileId) {
+    public Profile selectById(Id profileId) {
         return cachedProfiles.get(profileId);
     }
 
     /**
      * @return Name of profile with given Id.
      */
-    public String getProfileNameById(Id profileId) {
+    public String selectNameById(Id profileId) {
         return cachedProfiles.containsKey(profileId) ? cachedProfiles.get(profileId).Name : null;
     }
 }

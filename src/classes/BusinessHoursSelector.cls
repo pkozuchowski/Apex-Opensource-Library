@@ -67,7 +67,7 @@ public class BusinessHoursSelector {
     /**
      * @return Default Business Hours for running environment.
      */
-    public BusinessHours getDefault() {
+    public BusinessHours selectDefault() {
         return defaultHours;
     }
 
@@ -75,7 +75,7 @@ public class BusinessHoursSelector {
     /**
      * @return Active Business Hours with given name
      */
-    public BusinessHours getByName(String name) {
+    public BusinessHours selectByName(String name) {
         return cachedHours.get(name);
     }
 
@@ -83,7 +83,7 @@ public class BusinessHoursSelector {
     /**
      * @return Active Business Hours with given id
      */
-    public BusinessHours getById(Id businessHoursId) {
+    public BusinessHours selectById(Id businessHoursId) {
         return cachedHours.get(businessHoursId);
     }
 }

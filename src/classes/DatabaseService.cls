@@ -45,6 +45,11 @@ public class DatabaseService {
     }
 
 
+    public List<SObject> query(String query) {
+        return dmlIssuer.query(String.escapeSingleQuotes(query));
+    }
+
+
     public Database.SaveResult doInsert(SObject record) {
         return doInsert(new List<SObject>{record})[0];
     }
@@ -111,6 +116,7 @@ public class DatabaseService {
         List<Database.UpsertResult> doUpsert(List<SObject> records, SObjectField field);
         List<Database.DeleteResult> doDelete(List<SObject> records, Boolean allOrNone);
         List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone);
+        List<SObject> query(String query);
     }
 
 
@@ -137,6 +143,10 @@ public class DatabaseService {
 
         public List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone) {
             return Database.undelete(records, allOrNone);
+        }
+
+        public List<SObject> query(String query) {
+            return Database.query(query);
         }
     }
 
@@ -165,6 +175,10 @@ public class DatabaseService {
         public List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone) {
             return Database.undelete(records, allOrNone);
         }
+
+        public List<SObject> query(String query) {
+            return Database.query(query);
+        }
     }
 
 
@@ -191,6 +205,10 @@ public class DatabaseService {
 
         public List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone) {
             return Database.undelete(records, allOrNone);
+        }
+
+        public List<SObject> query(String query) {
+            return Database.query(query);
         }
     }
 }

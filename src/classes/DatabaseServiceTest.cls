@@ -52,6 +52,7 @@ private class DatabaseServiceTest {
         databaseService.doUpsert(acc, Account.Id);
         databaseService.doDelete(acc);
         databaseService.doUndelete(acc);
+        databaseService.query('SELECT ID FROM Account');
     }
 
     @IsTest
@@ -71,6 +72,7 @@ private class DatabaseServiceTest {
         databaseService.doUpsert(acc, Account.Id);
         databaseService.doDelete(acc);
         databaseService.doUndelete(acc);
+        databaseService.query('SELECT ID FROM Account');
     }
 
     @IsTest
@@ -90,5 +92,6 @@ private class DatabaseServiceTest {
         databaseService.doUpsert(acc, Account.Id);
         databaseService.doDelete(acc);
         databaseService.doUndelete(acc);
+        databaseService.query('SELECT ID FROM Account');
     }
 }

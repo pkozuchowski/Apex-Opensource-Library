@@ -47,4 +47,30 @@ private class ProfileSelectorTest {
         Profile stdUser = [SELECT Id FROM Profile WHERE Name = 'Standard User'];
         System.assertEquals(new ProfileSelector().selectNameById(stdUser.Id), 'Standard User');
     }
+
+    @IsTest
+    static void testSelectByIds() {
+        Map<Id, Profile> expected = new Map<Id, Profile>([
+                SELECT Id
+                FROM Profile
+                WHERE Name IN ('Standard User', 'System Administrator')
+        ]);
+        Map<Id, Profile> actual = new Map<Id, Profile>(new ProfileSelector().selectByIds(expected.keySet()));
+
+        System.assertEquals(expected.keySet(), actual.keySet());
+    }
+
+    @IsTest
+    static void testSelectByNames() {
+        Map<Id, Profile> expected = new Map<Id, Profile>([
+                SELECT Id
+                FROM Profile
+                WHERE Name IN ('Standard User', 'System Administrator')
+        ]);
+        Map<Id, Profile> actual = new Map<Id, Profile>(new ProfileSelector().selectByNames(
+                new Set<String>{'Standard User', 'System Administrator'}
+        ));
+
+        System.assertEquals(expected.keySet(), actual.keySet());
+    }
 }

@@ -48,6 +48,7 @@ public class ProfileSelector {
         return cachedProfiles.containsKey(name) ? cachedProfiles.get(name).Id : null;
     }
 
+
     /**
      * @return Profile record by given name or null
      */
@@ -55,12 +56,42 @@ public class ProfileSelector {
         return cachedProfiles.get(name);
     }
 
+
+    /**
+     * @return Profile records by given names.
+     */
+    public Profile[] selectByNames(Set<String> names) {
+        List<Profile> result = new List<Profile>();
+
+        for (String name : names) {
+            result.add(cachedProfiles.get(name));
+        }
+
+        return result;
+    }
+
+
     /**
      * @return Profile record with given Id
      */
     public Profile selectById(Id profileId) {
         return cachedProfiles.get(profileId);
     }
+
+
+    /**
+     * @return Profile records by given ids
+     */
+    public Profile[] selectByIds(Set<Id> profileIds) {
+        List<Profile> result = new List<Profile>();
+
+        for (Id profileId : profileIds) {
+            result.add(cachedProfiles.get(profileId));
+        }
+
+        return result;
+    }
+
 
     /**
      * @return Name of profile with given Id.

@@ -86,4 +86,24 @@ public class BusinessHoursSelector {
     public BusinessHours selectById(Id businessHoursId) {
         return cachedHours.get(businessHoursId);
     }
+
+    /**
+     * @return Active Business Hours with given ids
+     */
+    public BusinessHours[] selectByIds(Set<Id> businessHoursIds) {
+        List<BusinessHours> result = new List<BusinessHours>();
+
+        for (Id businessHoursId : businessHoursIds) {
+            result.add(cachedHours.get(businessHoursId));
+        }
+
+        return result;
+    }
+
+    /**
+     * @return Active Business Hours with given ids
+     */
+    public Map<Id, BusinessHours> selectMapByIds(Set<Id> businessHoursIds) {
+        return new Map<Id, BusinessHours>(selectByIds(businessHoursIds));
+    }
 }

@@ -58,4 +58,12 @@ private class BusinessHoursSelectorTest {
             );
         }
     }
+
+    @IsTest
+    static void testSelectMapByIds() {
+        Map<Id, BusinessHours> expected = new Map<Id, BusinessHours>([SELECT Id FROM BusinessHours WHERE IsActive = TRUE]);
+        Map<Id, BusinessHours> actual = new BusinessHoursSelector().selectMapByIds(expected.keySet());
+
+        System.assertEquals(expected.keySet(), actual.keySet());
+    }
 }

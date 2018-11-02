@@ -78,6 +78,13 @@ public class Collection {
         return Collection.isEmpty(items);
     }
 
+    /**
+     * @return Size of the wrapped collection, 0 if null.
+     */
+    public Integer size() {
+        return items == null ? 0 : items.size();
+    }
+
 
     /**
      * @param field SObject field from which value is taken.

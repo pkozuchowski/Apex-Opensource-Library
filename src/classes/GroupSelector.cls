@@ -28,7 +28,7 @@
 * Groups are initialized by type - Only queues are retrieved in one query, if this class gets bigger, it might
 * include Role groups initialization and so on.
 * */
-public class GroupSelector {
+public inherited sharing class GroupSelector {
     private static Boolean areQueuesQueried = false;
     private static List<Group> groups = new List<Group>();
     private static Map<Id, Group> groupsByIds = new Map<Id, Group>();

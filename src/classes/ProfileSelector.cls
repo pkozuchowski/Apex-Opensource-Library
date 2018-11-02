@@ -25,7 +25,7 @@
 /**
  * Selector Layer class for Profiles. Records are queried only once and cached to minimize SOQL limits usage.
  */
-public class ProfileSelector {
+public inherited sharing class ProfileSelector {
     private final static Map<String, Profile> cachedProfiles = new Map<String, Profile>();
     static {
         List<Profile> profiles = [

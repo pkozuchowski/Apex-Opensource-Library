@@ -25,7 +25,7 @@
 /**
  * Selector Layer class for UserRoles. Records are queried only once and cached to minimize SOQL limits usage.
  */
-public class UserRoleSelector {
+public inherited sharing class UserRoleSelector {
     private final static Map<String, UserRole> cachedRoles = new Map<String, UserRole>();
     static {
         List<UserRole> userRoles = [

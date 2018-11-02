@@ -25,7 +25,7 @@
 /**
  * Selector layer for User sObject
  */
-public class UserSelector {
+public inherited sharing class UserSelector {
 
     /**
      * @return Map of Users by Usernames for given usernames

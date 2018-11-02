@@ -26,7 +26,7 @@
  * Selector Layer for Business Hours.
  * Results are cached for better performance and SOQL Limits savings.
  */
-public class BusinessHoursSelector {
+public inherited sharing class BusinessHoursSelector {
     private static Map<String, BusinessHours> cachedHours = new Map<String, BusinessHours>();
     private static BusinessHours defaultHours;
     static {

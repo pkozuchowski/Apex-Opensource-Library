@@ -25,7 +25,7 @@
 /**
  * Selector Layer for Record Types with result caching
  */
-public without sharing class RecordTypeSelector {
+public inherited sharing class RecordTypeSelector {
     private static Map<SObjectType, Map<String, RecordTypeInfo>> recordTypeInfoMap = new Map<SObjectType, Map<String, RecordTypeInfo>>();
 
 

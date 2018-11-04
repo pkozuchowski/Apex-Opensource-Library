@@ -53,8 +53,7 @@ public inherited sharing class UserRoleSelector {
      * @return UserRole record by given name or null
      */
     public UserRole selectByDeveloperName(String developerName) {
-        UserRole[] result = cache.retrieve(UserRole.DeveloperName, developerName);
-        return result.isEmpty() ? null : result[0];
+        return (UserRole) cache.retrieveFirst(UserRole.DeveloperName, developerName);
     }
 
 
@@ -70,8 +69,7 @@ public inherited sharing class UserRoleSelector {
      * @return UserRole record by given Id or null
      */
     public UserRole selectById(Id userRoleId) {
-        UserRole[] result = cache.retrieve(UserRole.Id, userRoleId);
-        return result.isEmpty() ? null : result[0];
+        return (UserRole) cache.retrieveFirst(UserRole.Id, userRoleId);
     }
 
 

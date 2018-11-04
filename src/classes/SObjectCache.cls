@@ -1,0 +1,88 @@
+/**
+* MIT License
+*
+* Copyright (c) 2018 Piotr Kożuchowski
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
+
+/**
+ * Indexed storage for SObjects which groups records by fields and field values.
+ */
+public inherited sharing class SObjectCache {
+    private Map<SObjectField, Map<Object, List<SObject>>> storage;
+
+    public SObjectCache() {
+        this.storage = new Map<SObjectField, Map<Object, List<SObject>>>();
+    }
+
+
+    /**
+     * @return All cached SOBjects with given SObject field value.
+     */
+    public List<SObject> retrieve(SObjectField field, List<Object> values) {
+        List<SObject> result = new List<SObject>();
+
+        for (Object value : values) {
+            result.addAll(retrieve(field, value));
+        }
+
+        return result;
+    }
+
+    /**
+     * @return All cached SOBjects with given SObject field value.
+     */
+    public List<SObject> retrieve(SObjectField field, Object value) {
+        if (storage.containsKey(field) && storage.get(field).containsKey(value)) {
+            return storage.get(field).get(value);
+        } else {
+            return new List<SObject>();
+        }
+    }
+
+    /**
+     * Stores SObjects in internal storage and groups them by value in given SObject field.
+     */
+    public void store(SObjectField field, List<SObject> records) {
+        Map<Object, List<SObject>> valueMap = getFieldMap(field);
+
+        for (SObject sobj : records) {
+            Object fieldValue = sobj.get(field);
+
+            if (!valueMap.containsKey(fieldValue)) {
+                valueMap.put(fieldValue, new List<SObject>());
+            }
+            valueMap.get(fieldValue).add(sobj);
+        }
+    }
+
+
+    /**
+     * @return Map of SObjects by the given field value
+     */
+    private Map<Object, List<SObject>> getFieldMap(SObjectField field) {
+        if (!storage.containsKey(field)) {
+            storage.put(field, new Map<Object, List<SObject>>());
+        }
+
+        Map<Object, List<SObject>> valueMap = storage.get(field);
+        return valueMap;
+    }
+}

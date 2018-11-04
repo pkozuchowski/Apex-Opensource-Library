@@ -27,10 +27,9 @@
  * Results are cached for better performance and SOQL Limits savings.
  */
 public inherited sharing class BusinessHoursSelector {
-    private static Map<String, BusinessHours> cachedHours = new Map<String, BusinessHours>();
-    private static BusinessHours defaultHours;
+    private static SObjectCache cache = new SObjectCache();
     static {
-        List<BusinessHours> businessHours = [
+        List<BusinessHours> hours = [
                 SELECT Id,
                         Name,
                         IsDefault,
@@ -53,14 +52,9 @@ public inherited sharing class BusinessHoursSelector {
                 WHERE IsActive = TRUE
         ];
 
-        for (BusinessHours hours : businessHours) {
-            cachedHours.put(hours.Name, hours);
-            cachedHours.put(hours.Id, hours);
-
-            if (hours.IsDefault) {
-                defaultHours = hours;
-            }
-        }
+        cache.store(BusinessHours.Id, hours);
+        cache.store(BusinessHours.Name, hours);
+        cache.store(BusinessHours.IsDefault, hours);
     }
 
 
@@ -68,7 +62,7 @@ public inherited sharing class BusinessHoursSelector {
      * @return Default Business Hours for running environment.
      */
     public BusinessHours selectDefault() {
-        return defaultHours;
+        return (BusinessHours) cache.retrieveFirst(BusinessHours.IsDefault, true);
     }
 
 
@@ -76,7 +70,7 @@ public inherited sharing class BusinessHoursSelector {
      * @return Active Business Hours with given name
      */
     public BusinessHours selectByName(String name) {
-        return cachedHours.get(name);
+        return (BusinessHours) cache.retrieveFirst(BusinessHours.Name, name);
     }
 
 
@@ -84,20 +78,14 @@ public inherited sharing class BusinessHoursSelector {
      * @return Active Business Hours with given id
      */
     public BusinessHours selectById(Id businessHoursId) {
-        return cachedHours.get(businessHoursId);
+        return (BusinessHours) cache.retrieveFirst(BusinessHours.Id, businessHoursId);
     }
 
     /**
      * @return Active Business Hours with given ids
      */
     public BusinessHours[] selectByIds(Set<Id> businessHoursIds) {
-        List<BusinessHours> result = new List<BusinessHours>();
-
-        for (Id businessHoursId : businessHoursIds) {
-            result.add(cachedHours.get(businessHoursId));
-        }
-
-        return result;
+        return cache.retrieve(BusinessHours.Id, new List<Id>(businessHoursIds));
     }
 
     /**

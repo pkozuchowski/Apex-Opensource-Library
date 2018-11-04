@@ -99,7 +99,7 @@ private class SObjectCacheTest {
                         '001000000000005',
                         '001000000000006'
                 },
-                new Map<Id, Account>(enterpriseAccounts).keySet()
+                new Map<Id, Account>(accounts).keySet()
         );
     }
 
@@ -112,5 +112,15 @@ private class SObjectCacheTest {
         List<Account> accounts = cache.retrieve(Account.BillingCountry, 'Test Country');
         System.assertNotEquals(null, accounts);
         System.assertEquals(0, accounts.size());
+    }
+
+    /**
+     *@description
+     * retriveFirst returns first SObject with given field value or null
+     */
+    @IsTest
+    static void testRetrieveFirst() {
+        System.assertEquals('001000000000003', cache.retrieveFirst(Account.Name, 'Enterprise Account').Id);
+        System.assertEquals(null, cache.retrieveFirst(Account.Name, 'Other'));
     }
 }

@@ -32,6 +32,13 @@ public inherited sharing class SObjectCache {
         this.storage = new Map<SObjectField, Map<Object, List<SObject>>>();
     }
 
+    /**
+     * @return Returns first SObject cached by given field and value or null.
+     */
+    public SObject retrieveFirst(SObjectField field, Object value) {
+        List<SObject> result = retrieve(field, value);
+        return result.isEmpty() ? null : result[0];
+    }
 
     /**
      * @return All cached SOBjects with given SObject field value.

@@ -32,13 +32,7 @@ public inherited sharing class UserSelector {
      */
     public Map<String, User> selectMapByUsernames(List<String> usernames) {
         List<User> users = selectByUsernames(usernames);
-
-        Map<String, User> userByUsername = new Map<String, User>();
-        for (User user : users) {
-            userByUsername.put(user.Username, user);
-        }
-
-        return userByUsername;
+        return (Map<String, User>) new Collection(users).mapBy(User.Username);
     }
 
     /**

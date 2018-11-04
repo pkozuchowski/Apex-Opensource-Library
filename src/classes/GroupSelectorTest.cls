@@ -29,16 +29,19 @@ private class GroupSelectorTest {
         Map<Id, Group> queues = getGroups('Queue');
 
         Set<String> developerNames = new Set<String>();
+        Set<String> names = new Set<String>();
         for (Group queue : queues.values()) {
             developerNames.add(queue.DeveloperName);
+            names.add(queue.Name);
 
-            System.assertEquals(queue.DeveloperName, new GroupSelector().selectQueueById(queue.Id).DeveloperName);
+            System.assertEquals(queue.DeveloperName, new GroupSelector().selectById(queue.Id).DeveloperName);
             System.assertEquals(queue.Id, new GroupSelector().selectQueueByDeveloperName(queue.DeveloperName).Id);
             System.assertEquals(queue.Id, new GroupSelector().selectQueueByName(queue.Name).Id);
         }
 
         System.assertEquals(queues.size(), new GroupSelector().selectQueuesByDeveloperNames(developerNames).size());
-        System.assertEquals(queues.size(), new GroupSelector().selectQueuesByIds(queues.keySet()).size());
+        System.assertEquals(queues.size(), new GroupSelector().selectQueueByNames(names).size());
+        System.assertEquals(queues.size(), new GroupSelector().selectByIds(queues.keySet()).size());
     }
 
     private static Map<Id, Group> getGroups(String type) {

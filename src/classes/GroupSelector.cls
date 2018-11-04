@@ -30,72 +30,68 @@
 * */
 public inherited sharing class GroupSelector {
     private static Boolean areQueuesQueried = false;
-    private static List<Group> groups = new List<Group>();
-    private static Map<Id, Group> groupsByIds = new Map<Id, Group>();
-    private static Map<String, Group> groupsByDevName = new Map<String, Group>();
-    private static Map<String, Group> groupsByName = new Map<String, Group>();
+    private static SObjectCache cache = new SObjectCache();
 
 
     /**
-     * Returns Queue for given Developer Name. If there is no such Queue, null is returned
-     * @param developerName DeveloperName of a Group
-     * @return Group record or null
+     * @return Group with given Id or null.
+     */
+    public Group selectById(Id groupId) {
+        queryQueues();
+        return (Group) cache.retrieveFirst(Group.Id, groupId);
+    }
+
+    /**
+     * @return List of Groups with given ids.
+     */
+    public Group[] selectByIds(Set<Id> ids) {
+        queryQueues();
+        return cache.retrieve(Group.Id, new List<Id>(ids));
+    }
+
+
+    /**
+     * @return Queue for given Developer Name. If there is no such Queue, null is returned
      */
     public Group selectQueueByDeveloperName(String developerName) {
         queryQueues();
-        return groupsByDevName.get(developerName);
+        return (Group) cache.retrieveFirst(Group.DeveloperName, developerName);
     }
-
 
     /**
      * @return List of Queues for given Developer Names.
      */
     public Group[] selectQueuesByDeveloperNames(Set<String> developerNames) {
         queryQueues();
-        List<Group> result = new List<Group>();
-
-        for (String name : developerNames) {
-            result.add(groupsByDevName.get(name));
-        }
-
-        return result;
+        return cache.retrieve(Group.DeveloperName, new List<String>(developerNames));
     }
 
+
     /**
-     * Returns Queue for given Name (label). If there is no such Queue, null is returned
-     * @param name Name/Label of a Group
-     * @return Group record or null
+     * @return Queue for given Name (label). If there is no such Queue, null is returned
      */
     public Group selectQueueByName(String name) {
         queryQueues();
-        return groupsByName.get(name);
+        return (Group) cache.retrieveFirst(Group.Name, name);
     }
 
-    public Group selectQueueById(Id groupId) {
+    /**
+     * @return Queues with given names (label).
+     */
+    public Group[] selectQueueByNames(Set<String> names) {
         queryQueues();
-        return groupsByIds.get(groupId);
-    }
-
-    public Group[] selectQueuesByIds(Set<Id> Ids) {
-        queryQueues();
-        List<Group> result = new List<Group>();
-
-        for (Id id : Ids) {
-            result.add(groupsByIds.get(id));
-        }
-
-        return result;
+        return cache.retrieve(Group.Name, new List<String>(names));
     }
 
 
     private static void queryQueues() {
         if (!areQueuesQueried) {
-            for (Group queue : [SELECT Id,Type,DeveloperName,Name FROM Group WHERE Type = 'Queue']) {
-                groups.add(queue);
-                groupsByIds.put(queue.Id, queue);
-                groupsByDevName.put(queue.DeveloperName, queue);
-                groupsByName.put(queue.Name, queue);
-            }
+            List<Group> queues = [SELECT Id,Type,DeveloperName,Name FROM Group WHERE Type = 'Queue'];
+
+            cache.store(Group.Id, queues);
+            cache.store(Group.DeveloperName, queues);
+            cache.store(Group.Name, queues);
+
             areQueuesQueried = true;
         }
     }

@@ -47,8 +47,7 @@ public inherited sharing class PricebookSelector {
      * @return Cached Pricebook2 record with given id or null.
      */
     public Pricebook2 selectById(Id id) {
-        Pricebook2[] result = cache.retrieve(Pricebook2.Id, id);
-        return result.isEmpty() ? null : result[0];
+        return (Pricebook2) cache.retrieveFirst(Pricebook2.Id, id);
     }
 
     /**
@@ -63,8 +62,7 @@ public inherited sharing class PricebookSelector {
      * @return Cached Pricebook2 record with given name or null.
      */
     public Pricebook2 selectByName(String name) {
-        Pricebook2[] result = cache.retrieve(Pricebook2.Name, name);
-        return result.isEmpty() ? null : result[0];
+        return (Pricebook2) cache.retrieveFirst(Pricebook2.Name, name);
     }
 
     /**

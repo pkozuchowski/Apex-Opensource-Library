@@ -26,7 +26,7 @@
  * Selector Layer class for UserRoles. Records are queried only once and cached to minimize SOQL limits usage.
  */
 public inherited sharing class UserRoleSelector {
-    private final static Map<String, UserRole> cachedRoles = new Map<String, UserRole>();
+    private static SObjectCache cache = new SObjectCache();
     static {
         List<UserRole> userRoles = [
                 SELECT Id,
@@ -35,10 +35,8 @@ public inherited sharing class UserRoleSelector {
                 FROM UserRole
         ];
 
-        for (UserRole role : userRoles) {
-            cachedRoles.put(role.Id, role);
-            cachedRoles.put(role.DeveloperName, role);
-        }
+        cache.store(UserRole.Id, userRoles);
+        cache.store(UserRole.DeveloperName, userRoles);
     }
 
 
@@ -46,7 +44,8 @@ public inherited sharing class UserRoleSelector {
      * @return Id of UserRole with given developer name or null
      */
     public Id selectIdByDeveloperName(String developerName) {
-        return cachedRoles.containsKey(developerName) ? cachedRoles.get(developerName).Id : null;
+        UserRole result = selectByDeveloperName(developerName);
+        return result == null ? null : result.Id;
     }
 
 
@@ -54,7 +53,8 @@ public inherited sharing class UserRoleSelector {
      * @return UserRole record by given name or null
      */
     public UserRole selectByDeveloperName(String developerName) {
-        return cachedRoles.get(developerName);
+        UserRole[] result = cache.retrieve(UserRole.DeveloperName, developerName);
+        return result.isEmpty() ? null : result[0];
     }
 
 
@@ -62,13 +62,7 @@ public inherited sharing class UserRoleSelector {
      * @return UserRoles by given developer names
      */
     public UserRole[] selectByDeveloperNames(Set<String> developerNames) {
-        List<UserRole> result = new List<UserRole>();
-
-        for (String devName : developerNames) {
-            result.add(cachedRoles.get(devName));
-        }
-
-        return result;
+        return cache.retrieve(UserRole.DeveloperName, new List<String>(developerNames));
     }
 
 
@@ -76,7 +70,8 @@ public inherited sharing class UserRoleSelector {
      * @return UserRole record by given Id or null
      */
     public UserRole selectById(Id userRoleId) {
-        return cachedRoles.get(userRoleId);
+        UserRole[] result = cache.retrieve(UserRole.Id, userRoleId);
+        return result.isEmpty() ? null : result[0];
     }
 
 
@@ -92,20 +87,6 @@ public inherited sharing class UserRoleSelector {
      * @return UserRoles by given ids
      */
     public UserRole[] selectByIds(Set<Id> userRoleIds) {
-        List<UserRole> result = new List<UserRole>();
-
-        for (Id userRoleId : userRoleIds) {
-            result.add(cachedRoles.get(userRoleId));
-        }
-
-        return result;
-    }
-
-
-    /**
-     * @return DeveloperName of UserRole with given Id
-     */
-    public String selectDeveloperNameById(Id userRoleId) {
-        return cachedRoles.get(userRoleId).DeveloperName;
+        return cache.retrieve(UserRole.Id, (List<Object>) new List<Id>(userRoleIds));
     }
 }

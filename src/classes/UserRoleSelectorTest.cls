@@ -58,17 +58,6 @@ private class UserRoleSelectorTest {
     }
 
     @IsTest
-    static void testSelectUserRoleDeveloperNameById() {
-        List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
-
-        for (UserRole userRole : userRoles) {
-            System.assertEquals(userRole.DeveloperName, new UserRoleSelector().selectDeveloperNameById(userRole.Id));
-        }
-
-        System.assertEquals(2, Limits.getQueries());
-    }
-
-    @IsTest
     static void testSelectMapByIds() {
         Map<Id, UserRole> expected = new Map<Id, UserRole>([SELECT Id,DeveloperName FROM UserRole]);
         Map<Id, UserRole> actual = new UserRoleSelector().selectMapByIds(expected.keySet());

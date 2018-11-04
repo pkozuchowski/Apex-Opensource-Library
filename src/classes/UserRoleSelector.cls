@@ -41,15 +41,6 @@ public inherited sharing class UserRoleSelector {
 
 
     /**
-     * @return Id of UserRole with given developer name or null
-     */
-    public Id selectIdByDeveloperName(String developerName) {
-        UserRole result = selectByDeveloperName(developerName);
-        return result == null ? null : result.Id;
-    }
-
-
-    /**
      * @return UserRole record by given name or null
      */
     public UserRole selectByDeveloperName(String developerName) {
@@ -70,14 +61,6 @@ public inherited sharing class UserRoleSelector {
      */
     public UserRole selectById(Id userRoleId) {
         return (UserRole) cache.retrieveFirst(UserRole.Id, userRoleId);
-    }
-
-
-    /**
-     * @return UserRoles Map (mapped by Id) by given ids
-     */
-    public Map<Id, UserRole> selectMapByIds(Set<Id> userRoleIds) {
-        return new Map<Id, UserRole>(selectByIds(userRoleIds));
     }
 
 

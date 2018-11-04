@@ -25,17 +25,6 @@
 private class UserRoleSelectorTest {
 
     @IsTest
-    static void testSelectUserRoleId() {
-        List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
-
-        for (UserRole userRole : userRoles) {
-            System.assertEquals(userRole.Id, new UserRoleSelector().selectIdByDeveloperName(userRole.DeveloperName));
-        }
-
-        System.assertEquals(2, Limits.getQueries());
-    }
-
-    @IsTest
     static void testSelectUserRoleByDeveloperName() {
         List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
 
@@ -58,20 +47,22 @@ private class UserRoleSelectorTest {
     }
 
     @IsTest
-    static void testSelectMapByIds() {
-        Map<Id, UserRole> expected = new Map<Id, UserRole>([SELECT Id,DeveloperName FROM UserRole]);
-        Map<Id, UserRole> actual = new UserRoleSelector().selectMapByIds(expected.keySet());
-
-        System.assertEquals(expected.keySet(), actual.keySet());
-    }
-
-    @IsTest
     static void testSelectByDeveloperNames() {
         Collection userRoles = new Collection([SELECT Id,DeveloperName FROM UserRole]);
 
         System.assertEquals(
                 userRoles.size(),
                 new UserRoleSelector().selectByDeveloperNames((Set<String>) userRoles.getUniqueValues(UserRole.DeveloperName)).size()
+        );
+    }
+
+    @IsTest
+    static void testSelectByIds() {
+        Collection userRoles = new Collection([SELECT Id,DeveloperName FROM UserRole]);
+
+        System.assertEquals(
+                userRoles.size(),
+                new UserRoleSelector().selectByIds((Set<Id>) userRoles.getUniqueValues(UserRole.Id)).size()
         );
     }
 }

@@ -26,7 +26,7 @@
  * Selector Layer class for Profiles. Records are queried only once and cached to minimize SOQL limits usage.
  */
 public inherited sharing class ProfileSelector {
-    private final static Map<String, Profile> cachedProfiles = new Map<String, Profile>();
+    private static SObjectCache cache = new SObjectCache();
     static {
         List<Profile> profiles = [
                 SELECT Id,
@@ -34,18 +34,8 @@ public inherited sharing class ProfileSelector {
                 FROM Profile
         ];
 
-        for (Profile profile : profiles) {
-            cachedProfiles.put(profile.Id, profile);
-            cachedProfiles.put(profile.Name, profile);
-        }
-    }
-
-
-    /**
-     * @return Id of profile with given name or null
-     */
-    public Id selectIdByName(String name) {
-        return cachedProfiles.containsKey(name) ? cachedProfiles.get(name).Id : null;
+        cache.store(Profile.Id, profiles);
+        cache.store(Profile.Name, profiles);
     }
 
 
@@ -53,7 +43,8 @@ public inherited sharing class ProfileSelector {
      * @return Profile record by given name or null
      */
     public Profile selectByName(String name) {
-        return cachedProfiles.get(name);
+        Profile[] result = cache.retrieve(Profile.Name, name);
+        return result.isEmpty() ? null : result[0];
     }
 
 
@@ -61,13 +52,7 @@ public inherited sharing class ProfileSelector {
      * @return Profile records by given names.
      */
     public Profile[] selectByNames(Set<String> names) {
-        List<Profile> result = new List<Profile>();
-
-        for (String name : names) {
-            result.add(cachedProfiles.get(name));
-        }
-
-        return result;
+        return cache.retrieve(Profile.Name, new List<String>(names));
     }
 
 
@@ -75,7 +60,8 @@ public inherited sharing class ProfileSelector {
      * @return Profile record with given Id
      */
     public Profile selectById(Id profileId) {
-        return cachedProfiles.get(profileId);
+        Profile[] result = cache.retrieve(Profile.Id, profileId);
+        return result.isEmpty() ? null : result[0];
     }
 
 
@@ -83,20 +69,6 @@ public inherited sharing class ProfileSelector {
      * @return Profile records by given ids
      */
     public Profile[] selectByIds(Set<Id> profileIds) {
-        List<Profile> result = new List<Profile>();
-
-        for (Id profileId : profileIds) {
-            result.add(cachedProfiles.get(profileId));
-        }
-
-        return result;
-    }
-
-
-    /**
-     * @return Name of profile with given Id.
-     */
-    public String selectNameById(Id profileId) {
-        return cachedProfiles.containsKey(profileId) ? cachedProfiles.get(profileId).Name : null;
+        return cache.retrieve(Profile.Name, new List<Id>(profileIds));
     }
 }

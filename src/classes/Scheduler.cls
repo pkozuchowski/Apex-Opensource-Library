@@ -134,6 +134,6 @@ public class Scheduler {
             throw new SchedulerException(message);
         }
     }
-    private class SchedulerException extends Exception {
+    public class SchedulerException extends Exception {
     }
 }

@@ -26,8 +26,8 @@
     <aura:attribute access="public" type="Aura.componentdefref[]" name="header" default="[]"/>
     <aura:attribute access="public" type="Aura.componentdefref[]" name="footer" default="[]"/>
     <aura:attribute access="public" type="Aura.componentdefref[]" name="pagination"/>
-    <aura:attribute access="public" type="String" name="var"/>
-    <aura:attribute access="public" type="String" name="indexVar"/>
+    <aura:attribute access="public" type="String" name="var" default="item"/>
+    <aura:attribute access="public" type="String" name="indexVar" default="index"/>
     <aura:attribute access="public" type="List" name="items"/>
 
     <aura:attribute access="public" type="Boolean" name="paginate" default="true"/>
@@ -53,8 +53,8 @@
         </thead>
 
         <tbody>
-        <aura:iteration var="{#v.var}"
-                        indexVar="{#v.indexVar}"
+        <aura:iteration var="{!v.var}"
+                        indexVar="{!v.indexVar}"
                         items="{!v.items}"
                         template="{!v.body}"
                         start="{!v.page * v.pageSize}"

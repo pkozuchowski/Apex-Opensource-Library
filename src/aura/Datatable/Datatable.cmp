@@ -43,10 +43,10 @@
     <aura:handler event="c:DatatableEvent" name="pagination" action="{!c.handlePagination}" includeFacets="true"/>
 
 
-    <table class="{#'slds-table slds-table_bordered slds-table_cell-buffer '
+    <table class="{!'slds-table slds-table_bordered slds-table_cell-buffer '
     + if(v.bordered,' slds-table_col-bordered ')
     + if(v.responsive,' slds-max-medium-table_stacked-horizontal ') + v.class}"
-           style="{#v.style}">
+           style="{!v.style}">
 
         <thead>
         {!v.header}
@@ -75,8 +75,8 @@
 
             <aura:set attribute="else">
                 <c:DatatablePagination itemsLength="{!v.items.length}"
-                              pageSize="{#v.pageSize}"
-                              page="{#v.page}"/>
+                                       pageSize="{#v.pageSize}"
+                                       page="{#v.page}"/>
             </aura:set>
         </aura:if>
     </aura:if>

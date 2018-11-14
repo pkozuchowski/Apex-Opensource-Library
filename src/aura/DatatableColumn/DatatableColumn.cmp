@@ -29,7 +29,7 @@
     <aura:attribute access="public" type="String" name="style"/>
     <aura:attribute access="public" type="String" name="class"/>
 
-    <td colspan="{#v.colspan}" rowspan="{#v.rowspan}" style="{#v.style}" class="{#v.class}" data-label="{!v.label}">
+    <td colspan="{!v.colspan}" rowspan="{!v.rowspan}" style="{!v.style}" class="{!v.class}" data-label="{!v.label}">
         {!if(empty(v.value), v.body, v.value)}
     </td>
 </aura:component>

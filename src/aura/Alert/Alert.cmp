@@ -1,0 +1,44 @@
+<!--
+ MIT License
+
+ Copyright (c) 2018 Piotr Kożuchowski
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+-->
+<aura:component description="Alert">
+    <aura:attribute access="public" type="String" name="iconTitle"/>
+    <aura:attribute access="public" type="String" name="state" default="error"
+                    description="info/warning/error/offline"/>
+
+    <div class="{!'slds-notify slds-notify_alert slds-theme_alert-texture '
+        + if(v.state =='error', ' slds-theme_error')
+        + if(v.state =='warning', ' slds-theme_warning')
+        + if(v.state =='warning', ' slds-theme_offline')}"
+         role="alert">
+
+        <span class="slds-assistive-text">{!v.state}</span>
+        <lightning:icon iconName="{!v.state == 'info'? 'utility:user'
+            : v.state == 'warning' ? 'utility:warning'
+            : v.state == 'error' ? 'utility:ban' : 'utility:offline'}"
+                        class="{!'slds-m-right_x-small ' + if(v.state =='error', 'slds-button_icon-inverse')}"
+                        title="{!v.iconTitle}"
+                        size="x-small"/>
+        <h2>{!v.body}</h2>
+    </div>
+</aura:component>

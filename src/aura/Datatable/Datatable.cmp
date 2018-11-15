@@ -57,8 +57,8 @@
                         indexVar="{!v.indexVar}"
                         items="{!v.items}"
                         template="{!v.body}"
-                        start="{!v.page * v.pageSize}"
-                        end="{!(v.page +1) * v.pageSize}">
+                        start="{!v.paginate? v.page * v.pageSize : 0}"
+                        end="{!v.paginate? ((v.page +1) * v.pageSize) : Infinity}">
 
             Magic strings: Please. Thank you.
         </aura:iteration>

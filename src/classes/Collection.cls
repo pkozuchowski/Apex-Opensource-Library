@@ -406,64 +406,6 @@ public class Collection {
 
 
     /*
-    * @return returns Type of given list single element
-    * */
-    public static Type getListItemType(List<Object> o) {
-        return getType(o, 'Invalid conversion from runtime type List<', '> to Date');
-    }
-
-    /*
-    * @return returns Type of given object
-    * */
-    public static Type getType(Object o) {
-        return getType(o, 'Invalid conversion from runtime type ', ' to Date');
-    }
-
-    private static Type getType(Object o, String open, String close) {
-        try {
-            Date d = (Date) o;
-            return Date.class;
-        } catch (Exception ex) {
-            String typeName = ex.getMessage().substringBetween(open, close);
-            return Type.forName(typeName);
-        }
-    }
-
-
-    /**
-     * @return New empty list of the same SObject type as original.
-     */
-    public static List<Object> newListOfTheSameType(List<Object> original) {
-        List<Object> clone = original.clone();
-        clone.clear();
-
-        return clone;
-    }
-
-
-    /**
-     * @param itemType Type of single list element
-     * @return New list of given item type.
-     */
-    public static List<Object> newListOfItemType(Type itemType) {
-        return newListOfItemType(itemType, new List<Object>());
-    }
-
-    /**
-     * @param itemType Type of single list element
-     * @param fallbackItemType Fallback type, in case primary type is not constructible (ex. because the type is private).
-     * @return New list of given item type.
-     */
-    public static List<Object> newListOfItemType(Type itemType, List<Object> fallback) {
-        try {
-            return (List<Object>) Type.forName('List<' + itemType + '>').newInstance();
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
-
-    /*
     * GET UNIQUE VALUES
     * */
     /**
@@ -491,7 +433,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public static Object getUniqueValues(List<Object> records, KeyMapper keyMapper) {
-        return mapByFieldToIMap(records, new MapByKeyMapper(keyMapper, getListItemType(records))).keySet();
+        return mapByFieldToIMap(records, new MapByKeyMapper(keyMapper, Apex.getListItemType(records))).keySet();
     }
 
     /**
@@ -580,7 +522,7 @@ public class Collection {
      * @return Map of items where list item is map's value and key is produced by KeyMapper.
      */
     public static Object mapBy(List<Object> items, KeyMapper mapper) {
-        return mapByFieldToIMap(items, new MapByKeyMapper(mapper, getListItemType(items))).toMap();
+        return mapByFieldToIMap(items, new MapByKeyMapper(mapper, Apex.getListItemType(items))).toMap();
     }
 
     /**
@@ -643,7 +585,7 @@ public class Collection {
      * @return Map<KeyMapper.key() : KeyMapper.keyType(), List<Object>>
      */
     public static Object groupBy(List<Object> items, KeyMapper keyMapper) {
-        return groupBy(items, new MapByKeyMapper(keyMapper, getListItemType(items)));
+        return groupBy(items, new MapByKeyMapper(keyMapper, Apex.getListItemType(items)));
     }
 
     /**
@@ -663,7 +605,7 @@ public class Collection {
             Object value = mapper.value(item);
 
             if (!imap.containsKey(key)) {
-                imap.put(key, newListOfItemType(mapper.valueType()));
+                imap.put(key, Apex.newListOfItemType(mapper.valueType()));
             }
 
             List<Object> groupedRecords = (List<Object>) imap.get(key);
@@ -735,7 +677,7 @@ public class Collection {
      * @return List of Wrappers
      */
     public static List<Wrapper> wrap(List<Object> items, Type wrapperType) {
-        List<Wrapper> wrappers = (List<Wrapper>) newListOfItemType(wrapperType, new List<Wrapper>());
+        List<Wrapper> wrappers = (List<Wrapper>) Apex.newListOfItemType(wrapperType, new List<Wrapper>());
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
             Wrapper wrapper = (Wrapper) wrapperType.newInstance();
@@ -830,7 +772,7 @@ public class Collection {
      * @return List of items for which filter returned "true".
      */
     public static List<Object> filter(List<Object> items, Filter filter) {
-        List<Object> filtered = newListOfTheSameType(items);
+        List<Object> filtered = Apex.newListOfTheSameType(items);
 
         for (Integer i = 0, j = items.size(); i < j; i++) {
             Object item = items[i];
@@ -852,7 +794,7 @@ public class Collection {
      * @return Subset of records parameter for which UpdateFilter returned "true".
      */
     public static List<SObject> filter(List<SObject> records, Map<Id, SObject> oldRecords, UpdateFilter filter) {
-        List<SObject> filtered = (List<SObject>) newListOfTheSameType(records);
+        List<SObject> filtered = (List<SObject>) Apex.newListOfTheSameType(records);
 
         for (Integer i = 0, size = records.size(); i < size; ++i) {
             SObject record = records[i];
@@ -943,7 +885,7 @@ public class Collection {
         }
 
         comparables.sort();
-        List<Object> sorted = newListOfTheSameType(items);
+        List<Object> sorted = Apex.newListOfTheSameType(items);
 
         for (Integer i = 0, size = comparables.size(); i < size; i++) {
             sorted.add(comparables[i].item);

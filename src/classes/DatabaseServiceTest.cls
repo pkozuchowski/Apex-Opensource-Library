@@ -41,7 +41,7 @@ private class DatabaseServiceTest {
 
 
         DatabaseService databaseService = new DatabaseService()
-                .setDMLIssuer(new DatabaseService.WithSharingDMLIssuer())
+                .setSharing(Sharing.WITH_SHARING)
                 .setDMLOptions(new DMLOptionsBuilder()
                         .allowDuplicates(true)
                         .build()
@@ -61,7 +61,7 @@ private class DatabaseServiceTest {
 
 
         DatabaseService databaseService = new DatabaseService()
-                .setDMLIssuer(new DatabaseService.WithoutSharingDMLIssuer())
+                .setSharing(Sharing.WITHOUT_SHARING)
                 .setDMLOptions(new DMLOptionsBuilder()
                         .allowDuplicates(true)
                         .build()
@@ -81,7 +81,7 @@ private class DatabaseServiceTest {
 
 
         DatabaseService databaseService = new DatabaseService()
-                .setDMLIssuer(new DatabaseService.InheritedSharingDMLIssuer())
+                .setSharing(Sharing.INHERITED_SHARING)
                 .setDMLOptions(new DMLOptionsBuilder()
                         .allowDuplicates(true)
                         .build()

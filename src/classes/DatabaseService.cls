@@ -34,11 +34,30 @@ public class DatabaseService {
         this.dmlOptions.OptAllOrNone = true;
     }
 
-    public DatabaseService setDMLIssuer(DMLIssuer dmlIssuer) {
-        this.dmlIssuer = dmlIssuer;
+    /**
+     * Sets sharing mode on Database Service:
+     * - With Sharing
+     * - Without Sharing
+     * - Inherited Sharing (default)
+     */
+    public DatabaseService setSharing(Sharing sharing) {
+        switch on sharing {
+            when WITH_SHARING {
+                this.dmlIssuer = new WithSharingDMLIssuer();
+            }
+            when WITHOUT_SHARING {
+                this.dmlIssuer = new WithoutSharingDMLIssuer();
+            }
+            when else {
+                this.dmlIssuer = new InheritedSharingDMLIssuer();
+            }
+        }
         return this;
     }
 
+    /**
+     * Sets DML Options to use for DMLs issued with this service.
+     */
     public DatabaseService setDMLOptions(Database.DMLOptions options) {
         this.dmlOptions = options;
         return this;

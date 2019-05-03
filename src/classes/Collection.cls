@@ -280,13 +280,12 @@ public class Collection {
 
 
     /**
-     * Reduces collection to resulting object.
-     *
-     * @param reducer Collection.Reducer implementation which reduces each item to resulting object.
-     * @param result Instance of the result.
+    * @param aggregatedValues Collection which holds values reduced so far.
+     * @param item currently processed item.
+     * @return aggregatedValues
      */
-    public Object reduce(Reducer reducer, Object result) {
-        return Collection.reduce(items, reducer, result);
+    public interface Reducer {
+        Object reduce(Object aggregatedValues, Object item, Integer index);
     }
 
     public ReducerAPI reduce(SObjectField field) {
@@ -297,13 +296,54 @@ public class Collection {
         return new ReducerAPIImpl(this, fields);
     }
 
+    /**
+     * Reduces collection of objects to other collection or object of given type.
+     * @param reducer Reducer interface implementation. @see Collections.Reducer
+     * @param result collection/object to which input is reduced.
+     * @return result after reduction.
+     * <pre>
+     * @example
+     * Set<Id> accountIds = reduce(List<Account> accounts, AccountToIdReducer, Set<Id> accountIds);
+     *
+     * class AccountToIdReducer implements Reducer{
+     *  public reduce(Object ids, Object item){
+     *      Set<Id> accountIds = (Set<Id>) ids;
+     *      accountIds.put( ((Account) item).Id );
+     *  }
+     * </pre>
+     */
+    public Object reduce(Reducer reducer, Object result) {
+        for (Integer i = 0, size = items.size(); i < size; ++i) {
+            result = reducer.reduce(result, items[i], i);
+        }
+
+        return result;
+    }
+
+
+    /**
+     * Wrapper interface.
+     * Concrete method implementing this interface should have a member variable for wrapped item.
+     * wrap method should set that member variable or set other data from the record.
+     */
+    public interface Wrapper {
+        void wrap(Object item);
+    }
 
     /**
      * Wraps objects into Wrapper implementation.
      * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
      */
     public Collection wrap(Type wrapperType) {
-        return new Collection(Collection.wrap(items, wrapperType));
+        List<Wrapper> wrappers = (List<Wrapper>) Apex.newListOfItemType(wrapperType, new List<Wrapper>());
+
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            Wrapper wrapper = (Wrapper) wrapperType.newInstance();
+            wrapper.wrap(items[i]);
+            wrappers.add(wrapper);
+        }
+
+        return new Collection(wrappers);
     }
 
 
@@ -474,79 +514,6 @@ public class Collection {
         }
 
         return JSON.deserialize(JSON.serialize(collection), targetType);
-    }
-
-
-    /*
-    * REDUCE
-    * */
-
-    /**
-     * @param aggregatedValues Collection which holds values reduced so far.
-     * @param item currently processed item.
-     * @return aggregatedValues
-     */
-    public interface Reducer {
-        Object reduce(Object aggregatedValues, Object item, Integer index);
-    }
-
-    /**
-     * Reduces collection of objects to other collection or object of given type.
-     * @param items input collection to reduce
-     * @param reducer Reducer interface implementation. @see Collections.Reducer
-     * @param result collection/object to which input is reduced.
-     * @return result after reduction.
-     * <pre>
-     * @example
-     * Set<Id> accountIds = reduce(List<Account> accounts, AccountToIdReducer, Set<Id> accountIds);
-     *
-     * class AccountToIdReducer implements Reducer{
-     *  public reduce(Object ids, Object item){
-     *      Set<Id> accountIds = (Set<Id>) ids;
-     *      accountIds.put( ((Account) item).Id );
-     *  }
-     * </pre>
-     */
-    public static Object reduce(List<Object> items, Reducer reducer, Object result) {
-        for (Integer i = 0, size = items.size(); i < size; ++i) {
-            result = reducer.reduce(result, items[i], i);
-        }
-
-        return result;
-    }
-
-
-    /*
-    * WRAP
-    * */
-
-    /**
-     * Wrapper interface.
-     * Concrete method implementing this interface should have a member variable for wrapped item.
-     * wrap method should set that member variable or set other data from the record.
-     */
-    public interface Wrapper {
-        void wrap(Object item);
-    }
-
-    /**
-     * Wraps each item into Wrapper class
-     *
-     * @param items List of objects to wrap.
-     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor and have
-     * public accessor.
-     * @return List of Wrappers
-     */
-    public static List<Wrapper> wrap(List<Object> items, Type wrapperType) {
-        List<Wrapper> wrappers = (List<Wrapper>) Apex.newListOfItemType(wrapperType, new List<Wrapper>());
-
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            Wrapper wrapper = (Wrapper) wrapperType.newInstance();
-            wrapper.wrap(items[i]);
-            wrappers.add(wrapper);
-        }
-
-        return wrappers;
     }
 
 

@@ -1090,21 +1090,6 @@ private class CollectionTest {
 
 
     /**
-     *@description
-     * Static wrap method returns given records Wrapped into custom Wrapper class (implementing Collection.Wrapper)
-     */
-    @IsTest
-    static void testWrapStatic() {
-        List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>) Collection.wrap(opportunities, OpportunityWrapper2.class);
-
-        System.assertEquals(wrappers.size(), opportunities.size());
-
-        for (Integer i = 0; i < wrappers.size(); i++) {
-            System.assertEquals(wrappers[i].opportunity, opportunities[i]);
-        }
-    }
-
-    /**
      * @description
      * Instance wrap method wraps Collection member list with custom Wrapper class (implementing Collection.Wrapper).
      * This method can be chained with other Collection methods ex.
@@ -1116,7 +1101,7 @@ private class CollectionTest {
      * </pre>
      */
     @IsTest
-    static void testWrapInstance() {
+    static void testWrap() {
         List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>)
                 Collection.of(opportunities)
                         .filter(Opportunity.NextStep, '==', 'Analysis')

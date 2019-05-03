@@ -542,11 +542,24 @@ public class Collection {
 
 
     /**
+    * FOR EACH
+    * */
+    /**
+     * Worker performs action on each item in collection.
+     */
+    public interface Worker {
+        void forEach(Object item, Integer index);
+    }
+
+    /**
      * For each element in collection, Worker.forEach action is executed.
      * @param worker Concrete class implementing Worker interface. Executes action on each element.
      */
     public Collection forEach(Worker worker) {
-        Collection.forEach(items, worker);
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            worker.forEach(items[i], i);
+        }
+
         return this;
     }
 
@@ -606,30 +619,6 @@ public class Collection {
         }
 
         return JSON.deserialize(JSON.serialize(collection), targetType);
-    }
-
-
-    /*
-    * FOR EACH
-    * */
-
-    /**
-     * Worker performs action on each item in collection.
-     */
-    public interface Worker {
-        void forEach(Object item, Integer index);
-    }
-
-    /**
-     * For each element in collection, Worker.forEach action is executed.
-     *
-     * @param items List of items to execute action on
-     * @param worker Concrete class implementing Worker interface. Executes action on each element.
-     */
-    public static void forEach(List<Object> items, Worker worker) {
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            worker.forEach(items[i], i);
-        }
     }
 
 

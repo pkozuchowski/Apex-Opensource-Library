@@ -1056,7 +1056,7 @@ private class CollectionTest {
     static void testSortByField() {
         Opportunity previous;
 
-        List<Opportunity> sortedOpportunities = Collection.sort(opportunities, Opportunity.CreatedDate, true);
+        List<Opportunity> sortedOpportunities = (List<Opportunity>) Collection.of(opportunities).sort(Opportunity.CreatedDate, true).toList();
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {
                 System.assert(opportunity.CreatedDate >= previous.CreatedDate);
@@ -1066,7 +1066,7 @@ private class CollectionTest {
         previous = null;
 
 
-        sortedOpportunities = Collection.sort(opportunities, Opportunity.Name, false);
+        sortedOpportunities = (List<Opportunity>) Collection.of(opportunities).sort(Opportunity.Name, false).toList();
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {
                 System.assertEquals(-1, opportunity.Name.compareTo(previous.Name));

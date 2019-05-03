@@ -347,6 +347,20 @@ public class Collection {
     }
 
 
+    /******
+    * SORT
+    * */
+    /**
+     * Compares 2 objects to determine their order.
+     * The implementation of this method should return the following values:
+     * 0 if thisItem and otherItem are equal
+     * > 0 if thisItem is greater than otherItem
+     * < 0 if thisItem is less than otherItem
+     */
+    public interface Comparator {
+        Integer compare(Object thisItem, Object otherItem);
+    }
+
     /**
      * Sorts collection by given field and order.
      * @param field Field to sort by.
@@ -355,7 +369,7 @@ public class Collection {
      */
     public Collection sort(SObjectField field, Boolean isAscending) {
         assertSObjectCollection();
-        return new Collection(Collection.sort((List<SObject>) items, field, isAscending));
+        return sort(new CompareByField(field, isAscending));
     }
 
     /**
@@ -365,7 +379,34 @@ public class Collection {
      * Collection.ASCENDING/DESCENDING can be used instead.
      */
     public Collection sort(Comparator comparator) {
-        return new Collection(Collection.sort(items, comparator));
+        List<ComparableObject> comparables = new List<ComparableObject>();
+
+        for (Integer i = 0, size = items.size(); i < size; i++) {
+            comparables.add(new ComparableObject(items[i], comparator));
+        }
+
+        comparables.sort();
+        List<Object> sorted = Apex.newListOfTheSameType(items);
+
+        for (Integer i = 0, size = comparables.size(); i < size; i++) {
+            sorted.add(comparables[i].item);
+        }
+
+        return Collection.of(sorted);
+    }
+
+    private virtual class ComparableObject implements Comparable {
+        private Object item;
+        private Comparator comparator;
+
+        public ComparableObject(Object item, Comparator comparator) {
+            this.item = item;
+            this.comparator = comparator;
+        }
+
+        public Integer compareTo(Object other) {
+            return comparator.compare(this.item, ((ComparableObject) other).item);
+        }
     }
 
 
@@ -670,71 +711,6 @@ public class Collection {
         }
 
         return null;
-    }
-
-
-    /******
-    * SORT
-    * */
-    /**
-     * Compares 2 objects to determine their order.
-     * The implementation of this method should return the following values:
-     * 0 if thisItem and otherItem are equal
-     * > 0 if thisItem is greater than otherItem
-     * < 0 if thisItem is less than otherItem
-     */
-    public interface Comparator {
-        Integer compare(Object thisItem, Object otherItem);
-    }
-
-
-    /**
-     * @param records List of SObject records to sort.
-     * @param field Field to sort by.
-     * @param isAscending true -> ascending order, false -> descending order.
-     *
-     * @return Sorted list of records.
-     */
-    public static List<SObject> sort(List<SObject> records, SObjectField field, Boolean isAscending) {
-        return (List<SObject>) sort(records, new CompareByField(field, isAscending));
-    }
-
-    /**
-     * @param items Collection of items to sort.
-     * @param comparator Comparator implementation which compares 2 items to determine order.
-     *
-     * @return Sorted list of objects with order determined by comparator.
-     */
-    public static List<Object> sort(List<Object> items, Comparator comparator) {
-        List<ComparableObject> comparables = new List<ComparableObject>();
-
-        for (Integer i = 0, size = items.size(); i < size; i++) {
-            comparables.add(new ComparableObject(items[i], comparator));
-        }
-
-        comparables.sort();
-        List<Object> sorted = Apex.newListOfTheSameType(items);
-
-        for (Integer i = 0, size = comparables.size(); i < size; i++) {
-            sorted.add(comparables[i].item);
-        }
-
-        return sorted;
-    }
-
-
-    private virtual class ComparableObject implements Comparable {
-        private Object item;
-        private Comparator comparator;
-
-        public ComparableObject(Object item, Comparator comparator) {
-            this.item = item;
-            this.comparator = comparator;
-        }
-
-        public Integer compareTo(Object other) {
-            return comparator.compare(this.item, ((ComparableObject) other).item);
-        }
     }
 
 

@@ -503,7 +503,9 @@ public class Collection {
         return Collection.of(filtered);
     }
 
-
+    /******
+    * FIND
+    * */
     /**
      * @return First collection item accepted by Collection.FilterByFieldValue, or null.
      * @see Collection.FilterByFieldValue
@@ -511,7 +513,7 @@ public class Collection {
      */
     public SObject find(SObjectField field, String operator, Object value) {
         assertSObjectCollection();
-        return find((List<SObject>) items, field, operator, value);
+        return (SObject) find(new FilterByFieldValue(field, operator, value));
     }
 
     /**
@@ -519,7 +521,7 @@ public class Collection {
      */
     public SObject find(SObject prototype) {
         assertSObjectCollection();
-        return (SObject) find((List<SObject>) items, new FilterByPrototype(prototype));
+        return (SObject) find(new FilterByPrototype(prototype));
     }
 
     /**
@@ -527,7 +529,15 @@ public class Collection {
      * @return First collection item accepted by filter or null.
      */
     public Object find(Filter filter) {
-        return find(items, filter);
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            Object item = items[i];
+
+            if (filter.accepts(item)) {
+                return item;
+            }
+        }
+
+        return null;
     }
 
 
@@ -620,42 +630,6 @@ public class Collection {
         for (Integer i = 0, j = items.size(); i < j; i++) {
             worker.forEach(items[i], i);
         }
-    }
-
-
-    /******
-    * FIND
-    * */
-
-    /**
-     * @return First collection item accepted by Collection.FilterByFieldValue, or null.
-     * @see Collection.FilterByFieldValue
-     */
-    public static SObject find(List<SObject> records, SObjectField field, String operator, Object value) {
-        return (SObject) find(records, new FilterByFieldValue(field, operator, value));
-    }
-
-    /**
-     * @return First collection item which matches all fields specified on prototype.
-     */
-    public static SObject find(List<SObject> records, SObject prototype) {
-        return (SObject) find(records, new FilterByPrototype(prototype));
-    }
-
-    /**
-     * @param filter Filter implementation used in the search.
-     * @return First collection item accepted by filter or null.
-     */
-    public static Object find(List<Object> items, Filter filter) {
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            Object item = items[i];
-
-            if (filter.accepts(item)) {
-                return item;
-            }
-        }
-
-        return null;
     }
 
 

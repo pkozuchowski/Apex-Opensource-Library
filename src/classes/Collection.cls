@@ -210,6 +210,14 @@ public class Collection {
         return Collection.reduce(items, reducer, result);
     }
 
+    public ReducerAPI reduce(SObjectField field) {
+        return new ReducerAPIImpl(this, new SObjectField[]{field});
+    }
+
+    public ReducerAPI reduce(SObjectField[] fields) {
+        return new ReducerAPIImpl(this, fields);
+    }
+
 
     /**
      * Wraps objects into Wrapper implementation.
@@ -1326,6 +1334,189 @@ public class Collection {
 
         public Object value(Object item) {
             return item;
+        }
+    }
+
+
+    /**
+    *
+    * Reducers
+    *
+    * */
+    public interface ReducerAPI {
+        Decimal toSum();
+        Decimal toAvarage();
+        Decimal toMin();
+        Decimal toMax();
+        Object toMapBy(Type keyType);
+        Object toGroupBy(Type keyType);
+        Object toSetOf(Type valueType);
+    }
+
+    private class ReducerAPIImpl implements ReducerAPI {
+        private Collection collection;
+        private SObjectField[] fields;
+
+        private ReducerAPIImpl(Collection collection, SObjectField[] fields) {
+            this.collection = collection;
+            this.fields = fields;
+        }
+
+        public Decimal toSum() {
+            return (Decimal) collection.reduce(new ReducerToSum(fields), 0);
+        }
+
+        public Decimal toAvarage() {
+            return (Decimal) collection.reduce(new ReducerToAverage(fields), 0);
+        }
+
+        public Decimal toMin() {
+            return (Decimal) collection.reduce(new ReducerToMin(fields), null);
+        }
+
+        public Decimal toMax() {
+            return (Decimal) collection.reduce(new ReducerToMax(fields), null);
+        }
+
+        public Set<Id> toSetOfIds() {
+            return (Set<Id>) collection.reduce(new ReducerToSetOfIds(fields), new Set<Id>());
+        }
+
+        public Object toMapBy(Type keyType) {
+            return null;
+        }
+
+        public Object toSetOf(Type valueType) {
+            return null;
+        }
+
+        public Object toGroupBy(Type keyType) {
+            return null;
+        }
+    }
+
+    /**
+     * Reduces SObjects to sum of field(s)
+     */
+    private abstract class SObjectFieldReducer implements Reducer {
+        private SObjectField[] fields;
+
+        public SObjectFieldReducer(SObjectField[] fields) {
+            this.fields = fields;
+        }
+
+        public Object reduce(Object aggregatedValues, Object item, Integer index) {
+            SObject record = (SObject) item;
+            Object values = aggregatedValues;
+
+            for (Integer i = 0; i < fields.size(); i++) {
+                values = reduce(values, record.get(fields[i]));
+            }
+
+            return values;
+        }
+
+        protected abstract Object reduce(Object aggregatedValues, Object fieldValue);
+    }
+
+    /**
+     * Reduces SObjects field(s) to their sum.
+     */
+    private class ReducerToSum extends SObjectFieldReducer {
+
+        private ReducerToSum(SObjectField[] fields) {
+            super(fields);
+        }
+
+        protected override Object reduce(Object aggregatedValues, Object fieldValue) {
+            return (Decimal) aggregatedValues
+                    + (Decimal) (fieldValue == null ? 0 : fieldValue);
+        }
+    }
+
+    /**
+     * Reduces SObject fields(s)to their avarage value.
+     */
+    private class ReducerToAverage extends SObjectFieldReducer {
+        private Decimal sum;
+        private Integer count = 0;
+
+        private ReducerToAverage(SObjectField[] fields) {
+            super(fields);
+        }
+
+        protected override Object reduce(Object aggregatedValues, Object fieldValue) {
+            this.count++;
+            this.sum += (Decimal) (fieldValue == null ? 0 : fieldValue);
+            return this.sum / this.count;
+        }
+    }
+
+    /**
+     * Reduces SObject to their maximal value.
+     */
+    private class ReducerToMax extends SObjectFieldReducer {
+
+        private ReducerToMax(SObjectField[] fields) {
+            super(fields);
+        }
+
+        protected override Object reduce(Object maxSoFar, Object fieldValue) {
+            Decimal value = (Decimal) fieldValue;
+
+            if (value == null) {
+                return maxSoFar;
+
+            } else if (maxSoFar == null) {
+                return fieldValue;
+
+            } else {
+                return Math.max(value, (Decimal) maxSoFar);
+            }
+        }
+    }
+
+    /**
+     * Reduces SObject collection to minimal value from given field(s).
+     */
+    private class ReducerToMin extends SObjectFieldReducer {
+
+        private ReducerToMin(SObjectField[] fields) {
+            super(fields);
+        }
+
+        protected override Object reduce(Object minSoFar, Object fieldValue) {
+            Decimal value = (Decimal) fieldValue;
+
+            if (value == null) {
+                return minSoFar;
+
+            } else if (minSoFar == null) {
+                return fieldValue;
+
+            } else {
+                return Math.min(value, (Decimal) minSoFar);
+            }
+        }
+    }
+
+    /**
+     * Reduces SObject Collection to Set of Ids gathering them from given SObject field(s)
+     */
+    private class ReducerToSetOfIds extends SObjectFieldReducer {
+
+        private ReducerToSetOfIds(SObjectField[] fields) {
+            super(fields);
+        }
+
+        protected override Object reduce(Object aggregatedValues, Object fieldValue) {
+            Set<Id> ids = (Set<Id>) aggregatedValues;
+
+            if (fieldValue != null) {
+                ids.add((Id) fieldValue);
+            }
+
+            return ids;
         }
     }
 

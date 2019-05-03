@@ -1049,50 +1049,58 @@ private class CollectionTest {
      * Collections.reduce() reduces collection to one object or other collection using Reducer implementation.
      */
     @IsTest
-    static void testReduceStatic() {
-        Set<Id> expected = new Set<Id>();
-        for (Opportunity opportunity : opportunities) {
-            expected.add(opportunity.Id);
-            expected.add(opportunity.AccountId);
-        }
-        Set<Id> actual = (Set<Id>) Collection.reduce(opportunities, new ReducerToIdAndAccountId(), new Set<Id>());
-
-        System.assertEquals(expected, actual);
+    static void testReduceToIds() {
+//        Set<Id> expected = new Set<Id>();
+//        for (Opportunity opportunity : opportunities) {
+//            expected.add(opportunity.Id);
+//            expected.add(opportunity.AccountId);
+//        }
+//        Set<Id> actual = Collection.of(opportunities)
+//                .reduce(new List<SObjectField>{
+//                        Opportunity.Id,
+//                        Opportunity.AccountId
+//                })
+//                .toSetOfIds();
+//
+//        System.assertEquals(expected, actual);
     }
-    private class ReducerToIdAndAccountId implements Collection.Reducer {
-        public Object reduce(Object aggregatedValues, Object item, Integer index) {
-            Set<Id> ids = (Set<Id>) aggregatedValues;
-            Opportunity opp = (Opportunity) item;
 
-            ids.add(opp.Id);
-            ids.add(opp.AccountId);
-
-            return ids;
-        }
-    }
 
     /**
      *@description
      * List of Opportunities is reduced to total of Amounts
      */
     @IsTest
-    static void testReduceInstance() {
+    static void testReduceToSum() {
         Decimal expected = 0;
         for (Opportunity opportunity : opportunities) {
             expected += opportunity.Amount;
         }
 
-        Decimal actual = (Decimal) new Collection(opportunities).reduce(new ReducerToOppAmountTotal(), 0);
+        Decimal actual = Collection.of(opportunities)
+                .reduce(Opportunity.Amount)
+                .toSum();
 
         System.assertEquals(expected, actual);
     }
-    private class ReducerToOppAmountTotal implements Collection.Reducer {
-        public Object reduce(Object aggregatedValues, Object item, Integer index) {
-            Decimal soFar = (Decimal) aggregatedValues;
-            Opportunity opp = (Opportunity) item;
 
-            return soFar + opp.Amount;
+    /**
+     *@description
+     * List of Opportunities is reduced to max Amount
+     */
+    @IsTest
+    static void testReduceToMax() {
+        Decimal max = -9999;
+        for (Opportunity opportunity : opportunities) {
+            max = Math.max(max, opportunity.Amount);
         }
+
+        Decimal actual = Collection.of(opportunities)
+                .reduce(Opportunity.Amount)
+                .toMax();
+
+        System.assertEquals(max, actual);
+        System.assertNotEquals(null, actual);
     }
 
 

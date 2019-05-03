@@ -96,16 +96,16 @@ public class Collection {
      */
     public Object getUniqueValues(SObjectField field) {
         assertSObjectCollection();
-        return Collection.getUniqueValues((SObject[]) items, field);
+        return getUniqueValues(new MapByField(field));
     }
 
     /**
      * @param field SObject field from which value is taken.
      * @return Set of gathered values.
-     */
+ */
     public Object getUniqueValues(Type valueType, String field) {
         assertSObjectCollection();
-        return Collection.getUniqueValues(valueType, (SObject[]) items, field);
+        return getUniqueValues(new MapByField(valueType, field));
     }
 
     /**
@@ -113,7 +113,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public Object getUniqueValues(KeyMapper keyMapper) {
-        return Collection.getUniqueValues(items, keyMapper);
+        return mapByFieldToIMap(items, new MapByKeyMapper(keyMapper, Apex.getListItemType(items))).keySet();
     }
 
     /**
@@ -122,7 +122,18 @@ public class Collection {
      */
     public Set<Object> getUniqueValues(List<SObjectField> fields) {
         assertSObjectCollection();
-        return Collection.getUniqueValues((SObject[]) items, fields);
+        Set<Object> values = new Set<Object>();
+        List<SObject> records = (List<SObject>) this.items;
+
+        for (Integer fieldIndex = 0, fieldSize = fields.size(); fieldIndex < fieldSize; fieldIndex++) {
+            SObjectField field = fields[fieldIndex];
+
+            for (Integer i = 0, j = records.size(); i < j; i++) {
+                values.add(records[i].get(field));
+            }
+        }
+
+        return values;
     }
 
 
@@ -399,57 +410,6 @@ public class Collection {
         }
 
         return JSON.deserialize(JSON.serialize(collection), targetType);
-    }
-
-
-    /*
-    * GET UNIQUE VALUES
-    * */
-    /**
-     * @param records List of SObject records from which values are gathered.
-     * @param field SObject field from which value is taken.
-     * @return Set of gathered values.
-     */
-    public static Object getUniqueValues(List<SObject> records, SObjectField field) {
-        return getUniqueValues(records, new MapByField(field));
-    }
-
-    /**
-     * @param valueType Type of single value in a Set ex. String.class
-     * @param records List of SObject records from which values are gathered
-     * @param field SObject field from which value is taken.
-     * @return Set of gathered values.
-     */
-    public static Object getUniqueValues(Type valueType, List<SObject> records, String field) {
-        return getUniqueValues(records, new MapByField(valueType, field));
-    }
-
-    /**
-     * @param records List of items from which values are gathered
-     * @param keyMapper KeyMapper implementation which returns value for each record
-     * @return Set of gathered values.
-     */
-    public static Object getUniqueValues(List<Object> records, KeyMapper keyMapper) {
-        return mapByFieldToIMap(records, new MapByKeyMapper(keyMapper, Apex.getListItemType(records))).keySet();
-    }
-
-    /**
-     * @param records List of records to return field values from.
-     * @param fields List of fields to return values from.
-     * @return Set of unique SObject field values of given fields of given records.
-     */
-    public static Set<Object> getUniqueValues(List<SObject> records, List<SObjectField> fields) {
-        Set<Object> values = new Set<Object>();
-
-        for (Integer fieldIndex = 0, fieldSize = fields.size(); fieldIndex < fieldSize; fieldIndex++) {
-            SObjectField field = fields[fieldIndex];
-
-            for (Integer i = 0, j = records.size(); i < j; i++) {
-                values.add(records[i].get(field));
-            }
-        }
-
-        return values;
     }
 
 

@@ -135,9 +135,7 @@ private class CollectionTest {
             expected.add(opp.AccountId);
         }
 
-        Set<Id> actual = (Set<Id>) Collection.getUniqueValues(opportunities, Opportunity.AccountId);
         Set<Id> actual2 = (Set<Id>) Collection.of(opportunities).getUniqueValues(Opportunity.AccountId);
-        System.assertEquals(expected, actual);
         System.assertEquals(expected, actual2);
     }
 
@@ -152,9 +150,7 @@ private class CollectionTest {
             expected.add(opp.Name);
         }
 
-        Set<String> actual = (Set<String>) Collection.getUniqueValues(opportunities, Opportunity.Name);
         Set<String> actual2 = (Set<String>) Collection.of(opportunities).getUniqueValues(Opportunity.Name);
-        System.assertEquals(expected, actual);
         System.assertEquals(expected, actual2);
     }
 
@@ -169,10 +165,8 @@ private class CollectionTest {
             expected.add(opp.FiscalQuarter);
         }
 
-        Set<Integer> actual = (Set<Integer>) Collection.getUniqueValues(opportunities, Opportunity.FiscalQuarter);
         Set<Integer> actual2 = (Set<Integer>) Collection.of(opportunities).getUniqueValues(Opportunity.FiscalQuarter);
 
-        System.assertEquals(expected, actual);
         System.assertEquals(expected, actual2);
     }
 
@@ -187,9 +181,7 @@ private class CollectionTest {
             expected.add(opp.Probability);
         }
 
-        Set<Decimal> actual = (Set<Decimal>) Collection.getUniqueValues(opportunities, Opportunity.Probability);
         Set<Decimal> actual2 = (Set<Decimal>) Collection.of(opportunities).getUniqueValues(Opportunity.Probability);
-        System.assertEquals(expected, actual);
         System.assertEquals(expected, actual2);
     }
 
@@ -204,9 +196,7 @@ private class CollectionTest {
             expected.add(opp.LastActivityDate);
         }
 
-        Set<Date> actual = (Set<Date>) Collection.getUniqueValues(opportunities, Opportunity.LastActivityDate);
         Set<Date> actual2 = (Set<Date>) Collection.of(opportunities).getUniqueValues(Opportunity.LastActivityDate);
-        System.assertEquals(expected, actual);
         System.assertEquals(expected, actual2);
     }
 
@@ -221,9 +211,7 @@ private class CollectionTest {
             expected.add(opp.CreatedDate);
         }
 
-        Set<Datetime> actual = (Set<Datetime>) Collection.getUniqueValues(opportunities, Opportunity.CreatedDate);
         Set<Datetime> actual2 = (Set<Datetime>) Collection.of(opportunities).getUniqueValues(Opportunity.CreatedDate);
-        System.assertEquals(expected, actual);
         System.assertEquals(expected, actual2);
     }
 
@@ -238,10 +226,8 @@ private class CollectionTest {
             expected.add(opp.HasOpenActivity);
         }
 
-        Set<Boolean> actual = (Set<Boolean>) Collection.getUniqueValues(opportunities, Opportunity.HasOpenActivity);
-        Set<Boolean> actual2 = (Set<Boolean>) Collection.of(opportunities).getUniqueValues(Opportunity.HasOpenActivity);
+        Set<Boolean> actual = (Set<Boolean>) Collection.of(opportunities).getUniqueValues(Opportunity.HasOpenActivity);
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
 
@@ -260,10 +246,8 @@ private class CollectionTest {
             expected.add((String) record.get('Name'));
         }
 
-        Set<String> actual = (Set<String>) Collection.getUniqueValues(String.class, records, 'Name');
-        Set<String> actual2 = (Set<String>) Collection.of(records).getUniqueValues(String.class, 'Name');
+        Set<String> actual = (Set<String>) Collection.of(records).getUniqueValues(String.class, 'Name');
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
 
@@ -277,10 +261,8 @@ private class CollectionTest {
                 0, 1
         };
 
-        Set<Integer> actual = (Set<Integer>) Collection.getUniqueValues(opportunities, new OpportunitiesByYearsHalfMapper());
-        Set<Integer> actual2 = (Set<Integer>) Collection.of(opportunities).getUniqueValues(new OpportunitiesByYearsHalfMapper());
+        Set<Integer> actual = (Set<Integer>) Collection.of(opportunities).getUniqueValues(new OpportunitiesByYearsHalfMapper());
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -300,15 +282,10 @@ private class CollectionTest {
             }
         }
 
-        Set<Object> actual = Collection.getUniqueValues(opportunities, fields);
-        Set<Object> actual2 = Collection.of(opportunities).getUniqueValues(fields);
+        Set<Object> actual = Collection.of(opportunities).getUniqueValues(fields);
         System.assertEquals(
                 JSON.serialize(expected),
                 JSON.serialize(actual)
-        );
-        System.assertEquals(
-                JSON.serialize(expected),
-                JSON.serialize(actual2)
         );
     }
 

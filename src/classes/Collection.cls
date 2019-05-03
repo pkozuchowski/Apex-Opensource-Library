@@ -53,7 +53,11 @@ public class Collection {
     private List<Object> items;
 
 
-    public Collection(List<Object> items) {
+    public static Collection of(List<Object> items) {
+        return new Collection(items);
+    }
+
+    private Collection(List<Object> items) {
         this.items = items;
     }
 

@@ -565,6 +565,9 @@ public class Collection {
 
 
     /**
+    * FILL
+    * */
+    /**
      * Fills in the list with number of clones of provided prototype record.
      * By default, clone is deep and Id, timestamps and autonumbers are not preserved.
      *
@@ -574,19 +577,45 @@ public class Collection {
      */
     public Collection fill(Integer count, SObject prototype) {
         assertSObjectCollection();
-        return new Collection(fill((List<SObject>) items, count, prototype));
+        return fill(count, prototype, defaultCloneOptions);
     }
 
     /**
      * Fills in the list with number of clones of provided prototype record.
-     * @param listToFill List to fill in.
      * @param count Number of clones in the list
      * @param prototype Prototype of the record. Clone of this record will be added to the list.
      * @param opts Collection.CloneOptions instance which determine clone operation characteristics.
      */
     public Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions) {
         assertSObjectCollection();
-        return new Collection(fill((List<SObject>) items, count, prototype, cloneOptions));
+        for (Integer i = 0; i < count; i++) {
+            SObject clone = prototype.clone(
+                    cloneOptions.preserveId,
+                    cloneOptions.deepClone,
+                    cloneOptions.preserveReadonlyTimestamps,
+                    cloneOptions.preserveAutonumer
+            );
+            items.add(clone);
+        }
+        return Collection.of(items);
+    }
+
+    public class CloneOptions {
+        public Boolean
+                preserveId,
+                deepClone,
+                preserveReadonlyTimestamps,
+                preserveAutonumer;
+
+        public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumer) {
+            this.preserveId = preserveId;
+            this.deepClone = deepClone;
+            this.preserveReadonlyTimestamps = preserveReadonlyTimestamps;
+            this.preserveAutonumer = preserveAutonumer;
+        }
+    }
+
+    private class CollectionException extends Exception {
     }
 
 
@@ -619,62 +648,6 @@ public class Collection {
         }
 
         return JSON.deserialize(JSON.serialize(collection), targetType);
-    }
-
-
-    /*
-    * FILL
-    * */
-
-    /**
-     * Fills in the list with number of clones of provided prototype record.
-     * By default, clone is deep and Id, timestamps and autonumbers are not preserved.
-     *
-     * @param listToFill List to fill in.
-     * @param count Number of clones in the list
-     * @param prototype Prototype of the record. Clone of this record will be added to the list.
-     */
-    public static List<SObject> fill(List<SObject> listToFill, Integer count, SObject prototype) {
-        return fill(listToFill, count, prototype, defaultCloneOptions);
-    }
-
-    /**
-     * Fills in the list with number of clones of provided prototype record.
-     * @param listToFill List to fill in.
-     * @param count Number of clones in the list
-     * @param prototype Prototype of the record. Clone of this record will be added to the list.
-     * @param opts Collection.CloneOptions instance which determine clone operation characteristics.
-     */
-    public static List<SObject> fill(List<SObject> listToFill, Integer count, SObject prototype, CloneOptions opts) {
-        for (Integer i = 0; i < count; i++) {
-            SObject clone = prototype.clone(
-                    opts.preserveId,
-                    opts.deepClone,
-                    opts.preserveReadonlyTimestamps,
-                    opts.preserveAutonumer
-            );
-            listToFill.add(clone);
-        }
-        return listToFill;
-    }
-
-    public class CloneOptions {
-        public Boolean
-                preserveId,
-                deepClone,
-                preserveReadonlyTimestamps,
-                preserveAutonumer;
-
-        public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumer) {
-            this.preserveId = preserveId;
-            this.deepClone = deepClone;
-            this.preserveReadonlyTimestamps = preserveReadonlyTimestamps;
-            this.preserveAutonumer = preserveAutonumer;
-        }
-    }
-
-
-    private class CollectionException extends Exception {
     }
 
 

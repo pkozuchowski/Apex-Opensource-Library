@@ -230,7 +230,7 @@ public class Collection {
      */
     public Object groupBy(SObjectField field) {
         assertSObjectCollection();
-        return Collection.groupBy((SObject[]) items, field);
+        return groupBy(new MapByField(field));
     }
 
     /**
@@ -241,7 +241,7 @@ public class Collection {
      */
     public Object groupBy(Type keyType, String field) {
         assertSObjectCollection();
-        return Collection.groupBy(keyType, (SObject[]) items, field);
+        return groupBy(new MapByField(keyType, field));
     }
 
     /**
@@ -250,7 +250,7 @@ public class Collection {
      * @param keyMapper Collection.KeyMapper implementation.
      */
     public Object groupBy(KeyMapper keyMapper) {
-        return Collection.groupBy(items, keyMapper);
+        return groupBy(new MapByKeyMapper(keyMapper, Apex.getListItemType(items)));
     }
 
     /**
@@ -260,7 +260,22 @@ public class Collection {
      * @param Mapper Collection.Mapper implementation.
      */
     public Object groupBy(Mapper mapper) {
-        return Collection.groupBy(items, mapper);
+        IMap imap = newMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
+
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            Object item = (Object) items[i];
+            Object key = mapper.key(item);
+            Object value = mapper.value(item);
+
+            if (!imap.containsKey(key)) {
+                imap.put(key, Apex.newListOfItemType(mapper.valueType()));
+            }
+
+            List<Object> groupedRecords = (List<Object>) imap.get(key);
+            groupedRecords.add(value);
+        }
+
+        return imap.toMap();
     }
 
 
@@ -459,72 +474,6 @@ public class Collection {
         }
 
         return JSON.deserialize(JSON.serialize(collection), targetType);
-    }
-
-
-    /*
-    * GROUP BY
-    * */
-
-    /**
-    * Groups collection items by given field to map where key
-    * is the field's value and the value is List<SObject> which have the same key.
-    * @param records SObject list to group.
-    * @param field SObject Field
-    * @return Map<FieldValue : FieldType, List<SObject>>
-    */
-    public static Object groupBy(List<SObject> records, SObjectField field) {
-        return groupBy(records, new MapByField(field));
-    }
-
-    /**
-     * Groups collection items by given field to map where key
-     * is the field's value and the value is List<SObject> which have the same key.
-     * @param keyType Type of the key ex. String.class, Id.class
-     * @param records SObject list to group.
-     * @param field SObject Field
-     * @return Map<FieldValue : keyType, List<SObject>>
-     */
-    public static Object groupBy(Type keyType, List<SObject> records, String field) {
-        return groupBy(records, new MapByField(keyType, field));
-    }
-
-    /**
-     * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
-     * both key and values are produced by Mapper for each collection item.
-     * @param records List of items to group
-     * @param keyMapper KeyMapper implementation which for each collection item produces Map key.
-     * @return Map<KeyMapper.key() : KeyMapper.keyType(), List<Object>>
-     */
-    public static Object groupBy(List<Object> items, KeyMapper keyMapper) {
-        return groupBy(items, new MapByKeyMapper(keyMapper, Apex.getListItemType(items)));
-    }
-
-    /**
-     * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
-     * both key and values are produced by Mapper for each collection item.
-     *
-     * @param records List of items to group
-     * @param mapper Mapper implementation which for each collection item produces Map key and value.
-     * @return Map<Mapper.key() : Mapper.keyType(), List<Mapper.value() : Mapper.valueType()>>
-     */
-    public static Object groupBy(List<Object> items, Mapper mapper) {
-        IMap imap = newMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
-
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            Object item = (Object) items[i];
-            Object key = mapper.key(item);
-            Object value = mapper.value(item);
-
-            if (!imap.containsKey(key)) {
-                imap.put(key, Apex.newListOfItemType(mapper.valueType()));
-            }
-
-            List<Object> groupedRecords = (List<Object>) imap.get(key);
-            groupedRecords.add(value);
-        }
-
-        return imap.toMap();
     }
 
 

@@ -113,7 +113,7 @@ public class Collection {
      * @return Set of gathered values.
      */
     public Object getUniqueValues(KeyMapper keyMapper) {
-        return mapByFieldToIMap(items, new MapByKeyMapper(keyMapper, Apex.getListItemType(items))).keySet();
+        return mapByFieldToIMap(new MapByKeyMapper(keyMapper, Apex.getListItemType(items))).keySet();
     }
 
     /**
@@ -198,7 +198,7 @@ public class Collection {
      * @return Map of items where list item is map's value and key is produced by KeyMapper.
      */
     public Object mapBy(KeyMapper mapper) {
-        return mapByFieldToIMap(items, new MapByKeyMapper(mapper, Apex.getListItemType(items))).toMap();
+        return mapByFieldToIMap(new MapByKeyMapper(mapper, Apex.getListItemType(items))).toMap();
     }
 
     /**
@@ -206,13 +206,13 @@ public class Collection {
      * @return Map of items where Item is map's value and key is produced by KeyMapper.
      */
     public Object mapBy(Mapper mapper) {
-        return mapByFieldToIMap(items, mapper).toMap();
+        return mapByFieldToIMap(mapper).toMap();
     }
 
     /*
     * Internal method. Maps items to IMap instance.
     * */
-    private static IMap mapByFieldToIMap(List<Object> items, Mapper mapper) {
+    private IMap mapByFieldToIMap(Mapper mapper) {
         IMap imap = newMap(mapper.keyType(), mapper.valueType());
 
         for (Integer i = 0, j = items.size(); i < j; i++) {

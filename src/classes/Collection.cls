@@ -72,14 +72,14 @@ public class Collection {
      * @return true when collection is not null or empty, false otherwise.
      */
     public Boolean isNotEmpty() {
-        return Collection.isNotEmpty(items);
+        return !isEmpty();
     }
 
     /**
      * @return true when collection is null or empty, false otherwise.
      */
     public Boolean isEmpty() {
-        return Collection.isEmpty(items);
+        return items == null || items.isEmpty();
     }
 
     /**
@@ -386,21 +386,6 @@ public class Collection {
     *
     *
     * */
-    /**
-     * @return true when collection is not null or empty, false otherwise.
-     */
-    public static Boolean isNotEmpty(List<Object> collection) {
-        return !isEmpty(collection);
-    }
-
-    /**
-     * @return true when collection is null or empty, false otherwise.
-     */
-    public static Boolean isEmpty(List<Object> collection) {
-        return collection == null || collection.isEmpty();
-    }
-
-
     /**
      * Transforms generic collection to given type.
      * Ex. Map<Object,Object> => Map<String,Account>

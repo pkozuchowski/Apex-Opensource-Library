@@ -138,13 +138,49 @@ public class Collection {
 
 
     /**
+     * KeyMapper implementations determine Map's key for given object and key's type.
+     */
+    public interface KeyMapper {
+        Object key(Object item);
+        Type keyType();
+    }
+
+    /**
+     * Mapper implementations determine Map's key and value for given object and types of key and value.
+     */
+    public interface Mapper {
+        Type keyType();
+        Type valueType();
+        Object key(Object item);
+        Object value(Object item);
+    }
+
+    /**
+     * Set and Map are not covariant types and there's no Map interface in Salesforce which would allow casting
+     * differently typed Maps on abstract Map type.
+     * Because of that, we cannot cast Map<Id, Account> to Map<Object,Object> or any other map
+     * (unless we serialize and deserialize via JSON). It means, that we cannot have one generic method which would take
+     * generic Map and operate on it, we would need separate methods for each type of key.
+     * This wrapper is a workaround for this, it lets us use AbstractMap regardless of it's key type.
+     * Instead of having separate methods for each kind of map, we have IMap implementations for all primitive key types.
+     */
+    public interface IMap {
+        Object toMap();
+        Object keySet();
+        void put(Object key, Object value);
+        Object get(Object key);
+        Boolean containsKey(Object key);
+    }
+
+
+    /**
      * @param field SObject Field to map by
      * @return Map of items where record is map's value and field's value is map's key.
      * Map's key type is derived from field's DisplayType.
      */
     public Object mapBy(SObjectField field) {
         assertSObjectCollection();
-        return Collection.mapBy((List<SObject>) items, field);
+        return mapBy(new MapByField(field));
     }
 
     /**
@@ -154,7 +190,7 @@ public class Collection {
      */
     public Object mapBy(Type keyType, String field) {
         assertSObjectCollection();
-        return Collection.mapBy(keyType, (List<SObject>) items, field);
+        return mapBy(new MapByField(keyType, field));
     }
 
     /**
@@ -162,7 +198,7 @@ public class Collection {
      * @return Map of items where list item is map's value and key is produced by KeyMapper.
      */
     public Object mapBy(KeyMapper mapper) {
-        return Collection.mapBy(items, mapper);
+        return mapByFieldToIMap(items, new MapByKeyMapper(mapper, Apex.getListItemType(items))).toMap();
     }
 
     /**
@@ -170,7 +206,20 @@ public class Collection {
      * @return Map of items where Item is map's value and key is produced by KeyMapper.
      */
     public Object mapBy(Mapper mapper) {
-        return Collection.mapBy(items, mapper);
+        return mapByFieldToIMap(items, mapper).toMap();
+    }
+
+    /*
+    * Internal method. Maps items to IMap instance.
+    * */
+    private static IMap mapByFieldToIMap(List<Object> items, Mapper mapper) {
+        IMap imap = newMap(mapper.keyType(), mapper.valueType());
+
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            Object item = items[i];
+            imap.put(mapper.key(item), mapper.value(item));
+        }
+        return imap;
     }
 
 
@@ -410,100 +459,6 @@ public class Collection {
         }
 
         return JSON.deserialize(JSON.serialize(collection), targetType);
-    }
-
-
-    /*
-    * MAP BY
-    * */
-
-    /**
-     * KeyMapper implementations determine Map's key for given object and key's type.
-     */
-    public interface KeyMapper {
-        Object key(Object item);
-        Type keyType();
-    }
-
-    /**
-     * Mapper implementations determine Map's key and value for given object and types of key and value.
-     */
-    public interface Mapper {
-        Type keyType();
-        Type valueType();
-        Object key(Object item);
-        Object value(Object item);
-    }
-
-    /**
-     * Set and Map are not covariant types and there's no Map interface in Salesforce which would allow casting
-     * differently typed Maps on abstract Map type.
-     * Because of that, we cannot cast Map<Id, Account> to Map<Object,Object> or any other map
-     * (unless we serialize and deserialize via JSON). It means, that we cannot have one generic method which would take
-     * generic Map and operate on it, we would need separate methods for each type of key.
-     * This wrapper is a workaround for this, it lets us use AbstractMap regardless of it's key type.
-     * Instead of having separate methods for each kind of map, we have IMap implementations for all primitive key types.
-     */
-    public interface IMap {
-        Object toMap();
-        Object keySet();
-        void put(Object key, Object value);
-        Object get(Object key);
-        Boolean containsKey(Object key);
-    }
-
-
-    /**
-     * @param items List of SObject records to map
-     * @param field SObject Field to map by
-     * @return Map of items where record is map's value and field's value is map's key.
-     * Map's key type is derived from field's DisplayType.
-     */
-    public static Object mapBy(List<SObject> records, SObjectField field) {
-        return mapBy(records, new MapByField(field));
-    }
-
-    /**
-     * @param keyType Type of returned map's key
-     * @param items List of SObject records to map
-     * @param field SObject Field API name to map by
-     * @return Map of items where record is map's value and field's value is map's key.
-     */
-    public static Object mapBy(Type keyType, List<SObject> records, String field) {
-        return mapBy(records, new MapByField(keyType, field));
-    }
-
-    /**
-     * @param items List of items to map
-     * @param mapper KeyMapper instance which produce map key for given item.
-     * @return Map of items where list item is map's value and key is produced by KeyMapper.
-     */
-    public static Object mapBy(List<Object> items, KeyMapper mapper) {
-        return mapByFieldToIMap(items, new MapByKeyMapper(mapper, Apex.getListItemType(items))).toMap();
-    }
-
-    /**
-     * @param keyType Type of result Map key ex. String.class
-     * @param valueType Type of result Map key ex. Account.class
-     * @param items List of items to map
-     * @param mapper KeyMapper instance which produce map key for given item.
-     * @return Map of items where Item is map's value and key is produced by KeyMapper.
-     */
-    public static Object mapBy(List<Object> items, Mapper mapper) {
-        return mapByFieldToIMap(items, mapper).toMap();
-    }
-
-    /*
-    * Internal method. Maps items to IMap instance.
-    * */
-    private static IMap mapByFieldToIMap(List<Object> items, Mapper mapper) {
-        IMap imap = newMap(mapper.keyType(), mapper.valueType());
-
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            Object item = items[i];
-            imap.put(mapper.key(item), mapper.value(item));
-        }
-        return imap;
     }
 
 

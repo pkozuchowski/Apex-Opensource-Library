@@ -301,10 +301,8 @@ private class CollectionTest {
             expected.put(opp.Id, opp);
         }
 
-        Map<Id, Opportunity> actual = (Map<Id, Opportunity>) Collection.mapBy(opportunities, Opportunity.Id);
-        Map<Id, Opportunity> actual2 = (Map<Id, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.Id);
+        Map<Id, Opportunity> actual = (Map<Id, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.Id);
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -318,10 +316,8 @@ private class CollectionTest {
             expected.put(opp.Name, opp);
         }
 
-        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collection.mapBy(opportunities, Opportunity.Name);
-        Map<String, Opportunity> actual2 = (Map<String, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.Name);
+        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.Name);
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -339,10 +335,8 @@ private class CollectionTest {
             expected.put((String) opp.get('Name'), opp);
         }
 
-        Map<String, SObject> actual = (Map<String, SObject>) Collection.mapBy(String.class, records, 'Name');
-        Map<String, SObject> actual2 = (Map<String, SObject>) Collection.of(records).mapBy(String.class, 'Name');
+        Map<String, SObject> actual = (Map<String, SObject>) Collection.of(records).mapBy(String.class, 'Name');
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -356,10 +350,8 @@ private class CollectionTest {
             expected.put(opp.Probability, opp);
         }
 
-        Map<Decimal, Opportunity> actual = (Map<Decimal, Opportunity>) Collection.mapBy(opportunities, Opportunity.Probability);
-        Map<Decimal, Opportunity> actual2 = (Map<Decimal, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.Probability);
+        Map<Decimal, Opportunity> actual = (Map<Decimal, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.Probability);
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -373,10 +365,8 @@ private class CollectionTest {
             expected.put(opp.FiscalQuarter, opp);
         }
 
-        Map<Integer, Opportunity> actual = (Map<Integer, Opportunity>) Collection.mapBy(opportunities, Opportunity.FiscalQuarter);
-        Map<Integer, Opportunity> actual2 = (Map<Integer, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.FiscalQuarter);
+        Map<Integer, Opportunity> actual = (Map<Integer, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.FiscalQuarter);
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -390,10 +380,8 @@ private class CollectionTest {
             expected.put(opp.HasOpenActivity, opp);
         }
 
-        Map<Boolean, Opportunity> actual = (Map<Boolean, Opportunity>) Collection.mapBy(opportunities, Opportunity.HasOpenActivity);
-        Map<Boolean, Opportunity> actual2 = (Map<Boolean, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.HasOpenActivity);
+        Map<Boolean, Opportunity> actual = (Map<Boolean, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.HasOpenActivity);
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -407,10 +395,8 @@ private class CollectionTest {
             expected.put(opp.LastActivityDate, opp);
         }
 
-        Map<Date, Opportunity> actual = (Map<Date, Opportunity>) Collection.mapBy(opportunities, Opportunity.LastActivityDate);
-        Map<Date, Opportunity> actual2 = (Map<Date, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.LastActivityDate);
+        Map<Date, Opportunity> actual = (Map<Date, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.LastActivityDate);
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -424,10 +410,8 @@ private class CollectionTest {
             expected.put(opp.CreatedDate, opp);
         }
 
-        Map<Datetime, Opportunity> actual = (Map<Datetime, Opportunity>) Collection.mapBy(opportunities, Opportunity.CreatedDate);
-        Map<Datetime, Opportunity> actual2 = (Map<Datetime, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.CreatedDate);
+        Map<Datetime, Opportunity> actual = (Map<Datetime, Opportunity>) Collection.of(opportunities).mapBy(Opportunity.CreatedDate);
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
     /**
@@ -441,10 +425,8 @@ private class CollectionTest {
             expected.put(opp.CreatedDate.time(), opp);
         }
 
-        Map<Time, Opportunity> actual = (Map<Time, Opportunity>) Collection.mapBy(opportunities, new MapByOpportunityCreateTime());
-        Map<Time, Opportunity> actual2 = (Map<Time, Opportunity>) Collection.of(opportunities).mapBy(new MapByOpportunityCreateTime());
+        Map<Time, Opportunity> actual = (Map<Time, Opportunity>) Collection.of(opportunities).mapBy(new MapByOpportunityCreateTime());
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
     private class MapByOpportunityCreateTime implements Collection.KeyMapper {
@@ -468,10 +450,8 @@ private class CollectionTest {
             expected.put('' + opp.AccountId + opp.FiscalQuarter, opp.Id);
         }
 
-        Map<String, Id> actual = (Map<String, Id>) Collection.mapBy(opportunities, new TestMapper());
-        Map<String, Id> actual2 = (Map<String, Id>) Collection.of(opportunities).mapBy(new TestMapper());
+        Map<String, Id> actual = (Map<String, Id>) Collection.of(opportunities).mapBy(new TestMapper());
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
     private class TestMapper implements Collection.Mapper {
         public Object key(Object item) {
@@ -511,20 +491,16 @@ private class CollectionTest {
     @IsTest
     static void whenEmptyOpportunityListIsMappedThenEmptyOpportunityByStringMapIsReturned() {
         Map<String, Opportunity> expected = new Map<String, Opportunity>();
-        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collection.mapBy(new List<Opportunity>(), Opportunity.Name);
-        Map<String, Opportunity> actual2 = (Map<String, Opportunity>) Collection.of(new List<Opportunity>()).mapBy(Opportunity.Name);
+        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collection.of(new List<Opportunity>()).mapBy(Opportunity.Name);
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
     @IsTest
     static void whenEmptySObjectListIsMappedThenEmptySObjectByStringMapIsReturned() {
         Map<String, SObject> expected = new Map<String, SObject>();
-        Map<String, SObject> actual = (Map<String, SObject>) Collection.mapBy(new List<SObject>(), Opportunity.Name);
-        Map<String, SObject> actual2 = (Map<String, SObject>) Collection.of(new List<SObject>()).mapBy(Opportunity.Name);
+        Map<String, SObject> actual = (Map<String, SObject>) Collection.of(new List<SObject>()).mapBy(Opportunity.Name);
 
         System.assertEquals(expected, actual);
-        System.assertEquals(expected, actual2);
     }
 
 

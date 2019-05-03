@@ -771,11 +771,11 @@ private class CollectionTest {
             }
         }
 
-        System.assertEquals(hasOpenActivity, Collection.filter(opportunities, Opportunity.HasOpenActivity, '==', true));
-        System.assertEquals(hasNotOpenActivity, Collection.filter(opportunities, Opportunity.HasOpenActivity, '!=', true));
+        System.assertEquals(hasOpenActivity, Collection.of(opportunities).filter(Opportunity.HasOpenActivity, '==', true).toList());
+        System.assertEquals(hasNotOpenActivity, Collection.of(opportunities).filter(Opportunity.HasOpenActivity, '!=', true).toList());
 
-        System.assertEquals(fiscalQuarterEquals0, Collection.filter(opportunities, new Collection.FilterByFieldValue(Opportunity.FiscalQuarter, '==', 0)));
-        System.assertEquals(fiscalQuarterNotEquals0, Collection.filter(opportunities, new Collection.FilterByFieldValue(Opportunity.FiscalQuarter, '!=', 0)));
+        System.assertEquals(fiscalQuarterEquals0, Collection.of(opportunities).filter(new Collection.FilterByFieldValue(Opportunity.FiscalQuarter, '==', 0)).toList());
+        System.assertEquals(fiscalQuarterNotEquals0, Collection.of(opportunities).filter(new Collection.FilterByFieldValue(Opportunity.FiscalQuarter, '!=', 0)).toList());
 
         System.assertEquals(nextStepAnalysis, Collection.of(opportunities).filter(Opportunity.NextStep, '==', 'Analysis').toList());
         System.assertEquals(nextStepNotAnalysis, Collection.of(opportunities).filter(new Collection.FilterByFieldValue(Opportunity.NextStep, '!=', 'Analysis')).toList());
@@ -802,8 +802,12 @@ private class CollectionTest {
             }
         }
 
-        List<Opportunity> actualAcceptedOpps = (List<Opportunity>) Collection.filter(opportunities, new Collection.FilterByFieldValues(Opportunity.StageName, 'IN', acceptedStages));
-        List<Opportunity> actualRejectedOpps = (List<Opportunity>) Collection.filter(opportunities, new Collection.FilterByFieldValues(Opportunity.StageName, 'NOT IN', acceptedStages));
+        List<Opportunity> actualAcceptedOpps = (List<Opportunity>) Collection.of(opportunities)
+                .filter(new Collection.FilterByFieldValues(Opportunity.StageName, 'IN', acceptedStages))
+                .toList();
+        List<Opportunity> actualRejectedOpps = (List<Opportunity>) Collection.of(opportunities)
+                .filter(new Collection.FilterByFieldValues(Opportunity.StageName, 'NOT IN', acceptedStages))
+                .toList();
 
         System.assertEquals(expectedAcceptedOpps, actualAcceptedOpps);
         System.assertEquals(expectedRejectedOpps, actualRejectedOpps);
@@ -830,7 +834,7 @@ private class CollectionTest {
                 opportunities[2]
         };
 
-        List<Opportunity> actual = Collection.filter(opportunities, oldMap, new OpportunityChangedNameFilter());
+        List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities).filter(oldMap, new OpportunityChangedNameFilter()).toList();
         System.assertEquals(expected, actual);
     }
 
@@ -881,25 +885,31 @@ private class CollectionTest {
         System.assertEquals(new List<Opportunity>{
                 opps[0], opps[1], opps[2], opps[3]
         },
-                Collection.filter(opps, oldMap,
-                        new Collection.FilterByFieldChanged(Opportunity.Name)
-                )
+                Collection.of(opps).
+                        filter(oldMap, new Collection.FilterByFieldChanged(Opportunity.Name))
+                        .toList()
         );
 
         System.assertEquals(new List<Opportunity>{
                 opps[2], opps[3]
         },
-                Collection.filter(opps, oldMap, new Collection.FilterByFieldChanged(Opportunity.Name, Collection.ANY_VALUE, 'John'))
+                Collection.of(opps).
+                        filter(oldMap, new Collection.FilterByFieldChanged(Opportunity.Name, Collection.ANY_VALUE, 'John'))
+                        .toList()
         );
 
         System.assertEquals(new List<Opportunity>{
                 opps[1], opps[2]
-        }, Collection.filter(opps, oldMap, new Collection.FilterByFieldChanged(Opportunity.Name, 'Ken', Collection.ANY_VALUE))
+        }, Collection.of(opps).
+                filter(oldMap, new Collection.FilterByFieldChanged(Opportunity.Name, 'Ken', Collection.ANY_VALUE))
+                .toList()
         );
 
         System.assertEquals(new List<Opportunity>{
                 opps[0]
-        }, Collection.filter(opps, oldMap, new Collection.FilterByFieldChanged(Opportunity.Name, 'Hen', 'Henry'))
+        }, Collection.of(opps).
+                filter(oldMap, new Collection.FilterByFieldChanged(Opportunity.Name, 'Hen', 'Henry'))
+                .toList()
         );
     }
 

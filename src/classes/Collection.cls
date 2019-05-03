@@ -410,6 +410,25 @@ public class Collection {
     }
 
 
+    /*
+    * FILTER
+    * */
+
+    /*
+    * Filter determines whether collection item should be included into result collection of filter method.
+    * */
+    public interface Filter {
+        Boolean accepts(Object item);
+    }
+
+    /*
+    * Filter determines whether collection item should be included into result collection of filter method.
+    * This kind of filter compares current record value with Trigger.old value.
+    * */
+    public interface UpdateFilter {
+        Boolean accepts(SObject record, SObject oldRecord);
+    }
+
     /**
      * Filters List of SObject by field value.
      * Operators:
@@ -429,7 +448,7 @@ public class Collection {
      */
     public Collection filter(SObjectField field, String operator, Object value) {
         assertSObjectCollection();
-        return new Collection(filter((List<SObject>) items, field, operator, value));
+        return filter(new FilterByFieldValue(field, operator, value));
     }
 
 
@@ -438,7 +457,7 @@ public class Collection {
      * @return SObject that have the same values in fields as given prototype
      */
     public Collection filter(SObject prototype) {
-        return new Collection(filter((List<SObject>) items, prototype));
+        return filter(new FilterByPrototype(prototype));
     }
 
 
@@ -448,7 +467,17 @@ public class Collection {
      * be included in the output or not.
      */
     public Collection filter(Filter filter) {
-        return new Collection(Collection.filter(items, filter));
+        List<Object> filtered = Apex.newListOfTheSameType(items);
+
+        for (Integer i = 0, j = items.size(); i < j; i++) {
+            Object item = items[i];
+
+            if (filter.accepts(item)) {
+                filtered.add(item);
+            }
+        }
+
+        return Collection.of(filtered);
     }
 
 
@@ -459,7 +488,19 @@ public class Collection {
      */
     public Collection filter(Map<Id, SObject> oldMap, UpdateFilter filter) {
         assertSObjectCollection();
-        return new Collection(Collection.filter((List<SObject>) items, oldMap, filter));
+
+        List<SObject> filtered = (List<SObject>) Apex.newListOfTheSameType(items);
+
+        for (Integer i = 0, size = items.size(); i < size; ++i) {
+            SObject record = (SObject) items[i];
+            SObject oldRecord = oldMap.get(record.Id);
+
+            if (filter.accepts(record, oldRecord)) {
+                filtered.add(record);
+            }
+        }
+
+        return Collection.of(filtered);
     }
 
 
@@ -579,102 +620,6 @@ public class Collection {
         for (Integer i = 0, j = items.size(); i < j; i++) {
             worker.forEach(items[i], i);
         }
-    }
-
-
-    /*
-    * FILTER
-    * */
-
-    /*
-    * Filter determines whether collection item should be included into result collection of filter method.
-    * */
-    public interface Filter {
-        Boolean accepts(Object item);
-    }
-
-    /*
-    * Filter determines whether collection item should be included into result collection of filter method.
-    * This kind of filter compares current record value with Trigger.old value.
-    * */
-    public interface UpdateFilter {
-        Boolean accepts(SObject record, SObject oldRecord);
-    }
-
-
-    /**
-     * Filters List of SObject by field value.
-     * Operators:
-     * <ul>
-     *  <li>'==' or Collection.EQUALS</li>
-     *  <li>'!=' or Collection.NOT_EQUALS</li>
-     *  <li>'>' or Collection.GREATER_THAN</li>
-     *  <li>'>=' or Collection.GREATER_EQUAL_THAN</li>
-     *  <li>'<' or Collection.LESS_THAN</li>
-     *  <li>'<=' or Collection.LESS_EQUAL_THAN</li>
-     * </ul>
-     *
-     * @example
-     * <pre>
-     *     Collection.filter(accounts, Account.CreatedDate,'>=', Date.today().addDays(-1) );
-     * </pre>
-     */
-    public static List<SObject> filter(List<SObject> records, SObjectField field, String operator, Object value) {
-        return (List<SObject>) filter(records, new FilterByFieldValue(field, operator, value));
-    }
-
-
-    /**
-     * Filters List of SObject by given Prototype record.
-     * @return SObject that have the same values in fields as given prototype
-     */
-    public static List<SObject> filter(List<SObject> records, SObject prototype) {
-        return (List<SObject>) filter(records, new FilterByPrototype(prototype));
-    }
-
-
-    /**
-     * @param items List of items to Filter
-     * @param filter Filter implementation which for each collection item returns boolean value whether item should
-     * be included in the output or not.
-     *
-     * @return List of items for which filter returned "true".
-     */
-    public static List<Object> filter(List<Object> items, Filter filter) {
-        List<Object> filtered = Apex.newListOfTheSameType(items);
-
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            Object item = items[i];
-
-            if (filter.accepts(item)) {
-                filtered.add(item);
-            }
-        }
-
-        return filtered;
-    }
-
-    /**
-     * @param records List of Trigger New records
-     * @param oldRecords Trigger oldMap
-     * @param filter UpdateFilter interface implementation, which for new and old record return boolean value whether
-     * new record should be included in output.
-     *
-     * @return Subset of records parameter for which UpdateFilter returned "true".
-     */
-    public static List<SObject> filter(List<SObject> records, Map<Id, SObject> oldRecords, UpdateFilter filter) {
-        List<SObject> filtered = (List<SObject>) Apex.newListOfTheSameType(records);
-
-        for (Integer i = 0, size = records.size(); i < size; ++i) {
-            SObject record = records[i];
-            SObject oldRecord = oldRecords.get(record.Id);
-
-            if (filter.accepts(record, oldRecord)) {
-                filtered.add(record);
-            }
-        }
-
-        return filtered;
     }
 
 

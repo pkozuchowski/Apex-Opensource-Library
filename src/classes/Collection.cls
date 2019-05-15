@@ -68,6 +68,18 @@ public class Collection {
         return items;
     }
 
+    public Object getFirst() {
+        return isEmpty() ? null : items[0];
+    }
+
+    public Object getLast() {
+        return isEmpty() ? null : items[items.size() - 1];
+    }
+
+    public Object get(Integer i) {
+        return size() < i ? null : items[i];
+    }
+
     /**
      * @return true when collection is not null or empty, false otherwise.
      */

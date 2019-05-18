@@ -33,11 +33,8 @@
  * - Sorting records by given field or comparator.
  */
 public class Collection {
-    public final static Boolean
-            ASCENDING = true,
-            DESCENDING = false,
-            ANY_VALUE = true;
-
+    private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
+    public final static Boolean ANY_VALUE = true;
     public final static String
             EQUALS = '==',
             NOT_EQUALS = '!=',
@@ -47,8 +44,6 @@ public class Collection {
             LESS_EQUAL_THAN = '<=',
             VALUE_IN = 'IN',
             VALUE_NOT_IN = 'NOT IN';
-
-    private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
 
     private List<Object> items;
 
@@ -61,23 +56,32 @@ public class Collection {
         this.items = items;
     }
 
-    /*
+    /**
     * @return Salesforce List collection
     * */
     public List<Object> toList() {
         return items;
     }
 
+    /**
+     * @return First item or null if collection is empty
+     */
     public Object getFirst() {
         return isEmpty() ? null : items[0];
     }
 
+    /**
+     * @return Last item or null if collection is empty
+     */
     public Object getLast() {
         return isEmpty() ? null : items[items.size() - 1];
     }
 
+    /**
+     * @return Nth item of collection.
+     */
     public Object get(Integer i) {
-        return size() < i ? null : items[i];
+        returnitems[i];
     }
 
     /**
@@ -103,236 +107,8 @@ public class Collection {
 
 
     /**
-     * @param field SObject field from which value is taken.
-     * @return Set of gathered values.
-     */
-    public Object getUniqueValues(SObjectField field) {
-        assertSObjectCollection();
-        return getUniqueValues(new MapByField(field));
-    }
-
-    /**
-     * @param field SObject field from which value is taken.
-     * @return Set of gathered values.
- */
-    public Object getUniqueValues(Type valueType, String field) {
-        assertSObjectCollection();
-        return getUniqueValues(new MapByField(valueType, field));
-    }
-
-    /**
-     * @param keyMapper KeyMapper implementation which returns value for each record
-     * @return Set of gathered values.
-     */
-    public Object getUniqueValues(KeyMapper keyMapper) {
-        return mapByFieldToIMap(new MapByKeyMapper(keyMapper, Apex.getListItemType(items))).keySet();
-    }
-
-    /**
-     * @param fields List of fields to return values from.
-     * @return Set of unique SObject field values of given fields of given records.
-     */
-    public Set<Object> getUniqueValues(List<SObjectField> fields) {
-        assertSObjectCollection();
-        Set<Object> values = new Set<Object>();
-        List<SObject> records = (List<SObject>) this.items;
-
-        for (Integer fieldIndex = 0, fieldSize = fields.size(); fieldIndex < fieldSize; fieldIndex++) {
-            SObjectField field = fields[fieldIndex];
-
-            for (Integer i = 0, j = records.size(); i < j; i++) {
-                values.add(records[i].get(field));
-            }
-        }
-
-        return values;
-    }
-
-
-    /**
-     * KeyMapper implementations determine Map's key for given object and key's type.
-     */
-    public interface KeyMapper {
-        Object key(Object item);
-        Type keyType();
-    }
-
-    /**
-     * Mapper implementations determine Map's key and value for given object and types of key and value.
-     */
-    public interface Mapper {
-        Type keyType();
-        Type valueType();
-        Object key(Object item);
-        Object value(Object item);
-    }
-
-    /**
-     * Set and Map are not covariant types and there's no Map interface in Salesforce which would allow casting
-     * differently typed Maps on abstract Map type.
-     * Because of that, we cannot cast Map<Id, Account> to Map<Object,Object> or any other map
-     * (unless we serialize and deserialize via JSON). It means, that we cannot have one generic method which would take
-     * generic Map and operate on it, we would need separate methods for each type of key.
-     * This wrapper is a workaround for this, it lets us use AbstractMap regardless of it's key type.
-     * Instead of having separate methods for each kind of map, we have IMap implementations for all primitive key types.
-     */
-    public interface IMap {
-        Object toMap();
-        Object keySet();
-        void put(Object key, Object value);
-        Object get(Object key);
-        Boolean containsKey(Object key);
-    }
-
-
-    /**
-     * @param field SObject Field to map by
-     * @return Map of items where record is map's value and field's value is map's key.
-     * Map's key type is derived from field's DisplayType.
-     */
-    public Object mapBy(SObjectField field) {
-        assertSObjectCollection();
-        return mapBy(new MapByField(field));
-    }
-
-    /**
-     * @param keyType Type of returned map's key
-     * @param field SObject Field API name to map by
-     * @return Map of items where record is map's value and field's value is map's key.
-     */
-    public Object mapBy(Type keyType, String field) {
-        assertSObjectCollection();
-        return mapBy(new MapByField(keyType, field));
-    }
-
-    /**
-     * @param mapper KeyMapper instance which produce map key for given item.
-     * @return Map of items where list item is map's value and key is produced by KeyMapper.
-     */
-    public Object mapBy(KeyMapper mapper) {
-        return mapByFieldToIMap(new MapByKeyMapper(mapper, Apex.getListItemType(items))).toMap();
-    }
-
-    /**
-     * @param mapper Mapper instance which produce map key and value for given item.
-     * @return Map of items where Item is map's value and key is produced by KeyMapper.
-     */
-    public Object mapBy(Mapper mapper) {
-        return mapByFieldToIMap(mapper).toMap();
-    }
-
-    /*
-    * Internal method. Maps items to IMap instance.
+    * Wrap
     * */
-    private IMap mapByFieldToIMap(Mapper mapper) {
-        IMap imap = newMap(mapper.keyType(), mapper.valueType());
-
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            Object item = items[i];
-            imap.put(mapper.key(item), mapper.value(item));
-        }
-        return imap;
-    }
-
-
-    /**
-     * Groups collection items by given field to map where key
-     * is the field's value and the value is List<SObject> which have the same key.
-     * @param field SObject Field
-     */
-    public Object groupBy(SObjectField field) {
-        assertSObjectCollection();
-        return groupBy(new MapByField(field));
-    }
-
-    /**
-     * Groups collection items by given field to map where key
-     * is the field's value and the value is List<SObject> which have the same key.
-     * @param keyType Type of the key ex. String.class, Id.class
-     * @param field SObject Field
-     */
-    public Object groupBy(Type keyType, String field) {
-        assertSObjectCollection();
-        return groupBy(new MapByField(keyType, field));
-    }
-
-    /**
-     * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
-     * key is produced by the key mapper and the value is List<Object> which have the same key.
-     * @param keyMapper Collection.KeyMapper implementation.
-     */
-    public Object groupBy(KeyMapper keyMapper) {
-        return groupBy(new MapByKeyMapper(keyMapper, Apex.getListItemType(items)));
-    }
-
-    /**
-     * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
-     * both key and values are produced by Mapper for each collection item.
-     *
-     * @param Mapper Collection.Mapper implementation.
-     */
-    public Object groupBy(Mapper mapper) {
-        IMap imap = newMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
-
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            Object item = (Object) items[i];
-            Object key = mapper.key(item);
-            Object value = mapper.value(item);
-
-            if (!imap.containsKey(key)) {
-                imap.put(key, Apex.newListOfItemType(mapper.valueType()));
-            }
-
-            List<Object> groupedRecords = (List<Object>) imap.get(key);
-            groupedRecords.add(value);
-        }
-
-        return imap.toMap();
-    }
-
-
-    /**
-    * @param aggregatedValues Collection which holds values reduced so far.
-     * @param item currently processed item.
-     * @return aggregatedValues
-     */
-    public interface Reducer {
-        Object reduce(Object aggregatedValues, Object item, Integer index);
-    }
-
-    public ReducerAPI reduce(SObjectField field) {
-        return new ReducerAPIImpl(this, new SObjectField[]{field});
-    }
-
-    public ReducerAPI reduce(SObjectField[] fields) {
-        return new ReducerAPIImpl(this, fields);
-    }
-
-    /**
-     * Reduces collection of objects to other collection or object of given type.
-     * @param reducer Reducer interface implementation. @see Collections.Reducer
-     * @param result collection/object to which input is reduced.
-     * @return result after reduction.
-     * <pre>
-     * @example
-     * Set<Id> accountIds = reduce(List<Account> accounts, AccountToIdReducer, Set<Id> accountIds);
-     *
-     * class AccountToIdReducer implements Reducer{
-     *  public reduce(Object ids, Object item){
-     *      Set<Id> accountIds = (Set<Id>) ids;
-     *      accountIds.put( ((Account) item).Id );
-     *  }
-     * </pre>
-     */
-    public Object reduce(Reducer reducer, Object result) {
-        for (Integer i = 0, size = items.size(); i < size; ++i) {
-            result = reducer.reduce(result, items[i], i);
-        }
-
-        return result;
-    }
-
-
     /**
      * Wrapper interface.
      * Concrete method implementing this interface should have a member variable for wrapped item.
@@ -359,8 +135,8 @@ public class Collection {
     }
 
 
-    /******
-    * SORT
+    /**
+    * ORDER BY
     * */
     /**
      * Compares 2 objects to determine their order.
@@ -374,14 +150,21 @@ public class Collection {
     }
 
     /**
+     * Order of sorting
+     */
+    public enum Order {
+        ASCENDING, DESCENDING
+    }
+
+    /**
      * Sorts collection by given field and order.
      * @param field Field to sort by.
      * @param isAscending true -> ascending order, false -> descending order.
      * Collection.ASCENDING/DESCENDING can be used instead.
      */
-    public Collection sort(SObjectField field, Boolean isAscending) {
+    public Collection orderBy(SObjectField field, Order order) {
         assertSObjectCollection();
-        return sort(new CompareByField(field, isAscending));
+        return orderBy(new CompareByField(field, order));
     }
 
     /**
@@ -390,7 +173,7 @@ public class Collection {
      * @param isAscending true -> ascending order, false -> descending order.
      * Collection.ASCENDING/DESCENDING can be used instead.
      */
-    public Collection sort(Comparator comparator) {
+    public Collection orderBy(Comparator comparator) {
         List<ComparableObject> comparables = new List<ComparableObject>();
 
         for (Integer i = 0, size = items.size(); i < size; i++) {
@@ -422,10 +205,9 @@ public class Collection {
     }
 
 
-    /*
+    /**
     * FILTER
     * */
-
     /*
     * Filter determines whether collection item should be included into result collection of filter method.
     * */
@@ -463,15 +245,14 @@ public class Collection {
         return filter(new FilterByFieldValue(field, operator, value));
     }
 
-
     /**
      * Filters List of SObject by given Prototype record.
      * @return SObject that have the same values in fields as given prototype
      */
     public Collection filter(SObject prototype) {
+        assertSObjectCollection();
         return filter(new FilterByPrototype(prototype));
     }
-
 
     /**
      * Filters collection items using given Filter implementation.
@@ -491,7 +272,6 @@ public class Collection {
 
         return Collection.of(filtered);
     }
-
 
     /**
      * Filters collection items using given Filter implementation.
@@ -515,7 +295,8 @@ public class Collection {
         return Collection.of(filtered);
     }
 
-    /******
+
+    /**
     * FIND
     * */
     /**
@@ -613,11 +394,10 @@ public class Collection {
     }
 
     public class CloneOptions {
-        public Boolean
-                preserveId,
-                deepClone,
-                preserveReadonlyTimestamps,
-                preserveAutonumer;
+        public Boolean preserveId { get; private set; }
+        public Boolean deepClone { get; private set; }
+        public Boolean preserveReadonlyTimestamps { get; private set; }
+        public Boolean preserveAutonumer { get; private set; }
 
         public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumer) {
             this.preserveId = preserveId;
@@ -627,7 +407,275 @@ public class Collection {
         }
     }
 
-    private class CollectionException extends Exception {
+
+    /**
+    * Reduce
+    * */
+    /**
+    * @param aggregatedValues Collection which holds values reduced so far.
+     * @param item currently processed item.
+     * @return aggregatedValues
+     */
+    public interface Reducer {
+        Object reduce(Object aggregatedValues, Object item, Integer index);
+    }
+
+    /**
+     * KeyMapper implementations determine Map's key for given object and key's type.
+     */
+    public interface KeyMapper {
+        Object key(Object item);
+        Type keyType();
+    }
+
+    /**
+     * Mapper implementations determine Map's key and value for given object and types of key and value.
+     */
+    public interface Mapper {
+        Type keyType();
+        Type valueType();
+        Object key(Object item);
+        Object value(Object item);
+    }
+
+    /**
+     * Reduces collection of objects to other collection or object of given type.
+     * @param reducer Reducer interface implementation. @see Collections.Reducer
+     * @param initialValue collection/object to which input is reduced.
+     * @return result after reduction.
+     * <pre>
+     * @example
+     * Set<Id> accountIds = reduce(List<Account> accounts, AccountToIdReducer, Set<Id> accountIds);
+     *
+     * class AccountToIdReducer implements Reducer{
+     *  public reduce(Object ids, Object item){
+     *      Set<Id> accountIds = (Set<Id>) ids;
+     *      accountIds.put( ((Account) item).Id );
+     *  }
+     * </pre>
+     */
+    public Object reduce(Reducer reducer, Object initialValue) {
+        Object previousValue = initialValue;
+
+        for (Integer i = 0, size = items.size(); i < size; ++i) {
+            previousValue = reducer.reduce(previousValue, items[i], i);
+        }
+
+        return initialValue;
+    }
+
+    public CollectionReducer reduce() {
+        return new CollectionReducer(this);
+    }
+
+    /**
+     * Facade for Collection Reductors
+     */
+    public class CollectionReducer {
+        private Collection collection;
+
+        private CollectionReducer(Collection collection) {
+            this.collection = collection;
+        }
+
+        private Decimal toSum(SObjectField field) {
+            return toSum(new SObjectField[]{field});
+        }
+
+        private Decimal toSum(SObjectField[] fields) {
+            return (Decimal) collection.reduce(new ReducerToSum().ofFields(fields), 0.0);
+        }
+
+
+        private Decimal toAverage(SObjectField field) {
+            return toAverage(new SObjectField[]{field});
+        }
+
+        private Decimal toAverage(SObjectField[] fields) {
+            return (Decimal) collection.reduce(new ReducerToAverage().ofFields(fields), null);
+        }
+
+
+        private Decimal toMin(SObjectField field) {
+            return toMin(new SObjectField[]{field});
+        }
+
+        private Decimal toMin(SObjectField[] fields) {
+            return (Decimal) collection.reduce(new ReducerToMin().ofFields(fields), null);
+        }
+
+
+        private Decimal toMax(SObjectField field) {
+            return toMax(new SObjectField[]{field});
+        }
+
+        private Decimal toMax(SObjectField[] fields) {
+            return (Decimal) collection.reduce(new ReducerToMax().ofFields(fields), 0.0);
+        }
+
+
+        /**
+         * @param field SObject field from which value is taken.
+         * @return Set of gathered values.
+         */
+        public Object toSet(SObjectField field) {
+            collection.assertSObjectCollection();
+            return toSet(new MapByField(field));
+        }
+        /**
+         * @param keyMapper KeyMapper implementation which returns value for each record
+         * @return Set of gathered values.
+         */
+        public Object toSet(KeyMapper keyMapper) {
+            return mapToUntypedMap(new MapByKeyMapper(keyMapper, Apex.getListItemType(items))).keySet();
+        }
+
+        /**
+         * @param fields List of fields to return values from.
+         * @return Set of unique SObject field values of given fields of given records.
+         */
+        public Object toSet(Type valueType, SObjectField[] fields) {
+            collection.assertSObjectCollection();
+            IMap mapIMap = newMap(valueType, Boolean.class);
+            List<SObject> records = (List<SObject>) collection.items;
+
+            for (Integer fieldIndex = 0, fieldSize = fields.size(); fieldIndex < fieldSize; fieldIndex++) {
+                SObjectField field = fields[fieldIndex];
+
+                for (Integer i = 0, j = records.size(); i < j; i++) {
+                    mapIMap.put(records[i].get(field), true);
+                }
+            }
+
+            return mapIMap.keySet();
+        }
+
+
+        /**
+         * @param keyField SObject Field to map by
+         * @return Map of items where record is map's value and field's value is map's key.
+         * Map's key type is derived from field's type.
+         */
+        public Object toMap(SObjectField field) {
+            collection.assertSObjectCollection();
+            return toMap(new MapByField(field));
+        }
+
+        /**
+         * @param keyField SObject Field to map's key
+         * @param valueField SObject Field to map's value
+         * @return Map where record is map's value and field's value is map's key.
+         * Map's key and value type is derived from field's type.
+         */
+        private Object toMap(SObjectField keyField, SObjectField valueField) {
+            return toMap(new MapFieldByField(keyField, valueField));
+        }
+
+        /**
+         * @param mapper KeyMapper instance which produce map key for given item.
+         * @return Map of items where list item is map's value and key is produced by KeyMapper.
+         */
+        public Object toMap(KeyMapper mapper) {
+            return mapToUntypedMap(new MapByKeyMapper(mapper, Apex.getListItemType(collection.items))).toMap();
+        }
+
+        /**
+         * @param mapper Mapper instance which produce map key and value for given item.
+         * @return Map of items where Item is map's value and key is produced by KeyMapper.
+         */
+        public Object toMap(Mapper mapper) {
+            return mapToUntypedMap(mapper).toMap();
+        }
+
+        /*
+        * Internal method. Maps items to IMap instance.
+        * */
+        private IMap mapToUntypedMap(Mapper mapper) {
+            IMap imap = newMap(mapper.keyType(), mapper.valueType());
+
+            for (Integer i = 0, j = collection.items.size(); i < j; i++) {
+                Object item = collection.items[i];
+                imap.put(mapper.key(item), mapper.value(item));
+            }
+
+            return imap;
+        }
+
+
+        /**
+         * Groups collection items by given field to map where key
+         * is the field's value and the value is List<SObject> which have the same key.
+         * @param field SObject Field
+         */
+        public Object toGroup(SObjectField field) {
+            collection.assertSObjectCollection();
+            return toGroup(new MapByField(field));
+        }
+
+        /**
+         * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
+         * key is produced by the key mapper and the value is List<Object> which have the same key.
+         * @param keyMapper Collection.KeyMapper implementation.
+         */
+        public Object toGroup(KeyMapper keyMapper) {
+            return toGroup(new MapByKeyMapper(keyMapper, Apex.getListItemType(items)));
+        }
+
+        /**
+         * Groups collection items by given field to map where key
+         * is the field's value and the value is List<T> with values of @param valueType.
+         * @param field SObject Field
+         */
+        private Object toGroup(SObjectField keyField, SObjectField valueType) {
+            return toGroup(new MapFieldByField(keyField, valueType));
+        }
+
+        /**
+         * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
+         * both key and values are produced by Mapper for each collection item.
+         *
+         * @param Mapper Collection.Mapper implementation.
+         */
+        public Object toGroup(Mapper mapper) {
+            IMap groupMap = newMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
+
+            for (Integer i = 0, j = collection.items.size(); i < j; i++) {
+                Object item = (Object) collection.items[i];
+                Object key = mapper.key(item);
+                Object value = mapper.value(item);
+
+                if (!groupMap.containsKey(key)) {
+                    groupMap.put(key, Apex.newListOfItemType(mapper.valueType()));
+                }
+
+                List<Object> groupedRecords = (List<Object>) groupMap.get(key);
+                groupedRecords.add(value);
+            }
+
+            return groupMap.toMap();
+        }
+
+
+        /**
+         * @return List of values from given SObject field
+         */
+        public List<Object> toList(SObjectField field) {
+            collection.assertSObjectCollection();
+            return toList(new MapByField(field));
+        }
+
+        /**
+         * @return List of values produced by KeyMapper
+         */
+        public List<Object> toList(KeyMapper keyMapper) {
+            List<Object> values = Apex.newListOfItemType(keyMapper.keyType());
+
+            for (Integer i = 0, j = collection.items.size(); i < j; i++) {
+                values.add(keyMapper.key(collection.items[i]));
+            }
+
+            return values;
+        }
     }
 
 
@@ -639,30 +687,8 @@ public class Collection {
         if (!condition) throw new CollectionException(errorMsg);
     }
 
-
-    /*
-    *
-    *
-    * STATIC METHODS
-    *
-    *
-    * */
-    /**
-     * Transforms generic collection to given type.
-     * Ex. Map<Object,Object> => Map<String,Account>
-     * Casting is done through JSON serialization/deserialization, this process is CPU Time consuming.
-     *
-     * This method is NPE-safe, when collection is null, then blank instance of target type is returned.
-     */
-    public static Object cast(Object collection, Type targetType) {
-        if (collection == null) {
-            return targetType.newInstance();
-        }
-
-        return JSON.deserialize(JSON.serialize(collection), targetType);
+    private class CollectionException extends Exception {
     }
-
-
     /*
     * 
     * 
@@ -674,6 +700,94 @@ public class Collection {
     * 
     * */
 
+    /**
+    * REDUCERS
+    * */
+    /**
+     * Reduces SObjects to sum of field(s)
+     */
+    private abstract class SObjectFieldReducer implements Reducer {
+        private SObjectField[] fields;
+
+        public Reducer ofFields(SObjectField[] fields) {
+            this.fields = fields;
+            return this;
+        }
+        public Object reduce(Object aggregatedValues, Object item, Integer index) {
+            SObject record = (SObject) item;
+            Object values = aggregatedValues;
+
+            for (Integer i = 0; i < fields.size(); i++) {
+                values = reduce(values, record.get(fields[i]));
+            }
+
+            return values;
+        }
+        protected abstract Object reduce(Object aggregatedValues, Object fieldValue);
+    }
+
+    /**
+     * Reduces SObjects field(s) to their sum.
+     */
+    private class ReducerToSum extends SObjectFieldReducer {
+        protected override Object reduce(Object aggregatedValues, Object fieldValue) {
+            return (Decimal) aggregatedValues
+                    + (Decimal) (fieldValue == null ? 0 : fieldValue);
+        }
+    }
+
+    /**
+     * Reduces SObject fields(s)to their avarage value.
+     */
+    private class ReducerToAverage extends SObjectFieldReducer {
+        private Decimal sum;
+        private Integer count = 0;
+
+        protected override Object reduce(Object aggregatedValues, Object fieldValue) {
+            this.count++;
+            this.sum += (Decimal) (fieldValue == null ? 0 : fieldValue);
+            return this.sum / this.count;
+        }
+    }
+
+    /**
+     * Reduces SObject to their maximal value.
+     */
+    private class ReducerToMax extends SObjectFieldReducer {
+        protected override Object reduce(Object maxSoFar, Object fieldValue) {
+            Decimal value = (Decimal) fieldValue;
+
+            if (value == null) {
+                return maxSoFar;
+
+            } else if (maxSoFar == null) {
+                return fieldValue;
+
+            } else {
+                return Math.max(value, (Decimal) maxSoFar);
+            }
+        }
+    }
+
+    /**
+     * Reduces SObject collection to minimal value from given field(s).
+     */
+    private class ReducerToMin extends SObjectFieldReducer {
+        protected override Object reduce(Object minSoFar, Object fieldValue) {
+            Decimal value = (Decimal) fieldValue;
+
+            if (value == null) {
+                return minSoFar;
+
+            } else if (minSoFar == null) {
+                return fieldValue;
+
+            } else {
+                return Math.min(value, (Decimal) minSoFar);
+            }
+        }
+    }
+
 
     /*
     * 
@@ -681,24 +795,12 @@ public class Collection {
     * 
     * */
     private final static Map<String, Set<Integer>> COMPARATOR_OUTCOMES = new Map<String, Set<Integer>>{
-            Collection.GREATER_THAN => new Set<Integer>{
-                    1
-            },
-            Collection.GREATER_EQUAL_THAN => new Set<Integer>{
-                    0, 1
-            },
-            Collection.LESS_THAN => new Set<Integer>{
-                    -1
-            },
-            Collection.LESS_EQUAL_THAN => new Set<Integer>{
-                    0, -1
-            },
-            Collection.EQUALS => new Set<Integer>{
-                    0
-            },
-            Collection.NOT_EQUALS => new Set<Integer>{
-                    1, -1
-            }
+            GREATER_THAN => new Set<Integer>{1},
+            GREATER_EQUAL_THAN => new Set<Integer>{0, 1},
+            LESS_THAN => new Set<Integer>{-1},
+            LESS_EQUAL_THAN => new Set<Integer>{0, -1},
+            EQUALS => new Set<Integer>{0},
+            NOT_EQUALS => new Set<Integer>{1, -1}
     };
 
     /**
@@ -731,7 +833,7 @@ public class Collection {
             this.operator = operator;
             this.value = value;
             this.acceptedCompareValues = COMPARATOR_OUTCOMES.get(operator);
-            this.comparator = getComparatorByField(field);
+            this.comparator = getFieldComparator(field);
         }
 
         public Boolean accepts(Object record) {
@@ -837,35 +939,6 @@ public class Collection {
 
 
     /**
-     * Filters SObjects by distance to given Geolocation.
-     */
-    public class FilterByDistance implements Collection.Filter {
-        private Location targetLocation;
-        private String field;
-        private String unit;
-        private Double maxDistance;
-
-        /**
-         * @param locationField Geolocation field to filter by.
-         * @param targetLocation Target geolocation to filter by distance to.
-         * @param maxDistance Max. distance from the target location
-         * @param unit Distance unit 'km'/'mi'
-         */
-        public FilterByDistance(SObjectField locationField, Location targetLocation, Double maxDistance, String unit) {
-            this.field = '' + locationField;
-            this.targetLocation = targetLocation;
-            this.unit = unit;
-            this.maxDistance = maxDistance;
-        }
-
-        public Boolean accepts(Object record) {
-            Location fieldValue = (Location) ((SObject) record).get(field);
-            return Location.getDistance(fieldValue, targetLocation, unit) <= maxDistance;
-        }
-    }
-
-
-    /**
      * Filter records that changed field value to other value.
      * Developer can specify any value by using Collection.ANY_VALUE, keep in mind though
      * that using "true" or "false" will not work.
@@ -930,22 +1003,16 @@ public class Collection {
         return FIELD_TYPE_MAP.get(field.getDescribe().getSoapType());
     }
 
-
     /**
     * Maps SObject collection by SObject field.
     * */
     public virtual class MapByField implements Collection.KeyMapper {
-        private String field;
+        private SObjectField field;
         private Type keyType;
-
-        public MapByField(Type keyType, String field) {
-            this.keyType = keyType;
-            this.field = field;
-        }
 
         public MapByField(SObjectField field) {
             this.keyType = getSObjectFieldType(field);
-            this.field = '' + field;
+            this.field = field;
         }
 
         public Object key(Object item) {
@@ -954,6 +1021,34 @@ public class Collection {
 
         public Type keyType() {
             return keyType;
+        }
+    }
+
+    public virtual class MapFieldByField implements Collection.Mapper {
+        private SObjectField keyField, valueField;
+        private Type keyType, valueType;
+
+        public MapByField(SObjectField keyField, SObjectField valueField) {
+            this.keyField = keyField;
+            this.valueField = valueField;
+            this.keyType = getSObjectFieldType(keyField);
+            this.valueType = getSObjectFieldType(valueField);
+        }
+
+        public Type keyType() {
+            return keyType;
+        }
+
+        public Type valueType() {
+            return valueType;
+        }
+
+        public Object key(Object item) {
+            return ((SObject) item).get(keyField);
+        }
+
+        public Object value(Object item) {
+            return ((SObject) item).get(valueField);
         }
     }
 
@@ -1027,189 +1122,6 @@ public class Collection {
     }
 
 
-    /**
-    *
-    * Reducers
-    *
-    * */
-    public interface ReducerAPI {
-        Decimal toSum();
-        Decimal toAvarage();
-        Decimal toMin();
-        Decimal toMax();
-        Object toMapBy(Type keyType);
-        Object toGroupBy(Type keyType);
-        Object toSetOf(Type valueType);
-    }
-
-    private class ReducerAPIImpl implements ReducerAPI {
-        private Collection collection;
-        private SObjectField[] fields;
-
-        private ReducerAPIImpl(Collection collection, SObjectField[] fields) {
-            this.collection = collection;
-            this.fields = fields;
-        }
-
-        public Decimal toSum() {
-            return (Decimal) collection.reduce(new ReducerToSum(fields), 0);
-        }
-
-        public Decimal toAvarage() {
-            return (Decimal) collection.reduce(new ReducerToAverage(fields), 0);
-        }
-
-        public Decimal toMin() {
-            return (Decimal) collection.reduce(new ReducerToMin(fields), null);
-        }
-
-        public Decimal toMax() {
-            return (Decimal) collection.reduce(new ReducerToMax(fields), null);
-        }
-
-        public Set<Id> toSetOfIds() {
-            return (Set<Id>) collection.reduce(new ReducerToSetOfIds(fields), new Set<Id>());
-        }
-
-        public Object toMapBy(Type keyType) {
-            return null;
-        }
-
-        public Object toSetOf(Type valueType) {
-            return null;
-        }
-
-        public Object toGroupBy(Type keyType) {
-            return null;
-        }
-    }
-
-    /**
-     * Reduces SObjects to sum of field(s)
-     */
-    private abstract class SObjectFieldReducer implements Reducer {
-        private SObjectField[] fields;
-
-        public SObjectFieldReducer(SObjectField[] fields) {
-            this.fields = fields;
-        }
-
-        public Object reduce(Object aggregatedValues, Object item, Integer index) {
-            SObject record = (SObject) item;
-            Object values = aggregatedValues;
-
-            for (Integer i = 0; i < fields.size(); i++) {
-                values = reduce(values, record.get(fields[i]));
-            }
-
-            return values;
-        }
-
-        protected abstract Object reduce(Object aggregatedValues, Object fieldValue);
-    }
-
-    /**
-     * Reduces SObjects field(s) to their sum.
-     */
-    private class ReducerToSum extends SObjectFieldReducer {
-
-        private ReducerToSum(SObjectField[] fields) {
-            super(fields);
-        }
-
-        protected override Object reduce(Object aggregatedValues, Object fieldValue) {
-            return (Decimal) aggregatedValues
-                    + (Decimal) (fieldValue == null ? 0 : fieldValue);
-        }
-    }
-
-    /**
-     * Reduces SObject fields(s)to their avarage value.
-     */
-    private class ReducerToAverage extends SObjectFieldReducer {
-        private Decimal sum;
-        private Integer count = 0;
-
-        private ReducerToAverage(SObjectField[] fields) {
-            super(fields);
-        }
-
-        protected override Object reduce(Object aggregatedValues, Object fieldValue) {
-            this.count++;
-            this.sum += (Decimal) (fieldValue == null ? 0 : fieldValue);
-            return this.sum / this.count;
-        }
-    }
-
-    /**
-     * Reduces SObject to their maximal value.
-     */
-    private class ReducerToMax extends SObjectFieldReducer {
-
-        private ReducerToMax(SObjectField[] fields) {
-            super(fields);
-        }
-
-        protected override Object reduce(Object maxSoFar, Object fieldValue) {
-            Decimal value = (Decimal) fieldValue;
-
-            if (value == null) {
-                return maxSoFar;
-
-            } else if (maxSoFar == null) {
-                return fieldValue;
-
-            } else {
-                return Math.max(value, (Decimal) maxSoFar);
-            }
-        }
-    }
-
-    /**
-     * Reduces SObject collection to minimal value from given field(s).
-     */
-    private class ReducerToMin extends SObjectFieldReducer {
-
-        private ReducerToMin(SObjectField[] fields) {
-            super(fields);
-        }
-
-        protected override Object reduce(Object minSoFar, Object fieldValue) {
-            Decimal value = (Decimal) fieldValue;
-
-            if (value == null) {
-                return minSoFar;
-
-            } else if (minSoFar == null) {
-                return fieldValue;
-
-            } else {
-                return Math.min(value, (Decimal) minSoFar);
-            }
-        }
-    }
-
-    /**
-     * Reduces SObject Collection to Set of Ids gathering them from given SObject field(s)
-     */
-    private class ReducerToSetOfIds extends SObjectFieldReducer {
-
-        private ReducerToSetOfIds(SObjectField[] fields) {
-            super(fields);
-        }
-
-        protected override Object reduce(Object aggregatedValues, Object fieldValue) {
-            Set<Id> ids = (Set<Id>) aggregatedValues;
-
-            if (fieldValue != null) {
-                ids.add((Id) fieldValue);
-            }
-
-            return ids;
-        }
-    }
-
-
     /*
     *
     * Comparators
@@ -1227,7 +1139,7 @@ public class Collection {
             SoapType.TIME => new BooleanComparator()
     };
 
-    private static Collection.Comparator getComparatorByField(SObjectField field) {
+    private static Collection.Comparator getFieldComparator(SObjectField field) {
         Collection.Comparator comparator = comparatorsByFieldType.get(field.getDescribe().getSoapType());
 
         if (comparator == null) {
@@ -1236,7 +1148,6 @@ public class Collection {
 
         return comparator;
     }
-
 
     private class AnyComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
@@ -1318,10 +1229,10 @@ public class Collection {
         private Integer direction;
         private Collection.Comparator comparator;
 
-        public CompareByField(SObjectField field, Boolean isAscending) {
+        public CompareByField(SObjectField field, Order ordr) {
             this.field = field;
-            this.direction = isAscending ? 1 : -1;
-            this.comparator = getComparatorByField(field);
+            this.direction = ordr == Order.ASCENDING ? 1 : -1;
+            this.comparator = getFieldComparator(field);
         }
 
         public Integer compare(Object thisItem, Object otherItem) {
@@ -1333,7 +1244,6 @@ public class Collection {
     }
 
 
-
     /*
     *
     *
@@ -1341,6 +1251,22 @@ public class Collection {
     *
     *
     * */
+    /**
+     * Set and Map are not covariant types and there's no Map interface in Salesforce which would allow casting
+     * differently typed Maps on abstract Map type.
+     * Because of that, we cannot cast Map<Id, Account> to Map<Object,Object> or any other map
+     * (unless we serialize and deserialize via JSON). It means, that we cannot have one generic method which would take
+     * generic Map and operate on it, we would need separate methods for each type of key.
+     * This wrapper is a workaround for this, it lets us use AbstractMap regardless of it's key type.
+     * Instead of having separate methods for each kind of map, we have IMap implementations for all primitive key types.
+     */
+    public interface IMap {
+        Object toMap();
+        Object keySet();
+        void put(Object key, Object value);
+        Object get(Object key);
+        Boolean containsKey(Object key);
+    }
 
     /**
      * IMap factory method which returns proper IMap implementation for given keyType parameter

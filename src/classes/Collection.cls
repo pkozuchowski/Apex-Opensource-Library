@@ -470,38 +470,19 @@ public class Collection {
         }
 
         private Decimal toSum(SObjectField field) {
-            return toSum(new SObjectField[]{field});
+            return (Decimal) collection.reduce(new ReducerToSum().ofField(field), 0.0);
         }
-
-        private Decimal toSum(SObjectField[] fields) {
-            return (Decimal) collection.reduce(new ReducerToSum().ofFields(fields), 0.0);
-        }
-
 
         private Decimal toAverage(SObjectField field) {
-            return toAverage(new SObjectField[]{field});
+            return (Decimal) collection.reduce(new ReducerToAverage().ofField(field), null);
         }
-
-        private Decimal toAverage(SObjectField[] fields) {
-            return (Decimal) collection.reduce(new ReducerToAverage().ofFields(fields), null);
-        }
-
 
         private Decimal toMin(SObjectField field) {
-            return toMin(new SObjectField[]{field});
+            return (Decimal) collection.reduce(new ReducerToMin().ofField(field), null);
         }
-
-        private Decimal toMin(SObjectField[] fields) {
-            return (Decimal) collection.reduce(new ReducerToMin().ofFields(fields), null);
-        }
-
 
         private Decimal toMax(SObjectField field) {
-            return toMax(new SObjectField[]{field});
-        }
-
-        private Decimal toMax(SObjectField[] fields) {
-            return (Decimal) collection.reduce(new ReducerToMax().ofFields(fields), 0.0);
+            return (Decimal) collection.reduce(new ReducerToMax().ofField(field), 0.0);
         }
 
 
@@ -683,32 +664,22 @@ public class Collection {
      * Reduces SObjects to sum of field(s)
      */
     private abstract class SObjectFieldReducer implements Reducer {
-        private SObjectField[] fields;
+        private SObjectField field;
 
-        public Reducer ofFields(SObjectField[] fields) {
-            this.fields = fields;
+        public Reducer ofField(SObjectField field) {
+            this.field = field;
             return this;
         }
-        public Object reduce(Object aggregatedValues, Object item, Integer index) {
-            SObject record = (SObject) item;
-            Object values = aggregatedValues;
-
-            for (Integer i = 0; i < fields.size(); i++) {
-                values = reduce(values, record.get(fields[i]));
-            }
-
-            return values;
-        }
-        protected abstract Object reduce(Object aggregatedValues, Object fieldValue);
     }
 
     /**
      * Reduces SObjects field(s) to their sum.
      */
     private class ReducerToSum extends SObjectFieldReducer {
-        protected override Object reduce(Object aggregatedValues, Object fieldValue) {
+        public Object reduce(Object aggregatedValues, Object item, Integer index) {
+            Decimal fieldValue = (Decimal) ((SObject) item).get(field);
             return (Decimal) aggregatedValues
-                    + (Decimal) (fieldValue == null ? 0 : fieldValue);
+                    + (fieldValue == null ? 0 : fieldValue);
         }
     }
 
@@ -719,7 +690,8 @@ public class Collection {
         private Decimal sum;
         private Integer count = 0;
 
-        protected override Object reduce(Object aggregatedValues, Object fieldValue) {
+        public Object reduce(Object aggregatedValues, Object item, Integer index) {
+            Decimal fieldValue = (Decimal) ((SObject) item).get(field);
             this.count++;
             this.sum += (Decimal) (fieldValue == null ? 0 : fieldValue);
             return this.sum / this.count;
@@ -730,17 +702,17 @@ public class Collection {
      * Reduces SObject to their maximal value.
      */
     private class ReducerToMax extends SObjectFieldReducer {
-        protected override Object reduce(Object maxSoFar, Object fieldValue) {
-            Decimal value = (Decimal) fieldValue;
+        public Object reduce(Object maxSoFar, Object item, Integer index) {
+            Decimal fieldValue = (Decimal) ((SObject) item).get(field);
 
-            if (value == null) {
+            if (fieldValue == null) {
                 return maxSoFar;
 
             } else if (maxSoFar == null) {
                 return fieldValue;
 
             } else {
-                return Math.max(value, (Decimal) maxSoFar);
+                return Math.max(fieldValue, (Decimal) maxSoFar);
             }
         }
     }
@@ -749,17 +721,17 @@ public class Collection {
      * Reduces SObject collection to minimal value from given field(s).
      */
     private class ReducerToMin extends SObjectFieldReducer {
-        protected override Object reduce(Object minSoFar, Object fieldValue) {
-            Decimal value = (Decimal) fieldValue;
+        public Object reduce(Object minSoFar, Object item, Integer index) {
+            Decimal fieldValue = (Decimal) ((SObject) item).get(field);
 
-            if (value == null) {
+            if (fieldValue == null) {
                 return minSoFar;
 
             } else if (minSoFar == null) {
                 return fieldValue;
 
             } else {
-                return Math.min(value, (Decimal) minSoFar);
+                return Math.min(fieldValue, (Decimal) minSoFar);
             }
         }
     }

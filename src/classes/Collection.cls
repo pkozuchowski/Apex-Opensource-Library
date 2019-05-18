@@ -1333,68 +1333,6 @@ public class Collection {
     }
 
 
-    /**
-     * Compares SObjects by distance to given geolocation.
-     */
-    public class CompareByDistance implements Collection.Comparator {
-        private SObjectField field;
-        private Integer direction;
-        private Integer nullsPosition = 1;
-        private Location target;
-        private Map<Id, Double> distanceCache;
-
-        /**
-         * By default, nulls and closest are first.
-         * @param field Location field
-         * @param geoLocation Target geolocation. Records are sorted by distance to this location.
-         */
-        public CompareByDistance(SObjectField field, Location geoLocation) {
-            this.distanceCache = new Map<Id, Double>();
-            this.field = field;
-            this.direction = -1;
-            this.nullsPosition = -1;
-            this.target = geoLocation;
-        }
-
-        public CompareByDistance closestFirst(Boolean closestFirst) {
-            this.nullsPosition = closestFirst ? -1 : 1;
-            return this;
-        }
-
-        public CompareByDistance nullFirst(Boolean nullFirst) {
-            this.direction = nullFirst ? -1 : 1;
-            return this;
-        }
-
-        public Integer compare(Object thisItem, Object otherItem) {
-            Double thisDistance = getDistance((SObject) thisItem);
-            if (thisDistance == null) return nullsPosition;
-
-            Double otherDistance = getDistance((SObject) otherItem);
-            if (otherDistance == null) return -nullsPosition;
-
-            return direction * (thisDistance > otherDistance ? 1 :
-                    thisDistance < otherDistance ? -1
-                            : 0);
-        }
-
-        private Double getDistance(SObject record) {
-            if (distanceCache.containsKey(record.Id)) {
-                return distanceCache.get(record.Id);
-            }
-
-            Location loc = (Location) record.get(field);
-            if (loc == null) {
-                return null;
-            }
-
-            Double distance = this.target.getDistance((Location) record.get(field), 'km');
-            distanceCache.put(record.Id, distance);
-
-            return distance;
-        }
-    }
-
 
     /*
     *

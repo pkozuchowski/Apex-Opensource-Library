@@ -420,7 +420,6 @@ public class Collection {
         Object reduce(Object aggregatedValues, Object item, Integer index);
     }
 
-
     /**
      * Mapper implementations determine Map's key and value for given object and types of key and value.
      */
@@ -429,38 +428,12 @@ public class Collection {
         Object value(Object item);
     }
 
-    /**
-     * Reduces collection of objects to other collection or object of given type.
-     * @param reducer Reducer interface implementation. @see Collections.Reducer
-     * @param initialValue collection/object to which input is reduced.
-     * @return result after reduction.
-     * <pre>
-     * @example
-     * Set<Id> accountIds = reduce(List<Account> accounts, AccountToIdReducer, Set<Id> accountIds);
-     *
-     * class AccountToIdReducer implements Reducer{
-     *  public reduce(Object ids, Object item){
-     *      Set<Id> accountIds = (Set<Id>) ids;
-     *      accountIds.put( ((Account) item).Id );
-     *  }
-     * </pre>
-     */
-    public Object reduce(Reducer reducer, Object initialValue) {
-        Object previousValue = initialValue;
-
-        for (Integer i = 0, size = size(); i < size; ++i) {
-            previousValue = reducer.reduce(previousValue, items[i], i);
-        }
-
-        return initialValue;
-    }
-
     public CollectionReducer reduce() {
         return new CollectionReducer(this);
     }
 
     /**
-     * Facade for Collection Reductors
+     * Facade for Collection Reducers
      */
     public class CollectionReducer {
         private Collection collection;
@@ -469,20 +442,46 @@ public class Collection {
             this.collection = collection;
         }
 
+        /**
+         * Reduces collection of objects to other collection or object of given type.
+         * @param reducer Reducer interface implementation. @see Collections.Reducer
+         * @param initialValue collection/object to which input is reduced.
+         * @return result after reduction.
+         * <pre>
+         * @example
+         * Set<Id> accountIds = reduce(List<Account> accounts, AccountToIdReducer, Set<Id> accountIds);
+         *
+         * class AccountToIdReducer implements Reducer{
+         *  public reduce(Object ids, Object item){
+         *      Set<Id> accountIds = (Set<Id>) ids;
+         *      accountIds.put( ((Account) item).Id );
+         *  }
+         * </pre>
+         */
+        public Object to(Reducer reducer, Object initialValue) {
+            Object previousValue = initialValue;
+
+            for (Integer i = 0, size = collection.size(); i < size; ++i) {
+                previousValue = reducer.reduce(previousValue, collection.items[i], i);
+            }
+
+            return initialValue;
+        }
+
         private Decimal toSum(SObjectField field) {
-            return (Decimal) collection.reduce(new ReducerToSum().ofField(field), 0.0);
+            return (Decimal) this.to(new ReducerToSum().ofField(field), 0.0);
         }
 
         private Decimal toAverage(SObjectField field) {
-            return (Decimal) collection.reduce(new ReducerToAverage().ofField(field), null);
+            return (Decimal) this.to(new ReducerToAverage().ofField(field), null);
         }
 
         private Decimal toMin(SObjectField field) {
-            return (Decimal) collection.reduce(new ReducerToMin().ofField(field), null);
+            return (Decimal) this.to(new ReducerToMin().ofField(field), null);
         }
 
         private Decimal toMax(SObjectField field) {
-            return (Decimal) collection.reduce(new ReducerToMax().ofField(field), 0.0);
+            return (Decimal) this.to(new ReducerToMax().ofField(field), 0.0);
         }
 
 
@@ -1212,6 +1211,7 @@ public class Collection {
         }
     }
 
+    /*@formatter:off*/
     private class MapById implements Collection.IMap {
         private Map<Id, Object> mapInstance;
 

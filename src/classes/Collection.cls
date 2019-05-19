@@ -227,6 +227,8 @@ public class Collection {
      * This method allows for building criteria to filter the collection or to find the first record satisfying the criteria.
      * then() method returns filtered collection for given criteria and can be used in further chaining.
      * getFirst() returns the first record satisfying criteria.
+     * For best best performance it's adviced to use Filter implementation since byField() method has quite large overhead
+     * scaled linearly with number of linked predicates.
      */
     public FilterFacade filter() {
         return new FilterFacade(this);
@@ -260,71 +262,14 @@ public class Collection {
             return this;
         }
 
-        public FilterFacade equals(SObjectField field, Object value) {
+        /**
+         * Filter by field value
+         */
+        public FieldFilterFacade byField(SObjectField field) {
             filterCollection.assertSObjectCollection();
-            addFilter(new FilterByFieldValue(field, Collection.EQUALS, value));
-            return this;
+            return new FieldFilterFacade(this, field);
         }
 
-        public FilterFacade notEquals(SObjectField field, Object value) {
-            filterCollection.assertSObjectCollection();
-            addFilter(new FilterByFieldValue(field, Collection.NOT_EQUALS, value));
-            return this;
-        }
-
-        public FilterFacade greaterThan(SObjectField field, Object value) {
-            filterCollection.assertSObjectCollection();
-            addFilter(new FilterByFieldValue(field, Collection.GREATER_THAN, value));
-            return this;
-        }
-
-        public FilterFacade greaterEqualsThan(SObjectField field, Object value) {
-            filterCollection.assertSObjectCollection();
-            addFilter(new FilterByFieldValue(field, Collection.GREATER_EQUAL_THAN, value));
-            return this;
-        }
-
-        public FilterFacade lessThan(SObjectField field, Object value) {
-            filterCollection.assertSObjectCollection();
-            addFilter(new FilterByFieldValue(field, Collection.LESS_THAN, value));
-            return this;
-        }
-
-        public FilterFacade lessEqualsThan(SObjectField field, Object value) {
-            filterCollection.assertSObjectCollection();
-            addFilter(new FilterByFieldValue(field, Collection.LESS_EQUAL_THAN, value));
-            return this;
-        }
-
-        public FilterFacade valueIn(SObjectField field, Set<Object> values) {
-            filterCollection.assertSObjectCollection();
-            addFilter(new FilterByFieldValues(field, Collection.VALUE_IN, values));
-            return this;
-        }
-
-        public FilterFacade valueIn(SObjectField field, List<Object> values) {
-            filterCollection.assertSObjectCollection();
-            addFilter(new FilterByFieldValues(field, Collection.VALUE_IN, values));
-            return this;
-        }
-
-        public FilterFacade valueNotIn(SObjectField field, Set<Object> values) {
-            filterCollection.assertSObjectCollection();
-            addFilter(new FilterByFieldValues(field, Collection.VALUE_NOT_IN, values));
-            return this;
-        }
-
-        public FilterFacade valueNotIn(SObjectField field, List<Object> values) {
-            filterCollection.assertSObjectCollection();
-            addFilter(new FilterByFieldValues(field, Collection.VALUE_NOT_IN, values));
-            return this;
-        }
-
-        public FilterFacade relatedTo(List<SObject> parents, SObjectField relationshipField) {
-            filterCollection.assertSObjectCollection();
-            addFilter(new FilterRelatedTo(parents, relationshipField));
-            return this;
-        }
 
         /**
          * Collection is filtered to contain only these SObjects which have fields populated like provided example record.
@@ -335,6 +280,10 @@ public class Collection {
             return this;
         }
 
+        /**
+         * This method exists only for verbosity and can be omitted.
+         * Predicates use AND by default.
+         */
         public FilterFacade andAlso() {
             return this;
         }
@@ -376,14 +325,13 @@ public class Collection {
             return null;
         }
 
-
         private Boolean isSatisfyingConditions(Object item) {
             Boolean accepted = true;
 
-            for (Integer filterIndex = 0, filtersSize = filters.size(); filterIndex < filtersSize; filterIndex++) {
-                Boolean acceptedByFilter = this.filters[filterIndex].accepts(item);
+            for (Integer i = 0, size = filters.size(); i < size; i++) {
+                Boolean acceptedByFilter = this.filters[i].accepts(item);
 
-                if (isAND[filterIndex]) {
+                if (isAND[i]) {
                     accepted &= acceptedByFilter;
                 } else {
                     accepted |= acceptedByFilter;
@@ -396,6 +344,74 @@ public class Collection {
         private void addFilter(Filter filter) {
             this.filters.add(filter);
             this.isAND.add(true);
+        }
+    }
+
+    /**
+     * Facade for Field value filters.
+     */
+    public class FieldFilterFacade {
+        private FilterFacade filterFacade;
+        private SObjectField field;
+
+        private FieldFilterFacade(FilterFacade filterFacade, SObjectField field) {
+            this.filterFacade = filterFacade;
+            this.field = field;
+        }
+
+        public FilterFacade equals(Object value) {
+            filterFacade.addFilter(new FilterByFieldValue(field, Collection.EQUALS, value));
+            return filterFacade;
+        }
+
+        public FilterFacade notEquals(Object value) {
+            filterFacade.addFilter(new FilterByFieldValue(field, Collection.NOT_EQUALS, value));
+            return filterFacade;
+        }
+
+        public FilterFacade greaterThan(Object value) {
+            filterFacade.addFilter(new FilterByFieldValue(field, Collection.GREATER_THAN, value));
+            return filterFacade;
+        }
+
+        public FilterFacade greaterEqualsThan(Object value) {
+            filterFacade.addFilter(new FilterByFieldValue(field, Collection.GREATER_EQUAL_THAN, value));
+            return filterFacade;
+        }
+
+        public FilterFacade lessThan(Object value) {
+            filterFacade.addFilter(new FilterByFieldValue(field, Collection.LESS_THAN, value));
+            return filterFacade;
+        }
+
+        public FilterFacade lessEqualsThan(Object value) {
+            filterFacade.addFilter(new FilterByFieldValue(field, Collection.LESS_EQUAL_THAN, value));
+            return filterFacade;
+        }
+
+        public FilterFacade valueIn(Set<Object> values) {
+            filterFacade.addFilter(new FilterByFieldValues(field, Collection.VALUE_IN, values));
+            return filterFacade;
+        }
+
+        public FilterFacade valueIn(List<Object> values) {
+            filterFacade.addFilter(new FilterByFieldValues(field, Collection.VALUE_IN, values));
+            return filterFacade;
+        }
+
+        public FilterFacade valueNotIn(Set<Object> values) {
+            filterFacade.addFilter(new FilterByFieldValues(field, Collection.VALUE_NOT_IN, values));
+            return filterFacade;
+        }
+
+        public FilterFacade valueNotIn(List<Object> values) {
+            filterFacade.addFilter(new FilterByFieldValues(field, Collection.VALUE_NOT_IN, values));
+            return filterFacade;
+        }
+
+        public FilterFacade relatedTo(List<SObject> parents) {
+            filterFacade.addFilter(new FilterRelatedTo(parents, field));
+            return filterFacade;
         }
     }
 

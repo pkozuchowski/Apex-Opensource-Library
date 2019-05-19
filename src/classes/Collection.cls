@@ -289,6 +289,9 @@ public class Collection {
             return this;
         }
 
+        /**
+         * Former and following predicate are joined using OR connective.
+         */
         public FilterFacade orElse() {
             this.isAND.set(this.isAND.size() - 1, false);
             return this;
@@ -1055,7 +1058,7 @@ public class Collection {
     /**
      * Filters SObject list to those related to given parents by given relationship field.
      */
-    public class FilterRelatedTo implements Collection.Filter {
+    private class FilterRelatedTo implements Collection.Filter {
         private Map<Id, SObject> parents;
         private SObjectField relationshipField;
 
@@ -1066,23 +1069,6 @@ public class Collection {
 
         public Boolean accepts(Object record) {
             return parents.containsKey((Id) ((SObject) record).get(relationshipField));
-        }
-    }
-
-    /**
-     * Proxy between UpdateFilter and Filter
-     */
-    private class UpdateFilterToFilterAdapter implements Filter {
-        private Map<Id, SObject> oldMap;
-        private UpdateFilter updateFilter;
-
-        public UpdateFilterToFilterAdapter(Map<Id, SObject> oldMap, UpdateFilter updateFilter) {
-            this.oldMap = oldMap;
-            this.updateFilter = updateFilter;
-        }
-
-        public Boolean accepts(Object item) {
-            return updateFilter.accepts((SObject) item, oldMap.get(((SObject) item).Id));
         }
     }
 
@@ -1128,6 +1114,23 @@ public class Collection {
             } else {
                 return oldValue == fromValue && currentValue == toValue;
             }
+        }
+    }
+
+    /**
+     * Proxy between UpdateFilter and Filter
+     */
+    private class UpdateFilterToFilterAdapter implements Filter {
+        private Map<Id, SObject> oldMap;
+        private UpdateFilter updateFilter;
+
+        public UpdateFilterToFilterAdapter(Map<Id, SObject> oldMap, UpdateFilter updateFilter) {
+            this.oldMap = oldMap;
+            this.updateFilter = updateFilter;
+        }
+
+        public Boolean accepts(Object item) {
+            return updateFilter.accepts((SObject) item, oldMap.get(((SObject) item).Id));
         }
     }
 

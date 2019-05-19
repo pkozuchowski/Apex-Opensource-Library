@@ -796,7 +796,7 @@ public class Collection {
      * Reduces SObject fields(s)to their avarage value.
      */
     private class ReducerToAverage extends SObjectFieldReducer {
-        private Decimal sum;
+        private Decimal sum = 0;
         private Integer count = 0;
 
         public Object reduce(Object aggregatedValues, Object item, Integer index) {

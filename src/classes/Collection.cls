@@ -223,6 +223,11 @@ public class Collection {
         Boolean accepts(SObject record, SObject oldRecord);
     }
 
+    /**
+     * This method allows for building criteria to filter the collection or to find the first record satisfying the criteria.
+     * then() method returns filtered collection for given criteria and can be used in further chaining.
+     * getFirst() returns the first record satisfying criteria.
+     */
     public FilterFacade filter() {
         return new FilterFacade(this);
     }
@@ -552,7 +557,7 @@ public class Collection {
          */
         public Object toSet(SObjectField field) {
             collection.assertSObjectCollection();
-            return toSet(new MapByField(field));
+            return toSet(new FieldMapper(field));
         }
 
         /**
@@ -571,7 +576,7 @@ public class Collection {
          */
         public Object toMap(SObjectField field) {
             collection.assertSObjectCollection();
-            return toMap(new MapByField(field));
+            return toMap(new FieldMapper(field));
         }
 
         /**
@@ -582,7 +587,7 @@ public class Collection {
          */
         private Object toMap(SObjectField keyField, SObjectField valueField) {
             collection.assertSObjectCollection();
-            return toMap(new MapByField(keyField), new MapByField(valueField));
+            return toMap(new FieldMapper(keyField), new FieldMapper(valueField));
         }
 
         /**
@@ -623,7 +628,7 @@ public class Collection {
          */
         public Object toGroup(SObjectField field) {
             collection.assertSObjectCollection();
-            return toGroup(new MapByField(field));
+            return toGroup(new FieldMapper(field));
         }
 
         /**
@@ -633,7 +638,7 @@ public class Collection {
          */
         private Object toGroup(SObjectField keyField, SObjectField valueField) {
             collection.assertSObjectCollection();
-            return toGroup(new MapByField(keyField), new MapByField(valueField));
+            return toGroup(new FieldMapper(keyField), new FieldMapper(valueField));
         }
 
         /**
@@ -676,7 +681,7 @@ public class Collection {
          */
         public List<Object> toList(SObjectField field) {
             collection.assertSObjectCollection();
-            return toList(new MapByField(field));
+            return toList(new FieldMapper(field));
         }
 
         /**
@@ -819,11 +824,11 @@ public class Collection {
     /**
     * Maps SObject collection by SObject field.
     * */
-    public virtual class MapByField implements Collection.Mapper {
+    public virtual class FieldMapper implements Collection.Mapper {
         private String field;
         private Type fieldType;
 
-        public MapByField(SObjectField field) {
+        public FieldMapper(SObjectField field) {
             this.fieldType = getSObjectFieldType(field);
             this.field = '' + field;
         }
@@ -834,37 +839,6 @@ public class Collection {
 
         public Object value(Object item) {
             return ((SObject) item).get(field);
-        }
-    }
-
-    /**
-    * Maps collection by pair of fields and separator. ex.
-    * Junction object by both parent fields.
-    * This mapper will always map by String key.
-    *
-    * @example
-    * <pre>
-    *       Map<String, JunctionObject> junctionRecordsByParents =
-    *           Collection.mapBy(junctionRecords,
-    *               new Collection.MapByFieldPair(JunctionObject.ParentId1, '_', JunctionObject.ParentId2)
-    *           );
-    * </pre>
-    * */
-    public class MapByFieldPair implements Collection.Mapper {
-        private SObjectField fieldLeft;
-        private SObjectField fieldRight;
-
-        public MapByFieldPair(SObjectField fieldLeft, SObjectField fieldRight) {
-            this.fieldLeft = fieldLeft;
-            this.fieldRight = fieldRight;
-        }
-
-        public Object value(Object item) {
-            return '' + ((SObject) item).get(fieldLeft) + ((SObject) item).get(fieldRight);
-        }
-
-        public Type valueType() {
-            return String.class;
         }
     }
 
@@ -884,6 +858,37 @@ public class Collection {
         }
         public Object value(Object item) {
             return item;
+        }
+    }
+
+    /**
+    * Maps collection by pair of fields and separator. ex.
+    * Junction object by both parent fields.
+    * This mapper will always map by String key.
+    *
+    * @example
+    * <pre>
+    *       Map<String, JunctionObject> junctionRecordsByParents =
+    *           Collection.mapBy(junctionRecords,
+    *               new Collection.MapByFieldPair(JunctionObject.ParentId1, '_', JunctionObject.ParentId2)
+    *           );
+    * </pre>
+    * */
+    public class ConcatenatedFieldsMapper implements Collection.Mapper {
+        private SObjectField fieldLeft;
+        private SObjectField fieldRight;
+
+        public ConcatenatedFieldsMapper(SObjectField fieldLeft, SObjectField fieldRight) {
+            this.fieldLeft = fieldLeft;
+            this.fieldRight = fieldRight;
+        }
+
+        public Object value(Object item) {
+            return '' + ((SObject) item).get(fieldLeft) + ((SObject) item).get(fieldRight);
+        }
+
+        public Type valueType() {
+            return String.class;
         }
     }
 

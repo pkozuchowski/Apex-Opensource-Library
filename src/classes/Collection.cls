@@ -46,6 +46,13 @@ public inherited sharing class Collection {
             VALUE_IN = 'IN',
             VALUE_NOT_IN = 'NOT IN';
 
+    /*Flyweights for reducers*/
+    private final static ArithmeticReducer
+            max = new ReducerToMax(),
+            min = new ReducerToMin(),
+            average = new ReducerToAverage(),
+            sum = new ReducerToSum();
+
     private List<Object> items;
 
 
@@ -583,19 +590,19 @@ public inherited sharing class Collection {
         }
 
         private Decimal toSum(SObjectField field) {
-            return (Decimal) this.to(new ReducerToSum().ofField(field), 0.0);
+            return (Decimal) this.to(sum.ofField(field), 0.0);
         }
 
         private Decimal toAverage(SObjectField field) {
-            return (Decimal) this.to(new ReducerToAverage().ofField(field), null);
+            return (Decimal) this.to(average.ofField(field), null);
         }
 
         private Decimal toMin(SObjectField field) {
-            return (Decimal) this.to(new ReducerToMin().ofField(field), null);
+            return (Decimal) this.to(min.ofField(field), null);
         }
 
         private Decimal toMax(SObjectField field) {
-            return (Decimal) this.to(new ReducerToMax().ofField(field), 0.0);
+            return (Decimal) this.to(max.ofField(field), 0.0);
         }
 
 
@@ -776,7 +783,7 @@ public inherited sharing class Collection {
     /**
      * Reduces SObjects to sum of field(s)
      */
-    private abstract class SObjectFieldReducer implements Reducer {
+    private abstract class ArithmeticReducer implements Reducer {
         private SObjectField field;
 
         public Reducer ofField(SObjectField field) {
@@ -788,7 +795,7 @@ public inherited sharing class Collection {
     /**
      * Reduces SObjects field(s) to their sum.
      */
-    private class ReducerToSum extends SObjectFieldReducer {
+    private class ReducerToSum extends ArithmeticReducer {
         public Object reduce(Object aggregatedValues, Object item, Integer index) {
             Decimal fieldValue = (Decimal) ((SObject) item).get(field);
             return (Decimal) aggregatedValues
@@ -797,9 +804,9 @@ public inherited sharing class Collection {
     }
 
     /**
-     * Reduces SObject fields(s)to their avarage value.
+     * Reduces SObject fields(s)to their average value.
      */
-    private class ReducerToAverage extends SObjectFieldReducer {
+    private class ReducerToAverage extends ArithmeticReducer {
         private Decimal sum = 0;
         private Integer count = 0;
 
@@ -814,7 +821,7 @@ public inherited sharing class Collection {
     /**
      * Reduces SObject to their maximal value.
      */
-    private class ReducerToMax extends SObjectFieldReducer {
+    private class ReducerToMax extends ArithmeticReducer {
         public Object reduce(Object maxSoFar, Object item, Integer index) {
             Decimal fieldValue = (Decimal) ((SObject) item).get(field);
 
@@ -833,7 +840,7 @@ public inherited sharing class Collection {
     /**
      * Reduces SObject collection to minimal value from given field(s).
      */
-    private class ReducerToMin extends SObjectFieldReducer {
+    private class ReducerToMin extends ArithmeticReducer {
         public Object reduce(Object minSoFar, Object item, Integer index) {
             Decimal fieldValue = (Decimal) ((SObject) item).get(field);
 
@@ -946,41 +953,6 @@ public inherited sharing class Collection {
     * Filters
     *
     * */
-    private interface ComparisionResult {
-        Boolean isTrue(Integer i);
-    }
-    private class ComparisionEquals implements ComparisionResult {
-        public Boolean isTrue(Integer i) {
-            return i == 0;
-        }
-    }
-    private class ComparisionNotEquals implements ComparisionResult {
-        public Boolean isTrue(Integer i) {
-            return i != 0;
-        }
-    }
-    private class ComparisionGreaterThan implements ComparisionResult {
-        public Boolean isTrue(Integer i) {
-            return i > 1;
-        }
-    }
-    private class ComparisionGreaterEqualsThan implements ComparisionResult {
-        public Boolean isTrue(Integer i) {
-            return i >= 0;
-        }
-    }
-    private class ComparisionLessThan implements ComparisionResult {
-        public Boolean isTrue(Integer i) {
-            return i < 0;
-        }
-    }
-    private class ComparisionLessEqualsThan implements ComparisionResult {
-        public Boolean isTrue(Integer i) {
-            return i <= 0;
-        }
-    }
-
-
     /**
      * Filters List of SObject by field value.
      */
@@ -1140,6 +1112,40 @@ public inherited sharing class Collection {
     * Comparators
     *
     * */
+    private interface ComparisionResult {
+        Boolean isTrue(Integer i);
+    }
+    private class ComparisionEquals implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i == 0;
+        }
+    }
+    private class ComparisionNotEquals implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i != 0;
+        }
+    }
+    private class ComparisionGreaterThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i > 1;
+        }
+    }
+    private class ComparisionGreaterEqualsThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i >= 0;
+        }
+    }
+    private class ComparisionLessThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i < 0;
+        }
+    }
+    private class ComparisionLessEqualsThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i <= 0;
+        }
+    }
+
     private final static Map<Schema.SoapType, Collection.Comparator> comparatorsByFieldType = new Map<SoapType, Collection.Comparator>{
             SoapType.ID => new StringComparator(),
             SoapType.STRING => new StringComparator(),
@@ -1154,7 +1160,7 @@ public inherited sharing class Collection {
 
     private static Collection.Comparator getFieldComparator(SObjectField field) {
         Collection.Comparator comparator = comparatorsByFieldType.get(field.getDescribe().getSoapType());
-        return comparator == null? new AnyComparator() : comparator;
+        return comparator == null ? new AnyComparator() : comparator;
     }
 
     private class AnyComparator implements Collection.Comparator {

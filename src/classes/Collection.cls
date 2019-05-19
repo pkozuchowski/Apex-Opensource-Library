@@ -35,7 +35,7 @@
 public class Collection {
     private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
     public final static Boolean ANY_VALUE = true;
-    public final static String
+    private final static String
             EQUALS = '==',
             NOT_EQUALS = '!=',
             GREATER_THAN = '>',
@@ -223,114 +223,175 @@ public class Collection {
         Boolean accepts(SObject record, SObject oldRecord);
     }
 
-    /**
-     * Filters List of SObject by field value.
-     * Operators:
-     * <ul>
-     *  <li>'==' or Collection.EQUALS</li>
-     *  <li>'!=' or Collection.NOT_EQUALS</li>
-     *  <li>'>' or Collection.GREATER_THAN</li>
-     *  <li>'>=' or Collection.GREATER_EQUAL_THAN</li>
-     *  <li>'<' or Collection.LESS_THAN</li>
-     *  <li>'<=' or Collection.LESS_EQUAL_THAN</li>
-     * </ul>
-     *
-     * @example
-     * <pre>
-     *     new Collection(accounts).filter(Account.CreatedDate,'>=', Date.today().addDays(-1));
-     * </pre>
-     */
-    public Collection filter(SObjectField field, String operator, Object value) {
-        assertSObjectCollection();
-        return filter(new FilterByFieldValue(field, operator, value));
+    public FilterFacade filter() {
+        return new FilterFacade(this);
     }
 
-    /**
-     * Filters List of SObject by given Prototype record.
-     * @return SObject that have the same values in fields as given prototype
-     */
-    public Collection filter(SObject prototype) {
-        assertSObjectCollection();
-        return filter(new FilterByPrototype(prototype));
-    }
+    public class FilterFacade {
+        private Collection filterCollection;
+        private List<Filter> filters;
+        private List<Boolean> isAND;
 
-    /**
-     * Filters collection items using given Filter implementation.
-     * @param filter Filter implementation which for each collection item returns boolean value whether item should
-     * be included in the output or not.
-     */
-    public Collection filter(Filter filter) {
-        List<Object> filtered = Apex.newListOfTheSameType(items);
-
-        for (Integer i = 0, j = size(); i < j; i++) {
-            Object item = items[i];
-
-            if (filter.accepts(item)) {
-                filtered.add(item);
-            }
+        public FilterFacade(Collection collection) {
+            this.filterCollection = collection;
+            this.filters = new List<Filter>();
+            this.isAND = new List<Boolean>();
         }
 
-        return Collection.of(filtered);
-    }
-
-    /**
-     * Filters collection items using given Filter implementation.
-     * @param filter UpdateFilter interface implementation, which for new and old record return boolean value whether
-     * new record should be included in output.
-     */
-    public Collection filter(Map<Id, SObject> oldMap, UpdateFilter filter) {
-        assertSObjectCollection();
-
-        List<SObject> filtered = (List<SObject>) Apex.newListOfTheSameType(items);
-
-        for (Integer i = 0, size = size(); i < size; ++i) {
-            SObject record = (SObject) items[i];
-            SObject oldRecord = oldMap.get(record.Id);
-
-            if (filter.accepts(record, oldRecord)) {
-                filtered.add(record);
-            }
+        /**
+         * Filters Collection using Filter interface implementation.
+         */
+        public FilterFacade byUsing(Filter filter) {
+            addFilter(filter);
+            return this;
         }
 
-        return Collection.of(filtered);
-    }
-
-
-    /**
-    * FIND
-    * */
-    /**
-     * @return First collection item accepted by Collection.FilterByFieldValue, or null.
-     * @see Collection.FilterByFieldValue
-     * @see Collection.filter(SObjectField field, String operator, Object value)
-     */
-    public SObject find(SObjectField field, String operator, Object value) {
-        assertSObjectCollection();
-        return (SObject) find(new FilterByFieldValue(field, operator, value));
-    }
-
-    /**
-     * @return First collection item which matches all fields specified on prototype.
-     */
-    public SObject find(SObject prototype) {
-        assertSObjectCollection();
-        return (SObject) find(new FilterByPrototype(prototype));
-    }
-
-    /**
-     * @param filter Filter implementation used in the search.
-     * @return First collection item accepted by filter or null.
-     */
-    public Object find(Filter filter) {
-        for (Integer i = 0, j = size(); i < j; i++) {
-            Object item = items[i];
-
-            if (filter.accepts(item)) {
-                return item;
-            }
+        /**
+         * Filters Collection of updated SObjects using UpdateFilter interface implementation.
+         */
+        public FilterFacade byUsing(Map<Id, SObject> oldMap, UpdateFilter filter) {
+            filterCollection.assertSObjectCollection();
+            addFilter(new UpdateFilterToFilterAdapter(oldMap, filter));
+            return this;
         }
 
-        return null;
+        public FilterFacade equals(SObjectField field, Object value) {
+            filterCollection.assertSObjectCollection();
+            addFilter(new FilterByFieldValue(field, Collection.EQUALS, value));
+            return this;
+        }
+
+        public FilterFacade notEquals(SObjectField field, Object value) {
+            filterCollection.assertSObjectCollection();
+            addFilter(new FilterByFieldValue(field, Collection.NOT_EQUALS, value));
+            return this;
+        }
+
+        public FilterFacade greaterThan(SObjectField field, Object value) {
+            filterCollection.assertSObjectCollection();
+            addFilter(new FilterByFieldValue(field, Collection.GREATER_THAN, value));
+            return this;
+        }
+
+        public FilterFacade greaterEqualsThan(SObjectField field, Object value) {
+            filterCollection.assertSObjectCollection();
+            addFilter(new FilterByFieldValue(field, Collection.GREATER_EQUAL_THAN, value));
+            return this;
+        }
+
+        public FilterFacade lessThan(SObjectField field, Object value) {
+            filterCollection.assertSObjectCollection();
+            addFilter(new FilterByFieldValue(field, Collection.LESS_THAN, value));
+            return this;
+        }
+
+        public FilterFacade lessEqualsThan(SObjectField field, Object value) {
+            filterCollection.assertSObjectCollection();
+            addFilter(new FilterByFieldValue(field, Collection.LESS_EQUAL_THAN, value));
+            return this;
+        }
+
+        public FilterFacade valueIn(SObjectField field, Set<Object> values) {
+            filterCollection.assertSObjectCollection();
+            addFilter(new FilterByFieldValues(field, Collection.VALUE_IN, values));
+            return this;
+        }
+
+        public FilterFacade valueIn(SObjectField field, List<Object> values) {
+            filterCollection.assertSObjectCollection();
+            addFilter(new FilterByFieldValues(field, Collection.VALUE_IN, values));
+            return this;
+        }
+
+        public FilterFacade valueNotIn(SObjectField field, Set<Object> values) {
+            filterCollection.assertSObjectCollection();
+            addFilter(new FilterByFieldValues(field, Collection.VALUE_NOT_IN, values));
+            return this;
+        }
+
+        public FilterFacade valueNotIn(SObjectField field, List<Object> values) {
+            filterCollection.assertSObjectCollection();
+            addFilter(new FilterByFieldValues(field, Collection.VALUE_NOT_IN, values));
+            return this;
+        }
+
+        public FilterFacade relatedTo(List<SObject> parents, SObjectField relationshipField) {
+            filterCollection.assertSObjectCollection();
+            addFilter(new FilterRelatedTo(parents, relationshipField));
+            return this;
+        }
+
+        /**
+         * Collection is filtered to contain only these SObjects which have fields populated like provided example record.
+         */
+        public FilterFacade alike(SObject prototype) {
+            filterCollection.assertSObjectCollection();
+            this.filters.add(new FilterByPrototype(prototype));
+            return this;
+        }
+
+        public FilterFacade andAlso() {
+            return this;
+        }
+
+        public FilterFacade orElse() {
+            this.isAND.set(this.isAND.size() - 1, false);
+            return this;
+        }
+
+        /**
+         * Evaluates filters and returns Collection of filtered items.
+         */
+        public Collection then() {
+            List<Object> filteredItems = Apex.newListOfTheSameType(filterCollection.items);
+
+            for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
+                Object item = filterCollection.items[i];
+
+                if (isSatisfyingConditions(item)) {
+                    filteredItems.add(item);
+                }
+            }
+
+            return Collection.of(filteredItems);
+        }
+
+        /**
+         * @return first item satisfying conditions.
+         */
+        public Object getFirst() {
+            for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
+                Object item = filterCollection.items[i];
+
+                if (isSatisfyingConditions(item)) {
+                    return item;
+                }
+            }
+
+            return null;
+        }
+
+
+        private Boolean isSatisfyingConditions(Object item) {
+            Boolean accepted = true;
+
+            for (Integer filterIndex = 0, filtersSize = filters.size(); filterIndex < filtersSize; filterIndex++) {
+                Boolean acceptedByFilter = this.filters[filterIndex].accepts(item);
+
+                if (isAND[filterIndex]) {
+                    accepted &= acceptedByFilter;
+                } else {
+                    accepted |= acceptedByFilter;
+                }
+            }
+
+            return accepted;
+        }
+
+        private void addFilter(Filter filter) {
+            this.filters.add(filter);
+            this.isAND.add(true);
+        }
     }
 
 
@@ -428,17 +489,17 @@ public class Collection {
         Object value(Object item);
     }
 
-    public CollectionReducer reduce() {
-        return new CollectionReducer(this);
+    public ReduceFacade reduce() {
+        return new ReduceFacade(this);
     }
 
     /**
      * Facade for Collection Reducers
      */
-    public class CollectionReducer {
+    public class ReduceFacade {
         private Collection collection;
 
-        private CollectionReducer(Collection collection) {
+        private ReduceFacade(Collection collection) {
             this.collection = collection;
         }
 
@@ -646,14 +707,14 @@ public class Collection {
 
 
     /*
-    * 
-    * 
-    * 
+    *
+    *
+    *
     * Beyond this point are internal interfaces implementations.
     *
-    *  
-    * 
-    * 
+    *
+    *
+    *
     * */
 
     /**
@@ -828,9 +889,9 @@ public class Collection {
 
 
     /*
-    * 
+    *
     * Filters
-    * 
+    *
     * */
     private final static Map<String, Set<Integer>> COMPARATOR_OUTCOMES = new Map<String, Set<Integer>>{
             GREATER_THAN => new Set<Integer>{1},
@@ -862,13 +923,11 @@ public class Collection {
     public class FilterByFieldValue implements Collection.Filter {
         private Object value;
         private String field;
-        private String operator;
         private Collection.Comparator comparator;
         private final Set<Integer> acceptedCompareValues;
 
         public FilterByFieldValue(SObjectField field, String operator, Object value) {
             this.field = '' + field;
-            this.operator = operator;
             this.value = value;
             this.acceptedCompareValues = COMPARATOR_OUTCOMES.get(operator);
             this.comparator = getFieldComparator(field);
@@ -929,19 +988,18 @@ public class Collection {
      */
     public class FilterByFieldValues implements Collection.Filter {
         private Set<Object> values;
-        private String field;
+        private SObjectField field;
         private Boolean valueIn;
 
-        public FilterByFieldValues(SObjectField field, String operator, Set<Object> values) {
-            this('' + field, operator, values);
+        public FilterByFieldValues(SObjectField field, String operator, List<Object> values) {
+            this(field, operator, values);
         }
 
-        public FilterByFieldValues(String field, String operator, Set<Object> values) {
+        public FilterByFieldValues(SObjectField field, String operator, Set<Object> values) {
             this.values = values;
             this.field = field;
             this.valueIn = operator == Collection.VALUE_IN;
         }
-
 
         public Boolean accepts(Object record) {
             return valueIn == (values.contains(((SObject) record).get(field)));
@@ -962,10 +1020,6 @@ public class Collection {
         private SObjectField relationshipField;
 
         public FilterRelatedTo(List<SObject> parents, SObjectField relationshipField) {
-            this(new Map<Id, SObject>(parents), relationshipField);
-        }
-
-        public FilterRelatedTo(Map<Id, SObject> parents, SObjectField relationshipField) {
             this.parents = new Map<Id, SObject>(parents);
             this.relationshipField = relationshipField;
         }
@@ -975,6 +1029,22 @@ public class Collection {
         }
     }
 
+    /**
+     * Proxy between UpdateFilter and Filter
+     */
+    private class UpdateFilterToFilterAdapter implements Filter {
+        private Map<Id, SObject> oldMap;
+        private UpdateFilter updateFilter;
+
+        public UpdateFilterToFilterAdapter(Map<Id, SObject> oldMap, UpdateFilter updateFilter) {
+            this.oldMap = oldMap;
+            this.updateFilter = updateFilter;
+        }
+
+        public Boolean accepts(Object item) {
+            return updateFilter.accepts((SObject) item, oldMap.get(((SObject) item).Id));
+        }
+    }
 
     /**
      * Filter records that changed field value to other value.
@@ -1120,7 +1190,6 @@ public class Collection {
         }
     }
 
-
     /**
      * Compares records by values of the SObject field.
      */
@@ -1211,7 +1280,6 @@ public class Collection {
         }
     }
 
-    /*@formatter:off*/
     private class MapById implements Collection.IMap {
         private Map<Id, Object> mapInstance;
 

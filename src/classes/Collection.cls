@@ -33,8 +33,8 @@
  * - Sorting records by given field or comparator.
  */
 public class Collection {
-    private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
     public final static Boolean ANY_VALUE = true;
+    private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
     private final static ComparisionResult
             EQUALS = new ComparisionEquals(),
             NOT_EQUALS = new ComparisionNotEquals(),
@@ -42,7 +42,6 @@ public class Collection {
             GREATER_EQUAL_THAN = new ComparisionGreaterEqualsThan(),
             LESS_THAN = new ComparisionLessThan(),
             LESS_EQUAL_THAN = new ComparisionLessEqualsThan();
-
     private static String
             VALUE_IN = 'IN',
             VALUE_NOT_IN = 'NOT IN';
@@ -944,59 +943,54 @@ public class Collection {
     * Filters
     *
     * */
-
-
     private interface ComparisionResult {
         Boolean isTrue(Integer i);
     }
-    private class ComparisionEquals implements ComparisionResult{
-        public Boolean isTrue(Integer i){return i ==0;}
+    private class ComparisionEquals implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i == 0;
+        }
     }
-    private class ComparisionNotEquals implements ComparisionResult{
-        public Boolean isTrue(Integer i){return i !=0;}
+    private class ComparisionNotEquals implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i != 0;
+        }
     }
-    private class ComparisionGreaterThan implements ComparisionResult{
-        public Boolean isTrue(Integer i){return i > 1;}
+    private class ComparisionGreaterThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i > 1;
+        }
     }
-    private class ComparisionGreaterEqualsThan implements ComparisionResult{
-        public Boolean isTrue(Integer i){return i >= 0;}
+    private class ComparisionGreaterEqualsThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i >= 0;
+        }
     }
-    private class ComparisionLessThan implements ComparisionResult{
-        public Boolean isTrue(Integer i){return i < 0;}
+    private class ComparisionLessThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i < 0;
+        }
     }
-    private class ComparisionLessEqualsThan implements ComparisionResult{
-        public Boolean isTrue(Integer i){return i <= 0;}
+    private class ComparisionLessEqualsThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i <= 0;
+        }
     }
 
 
     /**
      * Filters List of SObject by field value.
-     * Operators:
-     * <ul>
-     *  <li>'==' or Collection.EQUALS</li>
-     *  <li>'!=' or Collection.NOT_EQUALS</li>
-     *  <li>'>' or Collection.GREATER_THAN</li>
-     *  <li>'>=' or Collection.GREATER_EQUAL_THAN</li>
-     *  <li>'<' or Collection.LESS_THAN</li>
-     *  <li>'<=' or Collection.LESS_EQUAL_THAN</li>
-     * </ul>
-     *
-     * @example
-     * <pre>
-     *     new Collection(accounts).filter(new Collection.FilterByFieldValue(Account.CreatedDate,'>=', Date.today().addDays(-1)));
-     *     Collection.filter(accounts, new Collection.FilterByFieldValue(Account.CreatedDate,'>=', Date.today().addDays(-1) ));
-     * </pre>
      */
-    public class FilterByFieldValue implements Collection.Filter {
+    private class FilterByFieldValue implements Collection.Filter {
         private Object value;
         private String field;
         private Collection.Comparator comparator;
-        private final ComparisionResult comparisionResult;
+        private final ComparisionResult expectedResult;
 
-        public FilterByFieldValue(SObjectField field, ComparisionResult comparisionResult, Object value) {
+        public FilterByFieldValue(SObjectField field, ComparisionResult expectedResult, Object value) {
             this.field = '' + field;
             this.value = value;
-            this.comparisionResult = comparisionResult;
+            this.expectedResult = expectedResult;
             this.comparator = getFieldComparator(field);
         }
 
@@ -1004,22 +998,16 @@ public class Collection {
             Object fieldValue = ((SObject) record).get(field);
             Integer outcome = comparator.compare(fieldValue, value);
 
-            return comparisionResult.isTrue(outcome);
+            return expectedResult.isTrue(outcome);
         }
     }
 
 
     /**
-     *Filters SObject collection by SObject prototype.
+     * Filters SObject collection by SObject prototype.
      * Collection sobject that have the same field values as prototype are accepted.
-     *
-     * @example
-     * <pre>
-     *     new ByPrototype(new Opportunity(Name = 'Test Opportunity', StageNem='Analysis'))
-     *     would return Opportunities with Name = 'Test Opportunity' and Stage Analysis.
-     * </pre>
      */
-    public class FilterByPrototype implements Collection.Filter {
+    private class FilterByPrototype implements Collection.Filter {
         private Map<String, Object> fieldsValues;
 
         public FilterByPrototype(SObject prototype) {
@@ -1042,24 +1030,14 @@ public class Collection {
 
     /**
      * Filters List of SObject by one of many possible field values.
-     * Operators:
-     * <ul>
-     *  <li>'IN' or Collection.VALUE_IN</li>
-     *  <li>'NOT IN' or Collection.VALUE_NOT_IN</li>
-     * </ul>
-     *
-     * @example
-     * <pre>
-     *     new Collection(accounts).filter(new Collection.FilterByFieldValues(Account.Name,'IN',new Set<Object>{'Test Account', 'Other Account'}));
-     * </pre>
      */
-    public class FilterByFieldValues implements Collection.Filter {
+    private class FilterByFieldValues implements Collection.Filter {
         private Set<Object> values;
         private SObjectField field;
         private Boolean valueIn;
 
         public FilterByFieldValues(SObjectField field, String operator, List<Object> values) {
-            this(field, operator, values);
+            this(field, operator, new Set<Object>(values));
         }
 
         public FilterByFieldValues(SObjectField field, String operator, Set<Object> values) {
@@ -1076,11 +1054,6 @@ public class Collection {
 
     /**
      * Filters SObject list to those related to given parents by given relationship field.
-     *
-     * @example
-     * <pre>
-     *     Collection.filter(contacts, new Collection.FilterRelatedTo(accounts, Contact.AccountId));
-     * </pre>
      */
     public class FilterRelatedTo implements Collection.Filter {
         private Map<Id, SObject> parents;

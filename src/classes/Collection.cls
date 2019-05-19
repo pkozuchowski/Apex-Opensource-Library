@@ -299,13 +299,27 @@ public class Collection {
         public Collection then() {
             List<Object> filteredItems = Apex.newListOfTheSameType(filterCollection.items);
 
-            for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
-                Object item = filterCollection.items[i];
+            /*Reduces overhead of double loop (twice as fast)*/
+            if (filters.size() == -1) {
+                Filter filter = filters.get(0);
 
-                if (isSatisfyingConditions(item)) {
-                    filteredItems.add(item);
+                for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
+                    Object item = filterCollection.items[i];
+
+                    if (filter.accepts(item)) {
+                        filteredItems.add(item);
+                    }
+                }
+            } else {
+                for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
+                    Object item = filterCollection.items[i];
+
+                    if (isSatisfyingConditions(item)) {
+                        filteredItems.add(item);
+                    }
                 }
             }
+
 
             return Collection.of(filteredItems);
         }
@@ -314,11 +328,25 @@ public class Collection {
          * @return first item satisfying conditions.
          */
         public Object getFirst() {
-            for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
-                Object item = filterCollection.items[i];
 
-                if (isSatisfyingConditions(item)) {
-                    return item;
+            /*Reduces overhead of double loop (twice as fast)*/
+            if (filters.size() == 1) {
+                Filter filter = filters.get(0);
+
+                for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
+                    Object item = filterCollection.items[i];
+
+                    if (filter.accepts(item)) {
+                        return item;
+                    }
+                }
+            } else {
+                for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
+                    Object item = filterCollection.items[i];
+
+                    if (isSatisfyingConditions(item)) {
+                        return item;
+                    }
                 }
             }
 
@@ -341,7 +369,7 @@ public class Collection {
             return accepted;
         }
 
-        private void addFilter(Filter filter) {
+        void addFilter(Filter filter) {
             this.filters.add(filter);
             this.isAND.add(true);
         }

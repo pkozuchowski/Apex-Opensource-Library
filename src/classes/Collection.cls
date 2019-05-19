@@ -35,13 +35,15 @@
 public class Collection {
     private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
     public final static Boolean ANY_VALUE = true;
-    private final static String
-            EQUALS = '==',
-            NOT_EQUALS = '!=',
-            GREATER_THAN = '>',
-            GREATER_EQUAL_THAN = '>=',
-            LESS_THAN = '<',
-            LESS_EQUAL_THAN = '<=',
+    private final static ComparisionResult
+            EQUALS = new ComparisionEquals(),
+            NOT_EQUALS = new ComparisionNotEquals(),
+            GREATER_THAN = new ComparisionGreaterThan(),
+            GREATER_EQUAL_THAN = new ComparisionGreaterEqualsThan(),
+            LESS_THAN = new ComparisionLessThan(),
+            LESS_EQUAL_THAN = new ComparisionLessEqualsThan();
+
+    private static String
             VALUE_IN = 'IN',
             VALUE_NOT_IN = 'NOT IN';
 
@@ -942,14 +944,30 @@ public class Collection {
     * Filters
     *
     * */
-    private final static Map<String, Set<Integer>> COMPARATOR_OUTCOMES = new Map<String, Set<Integer>>{
-            GREATER_THAN => new Set<Integer>{1},
-            GREATER_EQUAL_THAN => new Set<Integer>{0, 1},
-            LESS_THAN => new Set<Integer>{-1},
-            LESS_EQUAL_THAN => new Set<Integer>{0, -1},
-            EQUALS => new Set<Integer>{0},
-            NOT_EQUALS => new Set<Integer>{1, -1}
-    };
+
+
+    private interface ComparisionResult {
+        Boolean isTrue(Integer i);
+    }
+    private class ComparisionEquals implements ComparisionResult{
+        public Boolean isTrue(Integer i){return i ==0;}
+    }
+    private class ComparisionNotEquals implements ComparisionResult{
+        public Boolean isTrue(Integer i){return i !=0;}
+    }
+    private class ComparisionGreaterThan implements ComparisionResult{
+        public Boolean isTrue(Integer i){return i > 1;}
+    }
+    private class ComparisionGreaterEqualsThan implements ComparisionResult{
+        public Boolean isTrue(Integer i){return i >= 0;}
+    }
+    private class ComparisionLessThan implements ComparisionResult{
+        public Boolean isTrue(Integer i){return i < 0;}
+    }
+    private class ComparisionLessEqualsThan implements ComparisionResult{
+        public Boolean isTrue(Integer i){return i <= 0;}
+    }
+
 
     /**
      * Filters List of SObject by field value.
@@ -973,12 +991,12 @@ public class Collection {
         private Object value;
         private String field;
         private Collection.Comparator comparator;
-        private final Set<Integer> acceptedCompareValues;
+        private final ComparisionResult comparisionResult;
 
-        public FilterByFieldValue(SObjectField field, String operator, Object value) {
+        public FilterByFieldValue(SObjectField field, ComparisionResult comparisionResult, Object value) {
             this.field = '' + field;
             this.value = value;
-            this.acceptedCompareValues = COMPARATOR_OUTCOMES.get(operator);
+            this.comparisionResult = comparisionResult;
             this.comparator = getFieldComparator(field);
         }
 
@@ -986,7 +1004,7 @@ public class Collection {
             Object fieldValue = ((SObject) record).get(field);
             Integer outcome = comparator.compare(fieldValue, value);
 
-            return acceptedCompareValues.contains(outcome);
+            return comparisionResult.isTrue(outcome);
         }
     }
 

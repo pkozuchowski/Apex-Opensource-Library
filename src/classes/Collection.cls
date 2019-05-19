@@ -32,7 +32,7 @@
  * - Reducing collection to single variable using Reducer interface
  * - Sorting records by given field or comparator.
  */
-public class Collection {
+public inherited sharing class Collection {
     public final static Boolean ANY_VALUE = true;
     private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
     private final static ComparisionResult
@@ -421,22 +421,22 @@ public class Collection {
             return filterFacade;
         }
 
-        public FilterFacade valueIn(Set<Object> values) {
+        public FilterFacade isIn(Set<Object> values) {
             filterFacade.addFilter(new FilterByFieldValues(field, Collection.VALUE_IN, values));
             return filterFacade;
         }
 
-        public FilterFacade valueIn(List<Object> values) {
+        public FilterFacade isIn(List<Object> values) {
             filterFacade.addFilter(new FilterByFieldValues(field, Collection.VALUE_IN, values));
             return filterFacade;
         }
 
-        public FilterFacade valueNotIn(Set<Object> values) {
+        public FilterFacade isNotIn(Set<Object> values) {
             filterFacade.addFilter(new FilterByFieldValues(field, Collection.VALUE_NOT_IN, values));
             return filterFacade;
         }
 
-        public FilterFacade valueNotIn(List<Object> values) {
+        public FilterFacade isNotIn(List<Object> values) {
             filterFacade.addFilter(new FilterByFieldValues(field, Collection.VALUE_NOT_IN, values));
             return filterFacade;
         }
@@ -1154,19 +1154,13 @@ public class Collection {
 
     private static Collection.Comparator getFieldComparator(SObjectField field) {
         Collection.Comparator comparator = comparatorsByFieldType.get(field.getDescribe().getSoapType());
-
-        if (comparator == null) {
-            comparator = new AnyComparator();
-        }
-
-        return comparator;
+        return comparator == null? new AnyComparator() : comparator;
     }
 
     private class AnyComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             String a = thisItem == null ? '' : '' + thisItem;
             String b = otherItem == null ? '' : '' + otherItem;
-
             return a.compareTo(b);
         }
     }

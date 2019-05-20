@@ -89,6 +89,26 @@ public inherited sharing class Collection {
         return items[i];
     }
 
+    public Collection add(Integer index, Object element) {
+        items.add(index, element);
+        return this;
+    }
+
+    public Collection add(Object element) {
+        items.add(element);
+        return this;
+    }
+
+    public Collection addAll(List<Object> elements) {
+        items.addAll(elements);
+        return this;
+    }
+
+    public Collection addAll(Set<Object> elements) {
+        items.addAll(elements);
+        return this;
+    }
+
     /**
      * @return true when collection is not null or empty, false otherwise.
      */

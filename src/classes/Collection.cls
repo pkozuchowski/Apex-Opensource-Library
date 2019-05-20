@@ -144,144 +144,16 @@ public inherited sharing class Collection {
 
 
     /**
-    * Wrap
-    * */
-    /**
-     * Wrapper interface.
-     * Concrete method implementing this interface should have a member variable for wrapped item.
-     * wrap method should set that member variable or set other data from the record.
-     */
-    public interface Wrapper {
-        void wrap(Object item);
-    }
-
-    /**
-     * WrapperFactory interface.
-     * Concrete method implementing this interface should produce wrapper for given item.
-     */
-    public interface WrapperFactory {
-        Object wrap(Object item);
-    }
-
-    /**
-     * Wraps objects into Wrapper implementation.
-     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
-     */
-    public Collection wrap(Type wrapperType) {
-        return wrap(new WrapperFactoryAdatper(wrapperType), wrapperType);
-    }
-
-    /**
-     * Wraps collection items using wrapper factory.
-     * @return Collection of wrapped objects;
-     */
-    public Collection wrap(WrapperFactory wrapperFactory, Type wrapperType) {
-        List<Object> wrappers = (List<Wrapper>) Apex.newListOfItemType(wrapperType, new List<Object>());
-
-        for (Integer i = 0, j = size(); i < j; i++) {
-            Object wrapper = wrapperFactory.wrap(items[i]);
-            wrappers.add(wrapper);
-        }
-
-        return new Collection(wrappers);
-    }
-
-    private class WrapperFactoryAdatper implements WrapperFactory {
-        private Type wrapperType;
-
-        public WrapperFactoryAdatper(Type wrapperType) {
-            this.wrapperType = wrapperType;
-        }
-
-        public Object wrap(Object item) {
-            Wrapper wrapper = (Wrapper) wrapperType.newInstance();
-            wrapper.wrap(item);
-            return wrapper;
-        }
-    }
-
-
-    /**
-    * ORDER BY
-    * */
-    /**
-     * Compares 2 objects to determine their order.
-     * The implementation of this method should return the following values:
-     * 0 if thisItem and otherItem are equal
-     * > 0 if thisItem is greater than otherItem
-     * < 0 if thisItem is less than otherItem
-     */
-    public interface Comparator {
-        Integer compare(Object thisItem, Object otherItem);
-    }
-
-    /**
-     * Order of sorting
-     */
-    public enum Order {
-        ASCENDING, DESCENDING
-    }
-
-    /**
-     * Sorts collection by given field and order.
-     * @param field Field to sort by.
-     * @param isAscending true -> ascending order, false -> descending order.
-     * Collection.ASCENDING/DESCENDING can be used instead.
-     */
-    public Collection orderBy(SObjectField field, Order order) {
-        assertSObjectCollection();
-        return orderBy(new CompareByField(field, order));
-    }
-
-    /**
-     * Sorts collection using given Collection.Comparator implementation.
-     * @param field Field to sort by.
-     * @param isAscending true -> ascending order, false -> descending order.
-     * Collection.ASCENDING/DESCENDING can be used instead.
-     */
-    public Collection orderBy(Comparator comparator) {
-        List<ComparableObject> comparables = new List<ComparableObject>();
-
-        for (Integer i = 0, size = size(); i < size; i++) {
-            comparables.add(new ComparableObject(items[i], comparator));
-        }
-
-        comparables.sort();
-        List<Object> sorted = Apex.newListOfTheSameType(items);
-
-        for (Integer i = 0, size = comparables.size(); i < size; i++) {
-            sorted.add(comparables[i].item);
-        }
-
-        return Collection.of(sorted);
-    }
-
-    private virtual class ComparableObject implements Comparable {
-        private Object item;
-        private Comparator comparator;
-
-        public ComparableObject(Object item, Comparator comparator) {
-            this.item = item;
-            this.comparator = comparator;
-        }
-
-        public Integer compareTo(Object other) {
-            return comparator.compare(this.item, ((ComparableObject) other).item);
-        }
-    }
-
-
-    /**
     * FILTER
     * */
-    /*
+    /**
     * Filter determines whether collection item should be included into result collection of filter method.
     * */
     public interface Filter {
         Boolean accepts(Object item);
     }
 
-    /*
+    /**
     * Filter determines whether collection item should be included into result collection of filter method.
     * This kind of filter compares current record value with Trigger.old value.
     * */
@@ -335,7 +207,6 @@ public inherited sharing class Collection {
             filterCollection.assertSObjectCollection();
             return new FieldFilterFacade(this, field);
         }
-
 
         /**
          * Collection is filtered to contain only these SObjects which have fields populated like provided example record.
@@ -495,81 +366,6 @@ public inherited sharing class Collection {
         }
     }
 
-
-    /**
-    * FOR EACH
-    * */
-    /**
-     * Worker performs action on each item in collection.
-     */
-    public interface Worker {
-        void forEach(Object item, Integer index);
-    }
-
-    /**
-     * For each element in collection, Worker.forEach action is executed.
-     * @param worker Concrete class implementing Worker interface. Executes action on each element.
-     */
-    public Collection forEach(Worker worker) {
-        for (Integer i = 0, j = size(); i < j; i++) {
-            worker.forEach(items[i], i);
-        }
-
-        return this;
-    }
-
-
-    /**
-    * FILL
-    * */
-    /**
-     * Fills in the list with number of clones of provided prototype record.
-     * By default, clone is deep and Id, timestamps and autonumbers are not preserved.
-     *
-     * @param listToFill List to fill in.
-     * @param count Number of clones in the list
-     * @param prototype Prototype of the record. Clone of this record will be added to the list.
-     */
-    public Collection fill(Integer count, SObject prototype) {
-        assertSObjectCollection();
-        return fill(count, prototype, defaultCloneOptions);
-    }
-
-    /**
-     * Fills in the list with number of clones of provided prototype record.
-     * @param count Number of clones in the list
-     * @param prototype Prototype of the record. Clone of this record will be added to the list.
-     * @param opts Collection.CloneOptions instance which determine clone operation characteristics.
-     */
-    public Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions) {
-        assertSObjectCollection();
-        for (Integer i = 0; i < count; i++) {
-            SObject clone = prototype.clone(
-                    cloneOptions.preserveId,
-                    cloneOptions.deepClone,
-                    cloneOptions.preserveReadonlyTimestamps,
-                    cloneOptions.preserveAutonumer
-            );
-            items.add(clone);
-        }
-        return Collection.of(items);
-    }
-
-    public class CloneOptions {
-        public Boolean preserveId { get; private set; }
-        public Boolean deepClone { get; private set; }
-        public Boolean preserveReadonlyTimestamps { get; private set; }
-        public Boolean preserveAutonumer { get; private set; }
-
-        public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumer) {
-            this.preserveId = preserveId;
-            this.deepClone = deepClone;
-            this.preserveReadonlyTimestamps = preserveReadonlyTimestamps;
-            this.preserveAutonumer = preserveAutonumer;
-        }
-    }
-
-
     /**
     * Reduce
     * */
@@ -692,20 +488,6 @@ public inherited sharing class Collection {
             return mapToUntypedMap(keyMapper, valueMapper).toMap();
         }
 
-        /*
-        * Internal method. Maps items to IMap instance.
-        * */
-        private IMap mapToUntypedMap(Mapper keyMapper, Mapper valueMapper) {
-            IMap imap = newMap(keyMapper.valueType(), valueMapper.valueType());
-
-            for (Integer i = 0, j = collection.size(); i < j; i++) {
-                Object item = collection.items[i];
-                imap.put(keyMapper.value(item), valueMapper.value(item));
-            }
-
-            return imap;
-        }
-
 
         /**
          * Groups collection items by given field to map where key
@@ -781,6 +563,223 @@ public inherited sharing class Collection {
             }
 
             return values;
+        }
+
+
+        /*
+        * Internal method. Maps items to IMap instance.
+        * */
+        private IMap mapToUntypedMap(Mapper keyMapper, Mapper valueMapper) {
+            IMap imap = newMap(keyMapper.valueType(), valueMapper.valueType());
+
+            for (Integer i = 0, j = collection.size(); i < j; i++) {
+                Object item = collection.items[i];
+                imap.put(keyMapper.value(item), valueMapper.value(item));
+            }
+
+            return imap;
+        }
+    }
+
+
+    /**
+    * Wrap
+    * */
+    /**
+     * Wrapper interface.
+     * Concrete method implementing this interface should have a member variable for wrapped item.
+     * wrap method should set that member variable or set other data from the record.
+     */
+    public interface Wrapper {
+        void wrap(Object item);
+    }
+
+    /**
+     * WrapperFactory interface.
+     * Concrete method implementing this interface should produce wrapper for given item.
+     */
+    public interface WrapperFactory {
+        Object wrap(Object item);
+    }
+
+    /**
+     * Wraps objects into Wrapper implementation.
+     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
+     */
+    public Collection wrap(Type wrapperType) {
+        return wrap(new WrapperFactoryAdatper(wrapperType), wrapperType);
+    }
+
+    /**
+     * Wraps collection items using wrapper factory.
+     * @return Collection of wrapped objects;
+     */
+    public Collection wrap(WrapperFactory wrapperFactory, Type wrapperType) {
+        List<Object> wrappers = (List<Wrapper>) Apex.newListOfItemType(wrapperType, new List<Object>());
+
+        for (Integer i = 0, j = size(); i < j; i++) {
+            Object wrapper = wrapperFactory.wrap(items[i]);
+            wrappers.add(wrapper);
+        }
+
+        return new Collection(wrappers);
+    }
+
+    private class WrapperFactoryAdatper implements WrapperFactory {
+        private Type wrapperType;
+
+        public WrapperFactoryAdatper(Type wrapperType) {
+            this.wrapperType = wrapperType;
+        }
+
+        public Object wrap(Object item) {
+            Wrapper wrapper = (Wrapper) wrapperType.newInstance();
+            wrapper.wrap(item);
+            return wrapper;
+        }
+    }
+
+
+    /**
+    * ORDER BY
+    * */
+    /**
+     * Compares 2 objects to determine their order.
+     * The implementation of this method should return the following values:
+     * 0 if thisItem and otherItem are equal
+     * > 0 if thisItem is greater than otherItem
+     * < 0 if thisItem is less than otherItem
+     */
+    public interface Comparator {
+        Integer compare(Object thisItem, Object otherItem);
+    }
+
+    /**
+     * Order of sorting
+     */
+    public enum Order {
+        ASCENDING, DESCENDING
+    }
+
+    /**
+     * Sorts collection by given field and order.
+     * @param field Field to sort by.
+     * @param isAscending true -> ascending order, false -> descending order.
+     * Collection.ASCENDING/DESCENDING can be used instead.
+     */
+    public Collection orderBy(SObjectField field, Order order) {
+        assertSObjectCollection();
+        return orderBy(new CompareByField(field, order));
+    }
+
+    /**
+     * Sorts collection using given Collection.Comparator implementation.
+     * @param field Field to sort by.
+     * @param isAscending true -> ascending order, false -> descending order.
+     * Collection.ASCENDING/DESCENDING can be used instead.
+     */
+    public Collection orderBy(Comparator comparator) {
+        List<ComparableObject> comparables = new List<ComparableObject>();
+
+        for (Integer i = 0, size = size(); i < size; i++) {
+            comparables.add(new ComparableObject(items[i], comparator));
+        }
+
+        comparables.sort();
+        List<Object> sorted = Apex.newListOfTheSameType(items);
+
+        for (Integer i = 0, size = comparables.size(); i < size; i++) {
+            sorted.add(comparables[i].item);
+        }
+
+        return Collection.of(sorted);
+    }
+
+    private virtual class ComparableObject implements Comparable {
+        private Object item;
+        private Comparator comparator;
+
+        public ComparableObject(Object item, Comparator comparator) {
+            this.item = item;
+            this.comparator = comparator;
+        }
+
+        public Integer compareTo(Object other) {
+            return comparator.compare(this.item, ((ComparableObject) other).item);
+        }
+    }
+
+
+    /**
+    * FOR EACH
+    * */
+    /**
+     * Worker performs action on each item in collection.
+     */
+    public interface Worker {
+        void forEach(Object item, Integer index);
+    }
+
+    /**
+     * For each element in collection, Worker.forEach action is executed.
+     * @param worker Concrete class implementing Worker interface. Executes action on each element.
+     */
+    public Collection forEach(Worker worker) {
+        for (Integer i = 0, j = size(); i < j; i++) {
+            worker.forEach(items[i], i);
+        }
+
+        return this;
+    }
+
+
+    /**
+    * FILL
+    * */
+    /**
+     * Fills in the list with number of clones of provided prototype record.
+     * By default, clone is deep and Id, timestamps and autonumbers are not preserved.
+     *
+     * @param listToFill List to fill in.
+     * @param count Number of clones in the list
+     * @param prototype Prototype of the record. Clone of this record will be added to the list.
+     */
+    public Collection fill(Integer count, SObject prototype) {
+        assertSObjectCollection();
+        return fill(count, prototype, defaultCloneOptions);
+    }
+
+    /**
+     * Fills in the list with number of clones of provided prototype record.
+     * @param count Number of clones in the list
+     * @param prototype Prototype of the record. Clone of this record will be added to the list.
+     * @param opts Collection.CloneOptions instance which determine clone operation characteristics.
+     */
+    public Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions) {
+        assertSObjectCollection();
+        for (Integer i = 0; i < count; i++) {
+            SObject clone = prototype.clone(
+                    cloneOptions.preserveId,
+                    cloneOptions.deepClone,
+                    cloneOptions.preserveReadonlyTimestamps,
+                    cloneOptions.preserveAutonumer
+            );
+            items.add(clone);
+        }
+        return Collection.of(items);
+    }
+
+    public class CloneOptions {
+        public Boolean preserveId { get; private set; }
+        public Boolean deepClone { get; private set; }
+        public Boolean preserveReadonlyTimestamps { get; private set; }
+        public Boolean preserveAutonumer { get; private set; }
+
+        public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumer) {
+            this.preserveId = preserveId;
+            this.deepClone = deepClone;
+            this.preserveReadonlyTimestamps = preserveReadonlyTimestamps;
+            this.preserveAutonumer = preserveAutonumer;
         }
     }
 

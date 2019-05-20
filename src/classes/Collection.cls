@@ -160,15 +160,7 @@ public inherited sharing class Collection {
      * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
      */
     public Collection wrap(Type wrapperType) {
-        List<Wrapper> wrappers = (List<Wrapper>) Apex.newListOfItemType(wrapperType, new List<Wrapper>());
-
-        for (Integer i = 0, j = size(); i < j; i++) {
-            Wrapper wrapper = (Wrapper) wrapperType.newInstance();
-            wrapper.wrap(items[i]);
-            wrappers.add(wrapper);
-        }
-
-        return new Collection(wrappers);
+        return wrap(new WrapperFactoryAdatper(wrapperType), wrapperType);
     }
 
     /**
@@ -192,6 +184,20 @@ public inherited sharing class Collection {
         }
 
         return new Collection(wrappers);
+    }
+
+    private class WrapperFactoryAdatper implements WrapperFactory {
+        private Type wrapperType;
+
+        public WrapperFactoryAdatper(Type wrapperType) {
+            this.wrapperType = wrapperType;
+        }
+
+        public Object wrap(Object item) {
+            Wrapper wrapper = (Wrapper) wrapperType.newInstance();
+            wrapper.wrap(item);
+            return wrapper;
+        }
     }
 
 

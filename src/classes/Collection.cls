@@ -156,19 +156,19 @@ public inherited sharing class Collection {
     }
 
     /**
-     * Wraps objects into Wrapper implementation.
-     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
-     */
-    public Collection wrap(Type wrapperType) {
-        return wrap(new WrapperFactoryAdatper(wrapperType), wrapperType);
-    }
-
-    /**
      * WrapperFactory interface.
      * Concrete method implementing this interface should produce wrapper for given item.
      */
     public interface WrapperFactory {
         Object wrap(Object item);
+    }
+
+    /**
+     * Wraps objects into Wrapper implementation.
+     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
+     */
+    public Collection wrap(Type wrapperType) {
+        return wrap(new WrapperFactoryAdatper(wrapperType), wrapperType);
     }
 
     /**

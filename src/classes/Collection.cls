@@ -23,13 +23,13 @@
 */
 
 /**
- * Class provides static utility methods for the most common actions that take place place
+ * Class provides methods for the most common actions that take place place
  * in Salesforce business logic:
  * - Mapping records by given field,
  * - Grouping records with the same value in given field,
  * - Gathering values from given field or fields,
  * - Filtering records which have given value or values in given field,
- * - Reducing collection to single variable using Reducer interface
+ * - Reducing collection to single variable
  * - Sorting records by given field or comparator.
  */
 public inherited sharing class Collection {
@@ -155,7 +155,7 @@ public inherited sharing class Collection {
 
     /**
     * Filter determines whether collection item should be included into result collection of filter method.
-    * This kind of filter compares current record value with Trigger.old value.
+    * Item is compared with it's previous state from trigger.
     * */
     public interface UpdateFilter {
         Boolean accepts(SObject record, SObject oldRecord);
@@ -175,17 +175,37 @@ public inherited sharing class Collection {
     public interface FilterFacade {
         FilterFacade byUsing(Filter filter);
         FilterFacade byUsing(Map<Id, SObject> oldMap, UpdateFilter filter);
+        /**
+         * Filters
+         */
         FilterFacade alike(SObject prototype);
         FieldFilterFacade byField(SObjectField field);
+
+        /**
+         * This method exists only for verbosity and can be omitted.
+         * Predicates use AND by default.
+         */
         FilterFacade andAlso();
+
+        /**
+         * Former and following predicate are joined using OR connective.
+         */
         FilterFacade orElse();
+
+        /**
+         * Evaluates filters and returns Collection of filtered items.
+         */
         Collection then();
+
+        /**
+         * @return first item satisfying conditions.
+         */
         Object getFirst();
     }
 
     public interface FieldFilterFacade {
-        FilterFacade equals(Object value);
-        FilterFacade notEquals(Object value);
+        FilterFacade equal(Object value);
+        FilterFacade notEqual(Object value);
         FilterFacade greaterThan(Object value);
         FilterFacade greaterEqualsThan(Object value);
         FilterFacade lessThan(Object value);
@@ -203,12 +223,21 @@ public inherited sharing class Collection {
     * REDUCE
     * */
     /**
-    * @param aggregatedValues Collection which holds values reduced so far.
+     * Reduces collection to the single value, for example
+     * List, Set, Map or Group of field values
+     */
+    public ReduceFacade reduce() {
+        return new ReduceFacadeImpl(items);
+    }
+    /**
+     * Reduces collection to single output variable.
+     * @param accumulator Reducers output from previous item or initial value.
      * @param item currently processed item.
+     * @param index item's index
      * @return aggregatedValues
      */
     public interface Reducer {
-        Object reduce(Object aggregatedValues, Object item, Integer index);
+        Object reduce(Object accumulator, Object item, Integer index);
     }
 
     /**
@@ -219,11 +248,13 @@ public inherited sharing class Collection {
         Object value(Object item);
     }
 
-    public ReduceFacade reduce() {
-        return new ReduceFacadeImpl(items);
-    }
-
     public interface ReduceFacade {
+        /**
+         * Reduces collection of objects to single output value returned by Reducer implementation.
+         * @param reducer Reducer interface implementation. @see Collections.Reducer
+         * @param initialValue collection/object to which input is reduced.
+         * @return accumulated value from all items
+         */
         Object to(Reducer reducer, Object initialValue);
         Decimal toSum(SObjectField field);
         Decimal toAverage(SObjectField field);
@@ -232,12 +263,17 @@ public inherited sharing class Collection {
 
         List<Object> toList(SObjectField field);
         List<Object> toList(Mapper valueMapper);
+
         Object toSet(SObjectField field);
         Object toSet(Mapper valueMapper);
+
         Object toMap(SObjectField field);
+        Object toMap(SObjectField keyField, SObjectField valueField);
         Object toMap(Mapper keyMapper);
         Object toMap(Mapper keyMapper, Mapper valueMapper);
+
         Object toGroup(SObjectField field);
+        Object toGroup(SObjectField keyField, SObjectField valueField);
         Object toGroup(Mapper keyMapper);
         Object toGroup(Mapper keyMapper, Mapper valueMapper);
     }
@@ -301,9 +337,6 @@ public inherited sharing class Collection {
         Integer compare(Object thisItem, Object otherItem);
     }
 
-    /**
-     * Order of sorting
-     */
     public enum Order {
         ASCENDING, DESCENDING
     }
@@ -311,8 +344,7 @@ public inherited sharing class Collection {
     /**
      * Sorts collection by given field and order.
      * @param field Field to sort by.
-     * @param isAscending true -> ascending order, false -> descending order.
-     * Collection.ASCENDING/DESCENDING can be used instead.
+     * @param order Sorting order
      */
     public Collection orderBy(SObjectField field, Order order) {
         assertSObjectCollection(items);
@@ -321,9 +353,6 @@ public inherited sharing class Collection {
 
     /**
      * Sorts collection using given Collection.Comparator implementation.
-     * @param field Field to sort by.
-     * @param isAscending true -> ascending order, false -> descending order.
-     * Collection.ASCENDING/DESCENDING can be used instead.
      */
     public Collection orderBy(Comparator comparator) {
         List<ComparableObject> comparables = new List<ComparableObject>();
@@ -355,7 +384,6 @@ public inherited sharing class Collection {
 
     /**
      * For each element in collection, Worker.forEach action is executed.
-     * @param worker Concrete class implementing Worker interface. Executes action on each element.
      */
     public Collection forEach(Worker worker) {
         for (Integer i = 0, j = size(); i < j; i++) {
@@ -440,74 +468,54 @@ public inherited sharing class Collection {
     *
     * */
     private class FilterFacadeImpl implements Collection.FilterFacade {
-        private List<Object> items;
+        private List<Object> itemsToFilter;
         private List<Filter> filters;
         private List<Boolean> isAND;
+        private Integer size;
 
         public FilterFacadeImpl(List<Object> items) {
-            this.items = items;
+            this.itemsToFilter = items;
+            this.size = items == null ? 0 : items.size();
             this.filters = new List<Filter>();
             this.isAND = new List<Boolean>();
         }
 
-        /**
-         * Filters Collection using Filter interface implementation.
-         */
         public FilterFacade byUsing(Filter filter) {
             addFilter(filter);
             return this;
         }
 
-        /**
-         * Filters Collection of updated SObjects using UpdateFilter interface implementation.
-         */
         public FilterFacade byUsing(Map<Id, SObject> oldMap, UpdateFilter filter) {
-            assertSObjectCollection(items);
+            assertSObjectCollection(itemsToFilter);
             addFilter(new UpdateFilterToFilterAdapter(oldMap, filter));
             return this;
         }
 
-        /**
-         * Filter by field value
-         */
         public FieldFilterFacade byField(SObjectField field) {
-            assertSObjectCollection(items);
+            assertSObjectCollection(itemsToFilter);
             return new FieldFilterFacadeImpl(this, field);
         }
 
-        /**
-         * Collection is filtered to contain only these SObjects which have fields populated like provided example record.
-         */
         public FilterFacade alike(SObject prototype) {
-            assertSObjectCollection(items);
+            assertSObjectCollection(itemsToFilter);
             this.filters.add(new FilterByPrototype(prototype));
             return this;
         }
 
-        /**
-         * This method exists only for verbosity and can be omitted.
-         * Predicates use AND by default.
-         */
         public FilterFacade andAlso() {
             return this;
         }
 
-        /**
-         * Former and following predicate are joined using OR connective.
-         */
         public FilterFacade orElse() {
             this.isAND.set(this.isAND.size() - 1, false);
             return this;
         }
 
-        /**
-         * Evaluates filters and returns Collection of filtered items.
-         */
         public Collection then() {
-            List<Object> filteredItems = Apex.newListOfTheSameType(items);
+            List<Object> filteredItems = Apex.newListOfTheSameType(itemsToFilter);
 
-            for (Integer i = 0, size = items.size(); i < size; i++) {
-                Object item = items[i];
+            for (Integer i = 0, size = itemsToFilter.size(); i < size; i++) {
+                Object item = itemsToFilter[i];
 
                 if (isSatisfyingConditions(item)) {
                     filteredItems.add(item);
@@ -517,12 +525,9 @@ public inherited sharing class Collection {
             return Collection.of(filteredItems);
         }
 
-        /**
-         * @return first item satisfying conditions.
-         */
         public Object getFirst() {
-            for (Integer i = 0, size = items.size(); i < size; i++) {
-                Object item = items[i];
+            for (Integer i = 0, size = itemsToFilter.size(); i < size; i++) {
+                Object item = itemsToFilter[i];
 
                 if (isSatisfyingConditions(item)) {
                     return item;
@@ -553,7 +558,7 @@ public inherited sharing class Collection {
             }
         }
 
-        void addFilter(Filter filter) {
+        private void addFilter(Filter filter) {
             assert(filters.size() <= 5, 'Too many filters degrade performance. Implement Filter instead for the best performance.');
             this.filters.add(filter);
             this.isAND.add(true);
@@ -572,61 +577,50 @@ public inherited sharing class Collection {
             this.field = field;
         }
 
-        public FilterFacade equals(Object value) {
+        public FilterFacade equal(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, Collection.EQUALS, value));
             return filterFacade;
         }
-
-        public FilterFacade notEquals(Object value) {
+        public FilterFacade notEqual(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, Collection.NOT_EQUALS, value));
             return filterFacade;
         }
-
         public FilterFacade greaterThan(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, Collection.GREATER_THAN, value));
             return filterFacade;
         }
-
         public FilterFacade greaterEqualsThan(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, Collection.GREATER_EQUAL_THAN, value));
             return filterFacade;
         }
-
         public FilterFacade lessThan(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, Collection.LESS_THAN, value));
             return filterFacade;
         }
-
         public FilterFacade lessEqualsThan(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, Collection.LESS_EQUAL_THAN, value));
             return filterFacade;
         }
-
         public FilterFacade isIn(Set<Object> values) {
             filterFacade.byUsing(new FilterByFieldValues(field, true, values));
             return filterFacade;
         }
-
         public FilterFacade isIn(List<Object> values) {
             filterFacade.byUsing(new FilterByFieldValues(field, true, values));
             return filterFacade;
         }
-
         public FilterFacade isNotIn(Set<Object> values) {
             filterFacade.byUsing(new FilterByFieldValues(field, false, values));
             return filterFacade;
         }
-
         public FilterFacade isNotIn(List<Object> values) {
             filterFacade.byUsing(new FilterByFieldValues(field, false, values));
             return filterFacade;
         }
-
         public FilterFacade relatedTo(List<SObject> parents) {
             filterFacade.byUsing(new FilterRelatedTo(parents, field));
             return filterFacade;
         }
-
         public FilterFacade contains(String value) {
             filterFacade.byUsing(new FilterFieldContaining(field, value));
             return filterFacade;
@@ -817,12 +811,6 @@ public inherited sharing class Collection {
             this.size = items == null ? 0 : items.size();
         }
 
-        /**
-         * Reduces collection of objects to other collection or object of given type.
-         * @param reducer Reducer interface implementation. @see Collections.Reducer
-         * @param initialValue collection/object to which input is reduced.
-         * @return result after reduction.
-         */
         public Object to(Reducer reducer, Object initialValue) {
             Object previousValue = initialValue;
 
@@ -849,17 +837,11 @@ public inherited sharing class Collection {
             return (Decimal) this.to(MAX.ofField(field), 0.0);
         }
 
-        /**
-         * @return List of values from given SObject field
-         */
         public List<Object> toList(SObjectField field) {
             assertSObjectCollection(items);
             return toList(new FieldMapper(field));
         }
 
-        /**
-         * @return List of values produced by KeyMapper
-         */
         public List<Object> toList(Mapper valueMapper) {
             List<Object> values = Apex.newListOfItemType(valueMapper.valueType());
 
@@ -870,97 +852,47 @@ public inherited sharing class Collection {
             return values;
         }
 
-
-        /**
-         * @param field SObject field from which value is taken.
-         * @return Set of gathered values.
-         */
         public Object toSet(SObjectField field) {
             assertSObjectCollection(items);
             return toSet(new FieldMapper(field));
         }
 
-        /**
-         * @param keyMapper Mapper implementation which returns value for each record
-         * @return Set of gathered values.
-         */
         public Object toSet(Mapper valueMapper) {
             return mapToUntypedMap(valueMapper, new ItemMapper(items)).keySet();
         }
 
-
-        /**
-         * @param keyField SObject Field to map by
-         * @return Map of items where record is map's value and field's value is map's key.
-         * Map's key type is derived from field's type.
-         */
         public Object toMap(SObjectField field) {
             assertSObjectCollection(items);
             return toMap(new FieldMapper(field));
         }
 
-        /**
-         * @param keyField SObject Field to map's key
-         * @param valueField SObject Field to map's value
-         * @return Map where record is map's value and field's value is map's key.
-         * Map's key and value type is derived from field's type.
-         */
-        private Object toMap(SObjectField keyField, SObjectField valueField) {
+        public Object toMap(SObjectField keyField, SObjectField valueField) {
             assertSObjectCollection(items);
             return toMap(new FieldMapper(keyField), new FieldMapper(valueField));
         }
 
-        /**
-         * @param keyMapper Mapper implementation which produce map key for given item.
-         * @return Map of items where list item is map's value and key is produced by keyMapper.
-         */
         public Object toMap(Mapper keyMapper) {
             return toMap(keyMapper, new ItemMapper(items));
         }
 
-        /**
-         * @param keyMapper Mapper instance which produce map key and value for given item.
-         * @return Map of items where Item is map's value and key are produced by mappers.
-         */
         public Object toMap(Mapper keyMapper, Mapper valueMapper) {
             return mapToUntypedMap(keyMapper, valueMapper).toMap();
         }
 
-
-        /**
-         * Groups collection items by given field to map where key
-         * is the field's value and the value is List<SObject> which have the same key.
-         * @param field SObject Field
-         */
         public Object toGroup(SObjectField field) {
             assertSObjectCollection(items);
             return toGroup(new FieldMapper(field));
         }
 
-        /**
-         * Groups collection items by given field to map where key
-         * is the field's value and the value is List<T> with values of @param valueType.
-         * @param field SObject Field
-         */
-        private Object toGroup(SObjectField keyField, SObjectField valueField) {
+        public Object toGroup(SObjectField keyField, SObjectField valueField) {
             assertSObjectCollection(items);
             return toGroup(new FieldMapper(keyField), new FieldMapper(valueField));
         }
 
-        /**
-         * Groups collection items by given Mapper implementation to Map<Key, List<Value>>, where
-         * key is produced by the key mapper and the value is List<Object> which have the same key.
-         */
         public Object toGroup(Mapper keyMapper) {
             return toGroup(keyMapper, new ItemMapper(items));
         }
 
-        /**
-         * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
-         * both key and values are produced by Mapper for each collection item.
-         *
-         * @param Mapper Collection.Mapper implementation.
-         */
         public Object toGroup(Mapper keyMapper, Mapper valueMapper) {
             IMap groupMap = newMap(keyMapper.valueType(), Type.forName('List<' + valueMapper.valueType() + '>'));
             List<Object> emptyList = Apex.newListOfItemType(valueMapper.valueType());
@@ -981,9 +913,6 @@ public inherited sharing class Collection {
             return groupMap.toMap();
         }
 
-        /*
-        * Internal method. Maps items to IMap instance.
-        * */
         private IMap mapToUntypedMap(Mapper keyMapper, Mapper valueMapper) {
             IMap imap = newMap(keyMapper.valueType(), valueMapper.valueType());
 
@@ -996,9 +925,6 @@ public inherited sharing class Collection {
         }
     }
 
-    /**
-     * Reduces SObjects to sum of field(s)
-     */
     private abstract class ArithmeticReducer implements Reducer {
         private SObjectField field;
 
@@ -1008,9 +934,6 @@ public inherited sharing class Collection {
         }
     }
 
-    /**
-     * Reduces SObjects field(s) to their sum.
-     */
     private class ReducerToSum extends ArithmeticReducer {
         public Object reduce(Object aggregatedValues, Object item, Integer index) {
             Decimal fieldValue = (Decimal) ((SObject) item).get(field);
@@ -1019,9 +942,6 @@ public inherited sharing class Collection {
         }
     }
 
-    /**
-     * Reduces SObject fields(s)to their average value.
-     */
     private class ReducerToAverage extends ArithmeticReducer {
         private Decimal sum = 0;
         private Integer count = 0;
@@ -1034,9 +954,6 @@ public inherited sharing class Collection {
         }
     }
 
-    /**
-     * Reduces SObject to their maximal value.
-     */
     private class ReducerToMax extends ArithmeticReducer {
         public Object reduce(Object maxSoFar, Object item, Integer index) {
             Decimal fieldValue = (Decimal) ((SObject) item).get(field);
@@ -1053,9 +970,6 @@ public inherited sharing class Collection {
         }
     }
 
-    /**
-     * Reduces SObject collection to minimal value from given field(s).
-     */
     private class ReducerToMin extends ArithmeticReducer {
         public Object reduce(Object minSoFar, Object item, Integer index) {
             Decimal fieldValue = (Decimal) ((SObject) item).get(field);
@@ -1092,9 +1006,6 @@ public inherited sharing class Collection {
         return FIELD_TYPE_MAP.get(field.getDescribe().getSoapType());
     }
 
-    /**
-    * Maps SObject collection by SObject field.
-    * */
     public virtual class FieldMapper implements Collection.Mapper {
         private String field;
         private Type fieldType;
@@ -1113,10 +1024,6 @@ public inherited sharing class Collection {
         }
     }
 
-    /**
-    * Mapper implementation which uses given KeyMapper for producing key,
-    * and returns collection item as mapped value.
-    * */
     public class ItemMapper implements Collection.Mapper {
         private Type itemType;
 
@@ -1165,7 +1072,7 @@ public inherited sharing class Collection {
 
 
     /**
-    * Wrapper
+    * WRAPPERS
     * */
     private class WrapperFactoryAdatper implements WrapperFactory {
         private Type wrapperType;
@@ -1182,10 +1089,8 @@ public inherited sharing class Collection {
     }
 
 
-    /*
-    *
-    * Comparators
-    *
+    /**
+    * COMPARATORS
     * */
     private interface ComparisionResult {
         Boolean isTrue(Integer i);
@@ -1369,10 +1274,6 @@ public inherited sharing class Collection {
         Boolean containsKey(Object key);
     }
 
-    /**
-     * IMap factory method which returns proper IMap implementation for given keyType parameter
-     * and initializes it with empty Map of the same sObject type as given records.
-     */
     private static Collection.IMap newMap(Type keyType, Type objectType) {
         Object sfMap = Type.forName('Map<' + keyType + ',' + objectType + '>').newInstance();
 
@@ -1387,7 +1288,6 @@ public inherited sharing class Collection {
 
         return new MapByObject((Map<Object, Object>) sfMap);
     }
-
 
     private class MapByObject implements Collection.IMap {
         private Map<Object, Object> mapInstance;

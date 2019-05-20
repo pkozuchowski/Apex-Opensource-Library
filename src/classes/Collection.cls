@@ -427,6 +427,11 @@ public inherited sharing class Collection {
             filterFacade.addFilter(new FilterRelatedTo(parents, field));
             return filterFacade;
         }
+
+        public FilterFacade contains(String value) {
+            filterFacade.addFilter(new FilterFieldContaining(field, value));
+            return filterFacade;
+        }
     }
 
 
@@ -1006,6 +1011,24 @@ public inherited sharing class Collection {
 
         public Boolean accepts(Object record) {
             return parents.containsKey((Id) ((SObject) record).get(relationshipField));
+        }
+    }
+
+    /**
+     * Filters SObject list to those related to given parents by given relationship field.
+     */
+    private class FilterFieldContaining implements Collection.Filter {
+        private SObjectField field;
+        private String value;
+
+        public FilterFieldContaining(SObjectField field, String value) {
+            this.field = field;
+            this.value = value;
+        }
+
+        public Boolean accepts(Object record) {
+            String fieldValue = (String) ((SObject) record).get(field);
+            return fieldValue.contains(value);
         }
     }
 

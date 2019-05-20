@@ -171,6 +171,29 @@ public inherited sharing class Collection {
         return new Collection(wrappers);
     }
 
+    /**
+     * WrapperFactory interface.
+     * Concrete method implementing this interface should produce wrapper for given item.
+     */
+    public interface WrapperFactory {
+        Object wrap(Object item);
+    }
+
+    /**
+     * Wraps collection items using wrapper factory.
+     * @return Collection of wrapped objects;
+     */
+    public Collection wrap(WrapperFactory wrapperFactory, Type wrapperType) {
+        List<Object> wrappers = (List<Wrapper>) Apex.newListOfItemType(wrapperType, new List<Object>());
+
+        for (Integer i = 0, j = size(); i < j; i++) {
+            Object wrapper = wrapperFactory.wrap(items[i]);
+            wrappers.add(wrapper);
+        }
+
+        return new Collection(wrappers);
+    }
+
 
     /**
     * ORDER BY

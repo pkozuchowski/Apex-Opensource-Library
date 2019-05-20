@@ -42,9 +42,6 @@ public inherited sharing class Collection {
             GREATER_EQUAL_THAN = new ComparisionGreaterEqualsThan(),
             LESS_THAN = new ComparisionLessThan(),
             LESS_EQUAL_THAN = new ComparisionLessEqualsThan();
-    private static String
-            VALUE_IN = 'IN',
-            VALUE_NOT_IN = 'NOT IN';
 
     /*Flyweights for reducers*/
     private final static ArithmeticReducer
@@ -429,22 +426,22 @@ public inherited sharing class Collection {
         }
 
         public FilterFacade isIn(Set<Object> values) {
-            filterFacade.addFilter(new FilterByFieldValues(field, Collection.VALUE_IN, values));
+            filterFacade.addFilter(new FilterByFieldValues(field, true, values));
             return filterFacade;
         }
 
         public FilterFacade isIn(List<Object> values) {
-            filterFacade.addFilter(new FilterByFieldValues(field, Collection.VALUE_IN, values));
+            filterFacade.addFilter(new FilterByFieldValues(field, true, values));
             return filterFacade;
         }
 
         public FilterFacade isNotIn(Set<Object> values) {
-            filterFacade.addFilter(new FilterByFieldValues(field, Collection.VALUE_NOT_IN, values));
+            filterFacade.addFilter(new FilterByFieldValues(field, false, values));
             return filterFacade;
         }
 
         public FilterFacade isNotIn(List<Object> values) {
-            filterFacade.addFilter(new FilterByFieldValues(field, Collection.VALUE_NOT_IN, values));
+            filterFacade.addFilter(new FilterByFieldValues(field, false, values));
             return filterFacade;
         }
 
@@ -568,16 +565,6 @@ public inherited sharing class Collection {
          * @param reducer Reducer interface implementation. @see Collections.Reducer
          * @param initialValue collection/object to which input is reduced.
          * @return result after reduction.
-         * <pre>
-         * @example
-         * Set<Id> accountIds = reduce(List<Account> accounts, AccountToIdReducer, Set<Id> accountIds);
-         *
-         * class AccountToIdReducer implements Reducer{
-         *  public reduce(Object ids, Object item){
-         *      Set<Id> accountIds = (Set<Id>) ids;
-         *      accountIds.put( ((Account) item).Id );
-         *  }
-         * </pre>
          */
         public Object to(Reducer reducer, Object initialValue) {
             Object previousValue = initialValue;
@@ -1011,14 +998,14 @@ public inherited sharing class Collection {
         private SObjectField field;
         private Boolean valueIn;
 
-        public FilterByFieldValues(SObjectField field, String operator, List<Object> values) {
-            this(field, operator, new Set<Object>(values));
+        public FilterByFieldValues(SObjectField field, Boolean valueIn, List<Object> values) {
+            this(field, valueIn, new Set<Object>(values));
         }
 
-        public FilterByFieldValues(SObjectField field, String operator, Set<Object> values) {
+        public FilterByFieldValues(SObjectField field, Boolean valueIn, Set<Object> values) {
             this.values = values;
             this.field = field;
-            this.valueIn = operator == Collection.VALUE_IN;
+            this.valueIn = valueIn;
         }
 
         public Boolean accepts(Object record) {

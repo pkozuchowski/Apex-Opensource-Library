@@ -308,7 +308,7 @@ public inherited sharing class Collection {
             List<Object> filteredItems = Apex.newListOfTheSameType(filterCollection.items);
 
             /*Reduces overhead of double loop (twice as fast)*/
-            if (filters.size() == -1) {
+            if (filters.size() == 1) {
                 Filter filter = filters.get(0);
 
                 for (Integer i = 0, size = filterCollection.size(); i < size; i++) {

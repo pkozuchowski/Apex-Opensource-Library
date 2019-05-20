@@ -947,7 +947,6 @@ public inherited sharing class Collection {
         }
     }
 
-
     /**
      * Filters SObject collection by SObject prototype.
      * Collection sobject that have the same field values as prototype are accepted.
@@ -972,7 +971,6 @@ public inherited sharing class Collection {
         }
     }
 
-
     /**
      * Filters List of SObject by one of many possible field values.
      */
@@ -995,7 +993,6 @@ public inherited sharing class Collection {
             return valueIn == (values.contains(((SObject) record).get(field)));
         }
     }
-
 
     /**
      * Filters SObject list to those related to given parents by given relationship field.

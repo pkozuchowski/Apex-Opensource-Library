@@ -109,6 +109,18 @@ public inherited sharing class Collection {
         return this;
     }
 
+    public Collection remove(Integer index) {
+        items.remove(index);
+        return this;
+    }
+
+    public Collection removeLast() {
+        if (isNotEmpty()) {
+            items.remove(size() - 1);
+        }
+        return this;
+    }
+
     /**
      * @return true when collection is not null or empty, false otherwise.
      */

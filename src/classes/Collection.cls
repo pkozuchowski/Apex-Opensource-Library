@@ -45,10 +45,10 @@ public inherited sharing class Collection {
 
     /*Flyweights for reducers*/
     private final static ArithmeticReducer
-            max = new ReducerToMax(),
-            min = new ReducerToMin(),
-            average = new ReducerToAverage(),
-            sum = new ReducerToSum();
+            MAX = new ReducerToMax(),
+            MIN = new ReducerToMin(),
+            AVERAGE = new ReducerToAverage(),
+            SUM = new ReducerToSum();
 
     private List<Object> items;
 
@@ -577,19 +577,19 @@ public inherited sharing class Collection {
         }
 
         private Decimal toSum(SObjectField field) {
-            return (Decimal) this.to(sum.ofField(field), 0.0);
+            return (Decimal) this.to(SUM.ofField(field), 0.0);
         }
 
         private Decimal toAverage(SObjectField field) {
-            return (Decimal) this.to(average.ofField(field), null);
+            return (Decimal) this.to(AVERAGE.ofField(field), null);
         }
 
         private Decimal toMin(SObjectField field) {
-            return (Decimal) this.to(min.ofField(field), null);
+            return (Decimal) this.to(MIN.ofField(field), null);
         }
 
         private Decimal toMax(SObjectField field) {
-            return (Decimal) this.to(max.ofField(field), 0.0);
+            return (Decimal) this.to(MAX.ofField(field), 0.0);
         }
 
 

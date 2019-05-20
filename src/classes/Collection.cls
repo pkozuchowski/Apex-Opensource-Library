@@ -307,27 +307,13 @@ public inherited sharing class Collection {
         public Collection then() {
             List<Object> filteredItems = Apex.newListOfTheSameType(filterCollection.items);
 
-            /*Reduces overhead of double loop (twice as fast)*/
-            if (filters.size() == 1) {
-                Filter filter = filters.get(0);
+            for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
+                Object item = filterCollection.items[i];
 
-                for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
-                    Object item = filterCollection.items[i];
-
-                    if (filter.accepts(item)) {
-                        filteredItems.add(item);
-                    }
-                }
-            } else {
-                for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
-                    Object item = filterCollection.items[i];
-
-                    if (isSatisfyingConditions(item)) {
-                        filteredItems.add(item);
-                    }
+                if (isSatisfyingConditions(item)) {
+                    filteredItems.add(item);
                 }
             }
-
 
             return Collection.of(filteredItems);
         }
@@ -336,25 +322,11 @@ public inherited sharing class Collection {
          * @return first item satisfying conditions.
          */
         public Object getFirst() {
+            for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
+                Object item = filterCollection.items[i];
 
-            /*Reduces overhead of double loop (twice as fast)*/
-            if (filters.size() == 1) {
-                Filter filter = filters.get(0);
-
-                for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
-                    Object item = filterCollection.items[i];
-
-                    if (filter.accepts(item)) {
-                        return item;
-                    }
-                }
-            } else {
-                for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
-                    Object item = filterCollection.items[i];
-
-                    if (isSatisfyingConditions(item)) {
-                        return item;
-                    }
+                if (isSatisfyingConditions(item)) {
+                    return item;
                 }
             }
 
@@ -363,21 +335,27 @@ public inherited sharing class Collection {
 
         private Boolean isSatisfyingConditions(Object item) {
             Boolean accepted = true;
+            Integer size = filters.size();
 
-            for (Integer i = 0, size = filters.size(); i < size; i++) {
-                Boolean acceptedByFilter = this.filters[i].accepts(item);
-
-                if (isAND[i]) {
-                    accepted &= acceptedByFilter;
-                } else {
-                    accepted |= acceptedByFilter;
-                }
-            }
+            if (size > 0) accepted = checkFilter(accepted, 0, item);
+            if (size > 1) accepted = checkFilter(accepted, 1, item);
+            if (size > 2) accepted = checkFilter(accepted, 2, item);
+            if (size > 3) accepted = checkFilter(accepted, 3, item);
+            if (size > 4) accepted = checkFilter(accepted, 4, item);
 
             return accepted;
         }
 
+        private Boolean checkFilter(Boolean previousFilter, Integer i, Object item) {
+            if (isAND[i]) {
+                return previousFilter && this.filters[i].accepts(item);
+            } else {
+                return previousFilter || this.filters[i].accepts(item);
+            }
+        }
+
         void addFilter(Filter filter) {
+            assert(filters.size() <= 5, 'Too many filters degrade performance. Implement Filter instead for the best performance.');
             this.filters.add(filter);
             this.isAND.add(true);
         }
@@ -745,7 +723,7 @@ public inherited sharing class Collection {
         assert(items instanceof List<SObject>, 'Operation only applies to SObject collection.');
     }
 
-    private void assert(Boolean condition, String errorMsg) {
+    private static void assert(Boolean condition, String errorMsg) {
         if (!condition) throw new CollectionException(errorMsg);
     }
 

@@ -169,16 +169,16 @@ public inherited sharing class Collection {
      * scaled linearly with number of linked predicates.
      */
     public FilterFacade filter() {
-        return new FilterFacade(this);
+        return new FilterFacade(this.items);
     }
 
     public class FilterFacade {
-        private Collection filterCollection;
+        private List<Object> items;
         private List<Filter> filters;
         private List<Boolean> isAND;
 
-        public FilterFacade(Collection collection) {
-            this.filterCollection = collection;
+        public FilterFacade(List<Object> items) {
+            this.items = items;
             this.filters = new List<Filter>();
             this.isAND = new List<Boolean>();
         }
@@ -195,7 +195,7 @@ public inherited sharing class Collection {
          * Filters Collection of updated SObjects using UpdateFilter interface implementation.
          */
         public FilterFacade byUsing(Map<Id, SObject> oldMap, UpdateFilter filter) {
-            filterCollection.assertSObjectCollection();
+            assertSObjectCollection(items);
             addFilter(new UpdateFilterToFilterAdapter(oldMap, filter));
             return this;
         }
@@ -204,7 +204,7 @@ public inherited sharing class Collection {
          * Filter by field value
          */
         public FieldFilterFacade byField(SObjectField field) {
-            filterCollection.assertSObjectCollection();
+            assertSObjectCollection(items);
             return new FieldFilterFacade(this, field);
         }
 
@@ -212,7 +212,7 @@ public inherited sharing class Collection {
          * Collection is filtered to contain only these SObjects which have fields populated like provided example record.
          */
         public FilterFacade alike(SObject prototype) {
-            filterCollection.assertSObjectCollection();
+            assertSObjectCollection(items);
             this.filters.add(new FilterByPrototype(prototype));
             return this;
         }
@@ -237,10 +237,10 @@ public inherited sharing class Collection {
          * Evaluates filters and returns Collection of filtered items.
          */
         public Collection then() {
-            List<Object> filteredItems = Apex.newListOfTheSameType(filterCollection.items);
+            List<Object> filteredItems = Apex.newListOfTheSameType(items);
 
-            for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
-                Object item = filterCollection.items[i];
+            for (Integer i = 0, size = items.size(); i < size; i++) {
+                Object item = items[i];
 
                 if (isSatisfyingConditions(item)) {
                     filteredItems.add(item);
@@ -254,8 +254,8 @@ public inherited sharing class Collection {
          * @return first item satisfying conditions.
          */
         public Object getFirst() {
-            for (Integer i = 0, size = filterCollection.size(); i < size; i++) {
-                Object item = filterCollection.items[i];
+            for (Integer i = 0, size = items.size(); i < size; i++) {
+                Object item = items[i];
 
                 if (isSatisfyingConditions(item)) {
                     return item;
@@ -387,17 +387,19 @@ public inherited sharing class Collection {
     }
 
     public ReduceFacade reduce() {
-        return new ReduceFacade(this);
+        return new ReduceFacade(items);
     }
 
     /**
      * Facade for Collection Reducers
      */
     public class ReduceFacade {
-        private Collection collection;
+        private List<Object> items;
+        private Integer size;
 
-        private ReduceFacade(Collection collection) {
-            this.collection = collection;
+        private ReduceFacade(List<Object> items) {
+            this.items = items;
+            this.size = items == null ? 0 : items.size();
         }
 
         /**
@@ -409,8 +411,8 @@ public inherited sharing class Collection {
         public Object to(Reducer reducer, Object initialValue) {
             Object previousValue = initialValue;
 
-            for (Integer i = 0, size = collection.size(); i < size; ++i) {
-                previousValue = reducer.reduce(previousValue, collection.items[i], i);
+            for (Integer i = 0; i < size; ++i) {
+                previousValue = reducer.reduce(previousValue, items[i], i);
             }
 
             return initialValue;
@@ -438,7 +440,7 @@ public inherited sharing class Collection {
          * @return Set of gathered values.
          */
         public Object toSet(SObjectField field) {
-            collection.assertSObjectCollection();
+            assertSObjectCollection(items);
             return toSet(new FieldMapper(field));
         }
 
@@ -447,7 +449,7 @@ public inherited sharing class Collection {
          * @return Set of gathered values.
          */
         public Object toSet(Mapper valueMapper) {
-            return mapToUntypedMap(valueMapper, new ItemMapper(collection.items)).keySet();
+            return mapToUntypedMap(valueMapper, new ItemMapper(items)).keySet();
         }
 
 
@@ -457,7 +459,7 @@ public inherited sharing class Collection {
          * Map's key type is derived from field's type.
          */
         public Object toMap(SObjectField field) {
-            collection.assertSObjectCollection();
+            assertSObjectCollection(items);
             return toMap(new FieldMapper(field));
         }
 
@@ -468,7 +470,7 @@ public inherited sharing class Collection {
          * Map's key and value type is derived from field's type.
          */
         private Object toMap(SObjectField keyField, SObjectField valueField) {
-            collection.assertSObjectCollection();
+            assertSObjectCollection(items);
             return toMap(new FieldMapper(keyField), new FieldMapper(valueField));
         }
 
@@ -477,7 +479,7 @@ public inherited sharing class Collection {
          * @return Map of items where list item is map's value and key is produced by keyMapper.
          */
         public Object toMap(Mapper keyMapper) {
-            return toMap(keyMapper, new ItemMapper(collection.items));
+            return toMap(keyMapper, new ItemMapper(items));
         }
 
         /**
@@ -495,7 +497,7 @@ public inherited sharing class Collection {
          * @param field SObject Field
          */
         public Object toGroup(SObjectField field) {
-            collection.assertSObjectCollection();
+            assertSObjectCollection(items);
             return toGroup(new FieldMapper(field));
         }
 
@@ -505,7 +507,7 @@ public inherited sharing class Collection {
          * @param field SObject Field
          */
         private Object toGroup(SObjectField keyField, SObjectField valueField) {
-            collection.assertSObjectCollection();
+            assertSObjectCollection(items);
             return toGroup(new FieldMapper(keyField), new FieldMapper(valueField));
         }
 
@@ -514,7 +516,7 @@ public inherited sharing class Collection {
          * key is produced by the key mapper and the value is List<Object> which have the same key.
          */
         public Object toGroup(Mapper keyMapper) {
-            return toGroup(keyMapper, new ItemMapper(collection.items));
+            return toGroup(keyMapper, new ItemMapper(items));
         }
 
         /**
@@ -527,8 +529,8 @@ public inherited sharing class Collection {
             IMap groupMap = newMap(keyMapper.valueType(), Type.forName('List<' + valueMapper.valueType() + '>'));
             List<Object> emptyList = Apex.newListOfItemType(valueMapper.valueType());
 
-            for (Integer i = 0, j = collection.size(); i < j; i++) {
-                Object item = (Object) collection.items[i];
+            for (Integer i = 0; i < size; i++) {
+                Object item = (Object) items[i];
                 Object key = keyMapper.value(item);
                 Object value = valueMapper.value(item);
 
@@ -548,7 +550,7 @@ public inherited sharing class Collection {
          * @return List of values from given SObject field
          */
         public List<Object> toList(SObjectField field) {
-            collection.assertSObjectCollection();
+            assertSObjectCollection(items);
             return toList(new FieldMapper(field));
         }
 
@@ -558,8 +560,8 @@ public inherited sharing class Collection {
         public List<Object> toList(Mapper valueMapper) {
             List<Object> values = Apex.newListOfItemType(valueMapper.valueType());
 
-            for (Integer i = 0, j = collection.size(); i < j; i++) {
-                values.add(valueMapper.value(collection.items[i]));
+            for (Integer i = 0; i < size; i++) {
+                values.add(valueMapper.value(items[i]));
             }
 
             return values;
@@ -572,8 +574,8 @@ public inherited sharing class Collection {
         private IMap mapToUntypedMap(Mapper keyMapper, Mapper valueMapper) {
             IMap imap = newMap(keyMapper.valueType(), valueMapper.valueType());
 
-            for (Integer i = 0, j = collection.size(); i < j; i++) {
-                Object item = collection.items[i];
+            for (Integer i = 0; i < size; i++) {
+                Object item = items[i];
                 imap.put(keyMapper.value(item), valueMapper.value(item));
             }
 
@@ -668,7 +670,7 @@ public inherited sharing class Collection {
      * Collection.ASCENDING/DESCENDING can be used instead.
      */
     public Collection orderBy(SObjectField field, Order order) {
-        assertSObjectCollection();
+        assertSObjectCollection(items);
         return orderBy(new CompareByField(field, order));
     }
 
@@ -745,7 +747,7 @@ public inherited sharing class Collection {
      * @param prototype Prototype of the record. Clone of this record will be added to the list.
      */
     public Collection fill(Integer count, SObject prototype) {
-        assertSObjectCollection();
+        assertSObjectCollection(items);
         return fill(count, prototype, defaultCloneOptions);
     }
 
@@ -756,7 +758,7 @@ public inherited sharing class Collection {
      * @param opts Collection.CloneOptions instance which determine clone operation characteristics.
      */
     public Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions) {
-        assertSObjectCollection();
+        assertSObjectCollection(items);
         for (Integer i = 0; i < count; i++) {
             SObject clone = prototype.clone(
                     cloneOptions.preserveId,
@@ -784,7 +786,7 @@ public inherited sharing class Collection {
     }
 
 
-    private void assertSObjectCollection() {
+    private static void assertSObjectCollection(List<Object> items) {
         assert(items instanceof List<SObject>, 'Operation only applies to SObject collection.');
     }
 

@@ -215,7 +215,7 @@ public inherited sharing class Collection {
         FilterFacade isNotIn(Set<Object> values);
         FilterFacade isNotIn(List<Object> values);
         FilterFacade relatedTo(List<SObject> parents);
-        FilterFacade contains(String value);
+        FilterFacade containing(String value);
     }
 
 
@@ -507,7 +507,7 @@ public inherited sharing class Collection {
         }
 
         public FilterFacade orElse() {
-            this.isAND.set(this.isAND.size() - 1, false);
+            this.isAND.add(false);
             return this;
         }
 
@@ -561,7 +561,10 @@ public inherited sharing class Collection {
         private void addFilter(Filter filter) {
             assert(filters.size() <= 5, 'Too many filters degrade performance. Implement Filter instead for the best performance.');
             this.filters.add(filter);
-            this.isAND.add(true);
+
+            if (isAND.size() < filters.size()) {
+                this.isAND.add(true);
+            }
         }
     }
 
@@ -621,7 +624,7 @@ public inherited sharing class Collection {
             filterFacade.byUsing(new FilterRelatedTo(parents, field));
             return filterFacade;
         }
-        public FilterFacade contains(String value) {
+        public FilterFacade containing(String value) {
             filterFacade.byUsing(new FilterFieldContaining(field, value));
             return filterFacade;
         }
@@ -1107,7 +1110,7 @@ public inherited sharing class Collection {
     }
     private class ComparisionGreaterThan implements ComparisionResult {
         public Boolean isTrue(Integer i) {
-            return i > 1;
+            return i > 0;
         }
     }
     private class ComparisionGreaterEqualsThan implements ComparisionResult {

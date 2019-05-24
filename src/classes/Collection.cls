@@ -21,6 +21,9 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
+/**
+* Special thanks to Michał Woźniak for giving me idea on how to improve this class.
+* */
 
 /**
  * Class provides methods for the most common actions that take place place

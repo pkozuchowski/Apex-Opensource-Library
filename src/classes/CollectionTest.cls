@@ -128,6 +128,20 @@ private class CollectionTest {
     }
 
 
+    @IsTest
+    static void testAddRemove() {
+        Collection.of(new List<Opportunity>())
+                .addAll(opportunities)
+                .add(newOpportunity(10, new Map<String, Object>()))
+                .add(5, newOpportunity(10, new Map<String, Object>()))
+                .remove(0)
+                .removeLast();
+
+        Collection.of(new List<Integer>{1, 2, 3})
+                .addAll(new Set<Object>{4, 5, 6});
+    }
+
+
     /**
      * Reduce to Set takes field value from SObjects and put's them in a Set.
      * Set has the same type as SObject field.
@@ -298,9 +312,6 @@ private class CollectionTest {
     }
 
 
-    /**
-     * CollectionMappers.ByFieldPair can map junction object by both parent Ids.
-     */
     @IsTest
     static void testMapFieldByField() {
         Map<Id, Id> expected = new Map<Id, Id>();
@@ -315,10 +326,25 @@ private class CollectionTest {
         System.assertEquals(expected, actual);
     }
 
+    @IsTest
+    static void testGroupFieldByField() {
+        Map<Id, List<Id>> expected = new Map<Id, List<Id>>();
+        for (Opportunity opp : opportunities) {
+            if (!expected.containsKey(opp.AccountId)) {
+                expected.put(opp.AccountId, new List<Id>());
+            }
 
-    /**
-     * CollectionMappers.ByFieldPair can map junction object by both parent Ids.
-     */
+            expected.get(opp.AccountId).add(opp.OwnerId);
+        }
+
+        Map<Id, List<Id>> actual = (Map<Id, List<Id>>) Collection.of(opportunities)
+                .reduce()
+                .toGroup(Opportunity.AccountId, Opportunity.OwnerId);
+
+        System.assertEquals(expected, actual);
+    }
+
+
     @IsTest
     static void testMapByFieldPair() {
         Map<String, Opportunity> expected = new Map<String, Opportunity>();
@@ -457,13 +483,41 @@ private class CollectionTest {
                         .andAlso().byField(Opportunity.LastActivityDate).greaterThan(Date.today().addDays(-2))
                         .orElse().byField(Opportunity.NextStep).notEqual('Analysis')
                         .then().get();
-
         Test.stopTest();
 
 
-        System.debug(JSON.serialize(opportunities));
-        System.debug(JSON.serialize(expected));
-        System.debug(JSON.serialize(actual));
+        System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void testFilterByField2() {
+        List<String> wantedSteps = new List<String>{'Analysis', 'Deal'};
+        List<String> unwantedSteps = new List<String>{'Support'};
+
+        List<Opportunity> expected = new List<Opportunity>();
+        for (Opportunity opp : opportunities) {
+            Boolean accept =
+                    wantedSteps.indexOf(opp.NextStep) > -1
+                            && unwantedSteps.indexOf(opp.NextStep) == -1
+                            && opp.LastActivityDate < Date.today();
+
+            if (accept) {
+                expected.add(opp);
+            }
+        }
+
+
+        Test.startTest();
+        List<Opportunity> actual = (List<Opportunity>)
+                Collection.of(opportunities)
+                        .filter()
+                        .byField(Opportunity.NextStep).isIn(wantedSteps)
+                        .andAlso().byField(Opportunity.NextStep).isNotIn(unwantedSteps)
+                        .andAlso().byField(Opportunity.LastActivityDate).lessThan(Date.today())
+                        .then().get();
+        Test.stopTest();
+
+
         System.assertEquals(expected, actual);
     }
 
@@ -650,8 +704,25 @@ private class CollectionTest {
     }
 
 
+    /**
+    * Reduce tests
+    * */
     @IsTest
-    static void testReduceToFieldValues() {
+    static void testReduceToListOfSObjectField() {
+        List<Id> expected = new List<Id>();
+        for (Opportunity opportunity : opportunities) {
+            expected.add(opportunity.AccountId);
+        }
+
+        List<Id> actual = (List<Id>) Collection.of(opportunities)
+                .reduce()
+                .toList(Opportunity.AccountId);
+
+        System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void testReduceToSetOfSObjectField() {
         Set<Id> expected = new Set<Id>();
         for (Opportunity opportunity : opportunities) {
             expected.add(opportunity.AccountId);

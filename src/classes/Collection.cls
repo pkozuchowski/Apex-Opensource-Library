@@ -23,59 +23,116 @@
 */
 
 /**
- * Class provides static utility methods for the most common actions that take place place
+ * Class provides methods for the most common actions that take place place
  * in Salesforce business logic:
  * - Mapping records by given field,
  * - Grouping records with the same value in given field,
  * - Gathering values from given field or fields,
  * - Filtering records which have given value or values in given field,
- * - Reducing collection to single variable using Reducer interface
+ * - Reducing collection to single variable
  * - Sorting records by given field or comparator.
  */
-public class Collection {
-    public final static Boolean
-            ASCENDING = true,
-            DESCENDING = false,
-            ANY_VALUE = true;
-
-    public final static String
-            EQUALS = '==',
-            NOT_EQUALS = '!=',
-            GREATER_THAN = '>',
-            GREATER_EQUAL_THAN = '>=',
-            LESS_THAN = '<',
-            LESS_EQUAL_THAN = '<=',
-            VALUE_IN = 'IN',
-            VALUE_NOT_IN = 'NOT IN';
-
+public inherited sharing class Collection {
+    public final static Boolean ANY_VALUE = true;
     private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
+    private final static ComparisionResult
+            EQUALS = new ComparisionEquals(),
+            NOT_EQUALS = new ComparisionNotEquals(),
+            GREATER_THAN = new ComparisionGreaterThan(),
+            GREATER_EQUAL_THAN = new ComparisionGreaterEqualsThan(),
+            LESS_THAN = new ComparisionLessThan(),
+            LESS_EQUAL_THAN = new ComparisionLessEqualsThan();
+
+    /*Flyweights for reducers*/
+    private final static ArithmeticReducer
+            MAX = new ReducerToMax(),
+            MIN = new ReducerToMin(),
+            AVERAGE = new ReducerToAverage(),
+            SUM = new ReducerToSum();
 
     private List<Object> items;
 
 
-    public Collection(List<Object> items) {
+    public static Collection of(List<Object> items) {
+        return new Collection(items);
+    }
+
+    private Collection(List<Object> items) {
         this.items = items;
     }
 
-    /*
+    /**
     * @return Salesforce List collection
     * */
-    public List<Object> toList() {
+    public List<Object> get() {
         return items;
+    }
+
+    /**
+     * @return First item or null if collection is empty
+     */
+    public Object getFirst() {
+        return isEmpty() ? null : items[0];
+    }
+
+    /**
+     * @return Last item or null if collection is empty
+     */
+    public Object getLast() {
+        return isEmpty() ? null : items[items.size() - 1];
+    }
+
+    /**
+     * @return Nth item of collection.
+     */
+    public Object get(Integer i) {
+        return items[i];
+    }
+
+    public Collection add(Integer index, Object element) {
+        items.add(index, element);
+        return this;
+    }
+
+    public Collection add(Object element) {
+        items.add(element);
+        return this;
+    }
+
+    public Collection addAll(List<Object> elements) {
+        items.addAll(elements);
+        return this;
+    }
+
+    public Collection addAll(Set<Object> elements) {
+        items.addAll(elements);
+        return this;
+    }
+
+    public Collection remove(Integer index) {
+        items.remove(index);
+        return this;
+    }
+
+    public Collection removeLast() {
+        if (isNotEmpty()) {
+            items.remove(size() - 1);
+        }
+        return this;
     }
 
     /**
      * @return true when collection is not null or empty, false otherwise.
      */
     public Boolean isNotEmpty() {
-        return Collection.isNotEmpty(items);
+        return !isEmpty();
     }
 
     /**
      * @return true when collection is null or empty, false otherwise.
      */
     public Boolean isEmpty() {
-        return Collection.isEmpty(items);
+        return items == null || items.isEmpty();
     }
 
     /**
@@ -87,578 +144,144 @@ public class Collection {
 
 
     /**
-     * @param field SObject field from which value is taken.
-     * @return Set of gathered values.
-     */
-    public Object getUniqueValues(SObjectField field) {
-        assertSObjectCollection();
-        return Collection.getUniqueValues((SObject[]) items, field);
-    }
-
-    /**
-     * @param field SObject field from which value is taken.
-     * @return Set of gathered values.
-     */
-    public Object getUniqueValues(Type valueType, String field) {
-        assertSObjectCollection();
-        return Collection.getUniqueValues(valueType, (SObject[]) items, field);
-    }
-
-    /**
-     * @param keyMapper KeyMapper implementation which returns value for each record
-     * @return Set of gathered values.
-     */
-    public Object getUniqueValues(KeyMapper keyMapper) {
-        return Collection.getUniqueValues(items, keyMapper);
-    }
-
-    /**
-     * @param fields List of fields to return values from.
-     * @return Set of unique SObject field values of given fields of given records.
-     */
-    public Set<Object> getUniqueValues(List<SObjectField> fields) {
-        assertSObjectCollection();
-        return Collection.getUniqueValues((SObject[]) items, fields);
-    }
-
-
-    /**
-     * @param field SObject Field to map by
-     * @return Map of items where record is map's value and field's value is map's key.
-     * Map's key type is derived from field's DisplayType.
-     */
-    public Object mapBy(SObjectField field) {
-        assertSObjectCollection();
-        return Collection.mapBy((List<SObject>) items, field);
-    }
-
-    /**
-     * @param keyType Type of returned map's key
-     * @param field SObject Field API name to map by
-     * @return Map of items where record is map's value and field's value is map's key.
-     */
-    public Object mapBy(Type keyType, String field) {
-        assertSObjectCollection();
-        return Collection.mapBy(keyType, (List<SObject>) items, field);
-    }
-
-    /**
-     * @param mapper KeyMapper instance which produce map key for given item.
-     * @return Map of items where list item is map's value and key is produced by KeyMapper.
-     */
-    public Object mapBy(KeyMapper mapper) {
-        return Collection.mapBy(items, mapper);
-    }
-
-    /**
-     * @param mapper Mapper instance which produce map key and value for given item.
-     * @return Map of items where Item is map's value and key is produced by KeyMapper.
-     */
-    public Object mapBy(Mapper mapper) {
-        return Collection.mapBy(items, mapper);
-    }
-
-
-    /**
-     * Groups collection items by given field to map where key
-     * is the field's value and the value is List<SObject> which have the same key.
-     * @param field SObject Field
-     */
-    public Object groupBy(SObjectField field) {
-        assertSObjectCollection();
-        return Collection.groupBy((SObject[]) items, field);
-    }
-
-    /**
-     * Groups collection items by given field to map where key
-     * is the field's value and the value is List<SObject> which have the same key.
-     * @param keyType Type of the key ex. String.class, Id.class
-     * @param field SObject Field
-     */
-    public Object groupBy(Type keyType, String field) {
-        assertSObjectCollection();
-        return Collection.groupBy(keyType, (SObject[]) items, field);
-    }
-
-    /**
-     * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
-     * key is produced by the key mapper and the value is List<Object> which have the same key.
-     * @param keyMapper Collection.KeyMapper implementation.
-     */
-    public Object groupBy(KeyMapper keyMapper) {
-        return Collection.groupBy(items, keyMapper);
-    }
-
-    /**
-     * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
-     * both key and values are produced by Mapper for each collection item.
-     *
-     * @param Mapper Collection.Mapper implementation.
-     */
-    public Object groupBy(Mapper mapper) {
-        return Collection.groupBy(items, mapper);
-    }
-
-
-    /**
-     * Reduces collection to resulting object.
-     *
-     * @param reducer Collection.Reducer implementation which reduces each item to resulting object.
-     * @param result Instance of the result.
-     */
-    public Object reduce(Reducer reducer, Object result) {
-        return Collection.reduce(items, reducer, result);
-    }
-
-
-    /**
-     * Wraps objects into Wrapper implementation.
-     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
-     */
-    public Collection wrap(Type wrapperType) {
-        return new Collection(Collection.wrap(items, wrapperType));
-    }
-
-
-    /**
-     * Sorts collection by given field and order.
-     * @param field Field to sort by.
-     * @param isAscending true -> ascending order, false -> descending order.
-     * Collection.ASCENDING/DESCENDING can be used instead.
-     */
-    public Collection sort(SObjectField field, Boolean isAscending) {
-        assertSObjectCollection();
-        return new Collection(Collection.sort((List<SObject>) items, field, isAscending));
-    }
-
-    /**
-     * Sorts collection using given Collection.Comparator implementation.
-     * @param field Field to sort by.
-     * @param isAscending true -> ascending order, false -> descending order.
-     * Collection.ASCENDING/DESCENDING can be used instead.
-     */
-    public Collection sort(Comparator comparator) {
-        return new Collection(Collection.sort(items, comparator));
-    }
-
-
-    /**
-     * Filters List of SObject by field value.
-     * Operators:
-     * <ul>
-     *  <li>'==' or Collection.EQUALS</li>
-     *  <li>'!=' or Collection.NOT_EQUALS</li>
-     *  <li>'>' or Collection.GREATER_THAN</li>
-     *  <li>'>=' or Collection.GREATER_EQUAL_THAN</li>
-     *  <li>'<' or Collection.LESS_THAN</li>
-     *  <li>'<=' or Collection.LESS_EQUAL_THAN</li>
-     * </ul>
-     *
-     * @example
-     * <pre>
-     *     new Collection(accounts).filter(Account.CreatedDate,'>=', Date.today().addDays(-1));
-     * </pre>
-     */
-    public Collection filter(SObjectField field, String operator, Object value) {
-        assertSObjectCollection();
-        return new Collection(filter((List<SObject>) items, field, operator, value));
-    }
-
-
-    /**
-     * Filters List of SObject by given Prototype record.
-     * @return SObject that have the same values in fields as given prototype
-     */
-    public Collection filter(SObject prototype) {
-        return new Collection(filter((List<SObject>) items, prototype));
-    }
-
-
-    /**
-     * Filters collection items using given Filter implementation.
-     * @param filter Filter implementation which for each collection item returns boolean value whether item should
-     * be included in the output or not.
-     */
-    public Collection filter(Filter filter) {
-        return new Collection(Collection.filter(items, filter));
-    }
-
-
-    /**
-     * Filters collection items using given Filter implementation.
-     * @param filter UpdateFilter interface implementation, which for new and old record return boolean value whether
-     * new record should be included in output.
-     */
-    public Collection filter(Map<Id, SObject> oldMap, UpdateFilter filter) {
-        assertSObjectCollection();
-        return new Collection(Collection.filter((List<SObject>) items, oldMap, filter));
-    }
-
-
-    /**
-     * @return First collection item accepted by Collection.FilterByFieldValue, or null.
-     * @see Collection.FilterByFieldValue
-     * @see Collection.filter(SObjectField field, String operator, Object value)
-     */
-    public SObject find(SObjectField field, String operator, Object value) {
-        assertSObjectCollection();
-        return find((List<SObject>) items, field, operator, value);
-    }
-
-    /**
-     * @return First collection item which matches all fields specified on prototype.
-     */
-    public SObject find(SObject prototype) {
-        assertSObjectCollection();
-        return (SObject) find((List<SObject>) items, new FilterByPrototype(prototype));
-    }
-
-    /**
-     * @param filter Filter implementation used in the search.
-     * @return First collection item accepted by filter or null.
-     */
-    public Object find(Filter filter) {
-        return find(items, filter);
-    }
-
-
-    /**
-     * For each element in collection, Worker.forEach action is executed.
-     * @param worker Concrete class implementing Worker interface. Executes action on each element.
-     */
-    public Collection forEach(Worker worker) {
-        Collection.forEach(items, worker);
-        return this;
-    }
-
-
-    /**
-     * Fills in the list with number of clones of provided prototype record.
-     * By default, clone is deep and Id, timestamps and autonumbers are not preserved.
-     *
-     * @param listToFill List to fill in.
-     * @param count Number of clones in the list
-     * @param prototype Prototype of the record. Clone of this record will be added to the list.
-     */
-    public Collection fill(Integer count, SObject prototype) {
-        assertSObjectCollection();
-        return new Collection(fill((List<SObject>) items, count, prototype));
-    }
-
-    /**
-     * Fills in the list with number of clones of provided prototype record.
-     * @param listToFill List to fill in.
-     * @param count Number of clones in the list
-     * @param prototype Prototype of the record. Clone of this record will be added to the list.
-     * @param opts Collection.CloneOptions instance which determine clone operation characteristics.
-     */
-    public Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions) {
-        assertSObjectCollection();
-        return new Collection(fill((List<SObject>) items, count, prototype, cloneOptions));
-    }
-
-
-    private void assertSObjectCollection() {
-        assert(items instanceof List<SObject>, 'Operation only applies to SObject collection.');
-    }
-
-    private void assert(Boolean condition, String errorMsg) {
-        if (!condition) throw new CollectionException(errorMsg);
-    }
-
-
-    /*
-    *
-    *
-    * STATIC METHODS
-    *
-    *
+    * FILTER
     * */
     /**
-     * @return true when collection is not null or empty, false otherwise.
-     */
-    public static Boolean isNotEmpty(List<Object> collection) {
-        return !isEmpty(collection);
+    * Filter determines whether collection item should be included into result collection of filter method.
+    * */
+    public interface Filter {
+        Boolean accepts(Object item);
     }
 
     /**
-     * @return true when collection is null or empty, false otherwise.
+    * Filter determines whether collection item should be included into result collection of filter method.
+    * Item is compared with it's previous state from trigger.
+    * */
+    public interface UpdateFilter {
+        Boolean accepts(SObject record, SObject oldRecord);
+    }
+
+    /**
+     * This method allows for building criteria to filter the collection or to find the first record satisfying the criteria.
+     * then() method returns filtered collection for given criteria and can be used in further chaining.
+     * getFirst() returns the first record satisfying criteria.
+     * For best best performance it's adviced to use Filter implementation since byField() method has quite large overhead
+     * scaled linearly with number of linked predicates.
      */
-    public static Boolean isEmpty(List<Object> collection) {
-        return collection == null || collection.isEmpty();
+    public FilterFacade filter() {
+        return new FilterFacadeImpl(this.items);
+    }
+
+    public interface FilterFacade {
+        FilterFacade byUsing(Filter filter);
+        FilterFacade byUsing(Map<Id, SObject> oldMap, UpdateFilter filter);
+        /**
+         * Filters
+         */
+        FilterFacade alike(SObject prototype);
+        FieldFilterFacade byField(SObjectField field);
+
+        /**
+         * This method exists only for verbosity and can be omitted.
+         * Predicates use AND by default.
+         */
+        FilterFacade andAlso();
+
+        /**
+         * Former and following predicate are joined using OR connective.
+         */
+        FilterFacade orElse();
+
+        /**
+         * Evaluates filters and returns Collection of filtered items.
+         */
+        Collection then();
+
+        /**
+         * @return first item satisfying conditions.
+         */
+        Object getFirst();
+    }
+
+    public interface FieldFilterFacade {
+        FilterFacade equal(Object value);
+        FilterFacade notEqual(Object value);
+        FilterFacade greaterThan(Object value);
+        FilterFacade greaterEqualsThan(Object value);
+        FilterFacade lessThan(Object value);
+        FilterFacade lessEqualsThan(Object value);
+        FilterFacade isIn(Set<Object> values);
+        FilterFacade isIn(List<Object> values);
+        FilterFacade isNotIn(Set<Object> values);
+        FilterFacade isNotIn(List<Object> values);
+        FilterFacade relatedTo(List<SObject> parents);
+        FilterFacade containing(String value);
     }
 
 
     /**
-     * Transforms generic collection to given type.
-     * Ex. Map<Object,Object> => Map<String,Account>
-     * Casting is done through JSON serialization/deserialization, this process is CPU Time consuming.
-     *
-     * This method is NPE-safe, when collection is null, then blank instance of target type is returned.
-     */
-    public static Object cast(Object collection, Type targetType) {
-        if (collection == null) {
-            return targetType.newInstance();
-        }
-
-        return JSON.deserialize(JSON.serialize(collection), targetType);
-    }
-
-
-    /*
-    * GET UNIQUE VALUES
+    * REDUCE
     * */
     /**
-     * @param records List of SObject records from which values are gathered.
-     * @param field SObject field from which value is taken.
-     * @return Set of gathered values.
+     * Reduces collection to the single value, for example
+     * List, Set, Map or Group of field values
      */
-    public static Object getUniqueValues(List<SObject> records, SObjectField field) {
-        return getUniqueValues(records, new MapByField(field));
+    public ReduceFacade reduce() {
+        return new ReduceFacadeImpl(items);
     }
-
     /**
-     * @param valueType Type of single value in a Set ex. String.class
-     * @param records List of SObject records from which values are gathered
-     * @param field SObject field from which value is taken.
-     * @return Set of gathered values.
+     * Reduces collection to single output variable.
+     * @param accumulator Reducers output from previous item or initial value.
+     * @param item currently processed item.
+     * @param index item's index
+     * @return aggregatedValues
      */
-    public static Object getUniqueValues(Type valueType, List<SObject> records, String field) {
-        return getUniqueValues(records, new MapByField(valueType, field));
-    }
-
-    /**
-     * @param records List of items from which values are gathered
-     * @param keyMapper KeyMapper implementation which returns value for each record
-     * @return Set of gathered values.
-     */
-    public static Object getUniqueValues(List<Object> records, KeyMapper keyMapper) {
-        return mapByFieldToIMap(records, new MapByKeyMapper(keyMapper, Apex.getListItemType(records))).keySet();
-    }
-
-    /**
-     * @param records List of records to return field values from.
-     * @param fields List of fields to return values from.
-     * @return Set of unique SObject field values of given fields of given records.
-     */
-    public static Set<Object> getUniqueValues(List<SObject> records, List<SObjectField> fields) {
-        Set<Object> values = new Set<Object>();
-
-        for (Integer fieldIndex = 0, fieldSize = fields.size(); fieldIndex < fieldSize; fieldIndex++) {
-            SObjectField field = fields[fieldIndex];
-
-            for (Integer i = 0, j = records.size(); i < j; i++) {
-                values.add(records[i].get(field));
-            }
-        }
-
-        return values;
-    }
-
-
-    /*
-    * MAP BY
-    * */
-
-    /**
-     * KeyMapper implementations determine Map's key for given object and key's type.
-     */
-    public interface KeyMapper {
-        Object key(Object item);
-        Type keyType();
+    public interface Reducer {
+        Object reduce(Object accumulator, Object item, Integer index);
     }
 
     /**
      * Mapper implementations determine Map's key and value for given object and types of key and value.
      */
     public interface Mapper {
-        Type keyType();
         Type valueType();
-        Object key(Object item);
         Object value(Object item);
     }
 
-    /**
-     * Set and Map are not covariant types and there's no Map interface in Salesforce which would allow casting
-     * differently typed Maps on abstract Map type.
-     * Because of that, we cannot cast Map<Id, Account> to Map<Object,Object> or any other map
-     * (unless we serialize and deserialize via JSON). It means, that we cannot have one generic method which would take
-     * generic Map and operate on it, we would need separate methods for each type of key.
-     * This wrapper is a workaround for this, it lets us use AbstractMap regardless of it's key type.
-     * Instead of having separate methods for each kind of map, we have IMap implementations for all primitive key types.
-     */
-    public interface IMap {
-        Object toMap();
-        Object keySet();
-        void put(Object key, Object value);
-        Object get(Object key);
-        Boolean containsKey(Object key);
+    public interface ReduceFacade {
+        /**
+         * Reduces collection of objects to single output value returned by Reducer implementation.
+         * @param reducer Reducer interface implementation. @see Collections.Reducer
+         * @param initialValue collection/object to which input is reduced.
+         * @return accumulated value from all items
+         */
+        Object to(Reducer reducer, Object initialValue);
+        Decimal toSum(SObjectField field);
+        Decimal toAverage(SObjectField field);
+        Decimal toMin(SObjectField field);
+        Decimal toMax(SObjectField field);
+
+        List<Object> toList(SObjectField field);
+        List<Object> toList(Mapper valueMapper);
+
+        Object toSet(SObjectField field);
+        Object toSet(Mapper valueMapper);
+
+        Object toMap(SObjectField field);
+        Object toMap(SObjectField keyField, SObjectField valueField);
+        Object toMap(Mapper keyMapper);
+        Object toMap(Mapper keyMapper, Mapper valueMapper);
+
+        Object toGroup(SObjectField field);
+        Object toGroup(SObjectField keyField, SObjectField valueField);
+        Object toGroup(Mapper keyMapper);
+        Object toGroup(Mapper keyMapper, Mapper valueMapper);
     }
 
 
     /**
-     * @param items List of SObject records to map
-     * @param field SObject Field to map by
-     * @return Map of items where record is map's value and field's value is map's key.
-     * Map's key type is derived from field's DisplayType.
-     */
-    public static Object mapBy(List<SObject> records, SObjectField field) {
-        return mapBy(records, new MapByField(field));
-    }
-
-    /**
-     * @param keyType Type of returned map's key
-     * @param items List of SObject records to map
-     * @param field SObject Field API name to map by
-     * @return Map of items where record is map's value and field's value is map's key.
-     */
-    public static Object mapBy(Type keyType, List<SObject> records, String field) {
-        return mapBy(records, new MapByField(keyType, field));
-    }
-
-    /**
-     * @param items List of items to map
-     * @param mapper KeyMapper instance which produce map key for given item.
-     * @return Map of items where list item is map's value and key is produced by KeyMapper.
-     */
-    public static Object mapBy(List<Object> items, KeyMapper mapper) {
-        return mapByFieldToIMap(items, new MapByKeyMapper(mapper, Apex.getListItemType(items))).toMap();
-    }
-
-    /**
-     * @param keyType Type of result Map key ex. String.class
-     * @param valueType Type of result Map key ex. Account.class
-     * @param items List of items to map
-     * @param mapper KeyMapper instance which produce map key for given item.
-     * @return Map of items where Item is map's value and key is produced by KeyMapper.
-     */
-    public static Object mapBy(List<Object> items, Mapper mapper) {
-        return mapByFieldToIMap(items, mapper).toMap();
-    }
-
-    /*
-    * Internal method. Maps items to IMap instance.
+    * Wrap
     * */
-    private static IMap mapByFieldToIMap(List<Object> items, Mapper mapper) {
-        IMap imap = newMap(mapper.keyType(), mapper.valueType());
-
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            Object item = items[i];
-            imap.put(mapper.key(item), mapper.value(item));
-        }
-        return imap;
-    }
-
-
-    /*
-    * GROUP BY
-    * */
-
-    /**
-    * Groups collection items by given field to map where key
-    * is the field's value and the value is List<SObject> which have the same key.
-    * @param records SObject list to group.
-    * @param field SObject Field
-    * @return Map<FieldValue : FieldType, List<SObject>>
-    */
-    public static Object groupBy(List<SObject> records, SObjectField field) {
-        return groupBy(records, new MapByField(field));
-    }
-
-    /**
-     * Groups collection items by given field to map where key
-     * is the field's value and the value is List<SObject> which have the same key.
-     * @param keyType Type of the key ex. String.class, Id.class
-     * @param records SObject list to group.
-     * @param field SObject Field
-     * @return Map<FieldValue : keyType, List<SObject>>
-     */
-    public static Object groupBy(Type keyType, List<SObject> records, String field) {
-        return groupBy(records, new MapByField(keyType, field));
-    }
-
-    /**
-     * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
-     * both key and values are produced by Mapper for each collection item.
-     * @param records List of items to group
-     * @param keyMapper KeyMapper implementation which for each collection item produces Map key.
-     * @return Map<KeyMapper.key() : KeyMapper.keyType(), List<Object>>
-     */
-    public static Object groupBy(List<Object> items, KeyMapper keyMapper) {
-        return groupBy(items, new MapByKeyMapper(keyMapper, Apex.getListItemType(items)));
-    }
-
-    /**
-     * Groups collection items by given KeyMapper implementation to Map<Key, List<Value>>, where
-     * both key and values are produced by Mapper for each collection item.
-     *
-     * @param records List of items to group
-     * @param mapper Mapper implementation which for each collection item produces Map key and value.
-     * @return Map<Mapper.key() : Mapper.keyType(), List<Mapper.value() : Mapper.valueType()>>
-     */
-    public static Object groupBy(List<Object> items, Mapper mapper) {
-        IMap imap = newMap(mapper.keyType(), Type.forName('List<' + mapper.valueType() + '>'));
-
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            Object item = (Object) items[i];
-            Object key = mapper.key(item);
-            Object value = mapper.value(item);
-
-            if (!imap.containsKey(key)) {
-                imap.put(key, Apex.newListOfItemType(mapper.valueType()));
-            }
-
-            List<Object> groupedRecords = (List<Object>) imap.get(key);
-            groupedRecords.add(value);
-        }
-
-        return imap.toMap();
-    }
-
-
-    /*
-    * REDUCE
-    * */
-
-    /**
-     * @param aggregatedValues Collection which holds values reduced so far.
-     * @param item currently processed item.
-     * @return aggregatedValues
-     */
-    public interface Reducer {
-        Object reduce(Object aggregatedValues, Object item, Integer index);
-    }
-
-    /**
-     * Reduces collection of objects to other collection or object of given type.
-     * @param items input collection to reduce
-     * @param reducer Reducer interface implementation. @see Collections.Reducer
-     * @param result collection/object to which input is reduced.
-     * @return result after reduction.
-     * <pre>
-     * @example
-     * Set<Id> accountIds = reduce(List<Account> accounts, AccountToIdReducer, Set<Id> accountIds);
-     *
-     * class AccountToIdReducer implements Reducer{
-     *  public reduce(Object ids, Object item){
-     *      Set<Id> accountIds = (Set<Id>) ids;
-     *      accountIds.put( ((Account) item).Id );
-     *  }
-     * </pre>
-     */
-    public static Object reduce(List<Object> items, Reducer reducer, Object result) {
-        for (Integer i = 0, size = items.size(); i < size; ++i) {
-            result = reducer.reduce(result, items[i], i);
-        }
-
-        return result;
-    }
-
-
-    /*
-    * WRAP
-    * */
-
     /**
      * Wrapper interface.
      * Concrete method implementing this interface should have a member variable for wrapped item.
@@ -669,184 +292,39 @@ public class Collection {
     }
 
     /**
-     * Wraps each item into Wrapper class
-     *
-     * @param items List of objects to wrap.
-     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor and have
-     * public accessor.
-     * @return List of Wrappers
+     * WrapperFactory interface.
+     * Concrete method implementing this interface should produce wrapper for given item.
      */
-    public static List<Wrapper> wrap(List<Object> items, Type wrapperType) {
-        List<Wrapper> wrappers = (List<Wrapper>) Apex.newListOfItemType(wrapperType, new List<Wrapper>());
+    public interface WrapperFactory {
+        Object wrap(Object item);
+    }
 
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            Wrapper wrapper = (Wrapper) wrapperType.newInstance();
-            wrapper.wrap(items[i]);
+    /**
+     * Wraps objects into Wrapper implementation.
+     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
+     */
+    public Collection wrap(Type wrapperType) {
+        return wrap(new WrapperFactoryAdatper(wrapperType), wrapperType);
+    }
+
+    /**
+     * Wraps collection items using wrapper factory.
+     * @return Collection of wrapped objects;
+     */
+    public Collection wrap(WrapperFactory wrapperFactory, Type wrapperType) {
+        List<Object> wrappers = (List<Wrapper>) Apex.newListOfItemType(wrapperType, new List<Object>());
+
+        for (Integer i = 0, j = size(); i < j; i++) {
+            Object wrapper = wrapperFactory.wrap(items[i]);
             wrappers.add(wrapper);
         }
 
-        return wrappers;
-    }
-
-
-    /*
-    * FOR EACH
-    * */
-
-    /**
-     * Worker performs action on each item in collection.
-     */
-    public interface Worker {
-        void forEach(Object item, Integer index);
-    }
-
-    /**
-     * For each element in collection, Worker.forEach action is executed.
-     *
-     * @param items List of items to execute action on
-     * @param worker Concrete class implementing Worker interface. Executes action on each element.
-     */
-    public static void forEach(List<Object> items, Worker worker) {
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            worker.forEach(items[i], i);
-        }
-    }
-
-
-    /*
-    * FILTER
-    * */
-
-    /*
-    * Filter determines whether collection item should be included into result collection of filter method.
-    * */
-    public interface Filter {
-        Boolean accepts(Object item);
-    }
-
-    /*
-    * Filter determines whether collection item should be included into result collection of filter method.
-    * This kind of filter compares current record value with Trigger.old value.
-    * */
-    public interface UpdateFilter {
-        Boolean accepts(SObject record, SObject oldRecord);
+        return new Collection(wrappers);
     }
 
 
     /**
-     * Filters List of SObject by field value.
-     * Operators:
-     * <ul>
-     *  <li>'==' or Collection.EQUALS</li>
-     *  <li>'!=' or Collection.NOT_EQUALS</li>
-     *  <li>'>' or Collection.GREATER_THAN</li>
-     *  <li>'>=' or Collection.GREATER_EQUAL_THAN</li>
-     *  <li>'<' or Collection.LESS_THAN</li>
-     *  <li>'<=' or Collection.LESS_EQUAL_THAN</li>
-     * </ul>
-     *
-     * @example
-     * <pre>
-     *     Collection.filter(accounts, Account.CreatedDate,'>=', Date.today().addDays(-1) );
-     * </pre>
-     */
-    public static List<SObject> filter(List<SObject> records, SObjectField field, String operator, Object value) {
-        return (List<SObject>) filter(records, new FilterByFieldValue(field, operator, value));
-    }
-
-
-    /**
-     * Filters List of SObject by given Prototype record.
-     * @return SObject that have the same values in fields as given prototype
-     */
-    public static List<SObject> filter(List<SObject> records, SObject prototype) {
-        return (List<SObject>) filter(records, new FilterByPrototype(prototype));
-    }
-
-
-    /**
-     * @param items List of items to Filter
-     * @param filter Filter implementation which for each collection item returns boolean value whether item should
-     * be included in the output or not.
-     *
-     * @return List of items for which filter returned "true".
-     */
-    public static List<Object> filter(List<Object> items, Filter filter) {
-        List<Object> filtered = Apex.newListOfTheSameType(items);
-
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            Object item = items[i];
-
-            if (filter.accepts(item)) {
-                filtered.add(item);
-            }
-        }
-
-        return filtered;
-    }
-
-    /**
-     * @param records List of Trigger New records
-     * @param oldRecords Trigger oldMap
-     * @param filter UpdateFilter interface implementation, which for new and old record return boolean value whether
-     * new record should be included in output.
-     *
-     * @return Subset of records parameter for which UpdateFilter returned "true".
-     */
-    public static List<SObject> filter(List<SObject> records, Map<Id, SObject> oldRecords, UpdateFilter filter) {
-        List<SObject> filtered = (List<SObject>) Apex.newListOfTheSameType(records);
-
-        for (Integer i = 0, size = records.size(); i < size; ++i) {
-            SObject record = records[i];
-            SObject oldRecord = oldRecords.get(record.Id);
-
-            if (filter.accepts(record, oldRecord)) {
-                filtered.add(record);
-            }
-        }
-
-        return filtered;
-    }
-
-
-    /******
-    * FIND
-    * */
-
-    /**
-     * @return First collection item accepted by Collection.FilterByFieldValue, or null.
-     * @see Collection.FilterByFieldValue
-     */
-    public static SObject find(List<SObject> records, SObjectField field, String operator, Object value) {
-        return (SObject) find(records, new FilterByFieldValue(field, operator, value));
-    }
-
-    /**
-     * @return First collection item which matches all fields specified on prototype.
-     */
-    public static SObject find(List<SObject> records, SObject prototype) {
-        return (SObject) find(records, new FilterByPrototype(prototype));
-    }
-
-    /**
-     * @param filter Filter implementation used in the search.
-     * @return First collection item accepted by filter or null.
-     */
-    public static Object find(List<Object> items, Filter filter) {
-        for (Integer i = 0, j = items.size(); i < j; i++) {
-            Object item = items[i];
-
-            if (filter.accepts(item)) {
-                return item;
-            }
-        }
-
-        return null;
-    }
-
-
-    /******
-    * SORT
+    * ORDER BY
     * */
     /**
      * Compares 2 objects to determine their order.
@@ -859,28 +337,27 @@ public class Collection {
         Integer compare(Object thisItem, Object otherItem);
     }
 
-
-    /**
-     * @param records List of SObject records to sort.
-     * @param field Field to sort by.
-     * @param isAscending true -> ascending order, false -> descending order.
-     *
-     * @return Sorted list of records.
-     */
-    public static List<SObject> sort(List<SObject> records, SObjectField field, Boolean isAscending) {
-        return (List<SObject>) sort(records, new CompareByField(field, isAscending));
+    public enum Order {
+        ASCENDING, DESCENDING
     }
 
     /**
-     * @param items Collection of items to sort.
-     * @param comparator Comparator implementation which compares 2 items to determine order.
-     *
-     * @return Sorted list of objects with order determined by comparator.
+     * Sorts collection by given field and order.
+     * @param field Field to sort by.
+     * @param order Sorting order
      */
-    public static List<Object> sort(List<Object> items, Comparator comparator) {
+    public Collection orderBy(SObjectField field, Order order) {
+        assertSObjectCollection(items);
+        return orderBy(new CompareByField(field, order));
+    }
+
+    /**
+     * Sorts collection using given Collection.Comparator implementation.
+     */
+    public Collection orderBy(Comparator comparator) {
         List<ComparableObject> comparables = new List<ComparableObject>();
 
-        for (Integer i = 0, size = items.size(); i < size; i++) {
+        for (Integer i = 0, size = size(); i < size; i++) {
             comparables.add(new ComparableObject(items[i], comparator));
         }
 
@@ -891,29 +368,35 @@ public class Collection {
             sorted.add(comparables[i].item);
         }
 
-        return sorted;
+        return Collection.of(sorted);
     }
 
 
-    private virtual class ComparableObject implements Comparable {
-        private Object item;
-        private Comparator comparator;
+    /**
+    * FOR EACH
+    * */
+    /**
+     * Worker performs action on each item in collection.
+     */
+    public interface Worker {
+        void forEach(Object item, Integer index);
+    }
 
-        public ComparableObject(Object item, Comparator comparator) {
-            this.item = item;
-            this.comparator = comparator;
+    /**
+     * For each element in collection, Worker.forEach action is executed.
+     */
+    public Collection forEach(Worker worker) {
+        for (Integer i = 0, j = size(); i < j; i++) {
+            worker.forEach(items[i], i);
         }
 
-        public Integer compareTo(Object other) {
-            return comparator.compare(this.item, ((ComparableObject) other).item);
-        }
+        return this;
     }
 
 
-    /*
+    /**
     * FILL
     * */
-
     /**
      * Fills in the list with number of clones of provided prototype record.
      * By default, clone is deep and Id, timestamps and autonumbers are not preserved.
@@ -922,36 +405,36 @@ public class Collection {
      * @param count Number of clones in the list
      * @param prototype Prototype of the record. Clone of this record will be added to the list.
      */
-    public static List<SObject> fill(List<SObject> listToFill, Integer count, SObject prototype) {
-        return fill(listToFill, count, prototype, defaultCloneOptions);
+    public Collection fill(Integer count, SObject prototype) {
+        assertSObjectCollection(items);
+        return fill(count, prototype, defaultCloneOptions);
     }
 
     /**
      * Fills in the list with number of clones of provided prototype record.
-     * @param listToFill List to fill in.
      * @param count Number of clones in the list
      * @param prototype Prototype of the record. Clone of this record will be added to the list.
      * @param opts Collection.CloneOptions instance which determine clone operation characteristics.
      */
-    public static List<SObject> fill(List<SObject> listToFill, Integer count, SObject prototype, CloneOptions opts) {
+    public Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions) {
+        assertSObjectCollection(items);
         for (Integer i = 0; i < count; i++) {
             SObject clone = prototype.clone(
-                    opts.preserveId,
-                    opts.deepClone,
-                    opts.preserveReadonlyTimestamps,
-                    opts.preserveAutonumer
+                    cloneOptions.preserveId,
+                    cloneOptions.deepClone,
+                    cloneOptions.preserveReadonlyTimestamps,
+                    cloneOptions.preserveAutonumer
             );
-            listToFill.add(clone);
+            items.add(clone);
         }
-        return listToFill;
+        return Collection.of(items);
     }
 
     public class CloneOptions {
-        public Boolean
-                preserveId,
-                deepClone,
-                preserveReadonlyTimestamps,
-                preserveAutonumer;
+        public Boolean preserveId { get; private set; }
+        public Boolean deepClone { get; private set; }
+        public Boolean preserveReadonlyTimestamps { get; private set; }
+        public Boolean preserveAutonumer { get; private set; }
 
         public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumer) {
             this.preserveId = preserveId;
@@ -962,101 +445,223 @@ public class Collection {
     }
 
 
+    private static void assertSObjectCollection(List<Object> items) {
+        assert(items instanceof List<SObject>, 'Operation only applies to SObject collection.');
+    }
+
+    private static void assert(Boolean condition, String errorMsg) {
+        if (!condition) throw new CollectionException(errorMsg);
+    }
+
     private class CollectionException extends Exception {
     }
 
 
     /*
-    * 
-    * 
-    * 
-    * Beyond this point are interfaces implementations.
     *
-    *  
-    * 
-    * 
+    *
+    *
+    * Beyond this point are internal interfaces implementations.
+    *
+    *
+    *
+    *
     * */
+    private class FilterFacadeImpl implements Collection.FilterFacade {
+        private List<Object> itemsToFilter;
+        private List<Filter> filters;
+        private List<Boolean> isAND;
+        private Integer size;
 
+        public FilterFacadeImpl(List<Object> items) {
+            this.itemsToFilter = items;
+            this.size = items == null ? 0 : items.size();
+            this.filters = new List<Filter>();
+            this.isAND = new List<Boolean>();
+        }
 
-    /*
-    * 
-    * Filters
-    * 
-    * */
-    private final static Map<String, Set<Integer>> COMPARATOR_OUTCOMES = new Map<String, Set<Integer>>{
-            Collection.GREATER_THAN => new Set<Integer>{
-                    1
-            },
-            Collection.GREATER_EQUAL_THAN => new Set<Integer>{
-                    0, 1
-            },
-            Collection.LESS_THAN => new Set<Integer>{
-                    -1
-            },
-            Collection.LESS_EQUAL_THAN => new Set<Integer>{
-                    0, -1
-            },
-            Collection.EQUALS => new Set<Integer>{
-                    0
-            },
-            Collection.NOT_EQUALS => new Set<Integer>{
-                    1, -1
+        public FilterFacade byUsing(Filter filter) {
+            addFilter(filter);
+            return this;
+        }
+
+        public FilterFacade byUsing(Map<Id, SObject> oldMap, UpdateFilter filter) {
+            assertSObjectCollection(itemsToFilter);
+            addFilter(new UpdateFilterToFilterAdapter(oldMap, filter));
+            return this;
+        }
+
+        public FieldFilterFacade byField(SObjectField field) {
+            assertSObjectCollection(itemsToFilter);
+            return new FieldFilterFacadeImpl(this, field);
+        }
+
+        public FilterFacade alike(SObject prototype) {
+            assertSObjectCollection(itemsToFilter);
+            addFilter(new FilterByPrototype(prototype));
+            return this;
+        }
+
+        public FilterFacade andAlso() {
+            return this;
+        }
+
+        public FilterFacade orElse() {
+            this.isAND.add(false);
+            return this;
+        }
+
+        public Collection then() {
+            List<Object> filteredItems = Apex.newListOfTheSameType(itemsToFilter);
+
+            for (Integer i = 0, size = itemsToFilter.size(); i < size; i++) {
+                Object item = itemsToFilter[i];
+
+                if (isSatisfyingConditions(item)) {
+                    filteredItems.add(item);
+                }
             }
-    };
+
+            return Collection.of(filteredItems);
+        }
+
+        public Object getFirst() {
+            for (Integer i = 0, size = itemsToFilter.size(); i < size; i++) {
+                Object item = itemsToFilter[i];
+
+                if (isSatisfyingConditions(item)) {
+                    return item;
+                }
+            }
+
+            return null;
+        }
+
+        private Boolean isSatisfyingConditions(Object item) {
+            Boolean accepted = true;
+            Integer size = filters.size();
+
+            if (size > 0) accepted = checkFilter(accepted, 0, item);
+            if (size > 1) accepted = checkFilter(accepted, 1, item);
+            if (size > 2) accepted = checkFilter(accepted, 2, item);
+            if (size > 3) accepted = checkFilter(accepted, 3, item);
+            if (size > 4) accepted = checkFilter(accepted, 4, item);
+
+            return accepted;
+        }
+
+        private Boolean checkFilter(Boolean previousFilter, Integer i, Object item) {
+            if (isAND[i]) {
+                return previousFilter && this.filters[i].accepts(item);
+            } else {
+                return previousFilter || this.filters[i].accepts(item);
+            }
+        }
+
+        private void addFilter(Filter filter) {
+            assert(filters.size() <= 5, 'Too many filters degrade performance. Implement Filter instead for the best performance.');
+            this.filters.add(filter);
+
+            if (isAND.size() < filters.size()) {
+                this.isAND.add(true);
+            }
+        }
+    }
 
     /**
-     * Filters List of SObject by field value.
-     * Operators:
-     * <ul>
-     *  <li>'==' or Collection.EQUALS</li>
-     *  <li>'!=' or Collection.NOT_EQUALS</li>
-     *  <li>'>' or Collection.GREATER_THAN</li>
-     *  <li>'>=' or Collection.GREATER_EQUAL_THAN</li>
-     *  <li>'<' or Collection.LESS_THAN</li>
-     *  <li>'<=' or Collection.LESS_EQUAL_THAN</li>
-     * </ul>
-     *
-     * @example
-     * <pre>
-     *     new Collection(accounts).filter(new Collection.FilterByFieldValue(Account.CreatedDate,'>=', Date.today().addDays(-1)));
-     *     Collection.filter(accounts, new Collection.FilterByFieldValue(Account.CreatedDate,'>=', Date.today().addDays(-1) ));
-     * </pre>
+     * Facade for Field value filters.
      */
-    public class FilterByFieldValue implements Collection.Filter {
+    private class FieldFilterFacadeImpl implements FieldFilterFacade {
+        private FilterFacade filterFacade;
+        private SObjectField field;
+
+        private FieldFilterFacadeImpl(FilterFacade filterFacade, SObjectField field) {
+            this.filterFacade = filterFacade;
+            this.field = field;
+        }
+
+        public FilterFacade equal(Object value) {
+            filterFacade.byUsing(new FilterByFieldValue(field, Collection.EQUALS, value));
+            return filterFacade;
+        }
+        public FilterFacade notEqual(Object value) {
+            filterFacade.byUsing(new FilterByFieldValue(field, Collection.NOT_EQUALS, value));
+            return filterFacade;
+        }
+        public FilterFacade greaterThan(Object value) {
+            filterFacade.byUsing(new FilterByFieldValue(field, Collection.GREATER_THAN, value));
+            return filterFacade;
+        }
+        public FilterFacade greaterEqualsThan(Object value) {
+            filterFacade.byUsing(new FilterByFieldValue(field, Collection.GREATER_EQUAL_THAN, value));
+            return filterFacade;
+        }
+        public FilterFacade lessThan(Object value) {
+            filterFacade.byUsing(new FilterByFieldValue(field, Collection.LESS_THAN, value));
+            return filterFacade;
+        }
+        public FilterFacade lessEqualsThan(Object value) {
+            filterFacade.byUsing(new FilterByFieldValue(field, Collection.LESS_EQUAL_THAN, value));
+            return filterFacade;
+        }
+        public FilterFacade isIn(Set<Object> values) {
+            filterFacade.byUsing(new FilterByFieldValues(field, true, values));
+            return filterFacade;
+        }
+        public FilterFacade isIn(List<Object> values) {
+            filterFacade.byUsing(new FilterByFieldValues(field, true, values));
+            return filterFacade;
+        }
+        public FilterFacade isNotIn(Set<Object> values) {
+            filterFacade.byUsing(new FilterByFieldValues(field, false, values));
+            return filterFacade;
+        }
+        public FilterFacade isNotIn(List<Object> values) {
+            filterFacade.byUsing(new FilterByFieldValues(field, false, values));
+            return filterFacade;
+        }
+        public FilterFacade relatedTo(List<SObject> parents) {
+            filterFacade.byUsing(new FilterRelatedTo(parents, field));
+            return filterFacade;
+        }
+        public FilterFacade containing(String value) {
+            filterFacade.byUsing(new FilterFieldContaining(field, value));
+            return filterFacade;
+        }
+    }
+
+
+    /**
+    * Filters
+    /**
+     * Filters List of SObject by field value.
+     */
+    private class FilterByFieldValue implements Collection.Filter {
         private Object value;
         private String field;
-        private String operator;
         private Collection.Comparator comparator;
-        private final Set<Integer> acceptedCompareValues;
+        private final ComparisionResult expectedResult;
 
-        public FilterByFieldValue(SObjectField field, String operator, Object value) {
+        public FilterByFieldValue(SObjectField field, ComparisionResult expectedResult, Object value) {
             this.field = '' + field;
-            this.operator = operator;
             this.value = value;
-            this.acceptedCompareValues = COMPARATOR_OUTCOMES.get(operator);
-            this.comparator = getComparatorByField(field);
+            this.expectedResult = expectedResult;
+            this.comparator = getFieldComparator(field);
         }
 
         public Boolean accepts(Object record) {
             Object fieldValue = ((SObject) record).get(field);
             Integer outcome = comparator.compare(fieldValue, value);
 
-            return acceptedCompareValues.contains(outcome);
+            return expectedResult.isTrue(outcome);
         }
     }
 
-
     /**
-     *Filters SObject collection by SObject prototype.
+     * Filters SObject collection by SObject prototype.
      * Collection sobject that have the same field values as prototype are accepted.
-     *
-     * @example
-     * <pre>
-     *     new ByPrototype(new Opportunity(Name = 'Test Opportunity', StageNem='Analysis'))
-     *     would return Opportunities with Name = 'Test Opportunity' and Stage Analysis.
-     * </pre>
      */
-    public class FilterByPrototype implements Collection.Filter {
+    private class FilterByPrototype implements Collection.Filter {
         private Map<String, Object> fieldsValues;
 
         public FilterByPrototype(SObject prototype) {
@@ -1076,59 +681,37 @@ public class Collection {
         }
     }
 
-
     /**
      * Filters List of SObject by one of many possible field values.
-     * Operators:
-     * <ul>
-     *  <li>'IN' or Collection.VALUE_IN</li>
-     *  <li>'NOT IN' or Collection.VALUE_NOT_IN</li>
-     * </ul>
-     *
-     * @example
-     * <pre>
-     *     new Collection(accounts).filter(new Collection.FilterByFieldValues(Account.Name,'IN',new Set<Object>{'Test Account', 'Other Account'}));
-     * </pre>
      */
-    public class FilterByFieldValues implements Collection.Filter {
+    private class FilterByFieldValues implements Collection.Filter {
         private Set<Object> values;
-        private String field;
+        private SObjectField field;
         private Boolean valueIn;
 
-        public FilterByFieldValues(SObjectField field, String operator, Set<Object> values) {
-            this('' + field, operator, values);
+        public FilterByFieldValues(SObjectField field, Boolean valueIn, List<Object> values) {
+            this(field, valueIn, new Set<Object>(values));
         }
 
-        public FilterByFieldValues(String field, String operator, Set<Object> values) {
+        public FilterByFieldValues(SObjectField field, Boolean valueIn, Set<Object> values) {
             this.values = values;
             this.field = field;
-            this.valueIn = operator == Collection.VALUE_IN;
+            this.valueIn = valueIn;
         }
-
 
         public Boolean accepts(Object record) {
             return valueIn == (values.contains(((SObject) record).get(field)));
         }
     }
 
-
     /**
      * Filters SObject list to those related to given parents by given relationship field.
-     *
-     * @example
-     * <pre>
-     *     Collection.filter(contacts, new Collection.FilterRelatedTo(accounts, Contact.AccountId));
-     * </pre>
      */
-    public class FilterRelatedTo implements Collection.Filter {
+    private class FilterRelatedTo implements Collection.Filter {
         private Map<Id, SObject> parents;
         private SObjectField relationshipField;
 
         public FilterRelatedTo(List<SObject> parents, SObjectField relationshipField) {
-            this(new Map<Id, SObject>(parents), relationshipField);
-        }
-
-        public FilterRelatedTo(Map<Id, SObject> parents, SObjectField relationshipField) {
             this.parents = new Map<Id, SObject>(parents);
             this.relationshipField = relationshipField;
         }
@@ -1138,35 +721,23 @@ public class Collection {
         }
     }
 
-
     /**
-     * Filters SObjects by distance to given Geolocation.
+     * Filters SObject list to those related to given parents by given relationship field.
      */
-    public class FilterByDistance implements Collection.Filter {
-        private Location targetLocation;
-        private String field;
-        private String unit;
-        private Double maxDistance;
+    private class FilterFieldContaining implements Collection.Filter {
+        private SObjectField field;
+        private String value;
 
-        /**
-         * @param locationField Geolocation field to filter by.
-         * @param targetLocation Target geolocation to filter by distance to.
-         * @param maxDistance Max. distance from the target location
-         * @param unit Distance unit 'km'/'mi'
-         */
-        public FilterByDistance(SObjectField locationField, Location targetLocation, Double maxDistance, String unit) {
-            this.field = '' + locationField;
-            this.targetLocation = targetLocation;
-            this.unit = unit;
-            this.maxDistance = maxDistance;
+        public FilterFieldContaining(SObjectField field, String value) {
+            this.field = field;
+            this.value = value;
         }
 
         public Boolean accepts(Object record) {
-            Location fieldValue = (Location) ((SObject) record).get(field);
-            return Location.getDistance(fieldValue, targetLocation, unit) <= maxDistance;
+            String fieldValue = (String) ((SObject) record).get(field);
+            return fieldValue.contains(value);
         }
     }
-
 
     /**
      * Filter records that changed field value to other value.
@@ -1213,6 +784,209 @@ public class Collection {
         }
     }
 
+    /**
+     * Interface adapter from UpdateFilter to Filter
+     */
+    private class UpdateFilterToFilterAdapter implements Filter {
+        private Map<Id, SObject> oldMap;
+        private UpdateFilter updateFilter;
+
+        public UpdateFilterToFilterAdapter(Map<Id, SObject> oldMap, UpdateFilter updateFilter) {
+            this.oldMap = oldMap;
+            this.updateFilter = updateFilter;
+        }
+
+        public Boolean accepts(Object item) {
+            return updateFilter.accepts((SObject) item, oldMap.get(((SObject) item).Id));
+        }
+    }
+
+
+    /**
+    * REDUCERS
+    * */
+    public class ReduceFacadeImpl implements ReduceFacade {
+        private List<Object> items;
+        private Integer size;
+
+        private ReduceFacadeImpl(List<Object> items) {
+            this.items = items;
+            this.size = items == null ? 0 : items.size();
+        }
+
+        public Object to(Reducer reducer, Object initialValue) {
+            Object previousValue = initialValue;
+
+            for (Integer i = 0; i < size; ++i) {
+                previousValue = reducer.reduce(previousValue, items[i], i);
+            }
+
+            return previousValue;
+        }
+
+        public Decimal toSum(SObjectField field) {
+            return (Decimal) this.to(SUM.ofField(field), 0.0);
+        }
+
+        public Decimal toAverage(SObjectField field) {
+            return (Decimal) this.to(AVERAGE.ofField(field), null);
+        }
+
+        public Decimal toMin(SObjectField field) {
+            return (Decimal) this.to(MIN.ofField(field), null);
+        }
+
+        public Decimal toMax(SObjectField field) {
+            return (Decimal) this.to(MAX.ofField(field), 0.0);
+        }
+
+        public List<Object> toList(SObjectField field) {
+            assertSObjectCollection(items);
+            return toList(new FieldMapper(field));
+        }
+
+        public List<Object> toList(Mapper valueMapper) {
+            List<Object> values = Apex.newListOfItemType(valueMapper.valueType());
+
+            for (Integer i = 0; i < size; i++) {
+                values.add(valueMapper.value(items[i]));
+            }
+
+            return values;
+        }
+
+        public Object toSet(SObjectField field) {
+            assertSObjectCollection(items);
+            return toSet(new FieldMapper(field));
+        }
+
+        public Object toSet(Mapper valueMapper) {
+            return mapToUntypedMap(valueMapper, new ItemMapper(items)).keySet();
+        }
+
+        public Object toMap(SObjectField field) {
+            assertSObjectCollection(items);
+            return toMap(new FieldMapper(field));
+        }
+
+        public Object toMap(SObjectField keyField, SObjectField valueField) {
+            assertSObjectCollection(items);
+            return toMap(new FieldMapper(keyField), new FieldMapper(valueField));
+        }
+
+        public Object toMap(Mapper keyMapper) {
+            return toMap(keyMapper, new ItemMapper(items));
+        }
+
+        public Object toMap(Mapper keyMapper, Mapper valueMapper) {
+            return mapToUntypedMap(keyMapper, valueMapper).toMap();
+        }
+
+        public Object toGroup(SObjectField field) {
+            assertSObjectCollection(items);
+            return toGroup(new FieldMapper(field));
+        }
+
+        public Object toGroup(SObjectField keyField, SObjectField valueField) {
+            assertSObjectCollection(items);
+            return toGroup(new FieldMapper(keyField), new FieldMapper(valueField));
+        }
+
+        public Object toGroup(Mapper keyMapper) {
+            return toGroup(keyMapper, new ItemMapper(items));
+        }
+
+        public Object toGroup(Mapper keyMapper, Mapper valueMapper) {
+            IMap groupMap = newMap(keyMapper.valueType(), Type.forName('List<' + valueMapper.valueType() + '>'));
+            List<Object> emptyList = Apex.newListOfItemType(valueMapper.valueType());
+
+            for (Integer i = 0; i < size; i++) {
+                Object item = (Object) items[i];
+                Object key = keyMapper.value(item);
+                Object value = valueMapper.value(item);
+
+                if (!groupMap.containsKey(key)) {
+                    groupMap.put(key, emptyList.clone());
+                }
+
+                List<Object> groupedRecords = (List<Object>) groupMap.get(key);
+                groupedRecords.add(value);
+            }
+
+            return groupMap.toMap();
+        }
+
+        private IMap mapToUntypedMap(Mapper keyMapper, Mapper valueMapper) {
+            IMap imap = newMap(keyMapper.valueType(), valueMapper.valueType());
+
+            for (Integer i = 0; i < size; i++) {
+                Object item = items[i];
+                imap.put(keyMapper.value(item), valueMapper.value(item));
+            }
+
+            return imap;
+        }
+    }
+
+    private abstract class ArithmeticReducer implements Reducer {
+        private SObjectField field;
+
+        public Reducer ofField(SObjectField field) {
+            this.field = field;
+            return this;
+        }
+
+        public Object reduce(Object accumulator, Object item, Integer index) {
+            return reduce((Decimal) accumulator, (Decimal) ((SObject) item).get(field), index);
+        }
+
+        protected abstract Decimal reduce(Decimal accumulator, Decimal fieldValue, Integer index);
+    }
+
+    private class ReducerToSum extends ArithmeticReducer {
+        protected override Decimal reduce(Decimal accumulator, Decimal fieldValue, Integer index) {
+            return accumulator + fieldValue;
+        }
+    }
+
+    private class ReducerToAverage extends ArithmeticReducer {
+        private Decimal sum = 0;
+
+        protected override Decimal reduce(Decimal accumulator, Decimal fieldValue, Integer index) {
+            this.sum += (Decimal) (fieldValue == null ? 0 : fieldValue);
+            return this.sum / (index + 1);
+        }
+    }
+
+    private class ReducerToMax extends ArithmeticReducer {
+        protected override Decimal reduce(Decimal maxSoFar, Decimal fieldValue, Integer index) {
+
+            if (fieldValue == null) {
+                return maxSoFar;
+
+            } else if (maxSoFar == null) {
+                return fieldValue;
+
+            } else {
+                return Math.max(fieldValue, maxSoFar);
+            }
+        }
+    }
+
+    private class ReducerToMin extends ArithmeticReducer {
+        protected override Decimal reduce(Decimal minSoFar, Decimal fieldValue, Integer index) {
+            if (fieldValue == null) {
+                return minSoFar;
+
+            } else if (minSoFar == null) {
+                return fieldValue;
+
+            } else {
+                return Math.min(fieldValue, minSoFar);
+            }
+        }
+    }
+
 
     /*
     *
@@ -1233,33 +1007,38 @@ public class Collection {
         return FIELD_TYPE_MAP.get(field.getDescribe().getSoapType());
     }
 
-
-    /**
-    * Maps SObject collection by SObject field.
-    * */
-    public virtual class MapByField implements Collection.KeyMapper {
+    public virtual class FieldMapper implements Collection.Mapper {
         private String field;
-        private Type keyType;
+        private Type fieldType;
 
-        public MapByField(Type keyType, String field) {
-            this.keyType = keyType;
-            this.field = field;
-        }
-
-        public MapByField(SObjectField field) {
-            this.keyType = getSObjectFieldType(field);
+        public FieldMapper(SObjectField field) {
+            this.fieldType = getSObjectFieldType(field);
             this.field = '' + field;
         }
 
-        public Object key(Object item) {
-            return ((SObject) item).get(field);
+        public Type valueType() {
+            return fieldType;
         }
 
-        public Type keyType() {
-            return keyType;
+        public Object value(Object item) {
+            return ((SObject) item).get(field);
         }
     }
 
+    public class ItemMapper implements Collection.Mapper {
+        private Type itemType;
+
+        public ItemMapper(List<Object> items) {
+            this.itemType = Apex.getListItemType(items);
+        }
+
+        public Type valueType() {
+            return itemType;
+        }
+        public Object value(Object item) {
+            return item;
+        }
+    }
 
     /**
     * Maps collection by pair of fields and separator. ex.
@@ -1274,67 +1053,80 @@ public class Collection {
     *           );
     * </pre>
     * */
-    public virtual class MapByFieldPair implements Collection.KeyMapper {
-        private String fieldLeft;
-        private String fieldRight;
-        private String separator = '';
+    public class ConcatenatedFieldsMapper implements Collection.Mapper {
+        private SObjectField fieldLeft;
+        private SObjectField fieldRight;
 
-        public MapByFieldPair(SObjectField fieldLeft, String separator, SObjectField fieldRight) {
-            this('' + fieldLeft, separator, '' + fieldRight);
-        }
-
-        public MapByFieldPair(String fieldLeft, String separator, String fieldRight) {
-            this.separator = separator;
+        public ConcatenatedFieldsMapper(SObjectField fieldLeft, SObjectField fieldRight) {
             this.fieldLeft = fieldLeft;
             this.fieldRight = fieldRight;
         }
 
-        public Object key(Object item) {
-            return ((SObject) item).get(fieldLeft) + separator + ((SObject) item).get(fieldRight);
+        public Object value(Object item) {
+            return '' + ((SObject) item).get(fieldLeft) + ((SObject) item).get(fieldRight);
         }
 
-        public Type keyType() {
+        public Type valueType() {
             return String.class;
         }
     }
 
 
     /**
-    * Mapper implementation which uses given KeyMapper for producing key,
-    * and returns collection item as mapped value.
+    * WRAPPERS
     * */
-    public class MapByKeyMapper implements Collection.Mapper {
-        private Collection.KeyMapper keyMapper;
-        private Type valueType;
+    private class WrapperFactoryAdatper implements WrapperFactory {
+        private Type wrapperType;
 
-        public MapByKeyMapper(Collection.KeyMapper keyMapper, Type valueType) {
-            this.keyMapper = keyMapper;
-            this.valueType = valueType;
+        public WrapperFactoryAdatper(Type wrapperType) {
+            this.wrapperType = wrapperType;
         }
 
-        public Type keyType() {
-            return keyMapper.keyType();
-        }
-
-        public Type valueType() {
-            return valueType;
-        }
-
-        public Object key(Object item) {
-            return keyMapper.key(item);
-        }
-
-        public Object value(Object item) {
-            return item;
+        public Object wrap(Object item) {
+            Wrapper wrapper = (Wrapper) wrapperType.newInstance();
+            wrapper.wrap(item);
+            return wrapper;
         }
     }
 
 
-    /*
-    *
-    * Comparators
-    *
+    /**
+    * COMPARATORS
     * */
+    private interface ComparisionResult {
+        Boolean isTrue(Integer i);
+    }
+    private class ComparisionEquals implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i == 0;
+        }
+    }
+    private class ComparisionNotEquals implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i != 0;
+        }
+    }
+    private class ComparisionGreaterThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i > 0;
+        }
+    }
+    private class ComparisionGreaterEqualsThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i >= 0;
+        }
+    }
+    private class ComparisionLessThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i < 0;
+        }
+    }
+    private class ComparisionLessEqualsThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i <= 0;
+        }
+    }
+
     private final static Map<Schema.SoapType, Collection.Comparator> comparatorsByFieldType = new Map<SoapType, Collection.Comparator>{
             SoapType.ID => new StringComparator(),
             SoapType.STRING => new StringComparator(),
@@ -1347,22 +1139,15 @@ public class Collection {
             SoapType.TIME => new BooleanComparator()
     };
 
-    private static Collection.Comparator getComparatorByField(SObjectField field) {
+    private static Collection.Comparator getFieldComparator(SObjectField field) {
         Collection.Comparator comparator = comparatorsByFieldType.get(field.getDescribe().getSoapType());
-
-        if (comparator == null) {
-            comparator = new AnyComparator();
-        }
-
-        return comparator;
+        return comparator == null ? new AnyComparator() : comparator;
     }
-
 
     private class AnyComparator implements Collection.Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             String a = thisItem == null ? '' : '' + thisItem;
             String b = otherItem == null ? '' : '' + otherItem;
-
             return a.compareTo(b);
         }
     }
@@ -1429,7 +1214,6 @@ public class Collection {
         }
     }
 
-
     /**
      * Compares records by values of the SObject field.
      */
@@ -1438,10 +1222,10 @@ public class Collection {
         private Integer direction;
         private Collection.Comparator comparator;
 
-        public CompareByField(SObjectField field, Boolean isAscending) {
+        public CompareByField(SObjectField field, Order ordr) {
             this.field = field;
-            this.direction = isAscending ? 1 : -1;
-            this.comparator = getComparatorByField(field);
+            this.direction = ordr == Order.ASCENDING ? 1 : -1;
+            this.comparator = getFieldComparator(field);
         }
 
         public Integer compare(Object thisItem, Object otherItem) {
@@ -1452,66 +1236,17 @@ public class Collection {
         }
     }
 
+    private virtual class ComparableObject implements Comparable {
+        private Object item;
+        private Comparator comparator;
 
-    /**
-     * Compares SObjects by distance to given geolocation.
-     */
-    public class CompareByDistance implements Collection.Comparator {
-        private SObjectField field;
-        private Integer direction;
-        private Integer nullsPosition = 1;
-        private Location target;
-        private Map<Id, Double> distanceCache;
-
-        /**
-         * By default, nulls and closest are first.
-         * @param field Location field
-         * @param geoLocation Target geolocation. Records are sorted by distance to this location.
-         */
-        public CompareByDistance(SObjectField field, Location geoLocation) {
-            this.distanceCache = new Map<Id, Double>();
-            this.field = field;
-            this.direction = -1;
-            this.nullsPosition = -1;
-            this.target = geoLocation;
+        public ComparableObject(Object item, Comparator comparator) {
+            this.item = item;
+            this.comparator = comparator;
         }
 
-        public CompareByDistance closestFirst(Boolean closestFirst) {
-            this.nullsPosition = closestFirst ? -1 : 1;
-            return this;
-        }
-
-        public CompareByDistance nullFirst(Boolean nullFirst) {
-            this.direction = nullFirst ? -1 : 1;
-            return this;
-        }
-
-        public Integer compare(Object thisItem, Object otherItem) {
-            Double thisDistance = getDistance((SObject) thisItem);
-            if (thisDistance == null) return nullsPosition;
-
-            Double otherDistance = getDistance((SObject) otherItem);
-            if (otherDistance == null) return -nullsPosition;
-
-            return direction * (thisDistance > otherDistance ? 1 :
-                    thisDistance < otherDistance ? -1
-                            : 0);
-        }
-
-        private Double getDistance(SObject record) {
-            if (distanceCache.containsKey(record.Id)) {
-                return distanceCache.get(record.Id);
-            }
-
-            Location loc = (Location) record.get(field);
-            if (loc == null) {
-                return null;
-            }
-
-            Double distance = this.target.getDistance((Location) record.get(field), 'km');
-            distanceCache.put(record.Id, distance);
-
-            return distance;
+        public Integer compareTo(Object other) {
+            return comparator.compare(this.item, ((ComparableObject) other).item);
         }
     }
 
@@ -1523,11 +1258,23 @@ public class Collection {
     *
     *
     * */
-
     /**
-     * IMap factory method which returns proper IMap implementation for given keyType parameter
-     * and initializes it with empty Map of the same sObject type as given records.
+     * Set and Map are not covariant types and there's no Map interface in Salesforce which would allow casting
+     * differently typed Maps on abstract Map type.
+     * Because of that, we cannot cast Map<Id, Account> to Map<Object,Object> or any other map
+     * (unless we serialize and deserialize via JSON). It means, that we cannot have one generic method which would take
+     * generic Map and operate on it, we would need separate methods for each type of key.
+     * This wrapper is a workaround for this, it lets us use AbstractMap regardless of it's key type.
+     * Instead of having separate methods for each kind of map, we have IMap implementations for all primitive key types.
      */
+    public interface IMap {
+        Object toMap();
+        Object keySet();
+        void put(Object key, Object value);
+        Object get(Object key);
+        Boolean containsKey(Object key);
+    }
+
     private static Collection.IMap newMap(Type keyType, Type objectType) {
         Object sfMap = Type.forName('Map<' + keyType + ',' + objectType + '>').newInstance();
 
@@ -1542,7 +1289,6 @@ public class Collection {
 
         return new MapByObject((Map<Object, Object>) sfMap);
     }
-
 
     private class MapByObject implements Collection.IMap {
         private Map<Object, Object> mapInstance;

@@ -241,7 +241,7 @@ public inherited sharing class Collection {
     }
 
     /**
-     * Mapper implementations determine Map's key and value for given object and types of key and value.
+     * Produces value from given collection item.
      */
     public interface Mapper {
         Type valueType();
@@ -312,7 +312,7 @@ public inherited sharing class Collection {
      * @return Collection of wrapped objects;
      */
     public Collection wrap(WrapperFactory wrapperFactory, Type wrapperType) {
-        List<Object> wrappers = (List<Wrapper>) Apex.newListOfItemType(wrapperType, new List<Object>());
+        List<Object> wrappers = (List<Object>) Apex.newListOfItemType(wrapperType, new List<Object>());
 
         for (Integer i = 0, j = size(); i < j; i++) {
             Object wrapper = wrapperFactory.wrap(items[i]);

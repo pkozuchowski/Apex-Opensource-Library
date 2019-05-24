@@ -930,9 +930,9 @@ private class CollectionTest {
 
     @IsTest
     static void testWrapByWrapperFactory() {
-        List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>)
+        List<OpportunityWrapper> wrappers = (List<OpportunityWrapper>)
                 Collection.of(opportunities)
-                        .wrap(OpportunityWrapper2.class)
+                        .wrap(new OpportunityWrapperFactory(), OpportunityWrapper.class)
                         .get();
 
         for (Integer i = 0; i < wrappers.size(); i++) {
@@ -942,9 +942,7 @@ private class CollectionTest {
 
     public class OpportunityWrapperFactory implements Collection.WrapperFactory {
         public Object wrap(Object item) {
-            OpportunityWrapper2 wrapper = new OpportunityWrapper2();
-            wrapper.opportunity = (Opportunity) item;
-            return wrapper;
+            return new OpportunityWrapper((Opportunity) item);
         }
     }
 
@@ -970,9 +968,6 @@ private class CollectionTest {
         accounts[0].Name += '0';
         contact.LastName += '0';
 
-        for (Account account : accounts) {
-            System.debug(account.Contact__r.LastName);
-        }
 
         for (Integer i = 1; i < 20; i++) {
             if (i < 10) {

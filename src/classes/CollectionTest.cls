@@ -262,28 +262,38 @@ private class CollectionTest {
 
     @IsTest
     static void testReduceToMapByKeyAndValueMapper() {
-        Map<String, Id> expected = new Map<String, Id>();
+        Map<Id, OpportunityWrapper> expected = new Map<Id, OpportunityWrapper>();
         for (Opportunity opp : opportunities) {
-            expected.put('' + opp.AccountId + opp.FiscalQuarter, opp.Id);
+            expected.put(opp.Id, new OpportunityWrapper(opp));
         }
 
         Test.startTest();
-        Map<String, Id> actual = (Map<String, Id>) Collection.of(opportunities).reduce().toMap(
-                new MapperByAccountIdAndFiscalQuarter(),
-                new Collection.FieldMapper(Opportunity.Id)
+        Map<Id, OpportunityWrapper> actual = (Map<Id, OpportunityWrapper>) Collection.of(opportunities).reduce().toMap(
+                new Collection.FieldMapper(Opportunity.Id),
+                new OpportunityWrapperMapper()
         );
         Test.stopTest();
 
-        System.assertEquals(expected, actual);
+        System.assertEquals(JSON.serialize(expected), JSON.serialize(actual));
     }
-    private class MapperByAccountIdAndFiscalQuarter implements Collection.Mapper {
+
+    public class OpportunityWrapperMapper implements Collection.Mapper {
+
         public Object value(Object item) {
             Opportunity opp = (Opportunity) item;
-            return '' + opp.AccountId + opp.FiscalQuarter;
+            return new OpportunityWrapper(opp);
         }
 
         public Type valueType() {
-            return String.class;
+            return OpportunityWrapper.class;
+        }
+    }
+
+    public class OpportunityWrapper {
+        public Opportunity opportunity;
+
+        public OpportunityWrapper(Opportunity opportunity) {
+            this.opportunity = opportunity;
         }
     }
 
@@ -662,8 +672,9 @@ private class CollectionTest {
     @IsTest
     static void testReduceToSum() {
         Decimal expected = 0;
+        opportunities[0].Amount = null;
         for (Opportunity opportunity : opportunities) {
-            expected += opportunity.Amount;
+            expected += opportunity.Amount != null ? opportunity.Amount : 0;
         }
 
         Decimal actual = Collection.of(opportunities)
@@ -675,13 +686,36 @@ private class CollectionTest {
 
     /**
      *@description
+     * List of Opportunities is reduced to total of Amounts
+     */
+    @IsTest
+    static void testReduceToAverage() {
+        Decimal expected = 0;
+        opportunities[0].Amount = null;
+        for (Opportunity opportunity : opportunities) {
+            expected += opportunity.Amount != null ? opportunity.Amount : 0;
+        }
+        expected /= opportunities.size();
+
+        Decimal actual = Collection.of(opportunities)
+                .reduce()
+                .toAverage(Opportunity.Amount);
+
+        System.assertEquals(expected, actual);
+    }
+
+    /**
+     *@description
      * List of Opportunities is reduced to max Amount
      */
     @IsTest
     static void testReduceToMax() {
         Decimal max = -9999;
+        opportunities[0].Amount = null;
         for (Opportunity opportunity : opportunities) {
-            max = Math.max(max, opportunity.Amount);
+            if (opportunity.Amount != null) {
+                max = Math.max(max, opportunity.Amount);
+            }
         }
 
         Decimal actual = Collection.of(opportunities)
@@ -692,6 +726,27 @@ private class CollectionTest {
         System.assertNotEquals(null, actual);
     }
 
+    /**
+     *@description
+     * List of Opportunities is reduced to min Amount
+     */
+    @IsTest
+    static void testReduceToMin() {
+        Decimal min = 9999;
+        opportunities[0].Amount = null;
+        for (Opportunity opportunity : opportunities) {
+            if (opportunity.Amount != null) {
+                min = Math.min(min, opportunity.Amount);
+            }
+        }
+
+        Decimal actual = Collection.of(opportunities)
+                .reduce()
+                .toMin(Opportunity.Amount);
+
+        System.assertEquals(min, actual);
+        System.assertNotEquals(null, actual);
+    }
 
     /**
      * @description

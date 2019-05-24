@@ -937,7 +937,13 @@ public inherited sharing class Collection {
         }
 
         public Object reduce(Object accumulator, Object item, Integer index) {
-            return reduce((Decimal) accumulator, (Decimal) ((SObject) item).get(field), index);
+            Decimal fieldValue = (Decimal) ((SObject) item).get(field);
+
+            if (fieldValue != null) {
+                return reduce((Decimal) accumulator, fieldValue, index);
+            } else {
+                return accumulator;
+            }
         }
 
         protected abstract Decimal reduce(Decimal accumulator, Decimal fieldValue, Integer index);
@@ -953,18 +959,14 @@ public inherited sharing class Collection {
         private Decimal sum = 0;
 
         protected override Decimal reduce(Decimal accumulator, Decimal fieldValue, Integer index) {
-            this.sum += (Decimal) (fieldValue == null ? 0 : fieldValue);
+            this.sum += fieldValue;
             return this.sum / (index + 1);
         }
     }
 
     private class ReducerToMax extends ArithmeticReducer {
         protected override Decimal reduce(Decimal maxSoFar, Decimal fieldValue, Integer index) {
-
-            if (fieldValue == null) {
-                return maxSoFar;
-
-            } else if (maxSoFar == null) {
+            if (maxSoFar == null) {
                 return fieldValue;
 
             } else {
@@ -975,10 +977,7 @@ public inherited sharing class Collection {
 
     private class ReducerToMin extends ArithmeticReducer {
         protected override Decimal reduce(Decimal minSoFar, Decimal fieldValue, Integer index) {
-            if (fieldValue == null) {
-                return minSoFar;
-
-            } else if (minSoFar == null) {
+            if (minSoFar == null) {
                 return fieldValue;
 
             } else {

@@ -498,7 +498,7 @@ public inherited sharing class Collection {
 
         public FilterFacade alike(SObject prototype) {
             assertSObjectCollection(itemsToFilter);
-            this.filters.add(new FilterByPrototype(prototype));
+            addFilter(new FilterByPrototype(prototype));
             return this;
         }
 
@@ -821,7 +821,7 @@ public inherited sharing class Collection {
                 previousValue = reducer.reduce(previousValue, items[i], i);
             }
 
-            return initialValue;
+            return previousValue;
         }
 
         public Decimal toSum(SObjectField field) {
@@ -935,31 +935,31 @@ public inherited sharing class Collection {
             this.field = field;
             return this;
         }
+
+        public Object reduce(Object accumulator, Object item, Integer index) {
+            return reduce((Decimal) accumulator, (Decimal) ((SObject) item).get(field), index);
+        }
+
+        protected abstract Decimal reduce(Decimal accumulator, Decimal fieldValue, Integer index);
     }
 
     private class ReducerToSum extends ArithmeticReducer {
-        public Object reduce(Object aggregatedValues, Object item, Integer index) {
-            Decimal fieldValue = (Decimal) ((SObject) item).get(field);
-            return (Decimal) aggregatedValues
-                    + (fieldValue == null ? 0 : fieldValue);
+        protected override Decimal reduce(Decimal accumulator, Decimal fieldValue, Integer index) {
+            return accumulator + fieldValue;
         }
     }
 
     private class ReducerToAverage extends ArithmeticReducer {
         private Decimal sum = 0;
-        private Integer count = 0;
 
-        public Object reduce(Object aggregatedValues, Object item, Integer index) {
-            Decimal fieldValue = (Decimal) ((SObject) item).get(field);
-            this.count++;
+        protected override Decimal reduce(Decimal accumulator, Decimal fieldValue, Integer index) {
             this.sum += (Decimal) (fieldValue == null ? 0 : fieldValue);
-            return this.sum / this.count;
+            return this.sum / (index + 1);
         }
     }
 
     private class ReducerToMax extends ArithmeticReducer {
-        public Object reduce(Object maxSoFar, Object item, Integer index) {
-            Decimal fieldValue = (Decimal) ((SObject) item).get(field);
+        protected override Decimal reduce(Decimal maxSoFar, Decimal fieldValue, Integer index) {
 
             if (fieldValue == null) {
                 return maxSoFar;
@@ -968,15 +968,13 @@ public inherited sharing class Collection {
                 return fieldValue;
 
             } else {
-                return Math.max(fieldValue, (Decimal) maxSoFar);
+                return Math.max(fieldValue, maxSoFar);
             }
         }
     }
 
     private class ReducerToMin extends ArithmeticReducer {
-        public Object reduce(Object minSoFar, Object item, Integer index) {
-            Decimal fieldValue = (Decimal) ((SObject) item).get(field);
-
+        protected override Decimal reduce(Decimal minSoFar, Decimal fieldValue, Integer index) {
             if (fieldValue == null) {
                 return minSoFar;
 
@@ -984,7 +982,7 @@ public inherited sharing class Collection {
                 return fieldValue;
 
             } else {
-                return Math.min(fieldValue, (Decimal) minSoFar);
+                return Math.min(fieldValue, minSoFar);
             }
         }
     }

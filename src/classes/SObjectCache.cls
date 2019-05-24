@@ -35,6 +35,14 @@ public inherited sharing class SObjectCache {
     /**
      * @return Returns first SObject cached by given field and value or null.
      */
+    public Object retrieveFirstValue(SObjectField field, Object value, SObjectField fieldToReturn) {
+        SObject record = retrieveFirst(field, value);
+        return record == null ? null : record.get(fieldToReturn);
+    }
+
+    /**
+     * @return Returns first SObject cached by given field and value or null.
+     */
     public SObject retrieveFirst(SObjectField field, Object value) {
         List<SObject> result = retrieve(field, value);
         return result.isEmpty() ? null : result[0];

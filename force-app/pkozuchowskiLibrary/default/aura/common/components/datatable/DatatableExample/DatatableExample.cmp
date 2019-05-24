@@ -1,0 +1,262 @@
+<!--
+ MIT License
+
+ Copyright (c) 2018 Piotr Kożuchowski
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+-->
+<aura:component description="DatatableExample" implements="flexipage:availableForAllPageTypes">
+    <aura:attribute access="public" type="Account[]" name="accounts" default="[]"/>
+    <aura:attribute access="public" type="Account[]" name="newAccounts" default="[]"/>
+    <aura:attribute access="public" type="Object" name="comparators" default="{}"/>
+
+    <aura:attribute access="private" type="Decimal" name="totalRevenue" default="0"/>
+    <aura:attribute access="private" type="Decimal" name="totalEmployees" default="0"/>
+
+    <!--Handlers-->
+    <aura:handler name="init" action="{!c.handleInit}" value="{!this}"/>
+
+
+    <!--Component-->
+    <lightning:card title="Datatable Example">
+
+
+        <c:Datatable items="{!v.accounts}" var="account" paginate="true" bordered="true" responsive="true"
+                     indexVar="index">
+
+            <aura:set attribute="header">
+                <c:DatatableRow>
+                    <c:DatatableHeader value="Name" sortable="true" sortField="Name"/>
+                    <c:DatatableHeader value="Record Type" sortable="true" comparator="{!v.comparators.RecordType}"/>
+                </c:DatatableRow>
+            </aura:set>
+
+            <aura:set attribute="body">
+                <!--These row/s are rendered for each Account-->
+                <c:DatatableRow>
+                    <!--Basic Information-->
+                    <c:DatatableColumn label="Name">
+                        <a href="{!'/' + account.Id}">{!account.Name}</a>{!i}
+                    </c:DatatableColumn>
+                    <c:DatatableColumn label="Record Type" value="{!account.RecordType.Name}"/>
+                </c:DatatableRow>
+
+                <aura:if isTrue="{!index == 0}">
+                    <c:DatatableRow>
+                        <c:DatatableColumn label="Name" colspan="2">
+
+                            <div class="slds-color__background_gray-4">
+                                <c:Datatable items="{!v.accounts}" var="account" paginate="false" bordered="true" responsive="true"
+                                             indexVar="index">
+
+                                    <aura:set attribute="header">
+                                        <!--There can be many rows in headers, footers and even in the body-->
+                                        <c:DatatableRow class="slds-text-align_center">
+                                            <c:DatatableHeader/>
+                                            <c:DatatableHeader value="Basic Information" colspan="3"/>
+                                            <c:DatatableHeader value="Contact Information" colspan="2"/>
+                                            <c:DatatableHeader value="Billing Address" colspan="2"/>
+                                            <c:DatatableHeader value="Financial" colspan="2"/>
+                                            <!--Buttons-->
+                                            <c:DatatableHeader rowspan="2" value="Buttons"/>
+                                        </c:DatatableRow>
+
+                                        <c:DatatableRow>
+                                            <c:DatatableHeader/>
+                                            <!--Basic Information-->
+                                            <c:DatatableHeader value="Name" sortable="true" sortField="Name"/>
+                                            <c:DatatableHeader value="Owner"/>
+                                            <c:DatatableHeader value="Record Type" sortable="true" comparator="{!v.comparators.RecordType}"/>
+
+                                            <!--Contact Information-->
+                                            <c:DatatableHeader value="Phone" sortable="true" sortField="Phone"/>
+                                            <c:DatatableHeader value="Website" sortable="true" sortField="Website"/>
+
+                                            <!--Billing Address-->
+                                            <c:DatatableHeader value="Country" sortable="true" sortField="BillingCountry"/>
+                                            <c:DatatableHeader value="City" sortable="true" sortField="BillingCity"/>
+
+                                            <!--Finance-->
+                                            <c:DatatableHeader value="Annual Revenue" sortable="true" sortField="AnnualRevenue"/>
+                                            <c:DatatableHeader value="Employees" sortable="true" sortField="NumberOfEmployees"/>
+                                        </c:DatatableRow>
+                                    </aura:set>
+
+                                    <aura:set attribute="body">
+                                        <!--These row/s are rendered for each Account-->
+                                        <c:DatatableRow>
+                                            <!--Basic Information-->
+                                            <c:DatatableColumn label="Index" value="{!index}"/>
+                                            <c:DatatableColumn label="Name">
+                                                <!--Virtually any content can be put here, inputs, buttons, etc.-->
+                                                <a href="{!'/' + account.Id}">{!account.Name}</a>{!i}
+                                            </c:DatatableColumn>
+
+                                            <c:DatatableColumn label="Owner">
+                                                <a href="{!'/' + account.OwnerId}">{!account.Owner.Name}</a>
+                                            </c:DatatableColumn>
+
+                                            <c:DatatableColumn label="Record Type" value="{!account.RecordType.Name}"/>
+
+
+                                            <!--Contact Information-->
+
+                                            <!--You can bind both parent component variables/actions and current row fields-->
+                                            <aura:if isTrue="{!account.RecordType.Name != 'Competitor'}">
+                                                <c:DatatableColumn label="Phone" value="{!account.Phone}"/>
+                                                <c:DatatableColumn label="Website" value="{!account.Website}"/>
+
+                                                <aura:set attribute="else">
+                                                    <c:DatatableColumn label="Contact Information" colspan="2"
+                                                                       class="slds-text-align_center slds-theme--alert-texture">
+                                                        Classified
+                                                    </c:DatatableColumn>
+                                                </aura:set>
+                                            </aura:if>
+
+
+                                            <!--Billing Address-->
+                                            <c:DatatableColumn label="Billing Country" value="{!account.BillingCountry}"/>
+                                            <c:DatatableColumn label="Billing City" value="{!account.BillingCity}"/>
+
+                                            <!--Finance-->
+                                            <c:DatatableColumn label="Annual Revenue">
+                                                <lightning:input type="number" value="{!account.AnnualRevenue}" variant="label-hidden"
+                                                                 onchange="{!c.handleInputChange}"/>
+                                            </c:DatatableColumn>
+
+                                            <c:DatatableColumn label="Number of Employees">
+                                                <lightning:input type="number" value="{!account.NumberOfEmployees}" variant="label-hidden"
+                                                                 onchange="{!c.handleInputChange}"/>
+                                            </c:DatatableColumn>
+
+                                            <!--Buttons-->
+                                            <c:DatatableColumn label="Buttons">
+                                                <lightning:buttonIcon alternativeText="Report" iconName="utility:graph" size="large"
+                                                                      variant="bare"/>
+                                                <lightning:buttonIcon alternativeText="Update" iconName="utility:save" size="large"
+                                                                      variant="bare"/>
+                                                <lightning:buttonIcon name="{!account.Id}" alternativeText="Delete" iconName="utility:close"
+                                                                      size="large" onclick="{!c.handleDeleteAccount}"
+                                                                      variant="bare"/>
+                                            </c:DatatableColumn>
+                                        </c:DatatableRow>
+                                    </aura:set>
+
+
+                                    <aura:set attribute="footer">
+                                        <!--Totals-->
+                                        <c:DatatableRow>
+                                            <c:DatatableColumn colspan="7"/>
+                                            <c:DatatableColumn label="Total" value="Total"/>
+                                            <c:DatatableColumn label="Total Revenue" value="{!v.totalRevenue}"/>
+                                            <c:DatatableColumn label="Total Employees" value="{!v.totalEmployees}"/>
+                                            <c:DatatableColumn/>
+                                        </c:DatatableRow>
+
+                                        <aura:iteration items="{!v.newAccounts}" var="newAcc" indexVar="i">
+                                            <c:DatatableRow>
+                                                <c:DatatableColumn label="New Account"/>
+                                                <!--Basic Information-->
+                                                <c:DatatableColumn label="Name">
+                                                    <lightning:input value="{!newAcc.Name}" variant="label-hidden" required="true"/>
+                                                </c:DatatableColumn>
+
+                                                <!--Owner-->
+                                                <c:DatatableColumn label="Owner">
+                                                    <lightning:input value="{!newAcc.Owner}" variant="label-hidden"/>
+                                                </c:DatatableColumn>
+
+                                                <!--Record Type-->
+                                                <c:DatatableColumn label="Record Type">
+                                                    <lightning:select variant="label-hidden" value="{!newAcc.RecordType}" required="true">
+                                                        <option>Account</option>
+                                                        <option>Channel</option>
+                                                        <option>Competitor</option>
+                                                        <option>Agency</option>
+                                                        <option>PersonAccount</option>
+                                                    </lightning:select>
+                                                </c:DatatableColumn>
+
+                                                <!--Contact Information-->
+                                                <aura:if isTrue="{!newAcc.RecordType != 'Competitor'}">
+                                                    <c:DatatableColumn label="Phone">
+                                                        <lightning:input value="{!newAcc.Phone}" variant="label-hidden"/>
+                                                    </c:DatatableColumn>
+
+                                                    <c:DatatableColumn label="Website">
+                                                        <lightning:input value="{!newAcc.Website}" variant="label-hidden"/>
+                                                    </c:DatatableColumn>
+
+                                                    <aura:set attribute="else">
+                                                        <c:DatatableColumn label="Contact Information" colspan="2"
+                                                                           class="slds-text-align_center slds-theme--alert-texture">
+                                                            Classified
+                                                        </c:DatatableColumn>
+                                                    </aura:set>
+                                                </aura:if>
+
+
+                                                <!--Billing Address-->
+                                                <c:DatatableColumn label="Billing Country">
+                                                    <lightning:input variant="label-hidden" value="{!newAcc.BillingCountry}"/>
+                                                </c:DatatableColumn>
+
+                                                <c:DatatableColumn label="Billing City">
+                                                    <lightning:input variant="label-hidden" value="{!newAcc.BillingCity}"/>
+                                                </c:DatatableColumn>
+
+
+                                                <!--Finance-->
+                                                <c:DatatableColumn label="Annual Revenue">
+                                                    <lightning:input type="number" value="{!newAcc.AnnualRevenue}" variant="label-hidden"/>
+                                                </c:DatatableColumn>
+
+                                                <c:DatatableColumn label="Number of Employees">
+                                                    <lightning:input type="number" value="{!newAcc.NumberOfEmployees}" variant="label-hidden"/>
+                                                </c:DatatableColumn>
+
+                                                <!--Buttons-->
+                                                <c:DatatableColumn>
+                                                    <lightning:buttonIcon name="{!i}" iconName="utility:close"
+                                                                          onclick="{!c.handleRemoveNewAccount}"/>
+                                                </c:DatatableColumn>
+                                            </c:DatatableRow>
+                                        </aura:iteration>
+
+                                        <c:DatatableRow>
+                                            <c:DatatableColumn colspan="9"/>
+                                            <c:DatatableColumn colspan="1" label="New Accounts Actions">
+                                                <lightning:buttonIcon iconName="utility:add" onclick="{!c.handleAddNewAccount}"/>
+                                                <lightning:buttonIcon iconName="utility:save" onclick="{!c.handleSaveNewAccounts}"/>
+                                            </c:DatatableColumn>
+                                        </c:DatatableRow>
+                                    </aura:set>
+
+                                </c:Datatable>
+                            </div>
+
+                        </c:DatatableColumn>
+                    </c:DatatableRow>
+                </aura:if>
+            </aura:set>
+        </c:Datatable>
+
+    </lightning:card>
+</aura:component>

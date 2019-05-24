@@ -1,0 +1,27 @@
+<apex:component id="LightningSelect"> <!--controller="LightningInputFieldCtrl">-->
+<!--    <apex:attribute name="value" type="Object" description="value"/>-->
+<!--    <apex:attribute name="label" type="String" description="value"/>-->
+<!--    <apex:attribute name="onChange" type="String" description="value"/>-->
+<!--    <apex:attribute name="options" type="List" description="value"/>-->
+
+<!--    <apex:attribute name="required" type="Boolean" description="Is the field required" default="false"/>-->
+<!--    <apex:attribute name="rendered" type="Boolean" description="Is the field rendered" default="true"/>-->
+
+<!--    <apex:outputPanel layout="block" styleClass="slds-form-element" rendered="{!rendered}">-->
+<!--        <label class="slds-form-element__label" for="select-01">-->
+<!--            <apex:outputPanel rendered="{!required}" layout="inline">-->
+<!--                <abbr class="slds-required" title="Required">*</abbr>-->
+<!--            </apex:outputPanel>-->
+<!--            {!label}-->
+<!--        </label>-->
+<!--        <div class="slds-form-element__control">-->
+<!--            <div class="slds-select_container">-->
+<!--                <apex:selectList styleClass="slds-select" value="{!value}" size="1"-->
+<!--                                 required="{!required}"-->
+<!--                                 onChange="{!onChange}">-->
+<!--                    <apex:selectOptions value="{!options}"/>-->
+<!--                </apex:selectList>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </apex:outputPanel>-->
+</apex:component>

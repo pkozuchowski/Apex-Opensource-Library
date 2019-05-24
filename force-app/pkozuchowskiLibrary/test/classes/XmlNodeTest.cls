@@ -21,7 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest(IsParallel=true)
+@IsTest
 private class XmlNodeTest {
     private final static String
             NAMESPACE_XSI = 'http://www.w3.org/2001/XMLSchema-instance',
@@ -252,62 +252,71 @@ private class XmlNodeTest {
      */
     @IsTest
     static void testRequestEnvelopeStructureIsSerializedToTheXMLProperly() {
-        Envelope envelope = new Envelope(
-                new Header('api.user', 'secret'),
-                new SampleRequest(ExclusionMode.DuplicateEmail,
-                        new Criteria(
-                                'Personal Data', 'John', 'Doe', 'John.Doe@sample.com', Datetime.newInstance(1980, 01, 01),
-                                new List<Address>{
-                                        new Address('UK', 'London', 'Test Street 2'),
-                                        new Address('UK', 'Bridgetown', 'Other Street 2')
-                                }
-                        )
-                )
+        User usr = new User(
+                Id = UserInfo.getUserId(),
+                TimeZoneSidKey = 'GMT',
+                LocaleSidKey = 'en_US'
         );
+        update usr;
 
-        String expectedXML = ('<?xml version="1.0" encoding="UTF-8"?>'
-                + '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'
-                + ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">'
-                + '    <soap:Header>'
-                + '        <username>api.user</username>'
-                + '        <password>secret</password>'
-                + '    </soap:Header>'
-                + '    <soap:Body>'
-                + '        <SampleRequest xmlns="http://sample.test/webservices/">'
-                + '            <exclusion>DuplicateEmail</exclusion>'
-                + '            <criteria type="Personal Data">'
-                + '                <FirstName>John</FirstName>'
-                + '                <LastName>Doe</LastName>'
-                + '                <Email>John.Doe@sample.com</Email>'
-                + '                <Username>John.Doe@sample.com</Username>'
-                + '                <DateOfBirth>01/01/1980</DateOfBirth>'
-                + '                <Address>'
-                + '                    <Country>UK</Country>'
-                + '                    <AddressLine1>London</AddressLine1>'
-                + '                    <AddressLine2>Test Street 2</AddressLine2>'
-                + '                </Address>'
-                + '                <Address>'
-                + '                    <Country>UK</Country>'
-                + '                    <AddressLine1>Bridgetown</AddressLine1>'
-                + '                    <AddressLine2>Other Street 2</AddressLine2>'
-                + '                </Address>'
-                + '            </criteria>'
-                + '        </SampleRequest>'
-                + '    </soap:Body>'
-                + '</soap:Envelope>').replaceAll('\\>\\s+<', '><');
+        System.runAs(usr) {
+            Envelope envelope = new Envelope(
+                    new Header('api.user', 'secret'),
+                    new SampleRequest(ExclusionMode.DuplicateEmail,
+                            new Criteria(
+                                    'Personal Data', 'John', 'Doe', 'John.Doe@sample.com', Datetime.newInstance(1980, 01, 01),
+                                    new List<Address>{
+                                            new Address('UK', 'London', 'Test Street 2'),
+                                            new Address('UK', 'Bridgetown', 'Other Street 2')
+                                    }
+                            )
+                    )
+            );
 
-        String actual = envelope.toXmlString();
-        System.assertEquals(expectedXML, actual);
+            String expectedXML = ('<?xml version="1.0" encoding="UTF-8"?>'
+                    + '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'
+                    + ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">'
+                    + '    <soap:Header>'
+                    + '        <username>api.user</username>'
+                    + '        <password>secret</password>'
+                    + '    </soap:Header>'
+                    + '    <soap:Body>'
+                    + '        <SampleRequest xmlns="http://sample.test/webservices/">'
+                    + '            <exclusion>DuplicateEmail</exclusion>'
+                    + '            <criteria type="Personal Data">'
+                    + '                <FirstName>John</FirstName>'
+                    + '                <LastName>Doe</LastName>'
+                    + '                <Email>John.Doe@sample.com</Email>'
+                    + '                <Username>John.Doe@sample.com</Username>'
+                    + '                <DateOfBirth>01/01/1980</DateOfBirth>'
+                    + '                <Address>'
+                    + '                    <Country>UK</Country>'
+                    + '                    <AddressLine1>London</AddressLine1>'
+                    + '                    <AddressLine2>Test Street 2</AddressLine2>'
+                    + '                </Address>'
+                    + '                <Address>'
+                    + '                    <Country>UK</Country>'
+                    + '                    <AddressLine1>Bridgetown</AddressLine1>'
+                    + '                    <AddressLine2>Other Street 2</AddressLine2>'
+                    + '                </Address>'
+                    + '            </criteria>'
+                    + '        </SampleRequest>'
+                    + '    </soap:Body>'
+                    + '</soap:Envelope>').replaceAll('\\>\\s+<', '><');
+
+            String actual = envelope.toXmlString();
+            System.assertEquals(expectedXML, actual);
 
 
-        Envelope envelope2 = new Envelope(
-                new Header('api.user', 'secret'),
-                new SampleRequest()
-        );
+            Envelope envelope2 = new Envelope(
+                    new Header('api.user', 'secret'),
+                    new SampleRequest()
+            );
 
-        envelope2.load(actual);
-        String actual2 = envelope2.toXmlString();
-        System.assertEquals(actual, actual2);
+            envelope2.load(actual);
+            String actual2 = envelope2.toXmlString();
+            System.assertEquals(actual, actual2);
+        }
     }
 
 
@@ -319,79 +328,89 @@ private class XmlNodeTest {
      */
     @IsTest
     static void testResponseIsDeserializedToEnvelopeStructure() {
-        String responseXML =
-                ('<?xml version="1.0" encoding="UTF-8"?>'
-                        + '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'
-                        + ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">'
-                        + '    <soap:Header>'
-                        + '        <username>api.user</username>'
-                        + '        <password>secret</password>'
-                        + '    </soap:Header>'
-                        + '    <soap:Body>'
-                        + '        <SampleResponse xmlns="http://sample.test/webservices/">'
-                        + '            <matches>'
-                        + '                <match>'
-                        + '                    <FirstName>John</FirstName>'
-                        + '                    <LastName>Doe</LastName>'
-                        + '                    <Score>1</Score>'
-                        + '                    <Weight>69.5</Weight>'
-                        + '                    <Height>182</Height>'
-                        + '                    <Distance>4000000</Distance>'
-                        + '                    <Married>true</Married>'
-                        + '                </match>'
-                        + '                <match>'
-                        + '                    <FirstName>Johan</FirstName>'
-                        + '                    <LastName>Liebert</LastName>'
-                        + '                    <Score>0.5</Score>'
-                        + '                    <Weight>80.1</Weight>'
-                        + '                    <Height>190</Height>'
-                        + '                    <Distance>5000000</Distance>'
-                        + '                    <Married>false</Married>'
-                        + '                </match>'
-                        + '            </matches>'
-                        + '        </SampleResponse>'
-                        + '    </soap:Body>'
-                        + '</soap:Envelope>').replaceAll('\\>\\s+<', '><');
-
-        Envelope envelope = new Envelope(
-                new Header(),
-                new SampleResponse()
+        User usr = new User(
+                Id = UserInfo.getUserId(),
+                TimeZoneSidKey = 'GMT',
+                LocaleSidKey = 'en_US'
         );
-        envelope.load(responseXML);
+        update usr;
 
-        Map<String, Object> expected = new Map<String, Object>{
-                'body' => new Map<String, Object>{
-                        'content' => new Map<String, Object>{
-                                'matches' => new List<Object>{
-                                        new Map<String, Object>{
-                                                'weight' => 69.5,
-                                                'score' => 1,
-                                                'lastName' => 'Doe',
-                                                'isMarried' => true,
-                                                'height' => 182,
-                                                'firstName' => 'John',
-                                                'distance' => 4000000
-                                        },
-                                        new Map<String, Object>{
-                                                'weight' => 80.1,
-                                                'score' => 0.5,
-                                                'lastName' => 'Liebert',
-                                                'isMarried' => false,
-                                                'height' => 190,
-                                                'firstName' => 'Johan',
-                                                'distance' => 5000000
-                                        }
-                                }
-                        }
-                },
+        System.runAs(usr) {
 
-                'header' => new Map<String, Object>{
-                        'password' => 'secret',
-                        'username' => 'api.user'
-                }
-        };
-        Map<String, Object> actual = (Map<String, Object>) JSON.deserializeUntyped(JSON.serialize(envelope));
-        System.assertEquals(expected, actual);
-        System.assertEquals(responseXML, envelope.toXmlString());
+            String responseXML =
+                    ('<?xml version="1.0" encoding="UTF-8"?>'
+                            + '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"'
+                            + ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">'
+                            + '    <soap:Header>'
+                            + '        <username>api.user</username>'
+                            + '        <password>secret</password>'
+                            + '    </soap:Header>'
+                            + '    <soap:Body>'
+                            + '        <SampleResponse xmlns="http://sample.test/webservices/">'
+                            + '            <matches>'
+                            + '                <match>'
+                            + '                    <FirstName>John</FirstName>'
+                            + '                    <LastName>Doe</LastName>'
+                            + '                    <Score>1</Score>'
+                            + '                    <Weight>69.5</Weight>'
+                            + '                    <Height>182</Height>'
+                            + '                    <Distance>4000000</Distance>'
+                            + '                    <Married>true</Married>'
+                            + '                </match>'
+                            + '                <match>'
+                            + '                    <FirstName>Johan</FirstName>'
+                            + '                    <LastName>Liebert</LastName>'
+                            + '                    <Score>0.5</Score>'
+                            + '                    <Weight>80.1</Weight>'
+                            + '                    <Height>190</Height>'
+                            + '                    <Distance>5000000</Distance>'
+                            + '                    <Married>false</Married>'
+                            + '                </match>'
+                            + '            </matches>'
+                            + '        </SampleResponse>'
+                            + '    </soap:Body>'
+                            + '</soap:Envelope>').replaceAll('\\>\\s+<', '><');
+
+            Envelope envelope = new Envelope(
+                    new Header(),
+                    new SampleResponse()
+            );
+            envelope.load(responseXML);
+
+            Map<String, Object> expected = new Map<String, Object>{
+                    'body' => new Map<String, Object>{
+                            'content' => new Map<String, Object>{
+                                    'matches' => new List<Object>{
+                                            new Map<String, Object>{
+                                                    'weight' => 69.5,
+                                                    'score' => 1,
+                                                    'lastName' => 'Doe',
+                                                    'isMarried' => true,
+                                                    'height' => 182,
+                                                    'firstName' => 'John',
+                                                    'distance' => 4000000
+                                            },
+                                            new Map<String, Object>{
+                                                    'weight' => 80.1,
+                                                    'score' => 0.5,
+                                                    'lastName' => 'Liebert',
+                                                    'isMarried' => false,
+                                                    'height' => 190,
+                                                    'firstName' => 'Johan',
+                                                    'distance' => 5000000
+                                            }
+                                    }
+                            }
+                    },
+
+                    'header' => new Map<String, Object>{
+                            'password' => 'secret',
+                            'username' => 'api.user'
+                    }
+            };
+            Map<String, Object> actual = (Map<String, Object>) JSON.deserializeUntyped(JSON.serialize(envelope));
+            System.assertEquals(expected, actual);
+            System.assertEquals(responseXML, envelope.toXmlString());
+        }
     }
 }

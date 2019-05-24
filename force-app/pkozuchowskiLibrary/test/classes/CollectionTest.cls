@@ -953,30 +953,30 @@ private class CollectionTest {
      */
     @IsTest
     static void testFill() {
-        Contact contact = new Contact(LastName = 'Test');
+        Account account = new Account(Name = 'Test');
 
-        List<Account> accounts = (List<Account>)
-                Collection.of(new List<Account>())
-                        .fill(10, new Account(Name = 'Test Account', Contact__r = contact))
-                        .fill(10, new Account(Name = 'Other Account', Contact__r = contact), new Collection.CloneOptions(false, false, false, false))
+        List<Contact> contacts = (List<Contact>)
+                Collection.of(new List<Contact>())
+                        .fill(10, new Contact(LastName = 'Test Contact', Account = account))
+                        .fill(10, new Contact(LastName = 'Other Contact', Account = account), new Collection.CloneOptions(false, false, false, false))
                         .get();
 
 
-        System.assertEquals(20, accounts.size());
+        System.assertEquals(20, contacts.size());
 
         /*Test if clone is deep*/
-        accounts[0].Name += '0';
-        contact.LastName += '0';
+        contacts[0].LastName += '0';
+        account.Name += '0';
 
 
         for (Integer i = 1; i < 20; i++) {
             if (i < 10) {
-                System.assertEquals('Test Account', accounts[i].Name);
-                System.assertEquals('Test', accounts[i].Contact__r.LastName);
+                System.assertEquals('Test Contact', contacts[i].LastName);
+                System.assertEquals('Test', contacts[i].Account.Name);
 
             } else {
-                System.assertEquals('Other Account', accounts[i].Name);
-                System.assertEquals('Test0', accounts[i].Contact__r.LastName);
+                System.assertEquals('Other Contact', contacts[i].LastName);
+                System.assertEquals('Test0', contacts[i].Account.Name);
             }
         }
     }

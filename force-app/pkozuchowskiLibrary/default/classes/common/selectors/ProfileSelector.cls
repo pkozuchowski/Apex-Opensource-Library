@@ -67,6 +67,6 @@ public inherited sharing class ProfileSelector {
      * @return Profile records by given ids
      */
     public Profile[] selectByIds(Set<Id> profileIds) {
-        return cache.retrieve(Profile.Name, new List<Id>(profileIds));
+        return cache.retrieve(Profile.Id, new List<Id>(profileIds));
     }
 }

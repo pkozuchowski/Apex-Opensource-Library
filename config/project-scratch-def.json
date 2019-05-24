@@ -1,0 +1,13 @@
+{
+  "orgName": "Sandbox",
+  "edition": "Developer",
+  "features": [
+    "AuthorApex",
+    "API"
+  ],
+  "settings": {
+    "orgPreferenceSettings": {
+      "s1DesktopEnabled": true
+    }
+  }
+}

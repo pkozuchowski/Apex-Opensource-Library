@@ -118,14 +118,23 @@ private class SchedulerTest {
 
     @IsTest
     static void testScheduleWeekly() {
-        Test.startTest();
-        Id jobId = new Scheduler().scheduleWeekly('Test weekly schedule', 'MON', new TestSchedulable());
-        Test.stopTest();
+        User usr = new User(
+                Id = UserInfo.getUserId(),
+                TimeZoneSidKey = 'GMT',
+                LocaleSidKey = 'pl'
+        );
+        update usr;
 
-        Date today = Date.today();
-        Date nextMonday = today.toStartOfWeek().addDays(7);
+        System.runAs(usr) {
+            Test.startTest();
+            Id jobId = new Scheduler().scheduleWeekly('Test weekly schedule', 'MON', new TestSchedulable());
+            Test.stopTest();
 
-        System.assertEquals(nextMonday, getNextFireTime(jobId).date());
+            Date today = Date.today();
+            Date nextMonday = today.toStartOfWeek().addDays(7);
+
+            System.assertEquals(nextMonday, getNextFireTime(jobId).date());
+        }
     }
 
     @IsTest

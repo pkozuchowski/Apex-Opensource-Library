@@ -24,16 +24,9 @@
 
 /**
  * Selector layer for User sObject
+ * @see UserSelectorTest
  */
 public inherited sharing class UserSelector {
-
-    /**
-     * @return Map of Users by Usernames for given usernames
-     */
-    public Map<String, User> selectMapByUsernames(List<String> usernames) {
-        List<User> users = selectByUsernames(usernames);
-        return (Map<String, User>) new Collection(users).mapBy(User.Username);
-    }
 
     /**
      * @return User records with given UserName or null if user does not exist.

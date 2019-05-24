@@ -32,16 +32,6 @@ private class UserSelectorTest {
     }
 
     @IsTest
-    static void testSelectUsersByUsernamesMap() {
-        User currentUser = new UserSelector().selectCurrentUser();
-        Map<String, User> userByUsernames = new UserSelector().selectMapByUsernames(
-                new List<String>{currentUser.Username}
-        );
-
-        System.assert(userByUsernames.containsKey(currentUser.Username));
-    }
-
-    @IsTest
     static void testSelectUserByUsername() {
         User currentUser = new UserSelector().selectCurrentUser();
         System.assertEquals(currentUser.Id, new UserSelector().selectByUsername(currentUser.Username).Id);

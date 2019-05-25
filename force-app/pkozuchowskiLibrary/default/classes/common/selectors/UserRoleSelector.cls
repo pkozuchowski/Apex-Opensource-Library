@@ -26,18 +26,16 @@
  * Selector Layer class for UserRoles. Records are queried only once and cached to minimize SOQL limits usage.
  */
 public inherited sharing class UserRoleSelector {
-    private static SObjectCache cache = new SObjectCache();
-    static {
-        List<UserRole> userRoles = [
-                SELECT Id,
-                        Name,
-                        DeveloperName
-                FROM UserRole
-        ];
+    private static SObjectCache cache = new SObjectCache([
+            SELECT Id,
+                    Name,
+                    DeveloperName
+            FROM UserRole
 
-        cache.store(UserRole.Id, userRoles);
-        cache.store(UserRole.DeveloperName, userRoles);
-    }
+    ], new List<SObjectField>{
+            UserRole.Id,
+            UserRole.DeveloperName
+    });
 
 
     /**

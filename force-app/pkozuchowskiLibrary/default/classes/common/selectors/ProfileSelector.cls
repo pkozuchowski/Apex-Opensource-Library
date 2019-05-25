@@ -26,17 +26,15 @@
  * Selector Layer class for Profiles. Records are queried only once and cached to minimize SOQL limits usage.
  */
 public inherited sharing class ProfileSelector {
-    private static SObjectCache cache = new SObjectCache();
-    static {
-        List<Profile> profiles = [
-                SELECT Id,
-                        Name
-                FROM Profile
-        ];
+    private static SObjectCache cache = new SObjectCache([
+            SELECT Id,
+                    Name
+            FROM Profile
 
-        cache.store(Profile.Id, profiles);
-        cache.store(Profile.Name, profiles);
-    }
+    ], new List<SObjectField>{
+            Profile.Id,
+            Profile.Name
+    });
 
 
     /**

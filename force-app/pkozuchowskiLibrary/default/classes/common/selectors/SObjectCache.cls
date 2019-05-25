@@ -33,6 +33,16 @@ public inherited sharing class SObjectCache {
     }
 
     /**
+     * Initialize Cache with records and fields to cache by.
+     */
+    public SObjectCache(List<SObject> records, List<SObjectField> fieldsToCacheBy) {
+        this();
+        for (SObjectField field : fieldsToCacheBy) {
+            this.store(field, records);
+        }
+    }
+
+    /**
      * @return Returns first SObject cached by given field and value or null.
      */
     public Object retrieveFirstValue(SObjectField field, Object value, SObjectField fieldToReturn) {

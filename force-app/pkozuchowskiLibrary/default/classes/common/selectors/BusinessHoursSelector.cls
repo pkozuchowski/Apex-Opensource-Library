@@ -27,35 +27,33 @@
  * Results are cached for better performance and SOQL Limits savings.
  */
 public inherited sharing class BusinessHoursSelector {
-    private static SObjectCache cache = new SObjectCache();
-    static {
-        List<BusinessHours> hours = [
-                SELECT Id,
-                        Name,
-                        IsDefault,
-                        IsActive,
-                        MondayStartTime,
-                        MondayEndTime,
-                        TuesdayStartTime,
-                        TuesdayEndTime,
-                        WednesdayStartTime,
-                        WednesdayEndTime,
-                        ThursdayStartTime,
-                        ThursdayEndTime,
-                        FridayStartTime,
-                        FridayEndTime,
-                        SaturdayStartTime,
-                        SaturdayEndTime,
-                        SundayStartTime,
-                        SundayEndTime
-                FROM BusinessHours
-                WHERE IsActive = TRUE
-        ];
+    private static SObjectCache cache = new SObjectCache([
+            SELECT Id,
+                    Name,
+                    IsDefault,
+                    IsActive,
+                    MondayStartTime,
+                    MondayEndTime,
+                    TuesdayStartTime,
+                    TuesdayEndTime,
+                    WednesdayStartTime,
+                    WednesdayEndTime,
+                    ThursdayStartTime,
+                    ThursdayEndTime,
+                    FridayStartTime,
+                    FridayEndTime,
+                    SaturdayStartTime,
+                    SaturdayEndTime,
+                    SundayStartTime,
+                    SundayEndTime
+            FROM BusinessHours
+            WHERE IsActive = TRUE
 
-        cache.store(BusinessHours.Id, hours);
-        cache.store(BusinessHours.Name, hours);
-        cache.store(BusinessHours.IsDefault, hours);
-    }
+    ], new List<SObjectField>{
+            BusinessHours.Id,
+            BusinessHours.Name,
+            BusinessHours.IsDefault
+    });
 
 
     /**

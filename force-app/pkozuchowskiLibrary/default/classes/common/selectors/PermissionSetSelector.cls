@@ -24,15 +24,17 @@
 
 /**
  * Selector Layer class for Permission Sets. Records are queried only once and cached to minimize SOQL limits usage.
+ * @see PermissionSetSelectorTest
  */
 public inherited sharing class PermissionSetSelector {
-    private static SObjectCache cache = new SObjectCache();
+    private static SObjectCache cache = new SObjectCache([
+            SELECT Id,Name
+            FROM PermissionSet
 
-    static {
-        List<PermissionSet> permissionSets = [SELECT Id,Name FROM PermissionSet];
-        cache.store(PermissionSet.Id, permissionSets);
-        cache.store(PermissionSet.Name, permissionSets);
-    }
+    ], new List<SObjectField>{
+            PermissionSet.Id,
+            PermissionSet.Name
+    });
 
 
     /**

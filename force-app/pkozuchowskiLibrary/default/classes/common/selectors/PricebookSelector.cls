@@ -24,38 +24,30 @@
 
 /**
  * Selector layer for Pricebook2 SObject.
- * All records are queried on the first run and cached to limit number of SOQLs issued in transaction.
  * @see PricebookSelectorTest
  */
 public inherited sharing class PricebookSelector {
-    private static SObjectCache cache = new SObjectCache();
-    static {
-        List<Pricebook2> pricebook2s = [
-                SELECT Id,
-                        Name,
-                        IsStandard
-                FROM Pricebook2
-                WHERE IsActive = TRUE
-        ];
-
-        cache.store(Pricebook2.Id, pricebook2s);
-        cache.store(Pricebook2.Name, pricebook2s);
-        cache.store(Pricebook2.IsStandard, pricebook2s);
-    }
-
 
     /**
      * @return Cached Pricebook2 record with given id or null.
      */
     public Pricebook2 selectById(Id id) {
-        return (Pricebook2) cache.retrieveFirst(Pricebook2.Id, id);
+        Pricebook2[] pbs = selectByIds(new Set<Id>{id});
+        return pbs.isEmpty() ? null : pbs.get(0);
     }
 
     /**
      * @return Cached Pricebook2 records with given ids.
      */
     public Pricebook2[] selectByIds(Set<Id> ids) {
-        return cache.retrieve(Pricebook2.Id, (List<Object>) new List<Id>(ids));
+        return [
+                SELECT Id,
+                        Name,
+                        IsStandard
+                FROM Pricebook2
+                WHERE Id IN :ids
+                AND IsActive = TRUE
+        ];
     }
 
 
@@ -63,14 +55,22 @@ public inherited sharing class PricebookSelector {
      * @return Cached Pricebook2 record with given name or null.
      */
     public Pricebook2 selectByName(String name) {
-        return (Pricebook2) cache.retrieveFirst(Pricebook2.Name, name);
+        Pricebook2[] pbs = selectByNames(new Set<String>{name});
+        return pbs.isEmpty() ? null : pbs.get(0);
     }
 
     /**
      * @return Cached Pricebook2 records with given names.
      */
     public Pricebook2[] selectByNames(Set<String> names) {
-        return cache.retrieve(Pricebook2.Name, (List<Object>) new List<String>(names));
+        return [
+                SELECT Id,
+                        Name,
+                        IsStandard
+                FROM Pricebook2
+                WHERE Name IN :names
+                AND IsActive = TRUE
+        ];
     }
 
     /**
@@ -80,8 +80,11 @@ public inherited sharing class PricebookSelector {
         if (Test.isRunningTest()) {
             return Test.getStandardPricebookId();
         } else {
-            Pricebook2[] standardPb = cache.retrieve(Pricebook2.IsStandard, true);
-            return standardPb.isEmpty() ? null : standardPb[0].Id;
+            return [
+                    SELECT Id
+                    FROM Pricebook2
+                    WHERE IsStandard = TRUE
+            ].Id;
         }
     }
 }

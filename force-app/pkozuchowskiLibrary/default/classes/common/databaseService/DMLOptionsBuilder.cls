@@ -21,6 +21,10 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
+/**
+* Convenient builder class for DML options
+* @see DMLOptionsBuilderTest
+* */
 public class DMLOptionsBuilder {
     private Database.DMLOptions dmlOptions = new Database.DMLOptions();
 

@@ -27,6 +27,7 @@
 * Performs lazy query of groups by type and exposes methods to retrieve group by Developer name, label or id
 * Groups are initialized by type - Only queues are retrieved in one query, if this class gets bigger, it might
 * include Role groups initialization and so on.
+* @see GroupSelectorTest
 * */
 public inherited sharing class GroupSelector {
     private static Boolean areQueuesQueried = false;

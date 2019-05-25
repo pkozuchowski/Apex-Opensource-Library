@@ -25,6 +25,7 @@
 /**
  * Selector layer for Pricebook2 SObject.
  * All records are queried on the first run and cached to limit number of SOQLs issued in transaction.
+ * @see PricebookSelectorTest
  */
 public inherited sharing class PricebookSelector {
     private static SObjectCache cache = new SObjectCache();

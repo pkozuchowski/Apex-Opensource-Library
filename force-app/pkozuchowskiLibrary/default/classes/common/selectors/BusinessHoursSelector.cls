@@ -25,6 +25,7 @@
 /**
  * Selector Layer for Business Hours.
  * Results are cached for better performance and SOQL Limits savings.
+ * @see BusinessHoursSelectorTest
  */
 public inherited sharing class BusinessHoursSelector {
     private static SObjectCache cache = new SObjectCache([

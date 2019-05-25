@@ -24,6 +24,7 @@
 
 /**
  * Scheduling helper class for the most common schedule patterns.
+ * @see SchedulerTest
  */
 public class Scheduler {
     public String

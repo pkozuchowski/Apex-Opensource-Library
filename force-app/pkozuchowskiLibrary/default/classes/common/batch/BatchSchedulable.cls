@@ -27,6 +27,7 @@
  * all schedules that do not have any other logic, but executing certain batch class.
  *
  * Batches scheduled with this class are not locked for editing.
+ * @see BatchSchedulableTest
  */
 public class BatchSchedulable implements Schedulable {
     private Database.Batchable<SObject> batchInstance;

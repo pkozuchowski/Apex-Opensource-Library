@@ -24,6 +24,7 @@
 
 /**
  * Selector Layer class for UserRoles. Records are queried only once and cached to minimize SOQL limits usage.
+ * @see UserRoleSelectorTest
  */
 public inherited sharing class UserRoleSelector {
     private static SObjectCache cache = new SObjectCache([

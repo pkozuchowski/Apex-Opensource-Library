@@ -32,6 +32,8 @@
  * - Filtering records which have given value or values in given field,
  * - Reducing collection to single variable
  * - Sorting records by given field or comparator.
+ *
+ * @see CollectionTest
  */
 public inherited sharing class Collection {
     public final static Boolean ANY_VALUE = true;

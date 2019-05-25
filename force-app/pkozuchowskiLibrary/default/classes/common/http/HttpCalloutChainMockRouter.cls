@@ -48,6 +48,7 @@
  * Mocks are stored in LIFO queue, the most recently added mock will be the first to handle the request.
  * This way, routers can have predefined list of default registered mocks, which can be overridden
  * in partial unit tests with custom response mocks.
+ * @see HttpCalloutChainMockRouterTest
  */
 public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock {
     private List<HttpCalloutChainMock> registeredMocks = new List<HttpCalloutChainMock>{

@@ -1,5 +1,6 @@
 /**
  * Utility class with methods concerning Apex programming language.
+ * @see ApexTest
  */
 public with sharing class Apex {
 

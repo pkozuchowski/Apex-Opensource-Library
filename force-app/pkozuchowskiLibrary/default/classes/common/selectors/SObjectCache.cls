@@ -24,6 +24,7 @@
 
 /**
  * Indexed storage for SObjects which groups records by fields and field values.
+ * @see SObjectCacheTest
  */
 public inherited sharing class SObjectCache {
     private Map<SObjectField, Map<Object, List<SObject>>> storage;

@@ -150,15 +150,14 @@ public inherited sharing class Collection {
     * FILTER
     * */
     /**
-    * Filter determines whether collection item should be included into result collection of filter method.
+    * Filter determines whether collection item should be included into result set.
     * */
     public interface Filter {
         Boolean accepts(Object item);
     }
 
     /**
-    * Filter determines whether collection item should be included into result collection of filter method.
-    * Item is compared with it's previous state from trigger.
+    * UpdateFilter determines whether updated record should be included into result set.
     * */
     public interface UpdateFilter {
         Boolean accepts(SObject record, SObject oldRecord);
@@ -168,7 +167,7 @@ public inherited sharing class Collection {
      * This method allows for building criteria to filter the collection or to find the first record satisfying the criteria.
      * then() method returns filtered collection for given criteria and can be used in further chaining.
      * getFirst() returns the first record satisfying criteria.
-     * For best best performance it's adviced to use Filter implementation since byField() method has quite large overhead
+     * For best best performance it's adviced to use single Filter implementation since byField() method has greater overhead
      * scaled linearly with number of linked predicates.
      */
     public FilterFacade filter() {
@@ -178,9 +177,7 @@ public inherited sharing class Collection {
     public interface FilterFacade {
         FilterFacade byUsing(Filter filter);
         FilterFacade byUsing(Map<Id, SObject> oldMap, UpdateFilter filter);
-        /**
-         * Filters
-         */
+        /**Checks if record has fields populated as provided example record.*/
         FilterFacade alike(SObject prototype);
         FieldFilterFacade byField(SObjectField field);
 
@@ -190,19 +187,13 @@ public inherited sharing class Collection {
          */
         FilterFacade andAlso();
 
-        /**
-         * Former and following predicate are joined using OR connective.
-         */
+        /** Former and following predicate are joined using OR connective.*/
         FilterFacade orElse();
 
-        /**
-         * Evaluates filters and returns Collection of filtered items.
-         */
+        /** Evaluates filters and returns Collection of filtered items. */
         Collection then();
 
-        /**
-         * @return first item satisfying conditions.
-         */
+        /** @return first item satisfying conditions. */
         Object getFirst();
     }
 

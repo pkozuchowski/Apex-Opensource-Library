@@ -198,8 +198,8 @@ public inherited sharing class Collection {
     }
 
     public interface FieldFilterFacade {
-        FilterFacade equal(Object value);
-        FilterFacade notEqual(Object value);
+        FilterFacade equals(Object value);
+        FilterFacade notEquals(Object value);
         FilterFacade greaterThan(Object value);
         FilterFacade greaterEqualsThan(Object value);
         FilterFacade lessThan(Object value);

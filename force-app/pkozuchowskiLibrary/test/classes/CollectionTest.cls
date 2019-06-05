@@ -478,10 +478,10 @@ private class CollectionTest {
                 Collection.of(opportunities)
                         .filter()
                         .byField(Opportunity.NextStep).containing('Analysis')
-                        .andAlso().byField(Opportunity.HasOpenActivity).equal(true)
+                        .andAlso().byField(Opportunity.HasOpenActivity).equals(true)
                         .andAlso().byField(Opportunity.LastActivityDate).lessEqualsThan(Date.today())
                         .andAlso().byField(Opportunity.LastActivityDate).greaterThan(Date.today().addDays(-2))
-                        .orElse().byField(Opportunity.NextStep).notEqual('Analysis')
+                        .orElse().byField(Opportunity.NextStep).notEquals('Analysis')
                         .then().get();
         Test.stopTest();
 
@@ -1011,7 +1011,7 @@ private class CollectionTest {
     @IsTest
     static void testFindReturnsFirstSObjectOfGivenFieldValue() {
         Opportunity expected = opportunities[3];
-        Opportunity actual = (Opportunity) Collection.of(opportunities).filter().byField(Opportunity.FiscalQuarter).equal(3).getFirst();
+        Opportunity actual = (Opportunity) Collection.of(opportunities).filter().byField(Opportunity.FiscalQuarter).equals(3).getFirst();
         System.assertEquals(expected, actual);
     }
 
@@ -1021,7 +1021,7 @@ private class CollectionTest {
      */
     @IsTest
     static void testFindReturnsNullWhenThereAreNoItemsAcceptedByFilter() {
-        Opportunity actual = (Opportunity) Collection.of(opportunities).filter().byField(Opportunity.Probability).equal(1.5).getFirst();
+        Opportunity actual = (Opportunity) Collection.of(opportunities).filter().byField(Opportunity.Probability).equals(1.5).getFirst();
 
         System.assertEquals(null, actual);
     }

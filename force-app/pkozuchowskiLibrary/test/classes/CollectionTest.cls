@@ -837,7 +837,7 @@ private class CollectionTest {
 
         System.assertEquals(actual, expected);
     }
-    private class ReverseProbabilityComparator implements Collection.Comparator {
+    private class ReverseProbabilityComparator implements Comparator {
         public Integer compare(Object thisItem, Object otherItem) {
             Opportunity thisOpp = (Opportunity) thisItem;
             Opportunity otherOpp = (Opportunity) otherItem;

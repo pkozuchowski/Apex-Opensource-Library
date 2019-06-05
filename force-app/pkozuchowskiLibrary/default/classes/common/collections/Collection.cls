@@ -331,16 +331,12 @@ public inherited sharing class Collection {
         Integer compare(Object thisItem, Object otherItem);
     }
 
-    public enum Order {
-        ASCENDING, DESCENDING
-    }
-
     /**
      * Sorts collection by given field and order.
      * @param field Field to sort by.
      * @param order Sorting order
      */
-    public Collection orderBy(SObjectField field, Order order) {
+    public Collection orderBy(SObjectField field, Ordering order) {
         assertSObjectCollection(items);
         return orderBy(new CompareByField(field, order));
     }
@@ -574,11 +570,11 @@ public inherited sharing class Collection {
             this.field = field;
         }
 
-        public FilterFacade equal(Object value) {
+        public FilterFacade equals(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, Collection.EQUALS, value));
             return filterFacade;
         }
-        public FilterFacade notEqual(Object value) {
+        public FilterFacade notEquals(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, Collection.NOT_EQUALS, value));
             return filterFacade;
         }
@@ -1215,9 +1211,9 @@ public inherited sharing class Collection {
         private Integer direction;
         private Collection.Comparator comparator;
 
-        public CompareByField(SObjectField field, Order ordr) {
+        public CompareByField(SObjectField field, Ordering ordr) {
             this.field = field;
-            this.direction = ordr == Order.ASCENDING ? 1 : -1;
+            this.direction = ordr == Ordering.ASCENDING ? 1 : -1;
             this.comparator = getFieldComparator(field);
         }
 

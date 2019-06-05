@@ -859,7 +859,7 @@ private class CollectionTest {
     static void testOrderByField() {
         Opportunity previous;
 
-        List<Opportunity> sortedOpportunities = (List<Opportunity>) Collection.of(opportunities).orderBy(Opportunity.CreatedDate, Collection.Order.ASCENDING).get();
+        List<Opportunity> sortedOpportunities = (List<Opportunity>) Collection.of(opportunities).orderBy(Opportunity.CreatedDate, Ordering.ASCENDING).get();
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {
                 System.assert(opportunity.CreatedDate >= previous.CreatedDate);
@@ -869,7 +869,7 @@ private class CollectionTest {
         previous = null;
 
 
-        sortedOpportunities = (List<Opportunity>) Collection.of(opportunities).orderBy(Opportunity.Name, Collection.Order.DESCENDING).get();
+        sortedOpportunities = (List<Opportunity>) Collection.of(opportunities).orderBy(Opportunity.Name, Ordering.DESCENDING).get();
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {
                 System.assertEquals(-1, opportunity.Name.compareTo(previous.Name));
@@ -880,7 +880,7 @@ private class CollectionTest {
 
 
         sortedOpportunities = (List<Opportunity>) Collection.of(opportunities)
-                .orderBy(Opportunity.FiscalQuarter, Collection.Order.ASCENDING)
+                .orderBy(Opportunity.FiscalQuarter, Ordering.ASCENDING)
                 .get();
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {

@@ -10,7 +10,7 @@ public with sharing class Range {
      * @return the range object, not null
      */
     public static Range between(Object fromInclusive, Object toInclusive) {
-        return new Range(fromInclusive, toInclusive, Comparators.getForPrimitive(fromInclusive));
+        return Range.between(fromInclusive, toInclusive, Comparators.getForPrimitive(fromInclusive));
     }
 
     /**
@@ -25,6 +25,7 @@ public with sharing class Range {
         return new Range(fromInclusive, toInclusive, comparator);
     }
 
+
     private Range(Object fromInclusive, Object toInclusive, Comparator comparator) {
         this.fromInclusive = fromInclusive;
         this.toInclusive = toInclusive;
@@ -37,8 +38,8 @@ public with sharing class Range {
      * If element is bigger than upper range limit, then it becomes the new upper range limit.
      */
     public void add(Object o) {
-        if (comparator.compare(fromInclusive, o) < 0) fromInclusive = o;
-        if (comparator.compare(toInclusive, o) > 0) toInclusive = o;
+        if (comparator.compare(fromInclusive, o) > 0) fromInclusive = o;
+        if (comparator.compare(toInclusive, o) < 0) toInclusive = o;
     }
 
     /**
@@ -61,7 +62,7 @@ public with sharing class Range {
      * @return true if the specified element occurs within this range
      */
     public Boolean contains(Object element) {
-        return comparator.compare(fromInclusive, element) >= 0 && comparator.compare(toInclusive, element) <= 0;
+        return comparator.compare(fromInclusive, element) <= 0 && comparator.compare(toInclusive, element) >= 0;
     }
 
     /**
@@ -89,7 +90,7 @@ public with sharing class Range {
      * @return true if this range is entirely before the specified element
      */
     public Boolean isAfter(Object element) {
-        return comparator.compare(toInclusive, element) > 0;
+        return comparator.compare(fromInclusive, element) > 0;
     }
 
     /**
@@ -98,7 +99,7 @@ public with sharing class Range {
      * @return true if this range is entirely before the specified element
      */
     public Boolean isBefore(Object element) {
-        return comparator.compare(fromInclusive, element) < 0;
+        return comparator.compare(toInclusive, element) < 0;
     }
 
     /**
@@ -118,8 +119,8 @@ public with sharing class Range {
      * @return true if this range contains the specified range
      */
     public Boolean containsRange(Range otherRange) {
-        return comparator.compare(this.fromInclusive, otherRange.fromInclusive) >= 0
-                && comparator.compare(this.toInclusive, otherRange.toInclusive) <= 0;
+        return comparator.compare(this.fromInclusive, otherRange.fromInclusive) <= 0
+                && comparator.compare(this.toInclusive, otherRange.toInclusive) >= 0;
     }
 
     /**
@@ -138,8 +139,7 @@ public with sharing class Range {
      * @return true if this range contains the specified range
      */
     public Boolean isOverlappedBy(Range otherRange) {
-        return comparator.compare(this.fromInclusive, otherRange.fromInclusive) >= 0
-                || comparator.compare(this.toInclusive, otherRange.toInclusive) <= 0;
+        return !isBeforeRange(otherRange) && !isAfterRange(otherRange);
     }
 
     /**
@@ -157,8 +157,8 @@ public with sharing class Range {
      * @return range representing the intersection of this and other (this if equal)
      */
     public Range intersectionWith(Range otherRange) {
-        Object newFromInclusive = comparator.compare(this.fromInclusive, otherRange.fromInclusive) <= 0 ? this.fromInclusive : otherRange.fromInclusive;
-        Object newToInclusive = comparator.compare(this.toInclusive, otherRange.toInclusive) >= 0 ? this.toInclusive : otherRange.toInclusive;
+        Object newFromInclusive = comparator.compare(this.fromInclusive, otherRange.fromInclusive) >= 0 ? this.fromInclusive : otherRange.fromInclusive;
+        Object newToInclusive = comparator.compare(this.toInclusive, otherRange.toInclusive) <= 0 ? this.toInclusive : otherRange.toInclusive;
 
         return Range.between(newFromInclusive, newToInclusive);
     }

@@ -1,4 +1,5 @@
 public with sharing class Comparators {
+
     public final static Map<Schema.SoapType, Comparator> comparatorsByFieldType = new Map<SoapType, Comparator>{
             SoapType.ID => new Comparators.StringComparator(),
             SoapType.STRING => new Comparators.StringComparator(),
@@ -14,6 +15,21 @@ public with sharing class Comparators {
     public static Comparator getByField(SObjectField field) {
         Comparator comparator = comparatorsByFieldType.get(field.getDescribe().getSoapType());
         return comparator == null ? new Comparators.AnyComparator() : comparator;
+    }
+
+    public static Comparator getForPrimitive(Object o1) {
+        if (o1 instanceof Id) return new StringComparator();
+        if (o1 instanceof String) return new StringComparator();
+        if (o1 instanceof Date) return new DateComparator();
+        if (o1 instanceof Datetime) return new DateTimeComparator();
+        if (o1 instanceof Time) return new TimeComparator();
+        if (o1 instanceof Integer) return new IntegerComparator();
+        if (o1 instanceof Decimal) return new DecimalComparator();
+        if (o1 instanceof Double) return new DoubleComparator();
+        if (o1 instanceof Long) return new IntegerComparator();
+        if (o1 instanceof Boolean) return new BooleanComparator();
+
+        return new AnyComparator();
     }
 
     public class AnyComparator implements Comparator {

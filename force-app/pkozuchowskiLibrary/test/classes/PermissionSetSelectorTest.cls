@@ -1,4 +1,4 @@
-@IsTest
+@IsTest(IsParallel=true)
 private class PermissionSetSelectorTest {
     private final static PermissionSetSelector permissionSetSelector = new PermissionSetSelector();
     private final static PermissionSet[] permissionSets = [SELECT Id, Name FROM PermissionSet];

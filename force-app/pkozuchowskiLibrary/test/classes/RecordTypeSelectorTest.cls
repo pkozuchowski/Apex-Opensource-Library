@@ -22,7 +22,7 @@
 * SOFTWARE.
 */
 
-@IsTest
+@IsTest(IsParallel=true)
 private class RecordTypeSelectorTest {
 
     @IsTest

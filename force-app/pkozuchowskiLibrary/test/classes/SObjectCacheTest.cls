@@ -21,7 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest
+@IsTest(IsParallel=true)
 private class SObjectCacheTest {
     static List<Account> accounts = new List<Account>{
             new Account(Id = '001000000000000', Name = 'Test Account 0'),

@@ -1,4 +1,4 @@
-@IsTest
+@IsTest(IsParallel=true)
 private class ApexTest {
 
     public class ExampleClass {
@@ -50,7 +50,7 @@ private class ApexTest {
      * Apex.newListOfTheSameType returns new list of the same item type as param.
      */
     @IsTest
-    static void testNewListOfTheSameType(){
+    static void testNewListOfTheSameType() {
         List<SObject> records = new List<Opportunity>();
         List<Object> result = Apex.newListOfTheSameType(records);
 
@@ -62,7 +62,7 @@ private class ApexTest {
      * Apex.newListOfItemType returns new list with the given item type
      */
     @IsTest
-    static void testNewListOfItemType(){
+    static void testNewListOfItemType() {
         List<Object> result = Apex.newListOfItemType(Opportunity.class);
         System.assert(result instanceof List<Opportunity>);
     }

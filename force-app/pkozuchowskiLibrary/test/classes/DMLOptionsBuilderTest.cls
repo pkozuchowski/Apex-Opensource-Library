@@ -1,4 +1,4 @@
-@IsTest
+@IsTest(IsParallel=true)
 private class DMLOptionsBuilderTest {
 
     @IsTest

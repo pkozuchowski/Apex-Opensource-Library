@@ -34,6 +34,7 @@ public class TriggerContext {
     public Boolean isUndelete = Trigger.isUndelete;
     public Boolean isBefore = Trigger.isBefore;
     public Boolean isAfter = Trigger.isAfter;
+    public Integer size = Trigger.size;
     public TriggerOperation operationType = Trigger.operationType;
 
     public List<SObject> triggerNew = Trigger.new;

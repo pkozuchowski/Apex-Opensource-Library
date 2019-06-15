@@ -41,7 +41,7 @@ public abstract class TriggerHandler {
         if (triggerContext.isExecuting && !Bypass_Settings__c.getInstance().Bypass_Triggers__c) {
             switch on Trigger.operationType {
                 when BEFORE_INSERT {
-                    onBeforeInsert(triggerContext.triggerNewMap);
+                    onBeforeInsert(triggerContext.triggerNew);
                 }
                 when BEFORE_UPDATE {
                     onBeforeUpdate(triggerContext.triggerNewMap, getOldMap());
@@ -79,7 +79,7 @@ public abstract class TriggerHandler {
     }
 
 
-    protected virtual void onBeforeInsert(Map<Id, SObject> triggerNewMap) {
+    protected virtual void onBeforeInsert(List<SObject> triggerNew) {
     }
     protected virtual void onBeforeUpdate(Map<Id, SObject> triggerNewMap, Map<Id, SObject> triggerOldMap) {
     }

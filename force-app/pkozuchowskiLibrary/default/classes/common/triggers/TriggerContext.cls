@@ -27,18 +27,33 @@
  * This class can be used to mock triggers in unit tests or as flag interface in methods to ensure they are run in trigger context.
  */
 public class TriggerContext {
-    public Boolean isExecuting = Trigger.isExecuting;
-    public Boolean isInsert = Trigger.isInsert;
-    public Boolean isUpdate = Trigger.isUpdate;
-    public Boolean isDelete = Trigger.isDelete;
-    public Boolean isUndelete = Trigger.isUndelete;
-    public Boolean isBefore = Trigger.isBefore;
-    public Boolean isAfter = Trigger.isAfter;
-    public Integer size = Trigger.size;
-    public TriggerOperation operationType = Trigger.operationType;
+    @TestVisible public Boolean isExecuting { get; private set; }
+    @TestVisible public Boolean isInsert { get; private set; }
+    @TestVisible public Boolean isUpdate { get; private set; }
+    @TestVisible public Boolean isDelete { get; private set; }
+    @TestVisible public Boolean isUndelete { get; private set; }
+    @TestVisible public Boolean isBefore { get; private set; }
+    @TestVisible public Boolean isAfter { get; private set; }
+    @TestVisible public Integer size { get; private set; }
+    @TestVisible public TriggerOperation operationType { get; private set; }
+    @TestVisible public List<SObject> triggerNew { get; private set; }
+    @TestVisible public List<SObject> triggerOld { get; private set; }
+    @TestVisible public Map<Id, SObject> triggerNewMap { get; private set; }
+    @TestVisible public Map<Id, SObject> triggerOldMap { get; private set; }
 
-    public List<SObject> triggerNew = Trigger.new;
-    public List<SObject> triggerOld = Trigger.old;
-    public Map<Id, SObject> triggerNewMap = Trigger.newMap;
-    public Map<Id, SObject> triggerOldMap = Trigger.oldMap;
+    public TriggerContext() {
+        this.isExecuting = Trigger.isExecuting;
+        this.isInsert = Trigger.isInsert;
+        this.isUpdate = Trigger.isUpdate;
+        this.isDelete = Trigger.isDelete;
+        this.isUndelete = Trigger.isUndelete;
+        this.isBefore = Trigger.isBefore;
+        this.isAfter = Trigger.isAfter;
+        this.size = Trigger.size;
+        this.operationType = Trigger.operationType;
+        this.triggerNew = Trigger.new;
+        this.triggerOld = Trigger.old;
+        this.triggerNewMap = Trigger.newMap;
+        this.triggerOldMap = Trigger.oldMap;
+    }
 }

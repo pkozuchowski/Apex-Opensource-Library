@@ -39,7 +39,7 @@ public abstract class TriggerHandler {
 
     public void run() {
         if (triggerContext.isExecuting && !Bypass_Settings__c.getInstance().Bypass_Triggers__c) {
-            switch on Trigger.operationType {
+            switch on triggerContext.operationType {
                 when BEFORE_INSERT {
                     onBeforeInsert(triggerContext.triggerNew);
                 }

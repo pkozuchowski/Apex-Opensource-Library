@@ -29,8 +29,8 @@ private class TriggerHandlerTest {
      * Emulation of AccountTriggerHandler class
      */
     private class TestAccountTriggerHandler extends TriggerHandler {
-        protected override void onBeforeUpdate(Map<Id, SObject> triggerNewMap, Map<Id, SObject> triggerOldMap) {
-            new AccountAddressPopulator().copyBillingAddressToEmptyShippingAddress(triggerNewMap.values(), triggerOldMap);
+        protected override void onBeforeUpdate(List<SObject> triggerNew, Map<Id, SObject> triggerOldMap) {
+            new AccountAddressPopulator().copyBillingAddressToEmptyShippingAddress(triggerNew, triggerOldMap);
         }
     }
 
@@ -77,9 +77,7 @@ private class TriggerHandlerTest {
 
         Test.startTest();
         /*Record is updated from user interface and Billing address is added*/
-        ctx.triggerNewMap = new Map<Id, SObject>{
-                record.Id => record
-        };
+        ctx.triggerNew = new List<SObject>{record};
         ctx.triggerOldMap = new Map<Id, SObject>{
                 record.Id => oldRecord
         };
@@ -105,9 +103,7 @@ private class TriggerHandlerTest {
         oldRecord = record.clone(true);
         record.Phone = '(541) 754-3010';
 
-        ctx.triggerNewMap = new Map<Id, SObject>{
-                record.Id => record
-        };
+        ctx.triggerNew = new List<SObject>{record};
         ctx.triggerOldMap = new Map<Id, SObject>{
                 record.Id => oldRecord
         };
@@ -128,6 +124,7 @@ private class TriggerHandlerTest {
         TestAccountTriggerHandler handler = new TestAccountTriggerHandler();
         handler.triggerContext.isExecuting = true;
         handler.triggerContext.triggerNew = new List<Account>();
+        handler.triggerContext.triggerOld = new List<Account>();
         handler.triggerContext.triggerNewMap = new Map<Id, Account>();
         handler.triggerContext.triggerOldMap = new Map<Id, Account>();
 

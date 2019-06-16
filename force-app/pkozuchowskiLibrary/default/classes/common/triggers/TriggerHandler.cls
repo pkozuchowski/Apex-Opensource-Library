@@ -44,23 +44,23 @@ public abstract class TriggerHandler {
                     onBeforeInsert(triggerContext.triggerNew);
                 }
                 when BEFORE_UPDATE {
-                    onBeforeUpdate(triggerContext.triggerNewMap, getOldMap());
+                    onBeforeUpdate(triggerContext.triggerNew, getOldMap());
                 }
                 when BEFORE_DELETE {
-                    onBeforeDelete(triggerContext.triggerOldMap);
+                    onBeforeDelete(triggerContext.triggerOld);
                 }
                 when AFTER_INSERT {
-                    onAfterInsert(triggerContext.triggerNewMap);
+                    onAfterInsert(triggerContext.triggerNew);
                 }
                 when AFTER_UPDATE {
-                    onAfterUpdate(triggerContext.triggerNewMap, getOldMap());
+                    onAfterUpdate(triggerContext.triggerNew, getOldMap());
                     cacheOldMap();
                 }
                 when AFTER_DELETE {
-                    onAfterDelete(triggerContext.triggerOldMap);
+                    onAfterDelete(triggerContext.triggerOld);
                 }
                 when AFTER_UNDELETE {
-                    onAfterUndelete(triggerContext.triggerNewMap);
+                    onAfterUndelete(triggerContext.triggerNew);
                 }
             }
         }
@@ -81,17 +81,17 @@ public abstract class TriggerHandler {
 
     protected virtual void onBeforeInsert(List<SObject> triggerNew) {
     }
-    protected virtual void onBeforeUpdate(Map<Id, SObject> triggerNewMap, Map<Id, SObject> triggerOldMap) {
+    protected virtual void onBeforeUpdate(List<SObject> triggerNew, Map<Id, SObject> triggerOldMap) {
     }
-    protected virtual void onBeforeDelete(Map<Id, SObject> triggerOldMap) {
+    protected virtual void onBeforeDelete(List<SObject> triggerOld) {
     }
 
-    protected virtual void onAfterInsert(Map<Id, SObject> triggerNewMap) {
+    protected virtual void onAfterInsert(List<SObject> triggerNew) {
     }
-    protected virtual void onAfterUpdate(Map<Id, SObject> triggerNewMap, Map<Id, SObject> triggerOldMap) {
+    protected virtual void onAfterUpdate(List<SObject> triggerNew, Map<Id, SObject> triggerOldMap) {
     }
-    protected virtual void onAfterDelete(Map<Id, SObject> triggerOldMap) {
+    protected virtual void onAfterDelete(List<SObject> triggerOld) {
     }
-    protected virtual void onAfterUndelete(Map<Id, SObject> triggerNewMap) {
+    protected virtual void onAfterUndelete(List<SObject> triggerNew) {
     }
 }

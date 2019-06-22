@@ -131,4 +131,48 @@ private class TriggerHandlerTest {
             handler.run();
         }
     }
+
+
+    @IsTest
+    static void testIsChangedHelperMethods() {
+        Account record = new Account(
+                Id = '001000000000000',
+                Name = 'Test Account',
+                BillingCountry = 'USA',
+                BillingCity = 'New York',
+                NumberOfEmployees = 0,
+                Phone = '(541) 754-3010'
+        );
+        Account oldRecord = new Account(
+                Id = '001000000000000',
+                Name = 'Test Account',
+                Phone = '(541) 754-3011'
+        );
+
+        TriggerContext ctx = new TriggerContext();
+        ctx.triggerNew = new List<SObject>{record};
+        ctx.triggerOldMap = new Map<Id, SObject>{record.Id => oldRecord};
+        ctx.isUpdate = true;
+
+        System.assertEquals(false, ctx.isChanged(record, Account.Name));
+        System.assertEquals(true, ctx.isChanged(record, Account.BillingCountry));
+        System.assertEquals(true, ctx.isChanged(record, Account.BillingCity));
+        System.assertEquals(true, ctx.isChanged(record, Account.Phone));
+
+        System.assertEquals(true, ctx.isChangedTo(record, Account.BillingCountry, 'USA'));
+        System.assertEquals(true, ctx.isChangedTo(record, Account.BillingCity, 'New York'));
+        System.assertEquals(true, ctx.isChangedTo(record, Account.Phone, '(541) 754-3010'));
+        System.assertEquals(false, ctx.isChangedTo(record, Account.BillingCity, 'Washington'));
+
+        System.assertEquals(true, ctx.isChangedFrom(record, Account.BillingCountry, null));
+        System.assertEquals(true, ctx.isChangedFrom(record, Account.BillingCity, null));
+        System.assertEquals(true, ctx.isChangedFrom(record, Account.Phone, '(541) 754-3011'));
+        System.assertEquals(false, ctx.isChangedFrom(record, Account.Name, 'Washington'));
+
+
+        ctx.isUpdate = false;
+        System.assertEquals(false, ctx.isChanged(record, Account.BillingCountry));
+        System.assertEquals(false, ctx.isChangedTo(record, Account.BillingCity, 'New York'));
+        System.assertEquals(false, ctx.isChangedFrom(record, Account.BillingCity, null));
+    }
 }

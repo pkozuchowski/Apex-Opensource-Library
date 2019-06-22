@@ -32,7 +32,6 @@
  * Logic classes will see only workflow field updates changes.
  */
 public abstract class TriggerHandler {
-    private final static Map<Map<Id, SObject>, Map<Id, SObject>> PREVIOUS_OLD_MAPS = new Map<Map<Id, SObject>, Map<Id, SObject>>();
 
     @TestVisible
     protected final TriggerContext triggerContext = new TriggerContext();
@@ -41,57 +40,45 @@ public abstract class TriggerHandler {
         if (triggerContext.isExecuting && !Bypass_Settings__c.getInstance().Bypass_Triggers__c) {
             switch on triggerContext.operationType {
                 when BEFORE_INSERT {
-                    onBeforeInsert(triggerContext.triggerNew);
+                    onBeforeInsert(triggerContext.triggerNew, triggerContext);
                 }
                 when BEFORE_UPDATE {
-                    onBeforeUpdate(triggerContext.triggerNew, getOldMap());
+                    onBeforeUpdate(triggerContext.triggerNew, triggerContext);
                 }
                 when BEFORE_DELETE {
-                    onBeforeDelete(triggerContext.triggerOld);
+                    onBeforeDelete(triggerContext.triggerOld, triggerContext);
                 }
                 when AFTER_INSERT {
-                    onAfterInsert(triggerContext.triggerNew);
+                    onAfterInsert(triggerContext.triggerNew, triggerContext);
                 }
                 when AFTER_UPDATE {
-                    onAfterUpdate(triggerContext.triggerNew, getOldMap());
-                    cacheOldMap();
+                    onAfterUpdate(triggerContext.triggerNew, triggerContext);
+                    triggerContext.cacheOldMap();
                 }
                 when AFTER_DELETE {
-                    onAfterDelete(triggerContext.triggerOld);
+                    onAfterDelete(triggerContext.triggerOld, triggerContext);
                 }
                 when AFTER_UNDELETE {
-                    onAfterUndelete(triggerContext.triggerNew);
+                    onAfterUndelete(triggerContext.triggerNew, triggerContext);
                 }
             }
         }
     }
 
 
-    /**
-     * @return Trigger old map in normal context and previous Trigger.newMap if current execution happened as result of Workflow update.
-     */
-    private Map<Id, SObject> getOldMap() {
-        return PREVIOUS_OLD_MAPS.containsKey(triggerContext.triggerOldMap) ? PREVIOUS_OLD_MAPS.get(triggerContext.triggerOldMap) : triggerContext.triggerOldMap;
+    protected virtual void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc) {
+    }
+    protected virtual void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
+    }
+    protected virtual void onBeforeDelete(List<SObject> triggerOld, TriggerContext tc) {
     }
 
-    private void cacheOldMap() {
-        PREVIOUS_OLD_MAPS.put(triggerContext.triggerOldMap, triggerContext.triggerNewMap);
+    protected virtual void onAfterInsert(List<SObject> triggerNew, TriggerContext tc) {
     }
-
-
-    protected virtual void onBeforeInsert(List<SObject> triggerNew) {
+    protected virtual void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {
     }
-    protected virtual void onBeforeUpdate(List<SObject> triggerNew, Map<Id, SObject> triggerOldMap) {
+    protected virtual void onAfterDelete(List<SObject> triggerOld, TriggerContext tc) {
     }
-    protected virtual void onBeforeDelete(List<SObject> triggerOld) {
-    }
-
-    protected virtual void onAfterInsert(List<SObject> triggerNew) {
-    }
-    protected virtual void onAfterUpdate(List<SObject> triggerNew, Map<Id, SObject> triggerOldMap) {
-    }
-    protected virtual void onAfterDelete(List<SObject> triggerOld) {
-    }
-    protected virtual void onAfterUndelete(List<SObject> triggerNew) {
+    protected virtual void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc) {
     }
 }

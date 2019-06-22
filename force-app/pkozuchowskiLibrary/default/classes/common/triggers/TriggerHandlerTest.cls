@@ -29,8 +29,8 @@ private class TriggerHandlerTest {
      * Emulation of AccountTriggerHandler class
      */
     private class TestAccountTriggerHandler extends TriggerHandler {
-        protected override void onBeforeUpdate(List<SObject> triggerNew, Map<Id, SObject> triggerOldMap) {
-            new AccountAddressPopulator().copyBillingAddressToEmptyShippingAddress(triggerNew, triggerOldMap);
+        protected override void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
+            new AccountAddressPopulator().copyBillingAddressToEmptyShippingAddress(triggerNew, tc);
         }
     }
 
@@ -38,15 +38,14 @@ private class TriggerHandlerTest {
      * Emulation of Trigger logic class
      */
     private class AccountAddressPopulator {
-        public void copyBillingAddressToEmptyShippingAddress(List<Account> accounts, Map<Id, SObject> oldMap) {
-            for (Account account : accounts) {
-                Account old = (Account) oldMap.get(account.Id);
+        public void copyBillingAddressToEmptyShippingAddress(List<Account> accounts, TriggerContext tc) {
 
-                if (account.BillingCountry != old.BillingCountry) {
-                    account.ShippingCountry = account.BillingCountry;
-                    account.ShippingCity = account.BillingCity;
+            for (Account record : accounts) {
+                if (tc.isChanged(record, Account.BillingCountry)) {
+                    record.ShippingCountry = record.BillingCountry;
+                    record.ShippingCity = record.BillingCity;
                     /*Count how many times address is changed by triggers*/
-                    account.NumberOfEmployees++;
+                    record.NumberOfEmployees++;
                 }
             }
         }
@@ -60,9 +59,6 @@ private class TriggerHandlerTest {
      */
     @IsTest
     static void testUpdateFlow() {
-        TestAccountTriggerHandler triggerHandler = new TestAccountTriggerHandler();
-        TriggerContext ctx = triggerHandler.triggerContext;
-
         Account record = new Account(
                 Id = '001000000000000',
                 Name = 'Test Account',
@@ -75,47 +71,49 @@ private class TriggerHandlerTest {
                 Name = 'Test Account'
         );
 
+
         Test.startTest();
         /*Record is updated from user interface and Billing address is added*/
-        ctx.triggerNew = new List<SObject>{record};
-        ctx.triggerOldMap = new Map<Id, SObject>{
-                record.Id => oldRecord
-        };
-        ctx.isExecuting = true;
-
-        ctx.operationType = TriggerOperation.BEFORE_UPDATE;
-        triggerHandler.run();
-
-        ctx.operationType = TriggerOperation.AFTER_UPDATE;
-        triggerHandler.run();
+        doUpdate(record, oldRecord);
 
 
         /*Workflow updates field on the record. Trigger is rerun with updated Trigger.new and original Trigger.old*/
         record.Website = 'www.TestAccount.com';
-        ctx.operationType = TriggerOperation.BEFORE_UPDATE;
-        triggerHandler.run();
-
-        ctx.operationType = TriggerOperation.AFTER_UPDATE;
-        triggerHandler.run();
+        doUpdate(record, oldRecord);
 
 
         /*Process Builder updates field on the record. Trigger is rerun with updated Trigger.new and Trigger.old*/
         oldRecord = record.clone(true);
         record.Phone = '(541) 754-3010';
-
-        ctx.triggerNew = new List<SObject>{record};
-        ctx.triggerOldMap = new Map<Id, SObject>{
-                record.Id => oldRecord
-        };
-        ctx.operationType = TriggerOperation.BEFORE_UPDATE;
-        triggerHandler.run();
-
-        ctx.operationType = TriggerOperation.AFTER_UPDATE;
-        triggerHandler.run();
+        doUpdate(record, oldRecord);
         Test.stopTest();
 
 
         System.assertEquals(1, record.NumberOfEmployees, 'Record should go through trigger logic only once, because workflow did not change any of the observed fields.');
+    }
+
+    private static void doUpdate(SObject newRecord, SObject oldRecord) {
+        TestAccountTriggerHandler beforeTrigger = new TestAccountTriggerHandler();
+        beforeTrigger.triggerContext.isExecuting = true;
+        beforeTrigger.triggerContext.isUpdate = true;
+        beforeTrigger.triggerContext.operationType = TriggerOperation.BEFORE_UPDATE;
+        beforeTrigger.triggerContext.triggerNew = new List<SObject>{newRecord};
+        beforeTrigger.triggerContext.triggerNewMap = new Map<Id, SObject>{newRecord.Id => newRecord};
+        beforeTrigger.triggerContext.triggerOldMap = new Map<Id, SObject>{
+                newRecord.Id => oldRecord
+        };
+        beforeTrigger.run();
+
+        TestAccountTriggerHandler afterTrigger = new TestAccountTriggerHandler();
+        afterTrigger.triggerContext.isExecuting = true;
+        afterTrigger.triggerContext.isUpdate = true;
+        afterTrigger.triggerContext.operationType = TriggerOperation.AFTER_UPDATE;
+        afterTrigger.triggerContext.triggerNew = new List<SObject>{newRecord};
+        afterTrigger.triggerContext.triggerNewMap = new Map<Id, SObject>{newRecord.Id => newRecord};
+        afterTrigger.triggerContext.triggerOldMap = new Map<Id, SObject>{
+                newRecord.Id => oldRecord
+        };
+        afterTrigger.run();
     }
 
 

@@ -28,9 +28,28 @@ private class TriggerHandlerTest {
     /**
      * Emulation of AccountTriggerHandler class
      */
-    private class TestAccountTriggerHandler extends TriggerHandler {
-        protected override void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
+    private class TestAccountTriggerHandler implements TriggerHandler {
+
+        public void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc) {
+        }
+
+        public void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
             new AccountAddressPopulator().copyBillingAddressToEmptyShippingAddress(triggerNew, tc);
+        }
+
+        public void onBeforeDelete(List<SObject> triggerOld, TriggerContext tc) {
+        }
+
+        public void onAfterInsert(List<SObject> triggerNew, TriggerContext tc) {
+        }
+
+        public void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {
+        }
+
+        public void onAfterDelete(List<SObject> triggerOld, TriggerContext tc) {
+        }
+
+        public void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc) {
         }
     }
 
@@ -93,42 +112,43 @@ private class TriggerHandlerTest {
     }
 
     private static void doUpdate(SObject newRecord, SObject oldRecord) {
-        TestAccountTriggerHandler beforeTrigger = new TestAccountTriggerHandler();
-        beforeTrigger.triggerContext.isExecuting = true;
-        beforeTrigger.triggerContext.isUpdate = true;
-        beforeTrigger.triggerContext.operationType = TriggerOperation.BEFORE_UPDATE;
-        beforeTrigger.triggerContext.triggerNew = new List<SObject>{newRecord};
-        beforeTrigger.triggerContext.triggerNewMap = new Map<Id, SObject>{newRecord.Id => newRecord};
-        beforeTrigger.triggerContext.triggerOldMap = new Map<Id, SObject>{
+        TriggerContext beforeUpdateTC = new TriggerContext();
+        beforeUpdateTC.isExecuting = true;
+        beforeUpdateTC.isUpdate = true;
+        beforeUpdateTC.operationType = TriggerOperation.BEFORE_UPDATE;
+        beforeUpdateTC.triggerNew = new List<SObject>{newRecord};
+        beforeUpdateTC.triggerNewMap = new Map<Id, SObject>{newRecord.Id => newRecord};
+        beforeUpdateTC.triggerOldMap = new Map<Id, SObject>{
                 newRecord.Id => oldRecord
         };
-        beforeTrigger.run();
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), beforeUpdateTC);
 
-        TestAccountTriggerHandler afterTrigger = new TestAccountTriggerHandler();
-        afterTrigger.triggerContext.isExecuting = true;
-        afterTrigger.triggerContext.isUpdate = true;
-        afterTrigger.triggerContext.operationType = TriggerOperation.AFTER_UPDATE;
-        afterTrigger.triggerContext.triggerNew = new List<SObject>{newRecord};
-        afterTrigger.triggerContext.triggerNewMap = new Map<Id, SObject>{newRecord.Id => newRecord};
-        afterTrigger.triggerContext.triggerOldMap = new Map<Id, SObject>{
+
+        TriggerContext afterUpdateTC = new TriggerContext();
+        afterUpdateTC.isExecuting = true;
+        afterUpdateTC.isUpdate = true;
+        afterUpdateTC.operationType = TriggerOperation.AFTER_UPDATE;
+        afterUpdateTC.triggerNew = new List<SObject>{newRecord};
+        afterUpdateTC.triggerNewMap = new Map<Id, SObject>{newRecord.Id => newRecord};
+        afterUpdateTC.triggerOldMap = new Map<Id, SObject>{
                 newRecord.Id => oldRecord
         };
-        afterTrigger.run();
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), afterUpdateTC);
     }
 
 
     @IsTest
     static void testCoverage() {
-        TestAccountTriggerHandler handler = new TestAccountTriggerHandler();
-        handler.triggerContext.isExecuting = true;
-        handler.triggerContext.triggerNew = new List<Account>();
-        handler.triggerContext.triggerOld = new List<Account>();
-        handler.triggerContext.triggerNewMap = new Map<Id, Account>();
-        handler.triggerContext.triggerOldMap = new Map<Id, Account>();
+        TriggerContext triggerContext = new TriggerContext();
+        triggerContext.isExecuting = true;
+        triggerContext.triggerNew = new List<Account>();
+        triggerContext.triggerOld = new List<Account>();
+        triggerContext.triggerNewMap = new Map<Id, Account>();
+        triggerContext.triggerOldMap = new Map<Id, Account>();
 
         for (TriggerOperation triggerOperation : TriggerOperation.values()) {
-            handler.triggerContext.operationType = triggerOperation;
-            handler.run();
+            triggerContext.operationType = triggerOperation;
+            TriggerDispatcher.run(new TestAccountTriggerHandler(), triggerContext);
         }
     }
 

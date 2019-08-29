@@ -31,54 +31,12 @@
  * with original old map. This handler uses new map from previous trigger run for optimization.
  * Logic classes will see only workflow field updates changes.
  */
-public abstract class TriggerHandler {
-
-    @TestVisible
-    protected final TriggerContext triggerContext = new TriggerContext();
-
-    public void run() {
-        if (triggerContext.isExecuting && !Bypass_Settings__c.getInstance().Bypass_Triggers__c) {
-            switch on triggerContext.operationType {
-                when BEFORE_INSERT {
-                    onBeforeInsert(triggerContext.triggerNew, triggerContext);
-                }
-                when BEFORE_UPDATE {
-                    onBeforeUpdate(triggerContext.triggerNew, triggerContext);
-                }
-                when BEFORE_DELETE {
-                    onBeforeDelete(triggerContext.triggerOld, triggerContext);
-                }
-                when AFTER_INSERT {
-                    onAfterInsert(triggerContext.triggerNew, triggerContext);
-                }
-                when AFTER_UPDATE {
-                    onAfterUpdate(triggerContext.triggerNew, triggerContext);
-                    triggerContext.cacheOldMap();
-                }
-                when AFTER_DELETE {
-                    onAfterDelete(triggerContext.triggerOld, triggerContext);
-                }
-                when AFTER_UNDELETE {
-                    onAfterUndelete(triggerContext.triggerNew, triggerContext);
-                }
-            }
-        }
-    }
-
-
-    protected virtual void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc) {
-    }
-    protected virtual void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
-    }
-    protected virtual void onBeforeDelete(List<SObject> triggerOld, TriggerContext tc) {
-    }
-
-    protected virtual void onAfterInsert(List<SObject> triggerNew, TriggerContext tc) {
-    }
-    protected virtual void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {
-    }
-    protected virtual void onAfterDelete(List<SObject> triggerOld, TriggerContext tc) {
-    }
-    protected virtual void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc) {
-    }
+public interface TriggerHandler {
+    void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc);
+    void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc);
+    void onBeforeDelete(List<SObject> triggerOld, TriggerContext tc);
+    void onAfterInsert(List<SObject> triggerNew, TriggerContext tc);
+    void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc);
+    void onAfterDelete(List<SObject> triggerOld, TriggerContext tc);
+    void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc);
 }

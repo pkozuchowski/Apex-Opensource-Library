@@ -24,10 +24,10 @@
 
 @IsTest
 public inherited sharing class TestDataFactory {
-    private final static String VANILIA = 'vanilia';
+    private final static String VANILLA = 'vanilla';
     private static Map<SObjectType, Map<String, SObject>> prototypes = new Map<SObjectType, Map<String, SObject>>{
             User.SObjectType => new Map<String, SObject>{
-                    VANILIA => new User(
+                    VANILLA => new User(
                             FirstName = 'Test',
                             LastName = 'User',
                             Email = '',
@@ -46,7 +46,7 @@ public inherited sharing class TestDataFactory {
 
 
     public static SObject create(SObject prototype) {
-        return create(VANILIA, prototype);
+        return create(VANILLA, prototype);
     }
 
     public static SObject create(String flavour, SObject prototype) {
@@ -54,7 +54,7 @@ public inherited sharing class TestDataFactory {
     }
 
     public static SObject[] create(Integer count, SObject prototype) {
-        return create(count, VANILIA, prototype);
+        return create(count, VANILLA, prototype);
     }
 
     public static SObject[] create(Integer count, String flavour, SObject prototype) {
@@ -78,7 +78,7 @@ public inherited sharing class TestDataFactory {
             if (flavours.containsKey(flavour)) {
                 return flavours.get(flavour);
             } else {
-                return flavours.get(VANILIA);
+                return flavours.get(VANILLA);
             }
 
         } else {

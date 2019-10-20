@@ -37,7 +37,6 @@ public class TriggerContext {
     @TestVisible public Boolean isBefore { get; private set; }
     @TestVisible public Boolean isAfter { get; private set; }
     @TestVisible public Integer size { get; private set; }
-    @TestVisible public SObjectType sObjectType { get; private set; }
     @TestVisible public TriggerOperation operationType { get; private set; }
     @TestVisible public List<SObject> triggerNew { get; private set; }
     @TestVisible public List<SObject> triggerOld { get; private set; }
@@ -52,6 +51,18 @@ public class TriggerContext {
         }
     }
     private Map<Id, SObject> originalOldMap;
+    @TestVisible public SObjectType sObjectType {
+        get {
+            if (Trigger.new != null) {
+                return triggerNew.getSObjectType();
+            } else if (Trigger.old != null) {
+                return triggerOld.getSObjectType();
+            }
+
+            return null;
+        }
+        private set;
+    }
 
     public TriggerContext() {
         this.isExecuting = Trigger.isExecuting == true;
@@ -67,7 +78,6 @@ public class TriggerContext {
         this.triggerNewMap = Trigger.newMap;
         this.triggerOldMap = Trigger.oldMap;
         this.triggerOld = triggerOldMap == null ? null : triggerOldMap.values();
-        this.sObjectType = (Trigger.new != null ? Trigger.new : Trigger.old).getSObjectType();
     }
 
 

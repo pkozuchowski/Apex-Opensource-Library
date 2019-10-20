@@ -115,20 +115,20 @@ private class SObjectFieldDefaultsTest {
     /**
      * Since custom metadata cannot be inserted in unit tests, this selector implementation returns mock custom metadata.
      */
-    private class TestFieldDefaultRuleSelector extends SObjectFieldDefaults.ApexFieldDefaultRuleSelector {
-        public override List<ApexFieldDefaultRule__mdt> getSettings(TriggerContext tc) {
+    private class TestFieldDefaultRuleSelector extends SObjectFieldDefaults.FieldDefaultSelector {
+        public override List<TriggerFieldDefault__mdt> getSettings(TriggerContext tc) {
             if (tc.operationType == TriggerOperation.BEFORE_INSERT) {
-                return new List<ApexFieldDefaultRule__mdt>{
-                        new ApexFieldDefaultRule__mdt(IsEnabled__c = true, ApexClass__c = 'SObjectFieldDefaultsTest.TestAccountNameDefault', Trigger__c = 'BEFORE_INSERT', SObject__c = 'Account'),
-                        new ApexFieldDefaultRule__mdt(IsEnabled__c = true, ApexClass__c = 'SObjectFieldDefaultsTest.TestAccountBillingAddressDefault', Trigger__c = 'BEFORE_INSERT', SObject__c = 'Account')
+                return new List<TriggerFieldDefault__mdt>{
+                        new TriggerFieldDefault__mdt(IsEnabled__c = true, ApexClass__c = 'SObjectFieldDefaultsTest.TestAccountNameDefault', Trigger__c = 'BEFORE_INSERT', SObject__c = 'Account'),
+                        new TriggerFieldDefault__mdt(IsEnabled__c = true, ApexClass__c = 'SObjectFieldDefaultsTest.TestAccountBillingAddressDefault', Trigger__c = 'BEFORE_INSERT', SObject__c = 'Account')
                 };
             } else if (tc.operationType == TriggerOperation.BEFORE_UPDATE) {
-                return new List<ApexFieldDefaultRule__mdt>{
-                        new ApexFieldDefaultRule__mdt(IsEnabled__c = true, ApexClass__c = 'SObjectFieldDefaultsTest.TestAccountBillingAddressDefault', Trigger__c = 'BEFORE_UPDATE', SObject__c = 'Account')
+                return new List<TriggerFieldDefault__mdt>{
+                        new TriggerFieldDefault__mdt(IsEnabled__c = true, ApexClass__c = 'SObjectFieldDefaultsTest.TestAccountBillingAddressDefault', Trigger__c = 'BEFORE_UPDATE', SObject__c = 'Account')
                 };
             } else {
-                return new List<ApexFieldDefaultRule__mdt>{
-                        new ApexFieldDefaultRule__mdt(IsEnabled__c = true, ApexClass__c = 'SObjectFieldDefaultsTest.InvalidClass', Trigger__c = 'BEFORE_DELETE', SObject__c = 'Account')
+                return new List<TriggerFieldDefault__mdt>{
+                        new TriggerFieldDefault__mdt(IsEnabled__c = true, ApexClass__c = 'SObjectFieldDefaultsTest.InvalidClass', Trigger__c = 'BEFORE_DELETE', SObject__c = 'Account')
                 };
             }
         }

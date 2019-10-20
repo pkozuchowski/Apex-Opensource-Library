@@ -26,7 +26,7 @@
  * Applies default values to records in trigger.
  */
 public with sharing class SObjectFieldDefaults {
-    @TestVisible private static ApexFieldDefaultRuleSelector settingsSelector = new ApexFieldDefaultRuleSelector();
+    @TestVisible private static FieldDefaultSelector settingsSelector = new FieldDefaultSelector();
 
     /**
      * Applies Field Default Rules defined in custom metadata.
@@ -55,7 +55,7 @@ public with sharing class SObjectFieldDefaults {
     private static List<FieldDefaultRule> getConfiguredFieldDefaultRules(TriggerContext tc) {
         List<FieldDefaultRule> fieldDefaultsRules = new List<FieldDefaultRule>();
 
-        for (ApexFieldDefaultRule__mdt setting : settingsSelector.getSettings(tc)) {
+        for (TriggerFieldDefault__mdt setting : settingsSelector.getSettings(tc)) {
             try {
                 Type ruleClass = Type.forName(setting.ApexClass__c);
                 FieldDefaultRule rule = (FieldDefaultRule) ruleClass.newInstance();
@@ -74,11 +74,11 @@ public with sharing class SObjectFieldDefaults {
      * Selector for custom metadata defined field defaults.
      */
     @TestVisible
-    private virtual class ApexFieldDefaultRuleSelector {
-        public virtual List<ApexFieldDefaultRule__mdt> getSettings(TriggerContext tc) {
+    private virtual class FieldDefaultSelector {
+        public virtual List<TriggerFieldDefault__mdt> getSettings(TriggerContext tc) {
             return [
                     SELECT ApexClass__c, DeveloperName
-                    FROM ApexFieldDefaultRule__mdt
+                    FROM TriggerFieldDefault__mdt
                     WHERE IsEnabled__c = TRUE
                     AND SObject__c = :String.valueOf(tc.sObjectType)
                     AND Trigger__c = :tc.operationType.name()

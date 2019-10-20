@@ -108,7 +108,7 @@ private class SObjectValidatorTest {
      * Checks if Billing Country is filled.
      * ERRORS map is only populated because field.addError() can't be tested without inserting records.
      */
-    public class TestAccountBillingCountryValidation implements ValidationRule {
+    public class TestAccountBillingCountryValidation implements TriggerValidationRule {
         public void prepare(List<SObject> records, TriggerContext tc) {
         }
 

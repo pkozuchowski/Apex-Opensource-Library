@@ -39,8 +39,8 @@ public with sharing class SObjectValidator {
     /**
      * Validates triggered records with a set of specified rules (ValidationRule implementations).
      */
-    public static void validate(List<SObject> records, TriggerContext tc, List<ValidationRule> validationRules) {
-        for (ValidationRule validationRule : validationRules) {
+    public static void validate(List<SObject> records, TriggerContext tc, List<TriggerValidationRule> validationRules) {
+        for (TriggerValidationRule validationRule : validationRules) {
             validationRule.prepare(records, tc);
 
             for (SObject record : records) {
@@ -53,13 +53,13 @@ public with sharing class SObjectValidator {
     /**
      * @return ValidationRules defined in custom metadata.
      */
-    private static List<ValidationRule> getConfiguredValidationRules(TriggerContext tc) {
-        List<ValidationRule> validationRules = new List<ValidationRule>();
+    private static List<TriggerValidationRule> getConfiguredValidationRules(TriggerContext tc) {
+        List<TriggerValidationRule> validationRules = new List<TriggerValidationRule>();
 
         for (TriggerValidationRule__mdt setting : settingsSelector.getSettings(tc)) {
             try {
                 Type ruleClass = Type.forName(setting.ApexClass__c);
-                ValidationRule validationRule = (ValidationRule) ruleClass.newInstance();
+                TriggerValidationRule validationRule = (TriggerValidationRule) ruleClass.newInstance();
                 validationRules.add(validationRule);
 
             } catch (Exception ex) {

@@ -138,7 +138,7 @@ private class SObjectFieldDefaultsTest {
      * Test field default.
      * Populates Account's Name to be "Test".
      */
-    public class TestAccountNameDefault implements FieldDefault {
+    public class TestAccountNameDefault implements TriggerFieldDefault {
         public void prepare(List<SObject> records, TriggerContext tc) {
         }
 
@@ -151,7 +151,7 @@ private class SObjectFieldDefaultsTest {
      * Test field default.
      * Populates Account's Name to be "Test".
      */
-    public class TestAccountBillingAddressDefault implements FieldDefault {
+    public class TestAccountBillingAddressDefault implements TriggerFieldDefault {
         public void prepare(List<SObject> records, TriggerContext tc) {
         }
 

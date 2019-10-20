@@ -27,7 +27,7 @@
  * Each implementation should call .addError() on it's own, since depending on requirement,
  * this could be called either to SObject or one of it's fields.
  */
-public interface ValidationRule {
+public interface TriggerValidationRule {
 
     /**
      * Prepares prerequisites for validation if needed.

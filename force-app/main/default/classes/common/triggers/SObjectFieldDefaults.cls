@@ -38,8 +38,8 @@ public with sharing class SObjectFieldDefaults {
     /**
      * Applies given FieldDefaultRules to inserted or updated records.
      */
-    public static void apply(List<SObject> records, TriggerContext tc, List<FieldDefault> populators) {
-        for (FieldDefault fieldDefaultRule : populators) {
+    public static void apply(List<SObject> records, TriggerContext tc, List<TriggerFieldDefault> populators) {
+        for (TriggerFieldDefault fieldDefaultRule : populators) {
             fieldDefaultRule.prepare(records, tc);
 
             for (SObject record : records) {
@@ -52,13 +52,13 @@ public with sharing class SObjectFieldDefaults {
     /**
      * @return ValidationRules defined in custom metadata.
      */
-    private static List<FieldDefault> getConfiguredFieldDefaultRules(TriggerContext tc) {
-        List<FieldDefault> fieldDefaultsRules = new List<FieldDefault>();
+    private static List<TriggerFieldDefault> getConfiguredFieldDefaultRules(TriggerContext tc) {
+        List<TriggerFieldDefault> fieldDefaultsRules = new List<TriggerFieldDefault>();
 
         for (TriggerFieldDefault__mdt setting : settingsSelector.getSettings(tc)) {
             try {
                 Type ruleClass = Type.forName(setting.ApexClass__c);
-                FieldDefault rule = (FieldDefault) ruleClass.newInstance();
+                TriggerFieldDefault rule = (TriggerFieldDefault) ruleClass.newInstance();
                 fieldDefaultsRules.add(rule);
 
             } catch (Exception ex) {

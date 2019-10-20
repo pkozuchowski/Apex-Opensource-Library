@@ -25,7 +25,7 @@
 /**
  * Implementation of this interface should populate field's default value on SObject in "before" trigger.
  */
-public interface FieldDefaultRule {
+public interface FieldDefault {
 
     /**
      * Prepares prerequisites for validation if needed.

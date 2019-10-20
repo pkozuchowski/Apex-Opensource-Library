@@ -26,6 +26,7 @@
  * Validates records with a set of specified rules.
  */
 public with sharing class SObjectValidator {
+    @TestVisible private static ValidationRuleSelector settingsSelector = new ValidationRuleSelector();
 
     /**
      * Validates triggered records with a set of validation rules specified in Custom Metadata.
@@ -55,14 +56,7 @@ public with sharing class SObjectValidator {
     private static List<ValidationRule> getConfiguredValidationRules(TriggerContext tc) {
         List<ValidationRule> validationRules = new List<ValidationRule>();
 
-        for (ApexValidationRule__mdt setting : [
-                SELECT ApexClass__c, DeveloperName
-                FROM ApexValidationRule__mdt
-                WHERE IsEnabled__c = TRUE
-                AND SObject__c = :String.valueOf(tc.sObjectType)
-                AND Trigger__c = :tc.operationType.name()
-                ORDER BY Order__c NULLS LAST
-        ]) {
+        for (TriggerValidationRule__mdt setting : settingsSelector.getSettings(tc)) {
             try {
                 Type ruleClass = Type.forName(setting.ApexClass__c);
                 ValidationRule validationRule = (ValidationRule) ruleClass.newInstance();
@@ -76,4 +70,21 @@ public with sharing class SObjectValidator {
         return validationRules;
     }
 
+
+    /**
+     * Selector for custom metadata defined field defaults.
+     */
+    @TestVisible
+    private virtual class ValidationRuleSelector {
+        public virtual List<TriggerValidationRule__mdt> getSettings(TriggerContext tc) {
+            return [
+                    SELECT ApexClass__c, DeveloperName
+                    FROM TriggerValidationRule__mdt
+                    WHERE IsEnabled__c = TRUE
+                    AND SObject__c = :String.valueOf(tc.sObjectType)
+                    AND Trigger__c = :tc.operationType.name()
+                    ORDER BY Order__c NULLS LAST
+            ];
+        }
+    }
 }

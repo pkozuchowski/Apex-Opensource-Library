@@ -30,36 +30,30 @@ public with sharing class TriggerDispatcher {
     @TestVisible
     private static void run(TriggerHandler triggerHandler, TriggerContext triggerContext) {
         if (triggerContext.isExecuting && !Bypass_Settings__c.getInstance().Bypass_Triggers__c) {
+            SObjectFieldDefaults.apply(triggerContext.triggerNew, triggerContext);
+            SObjectValidator.validate(triggerContext.triggerNew, triggerContext);
+
             switch on triggerContext.operationType {
                 when BEFORE_INSERT {
-                    SObjectFieldDefaults.apply(triggerContext.triggerNew, triggerContext);
-                    SObjectValidator.validate(triggerContext.triggerNew, triggerContext);
                     triggerHandler.onBeforeInsert(triggerContext.triggerNew, triggerContext);
                 }
                 when BEFORE_UPDATE {
-                    SObjectFieldDefaults.apply(triggerContext.triggerNew, triggerContext);
-                    SObjectValidator.validate(triggerContext.triggerNew, triggerContext);
                     triggerHandler.onBeforeUpdate(triggerContext.triggerNew, triggerContext);
                 }
                 when BEFORE_DELETE {
-                    SObjectValidator.validate(triggerContext.triggerOld, triggerContext);
                     triggerHandler.onBeforeDelete(triggerContext.triggerOld, triggerContext);
                 }
                 when AFTER_INSERT {
-                    SObjectValidator.validate(triggerContext.triggerNew, triggerContext);
                     triggerHandler.onAfterInsert(triggerContext.triggerNew, triggerContext);
                 }
                 when AFTER_UPDATE {
-                    SObjectValidator.validate(triggerContext.triggerNew, triggerContext);
                     triggerHandler.onAfterUpdate(triggerContext.triggerNew, triggerContext);
                     triggerContext.cacheOldMap();
                 }
                 when AFTER_DELETE {
-                    SObjectValidator.validate(triggerContext.triggerOld, triggerContext);
                     triggerHandler.onAfterDelete(triggerContext.triggerOld, triggerContext);
                 }
                 when AFTER_UNDELETE {
-                    SObjectValidator.validate(triggerContext.triggerNew, triggerContext);
                     triggerHandler.onAfterUndelete(triggerContext.triggerNew, triggerContext);
                 }
             }

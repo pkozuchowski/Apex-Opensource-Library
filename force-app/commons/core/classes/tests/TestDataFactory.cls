@@ -126,7 +126,7 @@ public inherited sharing class TestDataFactory {
                 return flavoursFactories.get(flav).create();
 
             } else if (flav != Flavour.VANILLA) {
-                throw new FlavourException(String.format('SObjects custom flavour is not defined: {0}:{1}', new List<Object>{
+                throw new TestDataFactoryException(String.format('SObjects custom flavour is not defined: {0}:{1}', new List<Object>{
                         prototype.getSObjectType(), flav
                 }));
             }
@@ -135,6 +135,15 @@ public inherited sharing class TestDataFactory {
             base = prototype.clone();
         }
         return base;
+    }
+
+    /**
+     * Applies field overwrites from the input prototype onto base record.
+     */
+    private static void applyExtraFields(SObject basePrototype, Map<String, Object> extraFields) {
+        for (String field : extraFields.keySet()) {
+            basePrototype.put(field, extraFields.get(field));
+        }
     }
 
 
@@ -255,11 +264,8 @@ public inherited sharing class TestDataFactory {
          * @return instance of DataBuilder for subsequent calls.
          */
         public DataBuilder similarly(Integer count, SObject prototype) {
-            if (prototype == null) {
-                throw new BuilderException('Prototype cannot be null');
-
-            } else if (previousPrototype == null || prototype.getSObjectType() != previousPrototype.getSObjectType()) {
-                throw new BuilderException('similarly() can be only called after create method of the same sObject type.');
+            if (previousPrototype == null || prototype.getSObjectType() != previousPrototype.getSObjectType()) {
+                throw new TestDataFactoryException('similarly() can be only called after create() method of the same sObject type.');
             }
 
             applyExtraFields(previousPrototype, prototype.getPopulatedFieldsAsMap());
@@ -281,15 +287,6 @@ public inherited sharing class TestDataFactory {
          */
         public List<SObject> getRecords() {
             return records.deepClone(true);
-        }
-    }
-
-    /**
-     * Applies field overwrites from the input prototype onto base record.
-     */
-    private static void applyExtraFields(SObject basePrototype, Map<String, Object> extraFields) {
-        for (String field : extraFields.keySet()) {
-            basePrototype.put(field, extraFields.get(field));
         }
     }
 
@@ -342,8 +339,6 @@ public inherited sharing class TestDataFactory {
         }
     }
 
-    public class FlavourException extends Exception {
-    }
-    public class BuilderException extends Exception {
+    public class TestDataFactoryException extends Exception {
     }
 }

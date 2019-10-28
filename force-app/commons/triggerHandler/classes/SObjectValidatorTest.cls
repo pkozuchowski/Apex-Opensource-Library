@@ -36,9 +36,7 @@ private class SObjectValidatorTest {
                 new Account(Id = '001000000000002', Name = 'Test', BillingCountry = 'USA'),
                 new Account(Id = '001000000000003', Name = 'Test')
         };
-        TriggerContext tc = new TriggerContext();
-        tc.triggerNew = accounts;
-        tc.operationType = TriggerOperation.BEFORE_INSERT;
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
 
 
         Test.startTest();
@@ -60,13 +58,11 @@ private class SObjectValidatorTest {
     @IsTest
     static void testInvalidClass() {
         List<Account> accounts = new List<Account>{
-                new Account(),
-                new Account(),
-                new Account()
+                new Account(Id = '001000000000001'),
+                new Account(Id = '001000000000002'),
+                new Account(Id = '001000000000003')
         };
-        TriggerContext tc = new TriggerContext();
-        tc.triggerNew = accounts;
-        tc.operationType = TriggerOperation.BEFORE_DELETE;
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_DELETE, accounts, accounts);
 
 
         Test.startTest();

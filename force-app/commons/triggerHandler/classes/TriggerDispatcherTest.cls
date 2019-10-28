@@ -23,7 +23,7 @@
 */
 
 @IsTest(IsParallel=true)
-private class TriggerHandlerTest {
+private class TriggerDispatcherTest {
 
     /**
      * Emulation of AccountTriggerHandler class
@@ -112,43 +112,15 @@ private class TriggerHandlerTest {
     }
 
     private static void doUpdate(SObject newRecord, SObject oldRecord) {
-        TriggerContext beforeUpdateTC = new TriggerContext();
-        beforeUpdateTC.isExecuting = true;
-        beforeUpdateTC.isUpdate = true;
-        beforeUpdateTC.operationType = TriggerOperation.BEFORE_UPDATE;
-        beforeUpdateTC.triggerNew = new List<SObject>{newRecord};
-        beforeUpdateTC.triggerNewMap = new Map<Id, SObject>{newRecord.Id => newRecord};
-        beforeUpdateTC.triggerOldMap = new Map<Id, SObject>{
-                newRecord.Id => oldRecord
-        };
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), beforeUpdateTC);
-
-
-        TriggerContext afterUpdateTC = new TriggerContext();
-        afterUpdateTC.isExecuting = true;
-        afterUpdateTC.isUpdate = true;
-        afterUpdateTC.operationType = TriggerOperation.AFTER_UPDATE;
-        afterUpdateTC.triggerNew = new List<SObject>{newRecord};
-        afterUpdateTC.triggerNewMap = new Map<Id, SObject>{newRecord.Id => newRecord};
-        afterUpdateTC.triggerOldMap = new Map<Id, SObject>{
-                newRecord.Id => oldRecord
-        };
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), afterUpdateTC);
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), new TriggerContext(TriggerOperation.BEFORE_UPDATE, new List<SObject>{newRecord}, new List<SObject>{oldRecord}));
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), new TriggerContext(TriggerOperation.AFTER_UPDATE, new List<SObject>{newRecord}, new List<SObject>{oldRecord}));
     }
 
 
     @IsTest
     static void testCoverage() {
-        TriggerContext triggerContext = new TriggerContext();
-        triggerContext.isExecuting = true;
-        triggerContext.triggerNew = new List<Account>();
-        triggerContext.triggerOld = new List<Account>();
-        triggerContext.triggerNewMap = new Map<Id, Account>();
-        triggerContext.triggerOldMap = new Map<Id, Account>();
-
         for (TriggerOperation triggerOperation : TriggerOperation.values()) {
-            triggerContext.operationType = triggerOperation;
-            TriggerDispatcher.run(new TestAccountTriggerHandler(), triggerContext);
+            TriggerDispatcher.run(new TestAccountTriggerHandler(), new TriggerContext(triggerOperation, new List<SObject>(), new List<SObject>()));
         }
     }
 
@@ -169,10 +141,7 @@ private class TriggerHandlerTest {
                 Phone = '(541) 754-3011'
         );
 
-        TriggerContext ctx = new TriggerContext();
-        ctx.triggerNew = new List<SObject>{record};
-        ctx.triggerOldMap = new Map<Id, SObject>{record.Id => oldRecord};
-        ctx.isUpdate = true;
+        TriggerContext ctx = new TriggerContext(TriggerOperation.AFTER_UPDATE, new List<SObject>{record}, new List<SObject>{oldRecord});
 
         System.assertEquals(false, ctx.isChanged(record, Account.Name));
         System.assertEquals(true, ctx.isChanged(record, Account.BillingCountry));
@@ -190,7 +159,7 @@ private class TriggerHandlerTest {
         System.assertEquals(false, ctx.isChangedFrom(record, Account.Name, 'Washington'));
 
 
-        ctx.isUpdate = false;
+        ctx = new TriggerContext(TriggerOperation.AFTER_INSERT, new List<SObject>{record}, new List<SObject>{oldRecord});
         System.assertEquals(false, ctx.isChanged(record, Account.BillingCountry));
         System.assertEquals(false, ctx.isChangedTo(record, Account.BillingCity, 'New York'));
         System.assertEquals(false, ctx.isChangedFrom(record, Account.BillingCity, null));

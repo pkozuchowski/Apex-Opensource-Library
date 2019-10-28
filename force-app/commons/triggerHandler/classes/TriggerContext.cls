@@ -29,19 +29,21 @@
 public class TriggerContext {
     private final static Map<Map<Id, SObject>, Map<Id, SObject>> PREVIOUS_OLD_MAPS = new Map<Map<Id, SObject>, Map<Id, SObject>>();
 
-    @TestVisible public Boolean isExecuting { get; private set; }
-    @TestVisible public Boolean isInsert { get; private set; }
-    @TestVisible public Boolean isUpdate { get; private set; }
-    @TestVisible public Boolean isDelete { get; private set; }
-    @TestVisible public Boolean isUndelete { get; private set; }
-    @TestVisible public Boolean isBefore { get; private set; }
-    @TestVisible public Boolean isAfter { get; private set; }
-    @TestVisible public Integer size { get; private set; }
-    @TestVisible public TriggerOperation operationType { get; private set; }
-    @TestVisible public List<SObject> triggerNew { get; private set; }
-    @TestVisible public List<SObject> triggerOld { get; private set; }
-    @TestVisible public Map<Id, SObject> triggerNewMap { get; private set; }
-    @TestVisible public Map<Id, SObject> triggerOldMap {
+    public Boolean isExecuting { get; private set; }
+    public Boolean isInsert { get; private set; }
+    public Boolean isUpdate { get; private set; }
+    public Boolean isDelete { get; private set; }
+    public Boolean isUndelete { get; private set; }
+    public Boolean isBefore { get; private set; }
+    public Boolean isAfter { get; private set; }
+    public Integer size { get; private set; }
+    public TriggerOperation operationType { get; private set; }
+    public transient SObjectType sObjectType { get; private set; }
+    public List<SObject> triggerNew { get; private set; }
+    public List<SObject> triggerOld { get; private set; }
+    public List<SObject> triggerRecords { get; private set; }
+    public Map<Id, SObject> triggerNewMap { get; private set; }
+    public Map<Id, SObject> triggerOldMap {
         get;
         private set {
             if (value != null) {
@@ -51,18 +53,6 @@ public class TriggerContext {
         }
     }
     private Map<Id, SObject> originalOldMap;
-    @TestVisible public SObjectType sObjectType {
-        get {
-            if (Trigger.new != null) {
-                return triggerNew.getSObjectType();
-            } else if (Trigger.old != null) {
-                return triggerOld.getSObjectType();
-            }
-
-            return null;
-        }
-        private set;
-    }
 
     public TriggerContext() {
         this.isExecuting = Trigger.isExecuting == true;
@@ -78,6 +68,30 @@ public class TriggerContext {
         this.triggerNewMap = Trigger.newMap;
         this.triggerOldMap = Trigger.oldMap;
         this.triggerOld = triggerOldMap == null ? null : triggerOldMap.values();
+        this.triggerRecords = triggerOld != null ? triggerOld : triggerNew;
+        this.sObjectType = triggerRecords.getSObjectType();
+    }
+
+    @TestVisible
+    private TriggerContext(TriggerOperation operation, List<SObject> triggerNew, List<SObject> triggerOld) {
+        this.isExecuting = true;
+        this.operationType = operation;
+        this.isInsert = operation.name().contains('INSERT');
+        this.isUpdate = operation.name().contains('UPDATE');
+        this.isDelete = operation.name().contains('DELETE');
+        this.isUndelete = operation.name().contains('UNDELETE');
+        this.isBefore = operation.name().contains('BEFORE');
+        this.isAfter = operation.name().contains('AFTER');
+        this.size = triggerNew.size();
+        this.triggerRecords = triggerNew != null ? triggerNew : triggerOld;
+        this.sObjectType = triggerRecords.getSObjectType();
+
+        this.triggerNew = triggerNew;
+        this.triggerOld = triggerOld;
+        this.triggerOldMap = triggerOld == null ? null : new Map<Id, SObject>(triggerOld);
+        if (triggerNew != null && operation != TriggerOperation.BEFORE_INSERT) {
+            this.triggerNewMap = new Map<Id, SObject>(triggerNew);
+        }
     }
 
 

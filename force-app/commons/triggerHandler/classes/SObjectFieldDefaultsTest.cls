@@ -34,9 +34,7 @@ private class SObjectFieldDefaultsTest {
                 new Account(),
                 new Account()
         };
-        TriggerContext tc = new TriggerContext();
-        tc.triggerNew = accounts;
-        tc.operationType = TriggerOperation.BEFORE_INSERT;
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
 
 
         Test.startTest();
@@ -58,13 +56,11 @@ private class SObjectFieldDefaultsTest {
     @IsTest
     static void testBeforeUpdatePopulation() {
         List<Account> accounts = new List<Account>{
-                new Account(),
-                new Account(),
-                new Account()
+                new Account(Id = '001000000000000'),
+                new Account(Id = '001000000000001'),
+                new Account(Id = '001000000000002')
         };
-        TriggerContext tc = new TriggerContext();
-        tc.triggerNew = accounts;
-        tc.operationType = TriggerOperation.BEFORE_UPDATE;
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
 
 
         Test.startTest();
@@ -86,13 +82,11 @@ private class SObjectFieldDefaultsTest {
     @IsTest
     static void testInvalidClass() {
         List<Account> accounts = new List<Account>{
-                new Account(),
-                new Account(),
-                new Account()
+                new Account(Id = '001000000000000'),
+                new Account(Id = '001000000000001'),
+                new Account(Id = '001000000000002')
         };
-        TriggerContext tc = new TriggerContext();
-        tc.triggerNew = accounts;
-        tc.operationType = TriggerOperation.BEFORE_DELETE;
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_DELETE, accounts, accounts);
 
 
         Test.startTest();

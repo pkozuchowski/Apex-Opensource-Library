@@ -88,6 +88,7 @@ public class BatchSchedulableTest implements Database.Batchable<Integer> {
 
             System.assert(false);
         } catch (Exception ex) {
+            System.assert(ex instanceof TypeException);
         }
     }
 }

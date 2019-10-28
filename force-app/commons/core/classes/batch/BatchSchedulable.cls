@@ -60,11 +60,8 @@ public class BatchSchedulable implements Schedulable {
             Type batchType = Type.forName(name);
             return (Database.Batchable<SObject>) batchType.newInstance();
         } catch (Exception ex) {
-            throw new InitializationException('Failed to create instance of "' + name + '".\n' +
+            throw new TypeException('Failed to create instance of "' + name + '".\n' +
                     'Make sure that class name is correct and class has public accessor and no-args constructor.');
         }
-    }
-
-    public class InitializationException extends Exception {
     }
 }

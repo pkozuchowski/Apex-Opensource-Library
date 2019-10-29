@@ -1201,7 +1201,7 @@ public inherited sharing class Collection {
             return mapInstance;
         }
         public Object keySet() {
-            return mapInstance.keySet();
+            return mapInstance.keySet().clone();
         }
     }
 
@@ -1224,7 +1224,7 @@ public inherited sharing class Collection {
             return mapInstance;
         }
         public Object keySet() {
-            return mapInstance.keySet();
+            return mapInstance.keySet().clone();
         }
     }
 
@@ -1247,7 +1247,7 @@ public inherited sharing class Collection {
             return mapInstance;
         }
         public Object keySet() {
-            return mapInstance.keySet();
+            return mapInstance.keySet().clone();
         }
     }
 
@@ -1270,7 +1270,7 @@ public inherited sharing class Collection {
             return mapInstance;
         }
         public Object keySet() {
-            return mapInstance.keySet();
+            return mapInstance.keySet().clone();
         }
     }
 
@@ -1293,7 +1293,7 @@ public inherited sharing class Collection {
             return mapInstance;
         }
         public Object keySet() {
-            return mapInstance.keySet();
+            return mapInstance.keySet().clone();
         }
     }
 
@@ -1316,7 +1316,7 @@ public inherited sharing class Collection {
             return mapInstance;
         }
         public Object keySet() {
-            return mapInstance.keySet();
+            return mapInstance.keySet().clone();
         }
     }
 
@@ -1339,7 +1339,7 @@ public inherited sharing class Collection {
             return mapInstance;
         }
         public Object keySet() {
-            return mapInstance.keySet();
+            return mapInstance.keySet().clone();
         }
     }
 
@@ -1362,7 +1362,7 @@ public inherited sharing class Collection {
             return mapInstance;
         }
         public Object keySet() {
-            return mapInstance.keySet();
+            return mapInstance.keySet().clone();
         }
     }
 
@@ -1385,7 +1385,7 @@ public inherited sharing class Collection {
             return mapInstance;
         }
         public Object keySet() {
-            return mapInstance.keySet();
+            return mapInstance.keySet().clone();
         }
     }
 }

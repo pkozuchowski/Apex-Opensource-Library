@@ -90,4 +90,36 @@ private class ApexTest {
         List<Object> result = Apex.newListOfItemType(Opportunity.class);
         System.assert(result instanceof List<Opportunity>);
     }
+
+
+    /**
+     *@description
+     * Apex.getRunningClass() should return name of the class where this method was called.
+     */
+    @IsTest
+    static void testGetRunningClass() {
+        System.assertEquals('ApexTest', Apex.getRunningClass());
+        System.assertEquals('ApexTest.GetRunningClassExample', new GetRunningClassExample().doTestRunningClass());
+    }
+
+
+    /**
+     *@description
+     * Apex.getRunningClassAndMethod() should return name of class and  method where this method was called in className.methodName format.
+     */
+    @IsTest
+    static void testGetRunningClassAndMethod() {
+        System.assertEquals('ApexTest.testGetRunningClassAndMethod', Apex.getRunningClassAndMethod());
+        System.assertEquals('ApexTest.GetRunningClassExample.doTestRunningClassAndMethod', new GetRunningClassExample().doTestRunningClassAndMethod());
+    }
+
+    private class GetRunningClassExample {
+        public String doTestRunningClass() {
+            return Apex.getRunningClass();
+        }
+
+        public String doTestRunningClassAndMethod() {
+            return Apex.getRunningClassAndMethod();
+        }
+    }
 }

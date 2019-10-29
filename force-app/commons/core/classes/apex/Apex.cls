@@ -98,4 +98,40 @@ public with sharing class Apex {
             return null;
         }
     }
+
+
+    /**
+     * @return Name of running callee class
+     */
+    public static String getRunningClass() {
+        return getStackTraceLine(2)
+                .remove('Class.')
+                .substringBefore(':')
+                .substringBeforeLast('.');
+    }
+
+    /**
+     * @return Name of running callee class and method where this was called in stack trace format:
+     * "CalleeClass.method"
+     */
+    public static String getRunningClassAndMethod() {
+        return getStackTraceLine(2)
+                .remove('Class.')
+                .substringBefore(':');
+    }
+
+    private static String getStackTraceLine(Integer i) {
+        try {
+            Date d = (Date) Datetime.now();
+        } catch (Exception ex) {
+            String[] stackTrace = ex.getStackTraceString().split('\n');
+
+            return stackTrace[i]
+                    .remove('Class.')
+                    .substringBefore(':');
+        }
+        return '';
+    }
+
+
 }

@@ -26,13 +26,16 @@
  * Validates records with a set of specified rules.
  */
 public with sharing class SObjectValidator {
-    @TestVisible private static ValidationRuleSelector settingsSelector = new ValidationRuleSelector();
 
     /**
      * Validates triggered records with a set of validation rules specified in Custom Metadata.
      */
-    public static void validate(List<SObject> records, TriggerContext tc) {
-        validate(records, tc, getConfiguredValidationRules(tc));
+    public static void validate(List<SObject> records, TriggerContext triggerContext) {
+        validate(records, triggerContext, (List<TriggerValidationRule>) MetadataDefinedTriggerClasses.getInstances(
+                TriggerValidationRule__mdt.SObjectType,
+                triggerContext,
+                new List<TriggerValidationRule>()
+        ));
     }
 
 
@@ -46,45 +49,6 @@ public with sharing class SObjectValidator {
             for (SObject record : records) {
                 validationRule.validate(record, tc);
             }
-        }
-    }
-
-
-    /**
-     * @return ValidationRules defined in custom metadata.
-     */
-    private static List<TriggerValidationRule> getConfiguredValidationRules(TriggerContext tc) {
-        List<TriggerValidationRule> validationRules = new List<TriggerValidationRule>();
-
-        for (TriggerValidationRule__mdt setting : settingsSelector.getSettings(tc)) {
-            try {
-                Type ruleClass = Type.forName(setting.ApexClass__c);
-                TriggerValidationRule validationRule = (TriggerValidationRule) ruleClass.newInstance();
-                validationRules.add(validationRule);
-
-            } catch (Exception ex) {
-                throw new TypeException('Validation Rule "' + setting.DeveloperName + '" is invalid. ' +
-                        'Please check if corresponding class is public and implements ValidationRule interface.');
-            }
-        }
-        return validationRules;
-    }
-
-
-    /**
-     * Selector for custom metadata defined field defaults.
-     */
-    @TestVisible
-    private virtual class ValidationRuleSelector {
-        public virtual List<TriggerValidationRule__mdt> getSettings(TriggerContext tc) {
-            return [
-                    SELECT ApexClass__c, DeveloperName
-                    FROM TriggerValidationRule__mdt
-                    WHERE IsEnabled__c = TRUE
-                    AND SObject__c = :String.valueOf(tc.sObjectType)
-                    AND Trigger__c = :tc.operationType.name()
-                    ORDER BY Order__c NULLS LAST
-            ];
         }
     }
 }

@@ -26,64 +26,28 @@
  * Applies default values to records in trigger.
  */
 public with sharing class SObjectFieldDefaults {
-    @TestVisible private static FieldDefaultSelector settingsSelector = new FieldDefaultSelector();
 
     /**
      * Applies Field Default Rules defined in custom metadata.
      */
-    public static void apply(List<SObject> records, TriggerContext tc) {
-        apply(records, tc, getConfiguredFieldDefaultRules(tc));
+    public static void apply(List<SObject> records, TriggerContext triggerContext) {
+        apply(records, triggerContext, (List<TriggerFieldDefault>) MetadataDefinedTriggerClasses.getInstances(
+                TriggerFieldDefault__mdt.SObjectType,
+                triggerContext,
+                new List<TriggerFieldDefault>()
+        ));
     }
 
     /**
      * Applies given FieldDefaultRules to inserted or updated records.
      */
-    public static void apply(List<SObject> records, TriggerContext tc, List<TriggerFieldDefault> populators) {
-        for (TriggerFieldDefault fieldDefaultRule : populators) {
+    public static void apply(List<SObject> records, TriggerContext tc, List<TriggerFieldDefault> triggerFieldDefaults) {
+        for (TriggerFieldDefault fieldDefaultRule : triggerFieldDefaults) {
             fieldDefaultRule.prepare(records, tc);
 
             for (SObject record : records) {
                 fieldDefaultRule.populate(record, tc);
             }
-        }
-    }
-
-
-    /**
-     * @return ValidationRules defined in custom metadata.
-     */
-    private static List<TriggerFieldDefault> getConfiguredFieldDefaultRules(TriggerContext tc) {
-        List<TriggerFieldDefault> fieldDefaultsRules = new List<TriggerFieldDefault>();
-
-        for (TriggerFieldDefault__mdt setting : settingsSelector.getSettings(tc)) {
-            try {
-                Type ruleClass = Type.forName(setting.ApexClass__c);
-                TriggerFieldDefault rule = (TriggerFieldDefault) ruleClass.newInstance();
-                fieldDefaultsRules.add(rule);
-
-            } catch (Exception ex) {
-                throw new TypeException('Field Default Rule "' + setting.DeveloperName + '" is invalid. ' +
-                        'Please check if corresponding class is public and implements FieldDefaultRule interface.');
-            }
-        }
-
-        return fieldDefaultsRules;
-    }
-
-    /**
-     * Selector for custom metadata defined field defaults.
-     */
-    @TestVisible
-    private virtual class FieldDefaultSelector {
-        public virtual List<TriggerFieldDefault__mdt> getSettings(TriggerContext tc) {
-            return [
-                    SELECT ApexClass__c, DeveloperName
-                    FROM TriggerFieldDefault__mdt
-                    WHERE IsEnabled__c = TRUE
-                    AND SObject__c = :String.valueOf(tc.sObjectType)
-                    AND Trigger__c = :tc.operationType.name()
-                    ORDER BY Order__c NULLS LAST
-            ];
         }
     }
 }

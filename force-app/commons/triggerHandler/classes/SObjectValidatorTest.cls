@@ -37,10 +37,16 @@ private class SObjectValidatorTest {
                 new Account(Id = '001000000000003', Name = 'Test')
         };
         TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
+        MetadataDefinedTriggerClasses.mockResponse = new List<TriggerValidationRule__mdt>{
+                new TriggerValidationRule__mdt(
+                        IsEnabled__c = true,
+                        ApexClass__c = 'SObjectValidatorTest.TestAccountBillingCountryValidation',
+                        Trigger__c = 'BEFORE_UPDATE',
+                        SObject__c = 'Account')
+        };
 
 
         Test.startTest();
-        SObjectValidator.settingsSelector = new TestValidationRuleSelector();
         SObjectValidator.validate(accounts, tc);
         Test.stopTest();
 
@@ -63,15 +69,21 @@ private class SObjectValidatorTest {
                 new Account(Id = '001000000000003')
         };
         TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_DELETE, accounts, accounts);
+        MetadataDefinedTriggerClasses.mockResponse = new List<TriggerValidationRule__mdt>{
+                new TriggerValidationRule__mdt(
+                        DeveloperName = 'TestValidation',
+                        IsEnabled__c = true,
+                        ApexClass__c = 'SObjectValidatorTest.InvalidClass',
+                        Trigger__c = 'BEFORE_DELETE',
+                        SObject__c = 'Account'
+                )
+        };
+        Exception ex;
 
 
         Test.startTest();
-        SObjectValidator.settingsSelector = new TestValidationRuleSelector();
-        Exception ex;
-
         try {
             SObjectValidator.validate(accounts, tc);
-
         } catch (Exception e) {
             ex = e;
         }
@@ -79,25 +91,9 @@ private class SObjectValidatorTest {
 
 
         System.assert(ex instanceof TypeException);
+        System.assert(ex.getMessage().contains('TriggerValidationRule__mdt.TestValidation'));
     }
 
-
-    /**
-     * Since custom metadata cannot be inserted in unit tests, this selector implementation returns mock custom metadata.
-     */
-    private class TestValidationRuleSelector extends SObjectValidator.ValidationRuleSelector {
-        public override List<TriggerValidationRule__mdt> getSettings(TriggerContext tc) {
-            if (tc.operationType == TriggerOperation.BEFORE_INSERT) {
-                return new List<TriggerValidationRule__mdt>{
-                        new TriggerValidationRule__mdt(IsEnabled__c = true, ApexClass__c = 'SObjectValidatorTest.TestAccountBillingCountryValidation', Trigger__c = 'BEFORE_UPDATE', SObject__c = 'Account')
-                };
-            } else {
-                return new List<TriggerValidationRule__mdt>{
-                        new TriggerValidationRule__mdt(IsEnabled__c = true, ApexClass__c = 'SObjectValidatorTest.InvalidClass', Trigger__c = 'BEFORE_DELETE', SObject__c = 'Account')
-                };
-            }
-        }
-    }
 
     /**
      * Test Validation Rule.

@@ -23,7 +23,48 @@
 */
 
 @IsTest
-private class TestDataFactoryTest {
+private class TestDataBuilderTest {
+
+    /**
+     * Example of building related records through TestDataBuilder
+     */
+    @IsTest
+    static void testRelationshipBuilding() {
+        TestDataBuilder builder = new TestDataBuilder();
+
+        Test.startTest();
+        List<Account> accounts = builder
+                .create(10, new Account(
+                        Id = '001000000000000',
+                        Name = 'Test'
+                ))
+                .flush();
+
+        for (Account account : accounts) {
+            builder.create(2, new Contact(
+                    Id = '003000000000000',
+                    AccountId = account.Id
+            ));
+        }
+        List<Contact> contacts = builder.flush();
+
+
+        for (Contact contact : contacts) {
+            builder.create(new Case(
+                    ContactId = contact.Id,
+                    AccountId = contact.AccountId
+            ));
+        }
+        List<Case> cases = builder.flush();
+        Test.stopTest();
+
+
+        for (Case aCase : cases) {
+            System.assertNotEquals(null, aCase.ContactId);
+            System.assertNotEquals(null, aCase.AccountId);
+        }
+    }
+
 
     /**
      * TestDataFactory.create(SObject record) should create record with default values of vanilla flavour.
@@ -32,7 +73,7 @@ private class TestDataFactoryTest {
     @IsTest
     static void testCreateVanillaShouldCreateRecordWithDefaultValues() {
         Test.startTest();
-        User user = (User) TestDataFactory.create(new User(LastName = 'Johnson'));
+        User user = (User) new TestDataBuilder().create(new User(LastName = 'Johnson')).get(0);
         Test.stopTest();
 
 
@@ -53,7 +94,7 @@ private class TestDataFactoryTest {
     @IsTest
     static void testCreateCountOfVanillaShouldCreateRecordWithDefaultValues() {
         Test.startTest();
-        User[] users = TestDataFactory.create(10, new User(LastName = 'Johnson'));
+        User[] users = new TestDataBuilder().create(10, new User(LastName = 'Johnson')).getRecords();
         Test.stopTest();
 
 
@@ -76,7 +117,7 @@ private class TestDataFactoryTest {
     @IsTest
     static void testBuilderCreate() {
         Test.startTest();
-        User[] users = TestDataFactory.builder()
+        User[] users = new TestDataBuilder()
                 .create(new User(LastName = 'Johnson'))
                 .create(2, new User(LastName = 'Xian'))
                 .getRecords();
@@ -106,7 +147,7 @@ private class TestDataFactoryTest {
     @IsTest
     static void testBuilderSimilarly() {
         Test.startTest();
-        User[] users = TestDataFactory.builder()
+        User[] users = new TestDataBuilder()
                 .create(new User(LastName = 'Johnson', Email = 'similarly@example.com'))
                 .similarly(2, new User(LastName = 'Xian'))
                 .similarly(new User(LastName = 'Dong'))
@@ -135,7 +176,7 @@ private class TestDataFactoryTest {
 
         try {
             Test.startTest();
-            User[] users = TestDataFactory.builder()
+            User[] users = new TestDataBuilder()
                     .similarly(2, new User(LastName = 'Xian'))
                     .getRecords();
             Test.stopTest();
@@ -145,7 +186,7 @@ private class TestDataFactoryTest {
         }
 
         System.assertNotEquals(null, ex);
-        System.assert(ex instanceof TestDataFactory.TestDataFactoryException);
+        System.assert(ex instanceof TestDataBuilder.TestDataBuilderException);
     }
 
 
@@ -159,7 +200,7 @@ private class TestDataFactoryTest {
 
         try {
             Test.startTest();
-            User[] users = TestDataFactory.builder()
+            User[] users = new TestDataBuilder()
                     .create(new Account())
                     .similarly(new Contact())
                     .getRecords();
@@ -170,6 +211,6 @@ private class TestDataFactoryTest {
         }
 
         System.assertNotEquals(null, ex);
-        System.assert(ex instanceof TestDataFactory.TestDataFactoryException);
+        System.assert(ex instanceof TestDataBuilder.TestDataBuilderException);
     }
 }

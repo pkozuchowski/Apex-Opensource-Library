@@ -104,34 +104,56 @@ public with sharing class Apex {
      * @return Name of running callee class
      */
     public static String getRunningClass() {
-        return getStackTraceLine(2)
-                .remove('Class.')
-                .substringBefore(':')
-                .substringBeforeLast('.');
+        return getStackTrace()[0].apexClass;
     }
 
     /**
      * @return Name of running callee class and method where this was called in stack trace format:
      * "CalleeClass.method"
      */
-    public static String getRunningClassAndMethod() {
-        return getStackTraceLine(2)
-                .remove('Class.')
-                .substringBefore(':');
+    public static String getRunningMethod() {
+        return getStackTrace()[0].method;
     }
 
-    private static String getStackTraceLine(Integer i) {
+    /**
+     * @return Stack Trace Line of code where this method was called.
+     */
+    public static StackTraceLine getStackLocation() {
+        return getStackTrace()[0];
+    }
+
+    /**
+     * @return Stack Trace Lines without Apex class entry
+     */
+    public static StackTraceLine[] getStackTrace() {
+        List<String> lines = new List<String>();
         try {
             Date d = (Date) Datetime.now();
         } catch (Exception ex) {
-            String[] stackTrace = ex.getStackTraceString().split('\n');
-
-            return stackTrace[i]
-                    .remove('Class.')
-                    .substringBefore(':');
+            lines = ex.getStackTraceString().split('\n');
         }
-        return '';
+
+        List<StackTraceLine> stackTraceLines = new List<StackTraceLine>();
+        for (Integer i = 1; i < lines.size(); i++) {
+            if (!lines[i].contains('Class.Apex.')) {
+                stackTraceLines.add(new StackTraceLine(lines[i]));
+            }
+        }
+        return stackTraceLines;
     }
 
+    public class StackTraceLine {
+        @AuraEnabled public String apexClass { get; private set; }
+        @AuraEnabled public String method { get; private set; }
+        @AuraEnabled public Integer line { get; private set; }
+        @AuraEnabled public Integer column { get; private set; }
+
+        private StackTraceLine(String line) {
+            this.method = line.remove('Class.').substringBefore(':');
+            this.apexClass = method.substringBeforeLast('.');
+            this.line = Integer.valueOf(line.substringBetween('line ', ','));
+            this.column = Integer.valueOf(line.substringAfter('column '));
+        }
+    }
 
 }

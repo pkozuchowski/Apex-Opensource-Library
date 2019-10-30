@@ -27,6 +27,17 @@
  * When new required field is added to the sObject, this is the only class which will have to be changed to fix unit tests.
  */
 public inherited sharing class TestDataBuilder {
+
+    /**
+     * Flavours of SOBject. By using different flavours, it's possible to differentiate default values for one SObject type.
+     * For example if there are record types that require completely different defaults or when you want to prepopulate RecordTypeId
+     * at builder stage.
+     * This mechanism is not restricted to Record Types though.
+     *
+     * One flavour can be reused between many different SObjects.
+     * Example flavours for some companies could be as follows: VANILLA, ENTERPRISE, SME (Small Medium Enterprise), Domestic
+     * VANILLA flavour is the default, when flavour is not specified, builder falls back to vanilla.
+     */
     public enum Flavour {
         VANILLA
     }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Report xmlns="http://soap.sforce.com/2006/04/metadata">
+    <columns>
+        <field>Log__c$Name</field>
+    </columns>
+    <columns>
+        <field>Log__c$LoggingLevel__c</field>
+    </columns>
+    <columns>
+        <field>Log__c$ApexClass__c</field>
+    </columns>
+    <columns>
+        <field>Log__c$CreatedDate</field>
+    </columns>
+    <columns>
+        <field>Log__c$CreatedBy</field>
+    </columns>
+    <columns>
+        <field>Log__c$Message__c</field>
+    </columns>
+    <format>Tabular</format>
+    <name>Logs</name>
+    <params>
+        <name>co</name>
+        <value>1</value>
+    </params>
+    <reportType>Logs__c</reportType>
+    <scope>organization</scope>
+    <showDetails>true</showDetails>
+    <showGrandTotal>true</showGrandTotal>
+    <showSubTotals>true</showSubTotals>
+    <timeFrameFilter>
+        <dateColumn>Log__c$CreatedDate</dateColumn>
+        <interval>INTERVAL_LASTTHISMONTH</interval>
+    </timeFrameFilter>
+</Report>

@@ -101,7 +101,10 @@ public with sharing class Logger {
      */
     public void log(LoggingLevel loggingLevel, Exception ex, Id referenceId) {
         log(loggingLevel, new Log__c(
-                Message__c = ex.getMessage() + '\n' + ex.getStackTraceString(),
+                Message__c = ex.getMessage()
+                        + '\n\n'
+                        + ex.getStackTraceString()
+                        + (ex.getCause() != null ? ('\nCause:' + ex.getCause().getMessage() + '\n\n' + ex.getCause().getStackTraceString()) : ''),
                 ReferenceId__c = referenceId
         ));
     }
@@ -136,19 +139,11 @@ public with sharing class Logger {
      * @return Name of the first class in stack trace which is not Logger.
      */
     private String getApexClass() {
-        List<String> stackTrace = new List<String>();
+        List<Apex.StackTraceLine> stackTraceLines = Apex.getStackTrace();
 
-        try {
-            Date d = (Date) Datetime.now();
-        } catch (Exception ex) {
-            stackTrace = ex.getStackTraceString().split('\n');
-        }
-
-        for (String line : stackTrace) {
-            if (!line.contains('Class.Logger.')) {
-                return line.remove('Class.')
-                        .substringBeforeLast(':')
-                        .substringBeforeLast('.');
+        for (Integer i = 0; i < stackTraceLines.size(); i++) {
+            if (stackTraceLines[i].apexClass != 'Logger') {
+                return stackTraceLines[i].apexClass;
             }
         }
 

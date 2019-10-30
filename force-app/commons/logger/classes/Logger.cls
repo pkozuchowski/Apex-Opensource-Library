@@ -111,7 +111,7 @@ public with sharing class Logger {
      */
     public void log(LoggingLevel loggingLevel, Log__c log) {
         if (LoggingSettings.shouldCreateLog(loggingLevel)) {
-            log.ApexClass__c = Apex.getCallingClassName();
+            log.ApexClass__c = getApexClass();
             log.LoggingLevel__c = loggingLevel.name();
             logs.add(log);
 
@@ -129,5 +129,29 @@ public with sharing class Logger {
     public void flush() {
         insert logs;
         logs.clear();
+    }
+
+
+    /**
+     * @return Name of the first class in stack trace which is not Logger.
+     */
+    private String getApexClass() {
+        List<String> stackTrace = new List<String>();
+
+        try {
+            Date d = (Date) Datetime.now();
+        } catch (Exception ex) {
+            stackTrace = ex.getStackTraceString().split('\n');
+        }
+
+        for (String line : stackTrace) {
+            if (!line.contains('Class.Logger.')) {
+                return line.remove('Class.')
+                        .substringBeforeLast(':')
+                        .substringBeforeLast('.');
+            }
+        }
+
+        return '';
     }
 }

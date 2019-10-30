@@ -97,29 +97,32 @@ private class ApexTest {
      * Apex.getRunningClass() should return name of the class where this method was called.
      */
     @IsTest
-    static void testGetRunningClass() {
+    static void testGetRunning() {
         System.assertEquals('ApexTest', Apex.getRunningClass());
         System.assertEquals('ApexTest.GetRunningClassExample', new GetRunningClassExample().doTestRunningClass());
+        System.assertEquals('ApexTest.testGetRunning', Apex.getRunningMethod());
+        System.assertEquals('ApexTest.GetRunningClassExample.doTestRunningMethod', new GetRunningClassExample().doTestRunningMethod());
     }
-
 
     /**
      *@description
-     * Apex.getRunningClassAndMethod() should return name of class and  method where this method was called in className.methodName format.
+     * Apex.getStackLocation() should return information about place in code where this method was called (class, method, line, column)
      */
     @IsTest
-    static void testGetRunningClassAndMethod() {
-        System.assertEquals('ApexTest.testGetRunningClassAndMethod', Apex.getRunningClassAndMethod());
-        System.assertEquals('ApexTest.GetRunningClassExample.doTestRunningClassAndMethod', new GetRunningClassExample().doTestRunningClassAndMethod());
+    static void testGetStackLocation() {
+        Apex.StackTraceLine line = Apex.getStackLocation();
+        System.assertEquals('ApexTest', line.apexClass);
+        System.assertEquals('ApexTest.testGetStackLocation', line.method);
     }
+
 
     private class GetRunningClassExample {
         public String doTestRunningClass() {
             return Apex.getRunningClass();
         }
 
-        public String doTestRunningClassAndMethod() {
-            return Apex.getRunningClassAndMethod();
+        public String doTestRunningMethod() {
+            return Apex.getRunningMethod();
         }
     }
 }

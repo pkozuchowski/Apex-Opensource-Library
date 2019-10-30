@@ -159,7 +159,7 @@ public with sharing class Logger {
 
         for (Integer i = 0; i < stackTraceLines.size(); i++) {
             if (stackTraceLines[i].apexClass != 'Logger') {
-                return stackTraceLines[i].apexClass;
+                return stackTraceLines[i].method;
             }
         }
 

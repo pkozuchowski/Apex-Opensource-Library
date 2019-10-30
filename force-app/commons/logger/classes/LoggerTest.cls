@@ -44,7 +44,7 @@ private class LoggerTest {
 
         Log__c[] logs = [SELECT ApexClass__c,ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
         for (Log__c log : logs) {
-            System.assertEquals('LoggerTest', log.ApexClass__c);
+            System.assertEquals('LoggerTest.testLogMessageInImmediateMode', log.ApexClass__c);
             System.assertEquals(log.Message__c, log.LoggingLevel__c);
             System.assertEquals(null, log.ReferenceId__c);
         }
@@ -73,7 +73,7 @@ private class LoggerTest {
 
         Log__c[] logs = [SELECT ApexClass__c,ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
         for (Log__c log : logs) {
-            System.assertEquals('LoggerTest', log.ApexClass__c);
+            System.assertEquals('LoggerTest.testLogMessageInNonImmediateMode', log.ApexClass__c);
             System.assertEquals(log.Message__c, log.LoggingLevel__c);
             System.assertEquals(null, log.ReferenceId__c);
         }
@@ -106,7 +106,7 @@ private class LoggerTest {
 
         Log__c[] logs = [SELECT ApexClass__c,ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
         for (Log__c log : logs) {
-            System.assertEquals('LoggerTest', log.ApexClass__c);
+            System.assertEquals('LoggerTest.testLogRecord', log.ApexClass__c);
             System.assertEquals(log.Message__c, log.LoggingLevel__c);
             System.assertEquals('12345', log.ReferenceId__c);
         }
@@ -135,7 +135,7 @@ private class LoggerTest {
         Log__c log = [SELECT ApexClass__c,ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
         System.assert(log.Message__c.contains('Invalid conversion from runtime type Datetime to Date'), 'Message should contain exception message');
         System.assert(log.Message__c.contains('LoggerTest.testLogException'), 'Message should contain stack trace');
-        System.assertEquals('LoggerTest', log.ApexClass__c);
+        System.assertEquals('LoggerTest.testLogException', log.ApexClass__c);
         System.assertEquals(null, log.ReferenceId__c);
     }
 }

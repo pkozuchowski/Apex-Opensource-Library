@@ -128,9 +128,25 @@ public with sharing class Logger {
     /**
      * Publishes all recorded logs and clears log buffer.
      * When logging is done in-between callouts, flush should be made after all callouts are finished.
+     *
+     * Logs are translated to Platform Event and then back from events to records to maintain logs created before unhandled exception.
+     * This is mainly for AuraEnabled methods which may have to throw AuraHandledException for proper aura handling,
+     * but would not be able to save logs under normal circumstances.
      */
     public void flush() {
-        insert logs;
+        List<LoggingEvent__e> loggingEvents = new List<LoggingEvent__e>();
+
+        for (Log__c log : logs) {
+            loggingEvents.add(new LoggingEvent__e(
+                    ApexClass__c = log.ApexClass__c,
+                    LoggingLevel__c = log.LoggingLevel__c,
+                    Message__c = log.Message__c,
+                    ReferenceId__c = log.ReferenceId__c,
+                    UserId__c = UserInfo.getUserId()
+            ));
+        }
+
+        EventBus.publish(loggingEvents);
         logs.clear();
     }
 

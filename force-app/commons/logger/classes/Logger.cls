@@ -31,10 +31,19 @@ public with sharing class Logger {
     private Boolean immediate;
     private List<Log__c> logs = new List<Log__c>();
 
+    /**
+     * Default constructor works in immediate mode.
+     * This is preferred mode for controllers and async apex.
+     */
     public Logger() {
-        this(false);
+        this(true);
     }
 
+    /**
+     * @param immediate If true, flushes logs immediately after logging action.
+     * Immediate mode is preferred in situation of multiple subsequent callouts
+     * and when you want to reuse one logger (trigger?)
+     */
     public Logger(Boolean immediate) {
         this.immediate = immediate;
     }
@@ -101,12 +110,14 @@ public with sharing class Logger {
      * Logs log object with given logging level
      */
     public void log(LoggingLevel loggingLevel, Log__c log) {
-        log.ApexClass__c = Apex.getRunningClass();
-        log.LoggingLevel__c = loggingLevel.name();
-        logs.add(log);
+        if (LoggingSettings.shouldCreateLog(loggingLevel)) {
+            log.ApexClass__c = Apex.getCallingClassName();
+            log.LoggingLevel__c = loggingLevel.name();
+            logs.add(log);
 
-        if (immediate) {
-            flush();
+            if (immediate) {
+                flush();
+            }
         }
     }
 

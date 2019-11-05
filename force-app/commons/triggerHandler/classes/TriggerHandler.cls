@@ -31,12 +31,15 @@
  * with original old map. This handler uses new map from previous trigger run for optimization.
  * Logic classes will see only workflow field updates changes.
  */
-public interface TriggerHandler {
-    void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc);
-    void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc);
-    void onBeforeDelete(List<SObject> triggerOld, TriggerContext tc);
-    void onAfterInsert(List<SObject> triggerNew, TriggerContext tc);
-    void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc);
-    void onAfterDelete(List<SObject> triggerOld, TriggerContext tc);
-    void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc);
+public virtual class TriggerHandler  {
+    public virtual void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc){}
+    public virtual void onAfterInsert(List<SObject> triggerNew, TriggerContext tc){}
+
+    public virtual void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc){}
+    public virtual void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc){}
+
+    public virtual void onBeforeDelete(List<SObject> triggerOld, TriggerContext tc){}
+    public virtual void onAfterDelete(List<SObject> triggerOld, TriggerContext tc){}
+
+    public virtual void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc){}
 }

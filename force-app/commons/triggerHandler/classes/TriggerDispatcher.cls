@@ -27,7 +27,7 @@ public with sharing class TriggerDispatcher {
      * Runs trigger field defaults, validations and logic defined in custom metadata
      */
     public static void run() {
-        run(new LogiclessTriggerHandler());
+        run(new TriggerHandler());
     }
 
     /**
@@ -68,28 +68,6 @@ public with sharing class TriggerDispatcher {
                     triggerHandler.onAfterUndelete(triggerContext.triggerNew, triggerContext);
                 }
             }
-        }
-    }
-
-
-    /**
-     * Trigger handler without any logic.
-     * Only logic defined in custom metadata is run.
-     */
-    private class LogiclessTriggerHandler implements TriggerHandler {
-        public void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc) {
-        }
-        public void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
-        }
-        public void onBeforeDelete(List<SObject> triggerOld, TriggerContext tc) {
-        }
-        public void onAfterInsert(List<SObject> triggerNew, TriggerContext tc) {
-        }
-        public void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {
-        }
-        public void onAfterDelete(List<SObject> triggerOld, TriggerContext tc) {
-        }
-        public void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc) {
         }
     }
 }

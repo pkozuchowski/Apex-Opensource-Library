@@ -107,6 +107,13 @@ public class TriggerContext {
     }
 
     /**
+     * @return True if record is being inserted.
+     */
+    public Boolean isNew() {
+        return this.isInsert;
+    }
+
+    /**
      * @return True if trigger is in update context and if given field was changed on the given record.
      */
     public Boolean isChanged(SObject record, SObjectField field) {

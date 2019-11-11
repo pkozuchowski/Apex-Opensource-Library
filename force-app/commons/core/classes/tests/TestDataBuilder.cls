@@ -156,12 +156,12 @@ public inherited sharing class TestDataBuilder {
     }
 
     /**
-     * Inserts records stored in builder's internal storage.
-     * @return instance of TestDataBuilder for subsequent calls.
+     * Inserts records stored in builder's internal storage, clears buffer and returns records.
+     * @return inserted records
      */
-    public TestDataBuilder insertRecords() {
+    public SObject[] insertRecords() {
         insert records;
-        return this;
+        return this.flush();
     }
 
     /**

@@ -4,9 +4,11 @@
     <columns>MasterLabel</columns>
     <columns>IsEnabled__c</columns>
     <columns>SObject__c</columns>
+    <columns>Type__c</columns>
     <columns>Trigger__c</columns>
     <columns>ApexClass__c</columns>
     <columns>Order__c</columns>
+    <columns>Description__c</columns>
     <filterScope>Everything</filterScope>
     <label>All</label>
 </ListView>

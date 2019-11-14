@@ -24,6 +24,10 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>
+                <field>Type__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Required</behavior>
                 <field>Trigger__c</field>
             </layoutItems>
             <layoutItems>
@@ -86,7 +90,7 @@
     <showRunAssignmentRulesCheckbox>false</showRunAssignmentRulesCheckbox>
     <showSubmitAndAttachButton>false</showSubmitAndAttachButton>
     <summaryLayout>
-        <masterLabel>00h0E000001aPHS</masterLabel>
+        <masterLabel>00h1j000000hFFN</masterLabel>
         <sizeX>4</sizeX>
         <sizeY>0</sizeY>
         <summaryLayoutStyle>Default</summaryLayoutStyle>

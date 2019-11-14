@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Field</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+    ISPICKVAL(Type__c, &quot;Field Default&quot;),
+				NOT(OR(
+				    ISPICKVAL(Trigger__c, &quot;BEFORE_INSERT&quot;),
+								ISPICKVAL(Trigger__c, &quot;BEFORE_UPDATE&quot;)
+				))
+)</errorConditionFormula>
+    <errorDisplayField>Trigger__c</errorDisplayField>
+    <errorMessage>Field Default can be only executed on BEFORE INSERT and BEFORE UPDATE trigger.</errorMessage>
+</ValidationRule>

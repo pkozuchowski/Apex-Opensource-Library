@@ -35,18 +35,20 @@ private class SObjectFieldDefaultsTest {
                 new Account()
         };
         TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
-        MetadataDefinedTriggerClasses.mockResponse = new List<TriggerFieldDefault__mdt>{
-                new TriggerFieldDefault__mdt(
+        TriggerLogicSettingSelector.mockResponse = new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
                         IsEnabled__c = true,
                         ApexClass__c = 'SObjectFieldDefaultsTest.TestAccountNameDefault',
                         Trigger__c = 'BEFORE_INSERT',
-                        SObject__c = 'Account'
+                        SObject__c = 'Account',
+                        Type__c = 'Field Default'
                 ),
-                new TriggerFieldDefault__mdt(
+                new TriggerLogic__mdt(
                         IsEnabled__c = true,
                         ApexClass__c = 'SObjectFieldDefaultsTest.TestAccountBillingAddressDefault',
                         Trigger__c = 'BEFORE_INSERT',
-                        SObject__c = 'Account'
+                        SObject__c = 'Account',
+                        Type__c = 'Field Default'
                 )
         };
 
@@ -73,12 +75,13 @@ private class SObjectFieldDefaultsTest {
                 new Account(Id = '001000000000002')
         };
         TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
-        MetadataDefinedTriggerClasses.mockResponse = new List<TriggerFieldDefault__mdt>{
-                new TriggerFieldDefault__mdt(
+        TriggerLogicSettingSelector.mockResponse = new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
                         IsEnabled__c = true,
                         ApexClass__c = 'SObjectFieldDefaultsTest.TestAccountBillingAddressDefault',
                         Trigger__c = 'BEFORE_UPDATE',
-                        SObject__c = 'Account'
+                        SObject__c = 'Account',
+                        Type__c = 'Field Default'
                 )
         };
 
@@ -106,8 +109,14 @@ private class SObjectFieldDefaultsTest {
                 new Account(Id = '001000000000002')
         };
         TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_DELETE, accounts, accounts);
-        MetadataDefinedTriggerClasses.mockResponse = new List<TriggerFieldDefault__mdt>{
-                new TriggerFieldDefault__mdt(IsEnabled__c = true, ApexClass__c = 'SObjectFieldDefaultsTest.InvalidClass', Trigger__c = 'BEFORE_DELETE', SObject__c = 'Account')
+        TriggerLogicSettingSelector.mockResponse = new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
+                        IsEnabled__c = true,
+                        ApexClass__c = 'SObjectFieldDefaultsTest.InvalidClass',
+                        Trigger__c = 'BEFORE_DELETE',
+                        SObject__c = 'Account',
+                        Type__c = 'Field Default'
+                )
         };
         Exception ex;
 

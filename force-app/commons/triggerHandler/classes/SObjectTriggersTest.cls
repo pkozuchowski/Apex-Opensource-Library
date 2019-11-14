@@ -13,7 +13,7 @@ private class SObjectTriggersTest {
 
 
         Test.startTest();
-        MetadataDefinedTriggerClasses.mockResponse = new List<TriggerLogic__mdt>{
+        TriggerLogicSettingSelector.mockResponse = new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         IsEnabled__c = true,
                         ApexClass__c = 'SObjectTriggersTest.TestTriggerLogic',

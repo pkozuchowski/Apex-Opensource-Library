@@ -31,8 +31,8 @@ public with sharing class SObjectValidator {
      * Validates triggered records with a set of validation rules specified in Custom Metadata.
      */
     public static void validate(List<SObject> records, TriggerContext triggerContext) {
-        validate(records, triggerContext, (List<TriggerValidationRule>) MetadataDefinedTriggerClasses.getInstances(
-                TriggerValidationRule__mdt.SObjectType,
+        validate(records, triggerContext, (List<TriggerValidationRule>) TriggerLogicSettingSelector.getInstances(
+                'Validation Rule',
                 triggerContext,
                 new List<TriggerValidationRule>()
         ));

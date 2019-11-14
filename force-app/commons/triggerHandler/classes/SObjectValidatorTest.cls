@@ -37,12 +37,14 @@ private class SObjectValidatorTest {
                 new Account(Id = '001000000000003', Name = 'Test')
         };
         TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
-        MetadataDefinedTriggerClasses.mockResponse = new List<TriggerValidationRule__mdt>{
-                new TriggerValidationRule__mdt(
+        TriggerLogicSettingSelector.mockResponse = new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
                         IsEnabled__c = true,
                         ApexClass__c = 'SObjectValidatorTest.TestAccountBillingCountryValidation',
                         Trigger__c = 'BEFORE_UPDATE',
-                        SObject__c = 'Account')
+                        SObject__c = 'Account',
+                        Type__c = 'Validation Rule'
+                )
         };
 
 
@@ -69,13 +71,14 @@ private class SObjectValidatorTest {
                 new Account(Id = '001000000000003')
         };
         TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_DELETE, accounts, accounts);
-        MetadataDefinedTriggerClasses.mockResponse = new List<TriggerValidationRule__mdt>{
-                new TriggerValidationRule__mdt(
+        TriggerLogicSettingSelector.mockResponse = new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
                         DeveloperName = 'TestValidation',
                         IsEnabled__c = true,
                         ApexClass__c = 'SObjectValidatorTest.InvalidClass',
                         Trigger__c = 'BEFORE_DELETE',
-                        SObject__c = 'Account'
+                        SObject__c = 'Account',
+                        Type__c = 'Validation Rule'
                 )
         };
         Exception ex;
@@ -91,7 +94,7 @@ private class SObjectValidatorTest {
 
 
         System.assert(ex instanceof TypeException);
-        System.assert(ex.getMessage().contains('TriggerValidationRule__mdt.TestValidation'));
+        System.assert(ex.getMessage().contains('TriggerLogic__mdt.TestValidation'));
     }
 
 

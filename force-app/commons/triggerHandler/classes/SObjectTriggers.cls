@@ -4,8 +4,8 @@ public with sharing class SObjectTriggers {
      * Executes trigger logic classes defined in custom metadata.
      */
     public static void execute(List<SObject> records, TriggerContext triggerContext) {
-        execute(records, triggerContext, (List<TriggerLogic>) MetadataDefinedTriggerClasses.getInstances(
-                TriggerLogic__mdt.SObjectType,
+        execute(records, triggerContext, (List<TriggerLogic>) TriggerLogicSettingSelector.getInstances(
+                'Logic',
                 triggerContext,
                 new List<TriggerLogic>()
         ));

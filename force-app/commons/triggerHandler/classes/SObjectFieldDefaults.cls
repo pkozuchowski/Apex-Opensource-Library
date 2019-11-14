@@ -31,8 +31,8 @@ public with sharing class SObjectFieldDefaults {
      * Applies Field Default Rules defined in custom metadata.
      */
     public static void apply(List<SObject> records, TriggerContext triggerContext) {
-        apply(records, triggerContext, (List<TriggerFieldDefault>) MetadataDefinedTriggerClasses.getInstances(
-                TriggerFieldDefault__mdt.SObjectType,
+        apply(records, triggerContext, (List<TriggerFieldDefault>) TriggerLogicSettingSelector.getInstances(
+                'Field Default',
                 triggerContext,
                 new List<TriggerFieldDefault>()
         ));

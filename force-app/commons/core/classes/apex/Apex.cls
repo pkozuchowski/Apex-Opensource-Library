@@ -95,7 +95,7 @@ public with sharing class Apex {
         try {
             return (List<Object>) Type.forName('List<' + itemType + '>').newInstance();
         } catch (Exception ex) {
-            return null;
+            return fallback;
         }
     }
 

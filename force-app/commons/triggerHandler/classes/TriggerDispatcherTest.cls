@@ -28,28 +28,9 @@ private class TriggerDispatcherTest {
     /**
      * Emulation of AccountTriggerHandler class
      */
-    private class TestAccountTriggerHandler implements TriggerHandler {
-
-        public void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc) {
-        }
-
-        public void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
+    private class TestAccountTriggerHandler extends TriggerHandler {
+        public override void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
             new AccountAddressPopulator().copyBillingAddressToEmptyShippingAddress(triggerNew, tc);
-        }
-
-        public void onBeforeDelete(List<SObject> triggerOld, TriggerContext tc) {
-        }
-
-        public void onAfterInsert(List<SObject> triggerNew, TriggerContext tc) {
-        }
-
-        public void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {
-        }
-
-        public void onAfterDelete(List<SObject> triggerOld, TriggerContext tc) {
-        }
-
-        public void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc) {
         }
     }
 

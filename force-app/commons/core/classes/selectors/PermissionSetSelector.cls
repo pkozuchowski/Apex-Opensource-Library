@@ -60,4 +60,10 @@ public inherited sharing class PermissionSetSelector {
     public Id selectIdByName(String name) {
         return (Id) cache.retrieveFirstValue(PermissionSet.Name, name, PermissionSet.Id);
     }
+
+    public PermissionSet[] selectUserPermissionSets(Id userId) {
+        List<PermissionSetAssignment> assignments = [SELECT PermissionSetId FROM PermissionSetAssignment WHERE AssigneeId = :userId];
+        List<Id> permissionSetIds = (List<Id>) Collection.of(assignments).reduce().toList(PermissionSetAssignment.PermissionSetId);
+        return cache.retrieve(PermissionSet.Id, permissionSetIds);
+    }
 }

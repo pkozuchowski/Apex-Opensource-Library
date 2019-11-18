@@ -25,17 +25,22 @@
 private class PicklistEntriesTest {
     private static String defaultValue;
     private static List<String> values;
-    private static String testValue;
+    private static List<String> labels;
+    private static String testValue, testLabel;
 
     static {
         values = new List<String>();
-        for (PicklistEntry picklistEntry : Account.AccountSource.getDescribe().getPicklistValues()) {
-            if (picklistEntry.isActive()) {
-                values.add(picklistEntry.getValue());
-                testValue = PicklistEntry.getValue();
+        labels = new List<String>();
 
-                if (picklistEntry.isDefaultValue()) {
-                    defaultValue = picklistEntry.getValue();
+        for (PicklistEntry entry : Account.AccountSource.getDescribe().getPicklistValues()) {
+            if (entry.isActive()) {
+                values.add(entry.getValue());
+                labels.add(entry.getLabel());
+                testValue = entry.getValue();
+                testLabel = entry.getLabel();
+
+                if (entry.isDefaultValue()) {
+                    defaultValue = entry.getValue();
                 }
             }
         }
@@ -50,7 +55,9 @@ private class PicklistEntriesTest {
         System.assertEquals(false, accountSource.isRestrictedPicklist());
         System.assertEquals(defaultValue, accountSource.getDefaultValue());
         System.assertEquals(values, accountSource.getValues());
+        System.assertEquals(labels, accountSource.getLabels());
         System.assertEquals(true, accountSource.containsValue(testValue));
+        System.assertEquals(testLabel, accountSource.getLabel(testValue));
         System.assertEquals(true, accountSource.containsValue(testValue.toUpperCase()));
         System.assertEquals(true, accountSource.containsValue(testValue.toLowerCase()));
         System.assertEquals(false, accountSource.containsValue('PicklistEntriesTest'));

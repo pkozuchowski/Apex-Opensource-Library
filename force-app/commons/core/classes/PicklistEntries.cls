@@ -32,7 +32,8 @@ public with sharing class PicklistEntries {
     private transient List<PicklistEntry> entries;
     private String defaultValue;
     private List<String> values;
-    private transient Set<String> valuesSet;
+    private List<String> labels;
+    private transient Map<String, String> valueToLabel;
     private Boolean isRestricted;
     private Boolean isDependant;
 
@@ -47,19 +48,20 @@ public with sharing class PicklistEntries {
         DescribeFieldResult describe = field.getDescribe();
         this.entries = new List<PicklistEntry>();
         this.values = new List<String>();
-        this.valuesSet = new Set<String>();
+        this.labels = new List<String>();
+        this.valueToLabel = new Map<String, String>();
         this.isRestricted = describe.isRestrictedPicklist();
         this.isDependant = describe.isDependentPicklist();
 
-        for (PicklistEntry picklistEntry : describe.getPicklistValues()) {
-            if (picklistEntry.isActive()) {
-                this.entries.add(picklistEntry);
-                this.values.add(picklistEntry.getValue());
+        for (PicklistEntry entry : describe.getPicklistValues()) {
+            if (entry.isActive()) {
+                this.entries.add(entry);
+                this.values.add(entry.getValue());
+                this.labels.add(entry.getLabel());
+                this.valueToLabel.put(entry.getValue().toLowerCase(), entry.getLabel());
 
-                this.valuesSet.add(picklistEntry.getValue().toLowerCase());
-
-                if (picklistEntry.isDefaultValue()) {
-                    this.defaultValue = picklistEntry.getValue();
+                if (entry.isDefaultValue()) {
+                    this.defaultValue = entry.getValue();
                 }
             }
         }
@@ -84,7 +86,7 @@ public with sharing class PicklistEntries {
      * @return True, if picklist contains given value (case insensitive).
      */
     public Boolean containsValue(String value) {
-        return valuesSet.contains(value.toLowerCase());
+        return valueToLabel.keySet().contains(value.toLowerCase());
     }
 
     /**
@@ -95,10 +97,24 @@ public with sharing class PicklistEntries {
     }
 
     /**
-     * @return All active picklist values.
+     * @return API Names of all active picklist values.
      */
     public List<String> getValues() {
         return values;
+    }
+
+    /**
+     * @return Labels of all active picklist values.
+     */
+    public List<String> getLabels() {
+        return labels;
+    }
+
+    /**
+     * @return Label corresponding to the given picklist value.
+     */
+    public String getLabel(String value) {
+        return valueToLabel.get(value.toLowerCase());
     }
 
     /**

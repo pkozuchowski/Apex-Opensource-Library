@@ -26,7 +26,7 @@ private class SObjectTriggersTest {
 
 
         System.assertEquals(
-                tc.triggerNewMap.keySet(),
+                tc.getRecordsIds(),
                 processedIds,
                 'Trigger should create instance of TestTriggerLogic defined in custom metadata and the instance should process records.'
         );

@@ -40,34 +40,43 @@ public with sharing class TriggerDispatcher {
     @TestVisible
     private static void run(TriggerHandler triggerHandler, TriggerContext triggerContext) {
         if (triggerContext.isExecuting && !Bypass_Settings__c.getInstance().Bypass_Triggers__c) {
-            SObjectFieldDefaults.apply(triggerContext.triggerRecords, triggerContext);
-            SObjectValidator.validate(triggerContext.triggerRecords, triggerContext);
-            SObjectTriggers.execute(triggerContext.triggerRecords, triggerContext);
+            SObjectFieldDefaults.apply(triggerContext.getRecords(), triggerContext);
+            SObjectValidator.validate(triggerContext.getRecords(), triggerContext);
+            SObjectTriggers.execute(triggerContext.getRecords(), triggerContext);
 
             switch on triggerContext.operationType {
                 when BEFORE_INSERT {
-                    triggerHandler.onBeforeInsert(triggerContext.triggerNew, triggerContext);
+                    triggerHandler.onBeforeInsert(triggerContext.getRecords(), triggerContext);
                 }
                 when BEFORE_UPDATE {
-                    triggerHandler.onBeforeUpdate(triggerContext.triggerNew, triggerContext);
+                    triggerHandler.onBeforeUpdate(triggerContext.getRecords(), triggerContext);
                 }
                 when BEFORE_DELETE {
-                    triggerHandler.onBeforeDelete(triggerContext.triggerOld, triggerContext);
+                    triggerHandler.onBeforeDelete(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_INSERT {
-                    triggerHandler.onAfterInsert(triggerContext.triggerNew, triggerContext);
+                    triggerHandler.onAfterInsert(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_UPDATE {
-                    triggerHandler.onAfterUpdate(triggerContext.triggerNew, triggerContext);
-                    triggerContext.cacheOldMap();
+                    triggerHandler.onAfterUpdate(triggerContext.getRecords(), triggerContext);
+                    triggerContext.cacheOldMap(new Context());
                 }
                 when AFTER_DELETE {
-                    triggerHandler.onAfterDelete(triggerContext.triggerOld, triggerContext);
+                    triggerHandler.onAfterDelete(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_UNDELETE {
-                    triggerHandler.onAfterUndelete(triggerContext.triggerNew, triggerContext);
+                    triggerHandler.onAfterUndelete(triggerContext.getRecords(), triggerContext);
                 }
             }
+        }
+    }
+
+    /**
+     * Flag class which ensures TriggerContext.cacheOldMap() is called only in this context.
+     */
+    public class Context {
+        @TestVisible
+        private Context() {
         }
     }
 }

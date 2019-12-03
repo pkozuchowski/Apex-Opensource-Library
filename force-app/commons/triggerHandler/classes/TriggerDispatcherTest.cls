@@ -124,6 +124,8 @@ private class TriggerDispatcherTest {
 
         TriggerContext ctx = new TriggerContext(TriggerOperation.AFTER_UPDATE, new List<SObject>{record}, new List<SObject>{oldRecord});
 
+        System.assertEquals(false, ctx.isNew());
+        System.assertEquals(true, ctx.isChanged());
         System.assertEquals(false, ctx.isChanged(record, Account.Name));
         System.assertEquals(true, ctx.isChanged(record, Account.BillingCountry));
         System.assertEquals(true, ctx.isChanged(record, Account.BillingCity));

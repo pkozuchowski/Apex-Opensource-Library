@@ -39,11 +39,10 @@ public class TriggerContext {
     public Integer size { get; private set; }
     public TriggerOperation operationType { get; private set; }
     public transient SObjectType sObjectType { get; private set; }
-    public List<SObject> triggerNew { get; private set; }
-    public List<SObject> triggerOld { get; private set; }
-    public List<SObject> triggerRecords { get; private set; }
-    public Map<Id, SObject> triggerNewMap { get; private set; }
-    public Map<Id, SObject> triggerOldMap {
+    private List<SObject> triggerNew { get; private set; }
+    private List<SObject> triggerOld { get; private set; }
+    private Map<Id, SObject> triggerNewMap { get; private set; }
+    private Map<Id, SObject> triggerOldMap {
         get;
         private set {
             if (value != null) {
@@ -68,8 +67,7 @@ public class TriggerContext {
         this.triggerNewMap = Trigger.newMap;
         this.triggerOldMap = Trigger.oldMap;
         this.triggerOld = triggerOldMap == null ? null : triggerOldMap.values();
-        this.triggerRecords = triggerOld != null ? triggerOld : triggerNew;
-        this.sObjectType = triggerRecords.getSObjectType();
+        this.sObjectType = getRecords().getSObjectType();
     }
 
     @TestVisible
@@ -83,8 +81,6 @@ public class TriggerContext {
         this.isBefore = operation.name().contains('BEFORE');
         this.isAfter = operation.name().contains('AFTER');
         this.size = triggerNew.size();
-        this.triggerRecords = triggerNew != null ? triggerNew : triggerOld;
-        this.sObjectType = triggerRecords.getSObjectType();
 
         this.triggerNew = triggerNew;
         this.triggerOld = triggerOld;
@@ -92,8 +88,30 @@ public class TriggerContext {
         if (triggerNew != null && operation != TriggerOperation.BEFORE_INSERT) {
             this.triggerNewMap = new Map<Id, SObject>(triggerNew);
         }
+        this.sObjectType = getRecords().getSObjectType();
     }
 
+
+    /**
+     * @return Trigger.old in DELETE triggers and Trigger.new in all other cases
+     */
+    public SObject[] getRecords() {
+        return triggerNew != null ? triggerNew : triggerOld;
+    }
+
+    /**
+     * @return Trigger.oldMap in DELETE triggers and Trigger.newMap in all other cases
+     */
+    public Map<Id, SObject> getRecordsMap() {
+        return triggerNewMap != null ? triggerNewMap : triggerOldMap;
+    }
+
+    /**
+     * @return Set of record ids or empty set in BEFORE INSERT
+     */
+    public Set<Id> getRecordsIds() {
+        return getRecordsMap() != null ? getRecordsMap().keySet() : new Set<Id>();
+    }
 
     /**
      * @return Old version of the record in update trigger context and null in any other context.
@@ -111,6 +129,13 @@ public class TriggerContext {
      */
     public Boolean isNew() {
         return this.isInsert;
+    }
+
+    /**
+     * @return True if record is being updated.
+     */
+    public Boolean isChanged() {
+        return this.isUpdate;
     }
 
     /**
@@ -155,7 +180,24 @@ public class TriggerContext {
         }
     }
 
-    public void cacheOldMap() {
-        PREVIOUS_OLD_MAPS.put(originalOldMap, triggerNewMap);
+
+    /**
+     * @return True if trigger is in update context and if given field was changed from one value to another on the given record.
+     */
+    public Boolean isChangedFromTo(SObject record, SObjectField field, Object fromValue, Object toValue) {
+        if (isUpdate) {
+            Object newValue = record.get(field);
+            Object oldValue = getOld(record).get(field);
+
+            return newValue != oldValue && oldValue == fromValue && newValue == toValue;
+        } else {
+            return false;
+        }
+    }
+
+    public void cacheOldMap(TriggerDispatcher.Context ctx) {
+        if (ctx != null) {
+            PREVIOUS_OLD_MAPS.put(originalOldMap, triggerNewMap);
+        }
     }
 }

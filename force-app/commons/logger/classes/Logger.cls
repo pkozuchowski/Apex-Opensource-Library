@@ -25,7 +25,8 @@
 /**
  * Logs persistent messages in custom object records and emits platform event.
  *
- * @dependency core/Apex
+ * @dependency commmons.core.Apex
+ * @see Apex
  */
 public with sharing class Logger {
     private Boolean immediate;
@@ -52,38 +53,60 @@ public with sharing class Logger {
      * Logs message with INFO logging level
      */
     public void info(String message) {
-        log(LoggingLevel.INFO, message);
+        info(null, message);
+    }
+    public void info(String referenceId, String message) {
+        log(LoggingLevel.INFO, referenceId, message);
     }
     public void info(Log__c log) {
         log(LoggingLevel.INFO, log);
     }
-
+    public void info(String referenceId, Exception ex) {
+        log(LoggingLevel.INFO, referenceId, ex);
+    }
+    public void info(String referenceId, HttpRequest request, HttpResponse response) {
+        log(LoggingLevel.INFO, referenceId, request, response);
+    }
 
     /**
      * Logs message with WARNING logging level
      */
     public void warn(String message) {
-        log(LoggingLevel.WARN, message);
+        warn(null, message);
+    }
+    public void warn(String referenceId, String message) {
+        log(LoggingLevel.WARN, referenceId, message);
     }
     public void warn(Log__c log) {
         log(LoggingLevel.WARN, log);
     }
-
+    public void warn(String referenceId, Exception ex) {
+        log(LoggingLevel.WARN, referenceId, ex);
+    }
+    public void warn(String referenceId, HttpRequest request, HttpResponse response) {
+        log(LoggingLevel.WARN, referenceId, request, response);
+    }
 
     /**
      * Logs message with WARNING logging level
      */
     public void error(String message) {
-        log(LoggingLevel.ERROR, message);
+        error(null, message);
+    }
+    public void error(String referenceId, String message) {
+        log(LoggingLevel.ERROR, referenceId, message);
     }
     public void error(Log__c log) {
         log(LoggingLevel.ERROR, log);
     }
     public void error(Exception ex) {
-        log(LoggingLevel.ERROR, ex, null);
+        error(null, ex);
     }
-    public void error(Exception ex, Id referenceId) {
-        log(LoggingLevel.ERROR, ex, referenceId);
+    public void error(String referenceId, Exception ex) {
+        log(LoggingLevel.ERROR, referenceId, ex);
+    }
+    public void error(String referenceId, HttpRequest request, HttpResponse response) {
+        log(LoggingLevel.ERROR, referenceId, request, response);
     }
 
 
@@ -91,7 +114,11 @@ public with sharing class Logger {
      * Logs message with given logging level
      */
     public void log(LoggingLevel loggingLevel, String message) {
+        log(loggingLevel, null, message);
+    }
+    public void log(LoggingLevel loggingLevel, String referenceId, String message) {
         log(loggingLevel, new Log__c(
+                ReferenceId__c = referenceId,
                 Message__c = message
         ));
     }
@@ -99,15 +126,26 @@ public with sharing class Logger {
     /**
      * Logs exception with given logging level
      */
-    public void log(LoggingLevel loggingLevel, Exception ex, Id referenceId) {
+    public void log(LoggingLevel loggingLevel, String referenceId, Exception ex) {
         log(loggingLevel, new Log__c(
-                Message__c = ex.getMessage()
-                        + '\n\n'
-                        + ex.getStackTraceString()
-                        + (ex.getCause() != null ? ('\nCause:' + ex.getCause().getMessage() + '\n\n' + ex.getCause().getStackTraceString()) : ''),
+                Message__c = format(ex),
                 ReferenceId__c = referenceId
         ));
     }
+
+    /**
+     * Formats and logs Http request and response (null-safe).
+     */
+    public void log(LoggingLevel loggingLevel, String referenceId, HttpRequest request, HttpResponse response) {
+        log(loggingLevel, new Log__c(
+                ReferenceId__c = referenceId,
+                Message__c = String.join(new List<String>{
+                        format(request),
+                        format(response)
+                }, '\n\n')
+        ));
+    }
+
 
     /**
      * Logs log object with given logging level
@@ -164,5 +202,41 @@ public with sharing class Logger {
         }
 
         return '';
+    }
+
+    private String format(Exception ex) {
+        if (ex != null) {
+            return ex.getTypeName() + ': ' + ex.getMessage()
+                    + '\n' + ex.getStackTraceString().substringBefore('Caused by')
+                    + (ex.getCause() != null ? '\nCaused by\n' + format(ex.getCause()) : '');
+
+        } else {
+            return '';
+        }
+    }
+
+    private String format(HttpRequest request) {
+        if (request != null) {
+            return request.getMethod() + ' ' + request.getEndpoint() + '\n'
+                    + request.getBody();
+        } else {
+            return '';
+        }
+    }
+
+    private String format(HttpResponse response) {
+        if (response != null) {
+            List<String> requestHeaders = new List<String>();
+            for (String header : response.getHeaderKeys()) {
+                requestHeaders.add(header + ':' + response.getHeader(header));
+            }
+
+            return 'Response:\n'
+                    + response.getStatusCode() + ' ' + response.getStatus()
+                    + '\n' + String.join(requestHeaders, '\n')
+                    + '\n\n' + response.getBody();
+        } else {
+            return '';
+        }
     }
 }

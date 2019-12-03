@@ -127,15 +127,47 @@ private class LoggerTest {
         try {
             Date d = (Date) Datetime.now();
         } catch (Exception ex) {
+            logger.info('refId', ex);
+            logger.warn('refId', ex);
             logger.error(ex);
         }
         Test.stopTest();
 
 
-        Log__c log = [SELECT ApexClass__c,ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
+        Log__c log = [SELECT ApexClass__c,ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c LIMIT 1];
         System.assert(log.Message__c.contains('Invalid conversion from runtime type Datetime to Date'), 'Message should contain exception message');
         System.assert(log.Message__c.contains('LoggerTest.testLogException'), 'Message should contain stack trace');
         System.assertEquals('LoggerTest.testLogException', log.ApexClass__c);
-        System.assertEquals(null, log.ReferenceId__c);
+    }
+
+
+    /**
+     *@description
+     * Logger should be able to format and log HttpRequest and Responses
+     */
+    @IsTest
+    static void testLogHttp() {
+        Logger logger = new Logger();
+        HttpRequest request = new HttpRequest();
+        request.setMethod('GET');
+        request.setEndpoint('https://www.example.com');
+        request.setBody('{"value":"test"}');
+
+        HttpResponse response = new HttpResponse();
+        response.setStatus('OK');
+        response.setStatusCode(200);
+        response.setBody('success');
+
+
+        Test.startTest();
+        logger.info('refId', request, response);
+        logger.warn('refId', null, response);
+        logger.error('refId', request, null);
+        Test.stopTest();
+
+
+        Log__c log = [SELECT Message__c FROM Log__c WHERE LoggingLevel__c = 'INFO' LIMIT 1];
+        System.assert(log.Message__c.contains('200 OK'));
+        System.assert(log.Message__c.contains('{"value":"test"}'));
     }
 }

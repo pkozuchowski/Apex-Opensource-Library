@@ -1,36 +1,36 @@
 ({
     handleShowElement: function (cmp, event, helper) {
-        const component = cmp.get("v.component");
         const auraId = event.getParam('arguments').auraId;
+        const component = event.getParam('arguments').component;
 
-        helper.cssClass($A.util.removeClass, component.find(auraId), "slds-hide");
+        console.log(auraId, component, JSON.stringify(event.getParam('arguments')));
+
+        $A.util.removeClass(component.find(auraId), "slds-hide");
     },
 
     handleHideElement: function (cmp, event, helper) {
-        const component = cmp.get("v.component");
         const auraId = event.getParam('arguments').auraId;
+        const component = event.getParam('arguments').component;
 
-        helper.cssClass($A.util.addClass, component.find(auraId), "slds-hide");
+        $A.util.addClass(component.find(auraId), "slds-hide");
     },
 
     handleToggleElement: function (cmp, event, helper) {
-        const component = cmp.get("v.component");
         const auraId = event.getParam('arguments').auraId;
+        const component = event.getParam('arguments').component;
 
-        helper.cssClass($A.util.toggleClass, component.find(auraId), "slds-hide");
+        $A.util.toggleClass(component.find(auraId), "slds-hide");
     },
 
     handleSetTimeout: function (cmp, event, helper) {
-        const params = event.getParam('arguments');
-        const callback = params.callback;
-        const timeout = params.timeout;
+        const callback = event.getParam('arguments').callback;
+        const timeout = event.getParam('arguments').timeout;
 
         helper.setTimeout(callback, timeout);
     },
 
     handleApex: function (cmp, event, helper) {
-        const params = event.getParam('arguments');
-        const config = params.config;
+        const config = event.getParam('arguments').config;
 
         return helper.callApex(config);
     },

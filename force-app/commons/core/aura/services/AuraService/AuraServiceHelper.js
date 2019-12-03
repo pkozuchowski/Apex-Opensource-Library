@@ -1,17 +1,14 @@
 ({
-    cssClass: function (fn, element, styleClass) {
-        fn(element, styleClass);
-        $A.util.addClass(cmp.find(auraId), "slds-hide");
-    },
-
     setTimeout: function (callback, timeout) {
         window.setTimeout($A.getCallback(callback), timeout);
     },
 
     callApex: function (config) {
         return new Promise($A.getCallback(function (resolve, reject) {
-            const action = config.component.get(config.method);
+            const component = config.component;
+            const action = component.get(config.method);
             action.setParams(config.params || {});
+
             if (config.background) {
                 action.setBackground();
             }
@@ -24,6 +21,7 @@
                     reject(response.getError()[0]);
                 }
             });
+
             $A.enqueueAction(action);
         }));
     },

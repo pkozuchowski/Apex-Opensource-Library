@@ -170,4 +170,37 @@ private class LoggerTest {
         System.assert(log.Message__c.contains('200 OK'));
         System.assert(log.Message__c.contains('{"value":"test"}'));
     }
+
+
+    /**
+     *@description
+     * Logger should be able to format and log HttpRequest and Responses
+     */
+    @IsTest
+    static void testLogREST() {
+        Logger logger = new Logger();
+        RestRequest request = new RestRequest();
+        request.httpMethod = 'GET';
+        request.resourcePath = 'https://www.example.com?param=value';
+        request.addParameter('param', 'value');
+        request.requestBody = Blob.valueOf('request');
+
+        RestResponse response = new RestResponse();
+        response.statusCode = 200;
+        response.responseBody = Blob.valueOf('success');
+
+
+        Test.startTest();
+        logger.info('refId', request, response);
+        logger.warn('refId', null, response);
+        logger.error('refId', request, null);
+        Test.stopTest();
+
+
+        Log__c log = [SELECT Message__c FROM Log__c WHERE LoggingLevel__c = 'INFO' LIMIT 1];
+        System.assert(log.Message__c.contains('200'));
+        System.assert(log.Message__c.contains('success'));
+        System.assert(log.Message__c.contains('request'));
+        System.assert(log.Message__c.contains('"param" : "value"'));
+    }
 }

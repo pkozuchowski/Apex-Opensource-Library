@@ -25,10 +25,11 @@
 /**
  * Logs persistent messages in custom object records and emits platform event.
  *
- * @dependency commmons.core.Apex
- * @see Apex
+ * @dependency commmons.core.Apex @see Apex
+ * @dependency commmons.core.Formatter @see Formatter
  */
 public with sharing class Logger {
+    private final static Formatter formatter = new Formatter();
     private Boolean immediate;
     private List<Log__c> logs = new List<Log__c>();
 
@@ -67,6 +68,10 @@ public with sharing class Logger {
     public void info(String referenceId, HttpRequest request, HttpResponse response) {
         log(LoggingLevel.INFO, referenceId, request, response);
     }
+    public void info(String referenceId, RestRequest request, RestResponse response) {
+        log(LoggingLevel.INFO, referenceId, request, response);
+    }
+
 
     /**
      * Logs message with WARNING logging level
@@ -86,6 +91,10 @@ public with sharing class Logger {
     public void warn(String referenceId, HttpRequest request, HttpResponse response) {
         log(LoggingLevel.WARN, referenceId, request, response);
     }
+    public void warn(String referenceId, RestRequest request, RestResponse response) {
+        log(LoggingLevel.WARN, referenceId, request, response);
+    }
+
 
     /**
      * Logs message with WARNING logging level
@@ -108,7 +117,9 @@ public with sharing class Logger {
     public void error(String referenceId, HttpRequest request, HttpResponse response) {
         log(LoggingLevel.ERROR, referenceId, request, response);
     }
-
+    public void error(String referenceId, RestRequest request, RestResponse response) {
+        log(LoggingLevel.ERROR, referenceId, request, response);
+    }
 
     /**
      * Logs message with given logging level
@@ -128,7 +139,7 @@ public with sharing class Logger {
      */
     public void log(LoggingLevel loggingLevel, String referenceId, Exception ex) {
         log(loggingLevel, new Log__c(
-                Message__c = format(ex),
+                Message__c = formatter.format(ex),
                 ReferenceId__c = referenceId
         ));
     }
@@ -140,8 +151,21 @@ public with sharing class Logger {
         log(loggingLevel, new Log__c(
                 ReferenceId__c = referenceId,
                 Message__c = String.join(new List<String>{
-                        format(request),
-                        format(response)
+                        formatter.format(request),
+                        formatter.format(response)
+                }, '\n\n')
+        ));
+    }
+
+    /**
+     * Formats and logs Http request and response (null-safe).
+     */
+    public void log(LoggingLevel loggingLevel, String referenceId, RestRequest request, RestResponse response) {
+        log(loggingLevel, new Log__c(
+                ReferenceId__c = referenceId,
+                Message__c = String.join(new List<String>{
+                        formatter.format(request),
+                        formatter.format(response)
                 }, '\n\n')
         ));
     }
@@ -202,41 +226,5 @@ public with sharing class Logger {
         }
 
         return '';
-    }
-
-    private String format(Exception ex) {
-        if (ex != null) {
-            return ex.getTypeName() + ': ' + ex.getMessage()
-                    + '\n' + ex.getStackTraceString().substringBefore('Caused by')
-                    + (ex.getCause() != null ? '\nCaused by\n' + format(ex.getCause()) : '');
-
-        } else {
-            return '';
-        }
-    }
-
-    private String format(HttpRequest request) {
-        if (request != null) {
-            return request.getMethod() + ' ' + request.getEndpoint() + '\n'
-                    + request.getBody();
-        } else {
-            return '';
-        }
-    }
-
-    private String format(HttpResponse response) {
-        if (response != null) {
-            List<String> requestHeaders = new List<String>();
-            for (String header : response.getHeaderKeys()) {
-                requestHeaders.add(header + ':' + response.getHeader(header));
-            }
-
-            return 'Response:\n'
-                    + response.getStatusCode() + ' ' + response.getStatus()
-                    + '\n' + String.join(requestHeaders, '\n')
-                    + '\n\n' + response.getBody();
-        } else {
-            return '';
-        }
     }
 }

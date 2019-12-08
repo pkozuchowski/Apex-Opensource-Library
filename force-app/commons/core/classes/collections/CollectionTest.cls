@@ -465,15 +465,14 @@ private class CollectionTest {
 
 
         Test.startTest();
-        List<Opportunity> actual = (List<Opportunity>)
-                Collection.of(opportunities)
-                        .filter()
+        List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
+                .filterUsing(Collection.FilterBuilder()
                         .byField(Opportunity.NextStep).containing('Analysis')
                         .andAlso().byField(Opportunity.HasOpenActivity).equals(true)
                         .andAlso().byField(Opportunity.LastActivityDate).lessEqualsThan(Date.today())
                         .andAlso().byField(Opportunity.LastActivityDate).greaterThan(Date.today().addDays(-2))
                         .orElse().byField(Opportunity.NextStep).notEquals('Analysis')
-                        .then().get();
+                ).get();
         Test.stopTest();
 
 
@@ -499,13 +498,12 @@ private class CollectionTest {
 
 
         Test.startTest();
-        List<Opportunity> actual = (List<Opportunity>)
-                Collection.of(opportunities)
-                        .filter()
+        List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
+                .filterUsing(Collection.FilterBuilder()
                         .byField(Opportunity.NextStep).isIn(wantedSteps)
                         .andAlso().byField(Opportunity.NextStep).isNotIn(unwantedSteps)
                         .andAlso().byField(Opportunity.LastActivityDate).lessThan(Date.today())
-                        .then().get();
+                ).get();
         Test.stopTest();
 
 
@@ -533,15 +531,8 @@ private class CollectionTest {
             }
         }
 
-        List<Opportunity> actualAcceptedOpps = (List<Opportunity>) Collection.of(opportunities)
-                .filter()
-                .byField(Opportunity.StageName).isIn(acceptedStages)
-                .then().get();
-
-        List<Opportunity> actualRejectedOpps = (List<Opportunity>) Collection.of(opportunities)
-                .filter()
-                .byField(Opportunity.StageName).isNotIn(acceptedStages)
-                .then().get();
+        List<Opportunity> actualAcceptedOpps = (List<Opportunity>) Collection.of(opportunities).filter(Opportunity.StageName).isIn(acceptedStages).get();
+        List<Opportunity> actualRejectedOpps = (List<Opportunity>) Collection.of(opportunities).filter(Opportunity.StageName).isNotIn(acceptedStages).get();
 
         System.assertEquals(expectedAcceptedOpps, actualAcceptedOpps);
         System.assertEquals(expectedRejectedOpps, actualRejectedOpps);
@@ -569,9 +560,8 @@ private class CollectionTest {
 
         Test.startTest();
         Set<Id> actual = (Set<Id>) Collection.of(opportunities)
-                .filter()
-                .byField(Opportunity.AccountId).relatedTo(accounts.values())
-                .then().setOf(Opportunity.Id);
+                .filter(Opportunity.AccountId).relatedTo(accounts.values())
+                .setOf(Opportunity.Id);
         Test.stopTest();
 
 
@@ -598,7 +588,7 @@ private class CollectionTest {
 
 
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
-                .filter().alike(prototype).then().get();
+                .filterAlike(prototype).get();
         System.assertEquals(expected, actual);
     }
 
@@ -895,7 +885,7 @@ private class CollectionTest {
     @IsTest
     static void testFindReturnsFirstSObjectOfGivenFieldValue() {
         Opportunity expected = opportunities[1];
-        Opportunity actual = (Opportunity) Collection.of(opportunities).filter().byField(Opportunity.Probability).equals(0.1).getFirst();
+        Opportunity actual = (Opportunity) Collection.of(opportunities).filter(Opportunity.Probability).equals(0.1).getFirst();
         System.assertEquals(expected, actual);
     }
 
@@ -905,7 +895,7 @@ private class CollectionTest {
      */
     @IsTest
     static void testFindReturnsNullWhenThereAreNoItemsAcceptedByFilter() {
-        Opportunity actual = (Opportunity) Collection.of(opportunities).filter().byField(Opportunity.Probability).equals(1.5).getFirst();
+        Opportunity actual = (Opportunity) Collection.of(opportunities).filter(Opportunity.Probability).equals(1.5).getFirst();
 
         System.assertEquals(null, actual);
     }
@@ -914,7 +904,7 @@ private class CollectionTest {
     @IsTest
     static void testFindByFilter() {
         Opportunity expected = opportunities[5];
-        Opportunity actual = (Opportunity) Collection.of(opportunities).filter().byUsing(new OpportunityNameContainsFilter('5')).getFirst();
+        Opportunity actual = (Opportunity) Collection.of(opportunities).filterUsing(new OpportunityNameContainsFilter('5')).getFirst();
 
         System.assertEquals(expected, actual);
     }
@@ -955,8 +945,7 @@ private class CollectionTest {
 
         Map<Boolean, List<OpportunityWrapper2>> actual = (Map<Boolean, List<OpportunityWrapper2>>)
                 Collection.of(opportunities)
-                        .filter().byField(Opportunity.CreatedDate).greaterEqualsThan(Date.today().addDays(-3))
-                        .then()
+                        .filter(Opportunity.CreatedDate).greaterEqualsThan(Date.today().addDays(-3))
                         .forEach(new AppendIndexToOpportunityNameWorker())
                         .wrap(OpportunityWrapper2.class)
                         .groupBy(new WrapperByOpenActivityMapper());

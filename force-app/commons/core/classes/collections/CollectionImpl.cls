@@ -121,8 +121,25 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
 
-    public override FilterFacade filter() {
-        return new FilterFacadeImpl(this.items);
+    public override Collection.FieldFilter filter(SObjectField field) {
+        return new FieldFilterImpl(this, '' + field);
+    }
+    public override Collection.FieldFilter filter(String field) {
+        return new FieldFilterImpl(this, field);
+    }
+    public override Collection filterAlike(SObject prototype) {
+        return filterUsing(new FilterByPrototype(prototype));
+    }
+    public override Collection filterUsing(Filter filter) {
+        List<Object> filteredItems = Apex.newListOfTheSameType(items);
+
+        for (Integer i = 0, size = this.size(); i < size; i++) {
+            if (filter.accepts(items[i])) {
+                filteredItems.add(items[i]);
+            }
+        }
+
+        return Collection.of(filteredItems);
     }
 
 
@@ -340,71 +357,43 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
 
-    private class FilterFacadeImpl implements Collection.FilterFacade {
-        private List<Object> itemsToFilter;
+    public class FilterBuilderImpl implements Collection.FilterBuilder {
         private List<Filter> filters;
         private List<Boolean> isAND;
-        private Integer size;
 
-        public FilterFacadeImpl(List<Object> items) {
-            this.itemsToFilter = items;
-            this.size = items == null ? 0 : items.size();
+        public FilterBuilderImpl() {
             this.filters = new List<Filter>();
             this.isAND = new List<Boolean>();
         }
 
-        public FilterFacade byUsing(Filter filter) {
+        public FilterBuilder byUsing(Filter filter) {
             addFilter(filter);
             return this;
         }
 
-        public FieldFilterFacade byField(SObjectField field) {
-            assertSObjectCollection(itemsToFilter);
-            return new FieldFilterFacadeImpl(this, field);
+        public FilterBuilderFieldFilter byField(SObjectField field) {
+            return byField('' + field);
         }
 
-        public FilterFacade alike(SObject prototype) {
-            assertSObjectCollection(itemsToFilter);
+        public FilterBuilderFieldFilter byField(String field) {
+            return new FilterBuilderFieldFilterImpl(this, field);
+        }
+
+        public FilterBuilder alike(SObject prototype) {
             addFilter(new FilterByPrototype(prototype));
             return this;
         }
 
-        public FilterFacade andAlso() {
+        public FilterBuilder andAlso() {
             return this;
         }
 
-        public FilterFacade orElse() {
+        public FilterBuilder orElse() {
             this.isAND.add(false);
             return this;
         }
 
-        public Collection then() {
-            List<Object> filteredItems = Apex.newListOfTheSameType(itemsToFilter);
-
-            for (Integer i = 0, size = itemsToFilter.size(); i < size; i++) {
-                Object item = itemsToFilter[i];
-
-                if (isSatisfyingConditions(item)) {
-                    filteredItems.add(item);
-                }
-            }
-
-            return Collection.of(filteredItems);
-        }
-
-        public Object getFirst() {
-            for (Integer i = 0, size = itemsToFilter.size(); i < size; i++) {
-                Object item = itemsToFilter[i];
-
-                if (isSatisfyingConditions(item)) {
-                    return item;
-                }
-            }
-
-            return null;
-        }
-
-        private Boolean isSatisfyingConditions(Object item) {
+        public Boolean accepts(Object item) {
             Boolean accepted = true;
             Integer size = filters.size();
 
@@ -426,7 +415,7 @@ public inherited sharing class CollectionImpl extends Collection {
         }
 
         private void addFilter(Filter filter) {
-            assert(filters.size() <= 5, 'Too many filters degrade performance. Implement Filter instead for the best performance.');
+            assert(filters.size() <= 5, 'Too complex filter will degrade performance. Implement Filter instead for the best performance.');
             this.filters.add(filter);
 
             if (isAND.size() < filters.size()) {
@@ -438,62 +427,112 @@ public inherited sharing class CollectionImpl extends Collection {
     /**
      * Facade for Field value filters.
      */
-    private class FieldFilterFacadeImpl implements FieldFilterFacade {
-        private FilterFacade filterFacade;
-        private SObjectField field;
+    private class FilterBuilderFieldFilterImpl implements FilterBuilderFieldFilter {
+        private FilterBuilder filterFacade;
+        private String field;
 
-        private FieldFilterFacadeImpl(FilterFacade filterFacade, SObjectField field) {
+        private FilterBuilderFieldFilterImpl(FilterBuilder filterFacade, String field) {
             this.filterFacade = filterFacade;
             this.field = field;
         }
 
-        public FilterFacade equals(Object value) {
+        public FilterBuilder equals(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, EQUALS, value));
             return filterFacade;
         }
-        public FilterFacade notEquals(Object value) {
+        public FilterBuilder notEquals(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, NOT_EQUALS, value));
             return filterFacade;
         }
-        public FilterFacade greaterThan(Object value) {
+        public FilterBuilder greaterThan(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, GREATER_THAN, value));
             return filterFacade;
         }
-        public FilterFacade greaterEqualsThan(Object value) {
+        public FilterBuilder greaterEqualsThan(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, GREATER_EQUAL_THAN, value));
             return filterFacade;
         }
-        public FilterFacade lessThan(Object value) {
+        public FilterBuilder lessThan(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, LESS_THAN, value));
             return filterFacade;
         }
-        public FilterFacade lessEqualsThan(Object value) {
+        public FilterBuilder lessEqualsThan(Object value) {
             filterFacade.byUsing(new FilterByFieldValue(field, LESS_EQUAL_THAN, value));
             return filterFacade;
         }
-        public FilterFacade isIn(Set<Object> values) {
+        public FilterBuilder isIn(Set<Object> values) {
             filterFacade.byUsing(new FilterByFieldValues(field, true, values));
             return filterFacade;
         }
-        public FilterFacade isIn(List<Object> values) {
+        public FilterBuilder isIn(List<Object> values) {
             filterFacade.byUsing(new FilterByFieldValues(field, true, values));
             return filterFacade;
         }
-        public FilterFacade isNotIn(Set<Object> values) {
+        public FilterBuilder isNotIn(Set<Object> values) {
             filterFacade.byUsing(new FilterByFieldValues(field, false, values));
             return filterFacade;
         }
-        public FilterFacade isNotIn(List<Object> values) {
+        public FilterBuilder isNotIn(List<Object> values) {
             filterFacade.byUsing(new FilterByFieldValues(field, false, values));
             return filterFacade;
         }
-        public FilterFacade relatedTo(List<SObject> parents) {
+        public FilterBuilder relatedTo(List<SObject> parents) {
             filterFacade.byUsing(new FilterRelatedTo(parents, field));
             return filterFacade;
         }
-        public FilterFacade containing(String value) {
+        public FilterBuilder containing(String value) {
             filterFacade.byUsing(new FilterFieldContaining(field, value));
             return filterFacade;
+        }
+    }
+
+    /**
+    * Facade for Field value filters.
+    */
+    private class FieldFilterImpl implements FieldFilter {
+        private Collection collection;
+        private String field;
+
+        private FieldFilterImpl(Collection filterFacade, String field) {
+            this.collection = filterFacade;
+            this.field = field;
+        }
+
+        public Collection equals(Object value) {
+            return collection.filterUsing(new FilterByFieldValue(field, EQUALS, value));
+        }
+        public Collection notEquals(Object value) {
+            return collection.filterUsing(new FilterByFieldValue(field, NOT_EQUALS, value));
+        }
+        public Collection greaterThan(Object value) {
+            return collection.filterUsing(new FilterByFieldValue(field, GREATER_THAN, value));
+        }
+        public Collection greaterEqualsThan(Object value) {
+            return collection.filterUsing(new FilterByFieldValue(field, GREATER_EQUAL_THAN, value));
+        }
+        public Collection lessThan(Object value) {
+            return collection.filterUsing(new FilterByFieldValue(field, LESS_THAN, value));
+        }
+        public Collection lessEqualsThan(Object value) {
+            return collection.filterUsing(new FilterByFieldValue(field, LESS_EQUAL_THAN, value));
+        }
+        public Collection isIn(Set<Object> values) {
+            return collection.filterUsing(new FilterByFieldValues(field, true, values));
+        }
+        public Collection isIn(List<Object> values) {
+            return collection.filterUsing(new FilterByFieldValues(field, true, values));
+        }
+        public Collection isNotIn(Set<Object> values) {
+            return collection.filterUsing(new FilterByFieldValues(field, false, values));
+        }
+        public Collection isNotIn(List<Object> values) {
+            return collection.filterUsing(new FilterByFieldValues(field, false, values));
+        }
+        public Collection relatedTo(List<SObject> parents) {
+            return collection.filterUsing(new FilterRelatedTo(parents, field));
+        }
+        public Collection containing(String value) {
+            return collection.filterUsing(new FilterFieldContaining(field, value));
         }
     }
 
@@ -509,11 +548,11 @@ public inherited sharing class CollectionImpl extends Collection {
         private Comparator comparator;
         private final ComparisionResult expectedResult;
 
-        public FilterByFieldValue(SObjectField field, ComparisionResult expectedResult, Object value) {
-            this.field = '' + field;
+        public FilterByFieldValue(String field, ComparisionResult expectedResult, Object value) {
+            this.field = field;
             this.value = value;
             this.expectedResult = expectedResult;
-            this.comparator = Comparators.getByField(field);
+            this.comparator = Comparators.getForPrimitive(value);
         }
 
         public Boolean accepts(Object record) {
@@ -553,14 +592,14 @@ public inherited sharing class CollectionImpl extends Collection {
      */
     private class FilterByFieldValues implements Collection.Filter {
         private Set<Object> values;
-        private SObjectField field;
+        private String field;
         private Boolean valueIn;
 
-        public FilterByFieldValues(SObjectField field, Boolean valueIn, List<Object> values) {
+        public FilterByFieldValues(String field, Boolean valueIn, List<Object> values) {
             this(field, valueIn, new Set<Object>(values));
         }
 
-        public FilterByFieldValues(SObjectField field, Boolean valueIn, Set<Object> values) {
+        public FilterByFieldValues(String field, Boolean valueIn, Set<Object> values) {
             this.values = values;
             this.field = field;
             this.valueIn = valueIn;
@@ -576,9 +615,9 @@ public inherited sharing class CollectionImpl extends Collection {
      */
     private class FilterRelatedTo implements Collection.Filter {
         private Map<Id, SObject> parents;
-        private SObjectField relationshipField;
+        private String relationshipField;
 
-        public FilterRelatedTo(List<SObject> parents, SObjectField relationshipField) {
+        public FilterRelatedTo(List<SObject> parents, String relationshipField) {
             this.parents = new Map<Id, SObject>(parents);
             this.relationshipField = relationshipField;
         }
@@ -592,10 +631,10 @@ public inherited sharing class CollectionImpl extends Collection {
      * Filters SObject list to those related to given parents by given relationship field.
      */
     private class FilterFieldContaining implements Collection.Filter {
-        private SObjectField field;
+        private String field;
         private String value;
 
-        public FilterFieldContaining(SObjectField field, String value) {
+        public FilterFieldContaining(String field, String value) {
             this.field = field;
             this.value = value;
         }
@@ -688,7 +727,7 @@ public inherited sharing class CollectionImpl extends Collection {
         return FIELD_TYPE_MAP.get(field.getDescribe().getSoapType());
     }
 
-    public virtual class FieldMapper implements Collection.Mapper {
+    public class FieldMapper implements Collection.Mapper {
         private String field;
         private Type fieldType;
 

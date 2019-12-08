@@ -36,10 +36,13 @@
  * @see CollectionTest
  */
 public abstract inherited sharing class Collection {
-    public final static Boolean ANY_VALUE = true;
 
     public static Collection of(List<Object> items) {
         return new CollectionImpl(items);
+    }
+
+    public static FilterBuilder FilterBuilder() {
+        return new CollectionImpl.FilterBuilderImpl();
     }
 
     /**
@@ -85,13 +88,20 @@ public abstract inherited sharing class Collection {
 
 
     /**
-     * This method allows for building criteria to filter the collection or to find the first record satisfying the criteria.
-     * then() method returns filtered collection for given criteria and can be used in further chaining.
-     * getFirst() returns the first record satisfying criteria.
-     * For best best performance it's adviced to use single Filter implementation since byField() method has greater overhead
-     * scaled linearly with number of linked predicates.
+     * Filters collection by SObjects field values
      */
-    public abstract FilterFacade filter();
+    public abstract FieldFilter filter(SObjectField field);
+    public abstract FieldFilter filter(String field);
+
+    /**
+     * @return Collection of items which have fields populated similarly to given prototype record
+     */
+    public abstract Collection filterAlike(SObject prototype);
+
+    /**
+     * @return Collection of items filtered by Filter implementation
+     */
+    public abstract Collection filterUsing(Filter filter);
 
 
     /**
@@ -216,42 +226,49 @@ public abstract inherited sharing class Collection {
         Boolean accepts(Object item);
     }
 
+    public interface FieldFilter {
+        Collection equals(Object value);
+        Collection notEquals(Object value);
+        Collection greaterThan(Object value);
+        Collection greaterEqualsThan(Object value);
+        Collection lessThan(Object value);
+        Collection lessEqualsThan(Object value);
+        Collection isIn(Set<Object> values);
+        Collection isIn(List<Object> values);
+        Collection isNotIn(Set<Object> values);
+        Collection isNotIn(List<Object> values);
+        Collection relatedTo(List<SObject> parents);
+        Collection containing(String value);
+    }
 
-    public interface FilterFacade {
-        FilterFacade byUsing(Filter filter);
-        /**Checks if record has fields populated as provided example record.*/
-        FilterFacade alike(SObject prototype);
-        FieldFilterFacade byField(SObjectField field);
+    public interface FilterBuilder extends Filter {
+        FilterBuilder byUsing(Filter filter);
+        FilterBuilder alike(SObject prototype);
+        FilterBuilderFieldFilter byField(SObjectField field);
 
         /**
          * This method exists only for verbosity and can be omitted.
          * Predicates use AND by default.
          */
-        FilterFacade andAlso();
+        FilterBuilder andAlso();
 
         /** Former and following predicate are joined using OR connective.*/
-        FilterFacade orElse();
-
-        /** Evaluates filters and returns Collection of filtered items. */
-        Collection then();
-
-        /** @return first item satisfying conditions. */
-        Object getFirst();
+        FilterBuilder orElse();
     }
 
-    public interface FieldFilterFacade {
-        FilterFacade equals(Object value);
-        FilterFacade notEquals(Object value);
-        FilterFacade greaterThan(Object value);
-        FilterFacade greaterEqualsThan(Object value);
-        FilterFacade lessThan(Object value);
-        FilterFacade lessEqualsThan(Object value);
-        FilterFacade isIn(Set<Object> values);
-        FilterFacade isIn(List<Object> values);
-        FilterFacade isNotIn(Set<Object> values);
-        FilterFacade isNotIn(List<Object> values);
-        FilterFacade relatedTo(List<SObject> parents);
-        FilterFacade containing(String value);
+    public interface FilterBuilderFieldFilter {
+        FilterBuilder equals(Object value);
+        FilterBuilder notEquals(Object value);
+        FilterBuilder greaterThan(Object value);
+        FilterBuilder greaterEqualsThan(Object value);
+        FilterBuilder lessThan(Object value);
+        FilterBuilder lessEqualsThan(Object value);
+        FilterBuilder isIn(Set<Object> values);
+        FilterBuilder isIn(List<Object> values);
+        FilterBuilder isNotIn(Set<Object> values);
+        FilterBuilder isNotIn(List<Object> values);
+        FilterBuilder relatedTo(List<SObject> parents);
+        FilterBuilder containing(String value);
     }
 
 

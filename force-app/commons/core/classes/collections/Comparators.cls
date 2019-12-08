@@ -44,8 +44,8 @@ public with sharing class Comparators {
     public static Comparator getForPrimitive(Object o1) {
         if (o1 instanceof Id) return new StringComparator();
         if (o1 instanceof String) return new StringComparator();
-        if (o1 instanceof Date) return new DateComparator();
         if (o1 instanceof Datetime) return new DateTimeComparator();
+        if (o1 instanceof Date) return new DateComparator();
         if (o1 instanceof Time) return new TimeComparator();
         if (o1 instanceof Integer) return new IntegerComparator();
         if (o1 instanceof Decimal) return new DecimalComparator();

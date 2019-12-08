@@ -279,7 +279,7 @@ private class CollectionTest {
 
         Test.startTest();
         Map<Id, OpportunityWrapper> actual = (Map<Id, OpportunityWrapper>) Collection.of(opportunities).reduce().toMap(
-                new Collection.FieldMapper(Opportunity.Id),
+                new CollectionImpl.FieldMapper(Opportunity.Id),
                 new OpportunityWrapperMapper()
         );
         Test.stopTest();
@@ -350,7 +350,7 @@ private class CollectionTest {
 
         Map<String, Opportunity> actual = (Map<String, Opportunity>) Collection.of(opportunities)
                 .reduce()
-                .toMap(new Collection.ConcatenatedFieldsMapper(Opportunity.AccountId, Opportunity.OwnerId));
+                .toMap(new CollectionImpl.ConcatenatedFieldsMapper(Opportunity.AccountId, Opportunity.OwnerId));
 
         System.assertEquals(expected, actual);
     }

@@ -183,7 +183,7 @@ public inherited sharing class CollectionImpl extends Collection {
 
 
     public override List<Object> listOf(SObjectField field) {
-        return listOf('' + field, getSObjectFieldType(field));
+        return listOf('' + field, Apex.getSObjectFieldType(field));
     }
     public override List<Object> listOf(String field, Type fieldType) {
         assertSObjectCollection(items);
@@ -201,7 +201,7 @@ public inherited sharing class CollectionImpl extends Collection {
 
 
     public override Object setOf(SObjectField field) {
-        return setOf('' + field, getSObjectFieldType(field));
+        return setOf('' + field, Apex.getSObjectFieldType(field));
     }
     public override Object setOf(String field, Type fieldType) {
         assertSObjectCollection(items);
@@ -213,10 +213,10 @@ public inherited sharing class CollectionImpl extends Collection {
 
 
     public override Object mapBy(SObjectField field) {
-        return mapBy('' + field, getSObjectFieldType(field));
+        return mapBy('' + field, Apex.getSObjectFieldType(field));
     }
     public override Object mapBy(SObjectField keyField, SObjectField valueField) {
-        return mapBy('' + keyField, '' + valueField, getSObjectFieldType(keyField), getSObjectFieldType(valueField));
+        return mapBy('' + keyField, '' + valueField, Apex.getSObjectFieldType(keyField), Apex.getSObjectFieldType(valueField));
     }
     public override Object mapBy(String field, Type fieldType) {
         assertSObjectCollection(items);
@@ -245,10 +245,10 @@ public inherited sharing class CollectionImpl extends Collection {
 
 
     public override Object groupBy(SObjectField field) {
-        return groupBy('' + field, getSObjectFieldType(field));
+        return groupBy('' + field, Apex.getSObjectFieldType(field));
     }
     public override Object groupBy(SObjectField keyField, SObjectField valueField) {
-        return groupBy('' + keyField, '' + valueField, getSObjectFieldType(keyField), getSObjectFieldType(valueField));
+        return groupBy('' + keyField, '' + valueField, Apex.getSObjectFieldType(keyField), Apex.getSObjectFieldType(valueField));
     }
     public override Object groupBy(String field, Type fieldType) {
         assertSObjectCollection(items);
@@ -713,26 +713,15 @@ public inherited sharing class CollectionImpl extends Collection {
     * Mappers
     *
     * */
-    private final static Map<Schema.SoapType, Type> FIELD_TYPE_MAP = new Map<SoapType, Type>{
-            Schema.SoapType.ID => Id.class,
-            Schema.SoapType.INTEGER => Integer.class,
-            Schema.SoapType.BOOLEAN => Boolean.class,
-            Schema.SoapType.DATE => Date.class,
-            Schema.SoapType.DATETIME => Datetime.class,
-            Schema.SoapType.DOUBLE => Decimal.class,
-            Schema.SoapType.STRING => String.class,
-            Schema.SoapType.TIME => Time.class
-    };
-    private static Type getSObjectFieldType(SObjectField field) {
-        return FIELD_TYPE_MAP.get(field.getDescribe().getSoapType());
-    }
+
+
 
     public class FieldMapper implements Collection.Mapper {
         private String field;
         private Type fieldType;
 
         public FieldMapper(SObjectField field) {
-            this.fieldType = getSObjectFieldType(field);
+            this.fieldType = Apex.getSObjectFieldType(field);
             this.field = '' + field;
         }
 

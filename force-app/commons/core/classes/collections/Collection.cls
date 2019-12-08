@@ -95,13 +95,6 @@ public abstract inherited sharing class Collection {
 
 
     /**
-     * Reduces collection to the single value, for example
-     * List, Set, Map or Group of field values
-     */
-    public abstract ReduceFacade reduce();
-
-
-    /**
      * Fills in the list with number of clones of provided prototype record.
      * By default, clone is deep and Id, timestamps and autonumbers are not preserved.
      *
@@ -150,6 +143,54 @@ public abstract inherited sharing class Collection {
      * For each element in collection, Worker.forEach action is executed.
      */
     public abstract Collection forEach(Worker worker);
+
+    /**
+     * Reduces collection of objects to single output value returned by Reducer implementation.
+     * @param reducer Reducer interface implementation. @see Collections.Reducer
+     * @param initialValue collection/object to which input is reduced.
+     * @return accumulated value from all items
+     */
+    public abstract Object reduce(Reducer reducer, Object initialValue);
+
+    /**@return Sum of numeric field values*/
+    public abstract Decimal sum(SObjectField field);
+
+    /**@return Average of numeric field values*/
+    public abstract Decimal average(SObjectField field);
+
+    /**@return Minimum of numeric field values*/
+    public abstract Decimal min(SObjectField field);
+
+    /**@return Maximum of numeric field values*/
+    public abstract Decimal max(SObjectField field);
+
+    /**
+     * @return List<V>, V - value type of SObject field.
+     */
+    public abstract List<Object> listOf(SObjectField field);
+    public abstract List<Object> listOf(Mapper valueMapper);
+
+    /**
+     * @return Set<V>, V - value type of SObject field.
+     */
+    public abstract Object setOf(SObjectField field);
+    public abstract Object setOf(Mapper valueMapper);
+
+    /**
+     * @return Map<K, V>, K - value type, V - collection item type. LIFO - Last item in collection replace previous in map.
+     */
+    public abstract Object mapBy(SObjectField field);
+    public abstract Object mapBy(SObjectField keyField, SObjectField valueField);
+    public abstract Object mapBy(Mapper keyMapper);
+    public abstract Object mapBy(Mapper keyMapper, Mapper valueMapper);
+
+    /**
+     * @return Map<K, List<V>>, K - value type, V - collection item type
+     */
+    public abstract Object groupBy(SObjectField field);
+    public abstract Object groupBy(SObjectField keyField, SObjectField valueField);
+    public abstract Object groupBy(Mapper keyMapper);
+    public abstract Object groupBy(Mapper keyMapper, Mapper valueMapper);
 
 
     /*
@@ -223,36 +264,6 @@ public abstract inherited sharing class Collection {
     public interface Mapper {
         Type valueType();
         Object value(Object item);
-    }
-
-    public interface ReduceFacade {
-        /**
-         * Reduces collection of objects to single output value returned by Reducer implementation.
-         * @param reducer Reducer interface implementation. @see Collections.Reducer
-         * @param initialValue collection/object to which input is reduced.
-         * @return accumulated value from all items
-         */
-        Object to(Reducer reducer, Object initialValue);
-        Decimal toSum(SObjectField field);
-        Decimal toAverage(SObjectField field);
-        Decimal toMin(SObjectField field);
-        Decimal toMax(SObjectField field);
-
-        List<Object> toList(SObjectField field);
-        List<Object> toList(Mapper valueMapper);
-
-        Object toSet(SObjectField field);
-        Object toSet(Mapper valueMapper);
-
-        Object toMap(SObjectField field);
-        Object toMap(SObjectField keyField, SObjectField valueField);
-        Object toMap(Mapper keyMapper);
-        Object toMap(Mapper keyMapper, Mapper valueMapper);
-
-        Object toGroup(SObjectField field);
-        Object toGroup(SObjectField keyField, SObjectField valueField);
-        Object toGroup(Mapper keyMapper);
-        Object toGroup(Mapper keyMapper, Mapper valueMapper);
     }
 
 

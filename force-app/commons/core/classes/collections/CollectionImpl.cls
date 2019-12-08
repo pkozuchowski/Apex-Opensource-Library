@@ -125,10 +125,119 @@ public inherited sharing class CollectionImpl extends Collection {
         return new FilterFacadeImpl(this.items);
     }
 
-    public override ReduceFacade reduce() {
-        return new ReduceFacadeImpl(items);
+
+    public override Object reduce(Reducer reducer, Object initialValue) {
+        Object previousValue = initialValue;
+
+        for (Integer i = 0, size = this.size(); i < size; ++i) {
+            previousValue = reducer.reduce(previousValue, items[i], i);
+        }
+
+        return previousValue;
     }
 
+    public override Decimal sum(SObjectField field) {
+        return (Decimal) this.reduce(SUM.ofField(field), 0.0);
+    }
+
+    public override Decimal average(SObjectField field) {
+        return (Decimal) this.reduce(AVERAGE.ofField(field), null);
+    }
+
+    public override Decimal min(SObjectField field) {
+        return (Decimal) this.reduce(MIN.ofField(field), null);
+    }
+
+    public override Decimal max(SObjectField field) {
+        return (Decimal) this.reduce(MAX.ofField(field), 0.0);
+    }
+
+    public override List<Object> listOf(SObjectField field) {
+        assertSObjectCollection(items);
+        return listOf(new FieldMapper(field));
+    }
+
+    public override List<Object> listOf(Mapper valueMapper) {
+        List<Object> values = Apex.newListOfItemType(valueMapper.valueType());
+
+        for (Integer i = 0, size = size(); i < size; i++) {
+            values.add(valueMapper.value(items[i]));
+        }
+
+        return values;
+    }
+
+    public override Object setOf(SObjectField field) {
+        assertSObjectCollection(items);
+        return setOf(new FieldMapper(field));
+    }
+
+    public override Object setOf(Mapper valueMapper) {
+        return mapToUntypedMap(valueMapper, new ItemMapper(items)).keySet();
+    }
+
+    public override Object mapBy(SObjectField field) {
+        assertSObjectCollection(items);
+        return mapBy(new FieldMapper(field));
+    }
+
+    public override Object mapBy(SObjectField keyField, SObjectField valueField) {
+        assertSObjectCollection(items);
+        return mapBy(new FieldMapper(keyField), new FieldMapper(valueField));
+    }
+
+    public override Object mapBy(Mapper keyMapper) {
+        return mapBy(keyMapper, new ItemMapper(items));
+    }
+
+    public override Object mapBy(Mapper keyMapper, Mapper valueMapper) {
+        return mapToUntypedMap(keyMapper, valueMapper).toMap();
+    }
+
+    public override Object groupBy(SObjectField field) {
+        assertSObjectCollection(items);
+        return groupBy(new FieldMapper(field));
+    }
+
+    public override Object groupBy(SObjectField keyField, SObjectField valueField) {
+        assertSObjectCollection(items);
+        return groupBy(new FieldMapper(keyField), new FieldMapper(valueField));
+    }
+
+    public override Object groupBy(Mapper keyMapper) {
+        return groupBy(keyMapper, new ItemMapper(items));
+    }
+
+    public override Object groupBy(Mapper keyMapper, Mapper valueMapper) {
+        IMap groupMap = newMap(keyMapper.valueType(), Type.forName('List<' + valueMapper.valueType() + '>'));
+        List<Object> emptyList = Apex.newListOfItemType(valueMapper.valueType());
+
+        for (Integer i = 0, size = size(); i < size; i++) {
+            Object item = (Object) items[i];
+            Object key = keyMapper.value(item);
+            Object value = valueMapper.value(item);
+
+            if (!groupMap.containsKey(key)) {
+                groupMap.put(key, emptyList.clone());
+            }
+
+            List<Object> groupedRecords = (List<Object>) groupMap.get(key);
+            groupedRecords.add(value);
+        }
+
+        return groupMap.toMap();
+    }
+
+    private IMap mapToUntypedMap(Mapper keyMapper, Mapper valueMapper) {
+        IMap imap = newMap(keyMapper.valueType(), valueMapper.valueType());
+
+        for (Integer i = 0, size = this.size(); i < size; i++) {
+            Object item = items[i];
+            imap.put(keyMapper.value(item), valueMapper.value(item));
+        }
+
+        return imap;
+    }
 
     public override Collection wrap(Type wrapperType) {
         return wrap(new WrapperFactoryAdatper(wrapperType), wrapperType);
@@ -477,129 +586,6 @@ public inherited sharing class CollectionImpl extends Collection {
     /**
     * REDUCERS
     * */
-    public class ReduceFacadeImpl implements ReduceFacade {
-        private List<Object> items;
-        private Integer size;
-
-        private ReduceFacadeImpl(List<Object> items) {
-            this.items = items;
-            this.size = items == null ? 0 : items.size();
-        }
-
-        public Object to(Reducer reducer, Object initialValue) {
-            Object previousValue = initialValue;
-
-            for (Integer i = 0; i < size; ++i) {
-                previousValue = reducer.reduce(previousValue, items[i], i);
-            }
-
-            return previousValue;
-        }
-
-        public Decimal toSum(SObjectField field) {
-            return (Decimal) this.to(SUM.ofField(field), 0.0);
-        }
-
-        public Decimal toAverage(SObjectField field) {
-            return (Decimal) this.to(AVERAGE.ofField(field), null);
-        }
-
-        public Decimal toMin(SObjectField field) {
-            return (Decimal) this.to(MIN.ofField(field), null);
-        }
-
-        public Decimal toMax(SObjectField field) {
-            return (Decimal) this.to(MAX.ofField(field), 0.0);
-        }
-
-        public List<Object> toList(SObjectField field) {
-            assertSObjectCollection(items);
-            return toList(new FieldMapper(field));
-        }
-
-        public List<Object> toList(Mapper valueMapper) {
-            List<Object> values = Apex.newListOfItemType(valueMapper.valueType());
-
-            for (Integer i = 0; i < size; i++) {
-                values.add(valueMapper.value(items[i]));
-            }
-
-            return values;
-        }
-
-        public Object toSet(SObjectField field) {
-            assertSObjectCollection(items);
-            return toSet(new FieldMapper(field));
-        }
-
-        public Object toSet(Mapper valueMapper) {
-            return mapToUntypedMap(valueMapper, new ItemMapper(items)).keySet();
-        }
-
-        public Object toMap(SObjectField field) {
-            assertSObjectCollection(items);
-            return toMap(new FieldMapper(field));
-        }
-
-        public Object toMap(SObjectField keyField, SObjectField valueField) {
-            assertSObjectCollection(items);
-            return toMap(new FieldMapper(keyField), new FieldMapper(valueField));
-        }
-
-        public Object toMap(Mapper keyMapper) {
-            return toMap(keyMapper, new ItemMapper(items));
-        }
-
-        public Object toMap(Mapper keyMapper, Mapper valueMapper) {
-            return mapToUntypedMap(keyMapper, valueMapper).toMap();
-        }
-
-        public Object toGroup(SObjectField field) {
-            assertSObjectCollection(items);
-            return toGroup(new FieldMapper(field));
-        }
-
-        public Object toGroup(SObjectField keyField, SObjectField valueField) {
-            assertSObjectCollection(items);
-            return toGroup(new FieldMapper(keyField), new FieldMapper(valueField));
-        }
-
-        public Object toGroup(Mapper keyMapper) {
-            return toGroup(keyMapper, new ItemMapper(items));
-        }
-
-        public Object toGroup(Mapper keyMapper, Mapper valueMapper) {
-            IMap groupMap = newMap(keyMapper.valueType(), Type.forName('List<' + valueMapper.valueType() + '>'));
-            List<Object> emptyList = Apex.newListOfItemType(valueMapper.valueType());
-
-            for (Integer i = 0; i < size; i++) {
-                Object item = (Object) items[i];
-                Object key = keyMapper.value(item);
-                Object value = valueMapper.value(item);
-
-                if (!groupMap.containsKey(key)) {
-                    groupMap.put(key, emptyList.clone());
-                }
-
-                List<Object> groupedRecords = (List<Object>) groupMap.get(key);
-                groupedRecords.add(value);
-            }
-
-            return groupMap.toMap();
-        }
-
-        private IMap mapToUntypedMap(Mapper keyMapper, Mapper valueMapper) {
-            IMap imap = newMap(keyMapper.valueType(), valueMapper.valueType());
-
-            for (Integer i = 0; i < size; i++) {
-                Object item = items[i];
-                imap.put(keyMapper.value(item), valueMapper.value(item));
-            }
-
-            return imap;
-        }
-    }
-
     private abstract class ArithmeticReducer implements Reducer {
         private SObjectField field;
 

@@ -45,24 +45,16 @@ public abstract inherited sharing class Collection {
         return new CollectionImpl.FilterBuilderImpl();
     }
 
-    /**
-    * @return Salesforce List collection
-    * */
+    /** @return Salesforce List collection */
     public abstract List<Object> get();
 
-    /**
-     * @return First item or null if collection is empty
-     */
+    /** @return First item or null if collection is empty */
     public abstract Object getFirst();
 
-    /**
-     * @return Last item or null if collection is empty
-     */
+    /** @return Last item or null if collection is empty */
     public abstract Object getLast();
 
-    /**
-     * @return Nth item of collection.
-     */
+    /** @return Nth item of collection. */
     public abstract Object get(Integer i);
     public abstract Collection add(Integer index, Object element);
     public abstract Collection add(Object element);

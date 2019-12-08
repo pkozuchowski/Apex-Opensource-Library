@@ -487,7 +487,8 @@ private class CollectionTest {
         List<Opportunity> expected = new List<Opportunity>();
         for (Opportunity opp : opportunities) {
             Boolean accept =
-                    wantedSteps.indexOf(opp.NextStep) > -1
+                    opp.Name != null
+                            && wantedSteps.indexOf(opp.NextStep) > -1
                             && unwantedSteps.indexOf(opp.NextStep) == -1
                             && opp.LastActivityDate < Date.today();
 
@@ -500,7 +501,8 @@ private class CollectionTest {
         Test.startTest();
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
                 .filterUsing(Collection.FilterBuilder()
-                        .byField(Opportunity.NextStep).isIn(wantedSteps)
+                        .byField(Opportunity.Name).notEquals(null)
+                        .andAlso().byField(Opportunity.NextStep).isIn(wantedSteps)
                         .andAlso().byField(Opportunity.NextStep).isNotIn(unwantedSteps)
                         .andAlso().byField(Opportunity.LastActivityDate).lessThan(Date.today())
                 ).get();

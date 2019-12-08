@@ -225,12 +225,6 @@ public inherited sharing class CollectionImpl extends Collection {
             return this;
         }
 
-        public FilterFacade byUsing(Map<Id, SObject> oldMap, UpdateFilter filter) {
-            assertSObjectCollection(itemsToFilter);
-            addFilter(new UpdateFilterToFilterAdapter(oldMap, filter));
-            return this;
-        }
-
         public FieldFilterFacade byField(SObjectField field) {
             assertSObjectCollection(itemsToFilter);
             return new FieldFilterFacadeImpl(this, field);
@@ -476,68 +470,6 @@ public inherited sharing class CollectionImpl extends Collection {
         public Boolean accepts(Object record) {
             String fieldValue = (String) ((SObject) record).get(field);
             return fieldValue.contains(value);
-        }
-    }
-
-    /**
-     * Filter records that changed field value to other value.
-     * Developer can specify any value by using Collection.ANY_VALUE, keep in mind though
-     * that using "true" or "false" will not work.
-     *
-     * @example
-     * <pre>
-     *     new Collection(accounts).filter(new Collection.FilterFieldChanged(Opportunity.StageName, Collection.ANY_VALUE, 'Closed'));
-     * </pre>
-     */
-    public class FilterByFieldChanged implements Collection.UpdateFilter {
-        private Object fromValue;
-        private Object toValue;
-        private SObjectField field;
-
-        public FilterByFieldChanged(SObjectField field) {
-            this.field = field;
-            this.fromValue = this.toValue = Collection.ANY_VALUE;
-        }
-
-        public FilterByFieldChanged(SObjectField field, Object fromValue, Object toValue) {
-            this.field = field;
-            this.fromValue = fromValue;
-            this.toValue = toValue;
-        }
-
-        public Boolean accepts(SObject record, SObject old) {
-            Object currentValue = record.get(field),
-                    oldValue = old.get(field);
-
-            if (fromValue === Collection.ANY_VALUE && toValue === Collection.ANY_VALUE) {
-                return currentValue != oldValue;
-
-            } else if (fromValue !== Collection.ANY_VALUE && toValue === Collection.ANY_VALUE) {
-                return oldValue == fromValue;
-
-            } else if (fromValue === Collection.ANY_VALUE && toValue !== Collection.ANY_VALUE) {
-                return currentValue == toValue;
-
-            } else {
-                return oldValue == fromValue && currentValue == toValue;
-            }
-        }
-    }
-
-    /**
-     * Interface adapter from UpdateFilter to Filter
-     */
-    private class UpdateFilterToFilterAdapter implements Filter {
-        private Map<Id, SObject> oldMap;
-        private UpdateFilter updateFilter;
-
-        public UpdateFilterToFilterAdapter(Map<Id, SObject> oldMap, UpdateFilter updateFilter) {
-            this.oldMap = oldMap;
-            this.updateFilter = updateFilter;
-        }
-
-        public Boolean accepts(Object item) {
-            return updateFilter.accepts((SObject) item, oldMap.get(((SObject) item).Id));
         }
     }
 

@@ -167,16 +167,9 @@ public abstract inherited sharing class Collection {
         Boolean accepts(Object item);
     }
 
-    /**
-    * UpdateFilter determines whether updated record should be included into result set.
-    * */
-    public interface UpdateFilter {
-        Boolean accepts(SObject record, SObject oldRecord);
-    }
 
     public interface FilterFacade {
         FilterFacade byUsing(Filter filter);
-        FilterFacade byUsing(Map<Id, SObject> oldMap, UpdateFilter filter);
         /**Checks if record has fields populated as provided example record.*/
         FilterFacade alike(SObject prototype);
         FieldFilterFacade byField(SObjectField field);

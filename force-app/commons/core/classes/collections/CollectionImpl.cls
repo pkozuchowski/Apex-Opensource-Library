@@ -137,26 +137,41 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
     public override Decimal sum(SObjectField field) {
+        return sum('' + field);
+    }
+    public override Decimal sum(String field) {
         return (Decimal) this.reduce(SUM.ofField(field), 0.0);
     }
 
     public override Decimal average(SObjectField field) {
+        return average('' + field);
+    }
+    public override Decimal average(String field) {
         return (Decimal) this.reduce(AVERAGE.ofField(field), null);
     }
 
     public override Decimal min(SObjectField field) {
+        return min('' + field);
+    }
+    public override Decimal min(String field) {
         return (Decimal) this.reduce(MIN.ofField(field), null);
     }
 
     public override Decimal max(SObjectField field) {
+        return max('' + field);
+    }
+    public override Decimal max(String field) {
         return (Decimal) this.reduce(MAX.ofField(field), 0.0);
     }
 
-    public override List<Object> listOf(SObjectField field) {
-        assertSObjectCollection(items);
-        return listOf(new FieldMapper(field));
-    }
 
+    public override List<Object> listOf(SObjectField field) {
+        return listOf('' + field, getSObjectFieldType(field));
+    }
+    public override List<Object> listOf(String field, Type fieldType) {
+        assertSObjectCollection(items);
+        return listOf(new FieldMapper(field, fieldType));
+    }
     public override List<Object> listOf(Mapper valueMapper) {
         List<Object> values = Apex.newListOfItemType(valueMapper.valueType());
 
@@ -167,47 +182,68 @@ public inherited sharing class CollectionImpl extends Collection {
         return values;
     }
 
-    public override Object setOf(SObjectField field) {
-        assertSObjectCollection(items);
-        return setOf(new FieldMapper(field));
-    }
 
+    public override Object setOf(SObjectField field) {
+        return setOf('' + field, getSObjectFieldType(field));
+    }
+    public override Object setOf(String field, Type fieldType) {
+        assertSObjectCollection(items);
+        return setOf(new FieldMapper(field, fieldType));
+    }
     public override Object setOf(Mapper valueMapper) {
         return mapToUntypedMap(valueMapper, new ItemMapper(items)).keySet();
     }
 
+
     public override Object mapBy(SObjectField field) {
-        assertSObjectCollection(items);
-        return mapBy(new FieldMapper(field));
+        return mapBy('' + field, getSObjectFieldType(field));
     }
-
     public override Object mapBy(SObjectField keyField, SObjectField valueField) {
-        assertSObjectCollection(items);
-        return mapBy(new FieldMapper(keyField), new FieldMapper(valueField));
+        return mapBy('' + keyField, '' + valueField, getSObjectFieldType(keyField), getSObjectFieldType(valueField));
     }
-
+    public override Object mapBy(String field, Type fieldType) {
+        assertSObjectCollection(items);
+        return mapBy(new FieldMapper(field, fieldType));
+    }
+    public override Object mapBy(String keyField, String valueField, Type keyType, Type valueType) {
+        assertSObjectCollection(items);
+        return mapBy(new FieldMapper(keyField, keyType), new FieldMapper(valueField, valueType));
+    }
     public override Object mapBy(Mapper keyMapper) {
         return mapBy(keyMapper, new ItemMapper(items));
     }
-
     public override Object mapBy(Mapper keyMapper, Mapper valueMapper) {
         return mapToUntypedMap(keyMapper, valueMapper).toMap();
     }
+    private IMap mapToUntypedMap(Mapper keyMapper, Mapper valueMapper) {
+        IMap imap = newMap(keyMapper.valueType(), valueMapper.valueType());
+
+        for (Integer i = 0, size = this.size(); i < size; i++) {
+            Object item = items[i];
+            imap.put(keyMapper.value(item), valueMapper.value(item));
+        }
+
+        return imap;
+    }
+
 
     public override Object groupBy(SObjectField field) {
-        assertSObjectCollection(items);
-        return groupBy(new FieldMapper(field));
+        return groupBy('' + field, getSObjectFieldType(field));
     }
-
     public override Object groupBy(SObjectField keyField, SObjectField valueField) {
-        assertSObjectCollection(items);
-        return groupBy(new FieldMapper(keyField), new FieldMapper(valueField));
+        return groupBy('' + keyField, '' + valueField, getSObjectFieldType(keyField), getSObjectFieldType(valueField));
     }
-
+    public override Object groupBy(String field, Type fieldType) {
+        assertSObjectCollection(items);
+        return groupBy(new FieldMapper(field, fieldType));
+    }
+    public override Object groupBy(String keyField, String valueField, Type keyType, Type valueType) {
+        assertSObjectCollection(items);
+        return groupBy(new FieldMapper(keyField, keyType), new FieldMapper(valueField, valueType));
+    }
     public override Object groupBy(Mapper keyMapper) {
         return groupBy(keyMapper, new ItemMapper(items));
     }
-
     public override Object groupBy(Mapper keyMapper, Mapper valueMapper) {
         IMap groupMap = newMap(keyMapper.valueType(), Type.forName('List<' + valueMapper.valueType() + '>'));
         List<Object> emptyList = Apex.newListOfItemType(valueMapper.valueType());
@@ -228,21 +264,10 @@ public inherited sharing class CollectionImpl extends Collection {
         return groupMap.toMap();
     }
 
-    private IMap mapToUntypedMap(Mapper keyMapper, Mapper valueMapper) {
-        IMap imap = newMap(keyMapper.valueType(), valueMapper.valueType());
-
-        for (Integer i = 0, size = this.size(); i < size; i++) {
-            Object item = items[i];
-            imap.put(keyMapper.value(item), valueMapper.value(item));
-        }
-
-        return imap;
-    }
 
     public override Collection wrap(Type wrapperType) {
         return wrap(new WrapperFactoryAdatper(wrapperType), wrapperType);
     }
-
     public override Collection wrap(WrapperFactory wrapperFactory, Type wrapperType) {
         List<Object> wrappers = (List<Object>) Apex.newListOfItemType(wrapperType, new List<Object>());
 
@@ -259,7 +284,6 @@ public inherited sharing class CollectionImpl extends Collection {
         assertSObjectCollection(items);
         return orderBy(new CompareByField(field, order));
     }
-
     public override Collection orderBy(Comparator comparator) {
         List<ComparableObject> comparables = new List<ComparableObject>();
 
@@ -587,9 +611,9 @@ public inherited sharing class CollectionImpl extends Collection {
     * REDUCERS
     * */
     private abstract class ArithmeticReducer implements Reducer {
-        private SObjectField field;
+        private String field;
 
-        public Reducer ofField(SObjectField field) {
+        public Reducer ofField(String field) {
             this.field = field;
             return this;
         }
@@ -671,6 +695,11 @@ public inherited sharing class CollectionImpl extends Collection {
         public FieldMapper(SObjectField field) {
             this.fieldType = getSObjectFieldType(field);
             this.field = '' + field;
+        }
+
+        public FieldMapper(String field, Type fieldType) {
+            this.fieldType = fieldType;
+            this.field = field;
         }
 
         public Type valueType() {

@@ -662,6 +662,7 @@ private class CollectionTest {
         System.assertEquals(expected, actual);
     }
 
+
     /**
      *@description
      * List of Opportunities is reduced to max Amount

@@ -37,13 +37,13 @@
  */
 public inherited sharing class CollectionImpl extends Collection {
     private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
-    private final static ComparisionResult
-            EQUALS = new ComparisionEquals(),
-            NOT_EQUALS = new ComparisionNotEquals(),
-            GREATER_THAN = new ComparisionGreaterThan(),
-            GREATER_EQUAL_THAN = new ComparisionGreaterEqualsThan(),
-            LESS_THAN = new ComparisionLessThan(),
-            LESS_EQUAL_THAN = new ComparisionLessEqualsThan();
+    private final static Comparators.ComparisionResult
+            EQUALS = new Comparators.ComparisionEquals(),
+            NOT_EQUALS = new Comparators.ComparisionNotEquals(),
+            GREATER_THAN = new Comparators.ComparisionGreaterThan(),
+            GREATER_EQUAL_THAN = new Comparators.ComparisionGreaterEqualsThan(),
+            LESS_THAN = new Comparators.ComparisionLessThan(),
+            LESS_EQUAL_THAN = new Comparators.ComparisionLessEqualsThan();
 
     /*Flyweights for reducers*/
     private final static ArithmeticReducer
@@ -232,8 +232,8 @@ public inherited sharing class CollectionImpl extends Collection {
     public override Object mapBy(Mapper keyMapper, Mapper valueMapper) {
         return mapToUntypedMap(keyMapper, valueMapper).toMap();
     }
-    private IMap mapToUntypedMap(Mapper keyMapper, Mapper valueMapper) {
-        IMap imap = newMap(keyMapper.valueType(), valueMapper.valueType());
+    private UntypedMap mapToUntypedMap(Mapper keyMapper, Mapper valueMapper) {
+        UntypedMap imap = newMap(keyMapper.valueType(), valueMapper.valueType());
 
         for (Integer i = 0, size = this.size(); i < size; i++) {
             Object item = items[i];
@@ -262,7 +262,7 @@ public inherited sharing class CollectionImpl extends Collection {
         return groupBy(keyMapper, new ItemMapper(items));
     }
     public override Object groupBy(Mapper keyMapper, Mapper valueMapper) {
-        IMap groupMap = newMap(keyMapper.valueType(), Type.forName('List<' + valueMapper.valueType() + '>'));
+        UntypedMap groupMap = newMap(keyMapper.valueType(), Type.forName('List<' + valueMapper.valueType() + '>'));
         List<Object> emptyList = Apex.newListOfItemType(valueMapper.valueType());
 
         for (Integer i = 0, size = size(); i < size; i++) {
@@ -546,9 +546,9 @@ public inherited sharing class CollectionImpl extends Collection {
         private Object value;
         private String field;
         private Comparator comparator;
-        private final ComparisionResult expectedResult;
+        private final Comparators.ComparisionResult expectedResult;
 
-        public FilterByFieldValue(String field, ComparisionResult expectedResult, Object value) {
+        public FilterByFieldValue(String field, Comparators.ComparisionResult expectedResult, Object value) {
             this.field = field;
             this.value = value;
             this.expectedResult = expectedResult;
@@ -816,44 +816,6 @@ public inherited sharing class CollectionImpl extends Collection {
 
 
     /**
-    * COMPARATORS
-    * */
-    private interface ComparisionResult {
-        Boolean isTrue(Integer i);
-    }
-    private class ComparisionEquals implements ComparisionResult {
-        public Boolean isTrue(Integer i) {
-            return i == 0;
-        }
-    }
-    private class ComparisionNotEquals implements ComparisionResult {
-        public Boolean isTrue(Integer i) {
-            return i != 0;
-        }
-    }
-    private class ComparisionGreaterThan implements ComparisionResult {
-        public Boolean isTrue(Integer i) {
-            return i > 0;
-        }
-    }
-    private class ComparisionGreaterEqualsThan implements ComparisionResult {
-        public Boolean isTrue(Integer i) {
-            return i >= 0;
-        }
-    }
-    private class ComparisionLessThan implements ComparisionResult {
-        public Boolean isTrue(Integer i) {
-            return i < 0;
-        }
-    }
-    private class ComparisionLessEqualsThan implements ComparisionResult {
-        public Boolean isTrue(Integer i) {
-            return i <= 0;
-        }
-    }
-
-
-    /**
      * Compares records by values of the SObject field.
      */
     public class CompareByField implements Comparator {
@@ -893,7 +855,7 @@ public inherited sharing class CollectionImpl extends Collection {
     /*
     *
     *
-    * IMaps
+    * UntypedMapss
     *
     *
     * */
@@ -904,9 +866,9 @@ public inherited sharing class CollectionImpl extends Collection {
      * (unless we serialize and deserialize via JSON). It means, that we cannot have one generic method which would take
      * generic Map and operate on it, we would need separate methods for each type of key.
      * This wrapper is a workaround for this, it lets us use AbstractMap regardless of it's key type.
-     * Instead of having separate methods for each kind of map, we have IMap implementations for all primitive key types.
+     * Instead of having separate methods for each kind of map, we have UntypedMaps implementations for all primitive key types.
      */
-    public interface IMap {
+    public interface UntypedMap {
         Object toMap();
         Object keySet();
         void put(Object key, Object value);
@@ -914,7 +876,7 @@ public inherited sharing class CollectionImpl extends Collection {
         Boolean containsKey(Object key);
     }
 
-    private static IMap newMap(Type keyType, Type objectType) {
+    private static UntypedMap newMap(Type keyType, Type objectType) {
         Object sfMap = Type.forName('Map<' + keyType + ',' + objectType + '>').newInstance();
 
         if (keyType == Id.class) return new MapById((Map<Id, Object>) sfMap);
@@ -929,7 +891,7 @@ public inherited sharing class CollectionImpl extends Collection {
         return new MapByObject((Map<Object, Object>) sfMap);
     }
 
-    private class MapByObject implements IMap {
+    private class MapByObject implements UntypedMap {
         private Map<Object, Object> mapInstance;
 
         public MapByObject(Map<Object, Object> mapInstance) {
@@ -952,7 +914,7 @@ public inherited sharing class CollectionImpl extends Collection {
         }
     }
 
-    private class MapById implements IMap {
+    private class MapById implements UntypedMap {
         private Map<Id, Object> mapInstance;
 
         public MapById(Map<Id, Object> mapInstance) {
@@ -975,7 +937,7 @@ public inherited sharing class CollectionImpl extends Collection {
         }
     }
 
-    private class MapByString implements IMap {
+    private class MapByString implements UntypedMap {
         private Map<String, Object> mapInstance;
 
         public MapByString(Map<String, Object> mapInstance) {
@@ -998,7 +960,7 @@ public inherited sharing class CollectionImpl extends Collection {
         }
     }
 
-    private class MapByInteger implements IMap {
+    private class MapByInteger implements UntypedMap {
         private Map<Integer, Object> mapInstance;
 
         public MapByInteger(Map<Integer, Object> mapInstance) {
@@ -1021,7 +983,7 @@ public inherited sharing class CollectionImpl extends Collection {
         }
     }
 
-    private class MapByDecimal implements IMap {
+    private class MapByDecimal implements UntypedMap {
         private Map<Decimal, Object> mapInstance;
 
         public MapByDecimal(Map<Decimal, Object> mapInstance) {
@@ -1044,7 +1006,7 @@ public inherited sharing class CollectionImpl extends Collection {
         }
     }
 
-    private class MapByDate implements IMap {
+    private class MapByDate implements UntypedMap {
         private Map<Date, Object> mapInstance;
 
         public MapByDate(Map<Date, Object> mapInstance) {
@@ -1067,7 +1029,7 @@ public inherited sharing class CollectionImpl extends Collection {
         }
     }
 
-    private class MapByDatetime implements IMap {
+    private class MapByDatetime implements UntypedMap {
         private Map<Datetime, Object> mapInstance;
 
         public MapByDatetime(Map<Datetime, Object> mapInstance) {
@@ -1090,7 +1052,7 @@ public inherited sharing class CollectionImpl extends Collection {
         }
     }
 
-    private class MapByBoolean implements IMap {
+    private class MapByBoolean implements UntypedMap {
         private Map<Boolean, Object> mapInstance;
 
         public MapByBoolean(Map<Boolean, Object> mapInstance) {
@@ -1113,7 +1075,7 @@ public inherited sharing class CollectionImpl extends Collection {
         }
     }
 
-    private class MapByTime implements IMap {
+    private class MapByTime implements UntypedMap {
         private Map<Time, Object> mapInstance;
 
         public MapByTime(Map<Time, Object> mapInstance) {

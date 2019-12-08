@@ -125,4 +125,39 @@ public with sharing class Comparators {
             return 0;
         }
     }
+
+
+    public interface ComparisionResult {
+        Boolean isTrue(Integer i);
+    }
+    public class ComparisionEquals implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i == 0;
+        }
+    }
+    public class ComparisionNotEquals implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i != 0;
+        }
+    }
+    public class ComparisionGreaterThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i > 0;
+        }
+    }
+    public class ComparisionGreaterEqualsThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i >= 0;
+        }
+    }
+    public class ComparisionLessThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i < 0;
+        }
+    }
+    public class ComparisionLessEqualsThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i <= 0;
+        }
+    }
 }

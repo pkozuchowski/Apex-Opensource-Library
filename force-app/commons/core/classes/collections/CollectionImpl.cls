@@ -348,6 +348,36 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
 
+    public override Collection assert(Filter filter, String message) {
+        for (Integer i = 0, size = this.size(); i < size; i++) {
+            System.assert(filter.accepts(items[i]), message);
+        }
+
+        return this;
+    }
+
+    public override Collection assertEquals(SObjectField field, Object expected, String message) {
+        assertSObjectCollection(items);
+
+        for (Integer i = 0, size = this.size(); i < size; i++) {
+            SObject record = (SObject) items[i];
+            System.assertEquals(expected, record.get(field), message);
+        }
+
+        return this;
+    }
+
+    public override Collection assertNotEquals(SObjectField field, Object expected, String message) {
+        assertSObjectCollection(items);
+
+        for (Integer i = 0, size = this.size(); i < size; i++) {
+            SObject record = (SObject) items[i];
+            System.assertNotEquals(expected, record.get(field), message);
+        }
+
+        return this;
+    }
+
     private static void assertSObjectCollection(List<Object> items) {
         assert(items instanceof List<SObject>, 'Operation only applies to SObject collection.');
     }
@@ -713,7 +743,6 @@ public inherited sharing class CollectionImpl extends Collection {
     * Mappers
     *
     * */
-
 
 
     public class FieldMapper implements Collection.Mapper {

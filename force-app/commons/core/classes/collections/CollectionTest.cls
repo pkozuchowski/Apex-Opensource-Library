@@ -965,4 +965,17 @@ private class CollectionTest {
             return ((OpportunityWrapper2) item).opportunity.HasOpenActivity;
         }
     }
+
+
+    /**
+     *@description
+     * Assert performs assertion check on entire collection
+     */
+    @IsTest
+    static void testAssertion() {
+        Collection.of(opportunities)
+                .filter(Opportunity.NextStep).equals('Deal')
+                .assertEquals(Opportunity.NextStep, 'Deal', '')
+                .assertNotEquals(Opportunity.NextStep, 'Not deal', '');
+    }
 }

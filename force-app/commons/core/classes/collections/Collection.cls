@@ -206,6 +206,14 @@ public abstract inherited sharing class Collection {
     public abstract Collection forEach(Worker worker);
 
 
+    /**
+     * Simplifies batch unit testing by performing assertion on entire collection
+     */
+    public abstract Collection assert(Filter filter, String message);
+    public abstract Collection assertEquals(SObjectField field, Object value, String message);
+    public abstract Collection assertNotEquals(SObjectField field, Object value, String message);
+
+
     /*
     * INTERFACES
     * */

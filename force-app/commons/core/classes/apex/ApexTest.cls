@@ -28,6 +28,17 @@ private class ApexTest {
     public class ExampleClass {
     }
 
+    
+    /**
+     *@description
+     * getSObjectFieldType() should return type of value stored in SObject field
+     */
+    @IsTest
+    static void testGetSObjectFieldType(){
+        System.assertEquals(String.class, Apex.getSObjectFieldType(Account.Name));
+        System.assertEquals(Datetime.class, Apex.getSObjectFieldType(Account.CreatedDate));
+        System.assertEquals(Id.class, Apex.getSObjectFieldType(Account.CreatedById));
+    }
 
     /**
      *@description

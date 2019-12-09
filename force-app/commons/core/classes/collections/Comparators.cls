@@ -27,7 +27,7 @@ public with sharing class Comparators {
     public final static Map<Schema.SoapType, Comparator> comparatorsByFieldType = new Map<SoapType, Comparator>{
             SoapType.ID => new Comparators.StringComparator(),
             SoapType.STRING => new Comparators.StringComparator(),
-            SoapType.DATE => new Comparators.DateComparator(),
+            SoapType.DATE => new Comparators.DatetimeComparator(),
             SoapType.DATETIME => new Comparators.DateTimeComparator(),
             SoapType.INTEGER => new Comparators.IntegerComparator(),
             SoapType.DECIMAL => new Comparators.DecimalComparator(),
@@ -44,7 +44,6 @@ public with sharing class Comparators {
     public static Comparator getForPrimitive(Object o1) {
         if (o1 instanceof Id) return new StringComparator();
         if (o1 instanceof String) return new StringComparator();
-        if (o1 instanceof Date) return new DateComparator();
         if (o1 instanceof Datetime) return new DateTimeComparator();
         if (o1 instanceof Time) return new TimeComparator();
         if (o1 instanceof Integer) return new IntegerComparator();
@@ -67,14 +66,6 @@ public with sharing class Comparators {
         public Integer compare(Object thisItem, Object otherItem) {
             Boolean a = (Boolean) thisItem, b = (Boolean) otherItem;
             return a == b ? 0 : 1;
-        }
-    }
-    public class DateComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            Date a = (Date) thisItem, b = (Date) otherItem;
-            if (a > b) return 1;
-            if (a < b) return -1;
-            return 0;
         }
     }
     public class DateTimeComparator implements Comparator {
@@ -123,6 +114,41 @@ public with sharing class Comparators {
             if (a > b) return 1;
             if (a < b) return -1;
             return 0;
+        }
+    }
+
+
+    public interface ComparisionResult {
+        Boolean isTrue(Integer i);
+    }
+    public class ComparisionEquals implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i == 0;
+        }
+    }
+    public class ComparisionNotEquals implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i != 0;
+        }
+    }
+    public class ComparisionGreaterThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i > 0;
+        }
+    }
+    public class ComparisionGreaterEqualsThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i >= 0;
+        }
+    }
+    public class ComparisionLessThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i < 0;
+        }
+    }
+    public class ComparisionLessEqualsThan implements ComparisionResult {
+        public Boolean isTrue(Integer i) {
+            return i <= 0;
         }
     }
 }

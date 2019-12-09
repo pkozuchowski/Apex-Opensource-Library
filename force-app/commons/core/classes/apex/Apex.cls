@@ -27,7 +27,23 @@
  * @see ApexTest
  */
 public with sharing class Apex {
+    private final static Map<Schema.SoapType, Type> FIELD_TYPE_MAP = new Map<SoapType, Type>{
+            Schema.SoapType.ID => Id.class,
+            Schema.SoapType.INTEGER => Integer.class,
+            Schema.SoapType.BOOLEAN => Boolean.class,
+            Schema.SoapType.DATE => Date.class,
+            Schema.SoapType.DATETIME => Datetime.class,
+            Schema.SoapType.DOUBLE => Decimal.class,
+            Schema.SoapType.STRING => String.class,
+            Schema.SoapType.TIME => Time.class
+    };
 
+    /**
+     * @return Value type of SObject field
+     */
+    public static Type getSObjectFieldType(SObjectField field) {
+        return FIELD_TYPE_MAP.get(field.getDescribe().getSoapType());
+    }
 
     /*
      * @return returns Type of given list single element

@@ -37,10 +37,16 @@
  */
 public abstract inherited sharing class Collection {
 
+    /**
+     * Constructs collection instance for given items
+     */
     public static Collection of(List<Object> items) {
         return new CollectionImpl(items);
     }
 
+    /**
+     * Filter Builder allows for building more complex filtering conditions and joining them using AND and OR operation
+     */
     public static FilterBuilder FilterBuilder() {
         return new CollectionImpl.FilterBuilderImpl();
     }
@@ -62,6 +68,7 @@ public abstract inherited sharing class Collection {
     public abstract Collection addAll(Set<Object> elements);
     public abstract Collection remove(Integer index);
     public abstract Collection removeLast();
+    public abstract Collection clear();
 
     /**
      * @return true when collection is not null or empty, false otherwise.

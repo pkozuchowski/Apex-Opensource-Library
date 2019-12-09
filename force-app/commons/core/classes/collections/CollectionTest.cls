@@ -124,6 +124,7 @@ private class CollectionTest {
         System.assertEquals(null, Collection.of(null).getLast());
         System.assertEquals(null, Collection.of(new List<Opportunity>()).getFirst());
         System.assertEquals(null, Collection.of(new List<Opportunity>()).getLast());
+        System.assertEquals(0, Collection.of(opportunities).clear().size());
     }
 
 

@@ -108,6 +108,13 @@ public inherited sharing class CollectionImpl extends Collection {
         return this;
     }
 
+    public override Collection clear(){
+        if(isNotEmpty()){
+            items.clear();
+        }
+        return this;
+    }
+
     public override Boolean isNotEmpty() {
         return !isEmpty();
     }
@@ -886,7 +893,7 @@ public inherited sharing class CollectionImpl extends Collection {
      * This wrapper is a workaround for this, it lets us use AbstractMap regardless of it's key type.
      * Instead of having separate methods for each kind of map, we have UntypedMaps implementations for all primitive key types.
      */
-    public interface UntypedMap {
+    private interface UntypedMap {
         Object toMap();
         Object keySet();
         void put(Object key, Object value);

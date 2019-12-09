@@ -186,7 +186,7 @@ public inherited sharing class CollectionImpl extends Collection {
         return listOf('' + field, Apex.getSObjectFieldType(field));
     }
     public override List<Object> listOf(String field, Type fieldType) {
-        assertSObjectCollection(items);
+        assertSObjectCollection();
         return listOf(new FieldMapper(field, fieldType));
     }
     public override List<Object> listOf(Mapper valueMapper) {
@@ -204,7 +204,7 @@ public inherited sharing class CollectionImpl extends Collection {
         return setOf('' + field, Apex.getSObjectFieldType(field));
     }
     public override Object setOf(String field, Type fieldType) {
-        assertSObjectCollection(items);
+        assertSObjectCollection();
         return setOf(new FieldMapper(field, fieldType));
     }
     public override Object setOf(Mapper valueMapper) {
@@ -219,11 +219,11 @@ public inherited sharing class CollectionImpl extends Collection {
         return mapBy('' + keyField, '' + valueField, Apex.getSObjectFieldType(keyField), Apex.getSObjectFieldType(valueField));
     }
     public override Object mapBy(String field, Type fieldType) {
-        assertSObjectCollection(items);
+        assertSObjectCollection();
         return mapBy(new FieldMapper(field, fieldType));
     }
     public override Object mapBy(String keyField, String valueField, Type keyType, Type valueType) {
-        assertSObjectCollection(items);
+        assertSObjectCollection();
         return mapBy(new FieldMapper(keyField, keyType), new FieldMapper(valueField, valueType));
     }
     public override Object mapBy(Mapper keyMapper) {
@@ -251,11 +251,11 @@ public inherited sharing class CollectionImpl extends Collection {
         return groupBy('' + keyField, '' + valueField, Apex.getSObjectFieldType(keyField), Apex.getSObjectFieldType(valueField));
     }
     public override Object groupBy(String field, Type fieldType) {
-        assertSObjectCollection(items);
+        assertSObjectCollection();
         return groupBy(new FieldMapper(field, fieldType));
     }
     public override Object groupBy(String keyField, String valueField, Type keyType, Type valueType) {
-        assertSObjectCollection(items);
+        assertSObjectCollection();
         return groupBy(new FieldMapper(keyField, keyType), new FieldMapper(valueField, valueType));
     }
     public override Object groupBy(Mapper keyMapper) {
@@ -298,7 +298,7 @@ public inherited sharing class CollectionImpl extends Collection {
 
 
     public override Collection orderBy(SObjectField field, Ordering order) {
-        assertSObjectCollection(items);
+        assertSObjectCollection();
         return orderBy(new CompareByField(field, order));
     }
     public override Collection orderBy(Comparator comparator) {
@@ -329,12 +329,12 @@ public inherited sharing class CollectionImpl extends Collection {
 
 
     public override Collection fill(Integer count, SObject prototype) {
-        assertSObjectCollection(items);
+        assertSObjectCollection();
         return fill(count, prototype, defaultCloneOptions);
     }
 
     public override Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions) {
-        assertSObjectCollection(items);
+        assertSObjectCollection();
         for (Integer i = 0; i < count; i++) {
             SObject clone = prototype.clone(
                     cloneOptions.preserveId,
@@ -357,7 +357,7 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
     public override Collection assertEquals(SObjectField field, Object expected, String message) {
-        assertSObjectCollection(items);
+        assertSObjectCollection();
 
         for (Integer i = 0, size = this.size(); i < size; i++) {
             SObject record = (SObject) items[i];
@@ -368,7 +368,7 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
     public override Collection assertNotEquals(SObjectField field, Object expected, String message) {
-        assertSObjectCollection(items);
+        assertSObjectCollection();
 
         for (Integer i = 0, size = this.size(); i < size; i++) {
             SObject record = (SObject) items[i];
@@ -378,7 +378,7 @@ public inherited sharing class CollectionImpl extends Collection {
         return this;
     }
 
-    private static void assertSObjectCollection(List<Object> items) {
+    private void assertSObjectCollection() {
         assert(items instanceof List<SObject>, 'Operation only applies to SObject collection.');
     }
 

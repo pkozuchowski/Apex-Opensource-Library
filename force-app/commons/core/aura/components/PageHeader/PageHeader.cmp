@@ -1,0 +1,41 @@
+<aura:component description="STD_PageHeader">
+    <aura:attribute name="title" type="String" access="public"/>
+    <aura:attribute name="headerActions" access="public" type="Aura.Component[]"/>
+    <aura:attribute name="headerFields" access="public" type="Aura.Component[]"/>
+
+    <div class="slds-page-header slds-m-bottom_small">
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__body">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span class="slds-page-header__title slds-truncate">{!v.title}</span>
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__col-actions">
+                {!v.headerActions}
+            </div>
+        </div>
+
+        <aura:if isTrue="{!not(empty(v.headerFields))}">
+            <div class="slds-page-header__row slds-page-header__row_gutters">
+                <div class="slds-page-header__col-details">
+                    <ul class="slds-page-header__detail-row">
+
+                        <aura:iteration var="field" items="{!v.headerFields}">
+                            <li class="slds-page-header__detail-block">
+                                {!field}
+                            </li>
+                        </aura:iteration>
+                    </ul>
+                </div>
+            </div>
+        </aura:if>
+    </div>
+</aura:component>

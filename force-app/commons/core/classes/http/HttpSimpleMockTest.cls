@@ -31,11 +31,28 @@ private class HttpSimpleMockTest {
 
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class, new HttpSimpleMock(200, 'OK', new Map<String, String>{'refresh_token' => 'XXX'}));
+        Test.setMock(HttpCalloutMock.class, HttpSimpleMock.fromJSON(200, 'OK', new Map<String, String>{'refresh_token' => 'XXX'}));
         HttpResponse response = new Http().send(request);
         Test.stopTest();
 
 
         System.assertEquals('{"refresh_token":"XXX"}', response.getBody());
+    }
+
+    @IsTest
+    static void testSimpleStaticResourceMockCoverage() {
+        try {
+            HttpRequest request = new HttpRequest();
+            request.setEndpoint('www.acme.com/rest/auth');
+
+
+            Test.startTest();
+            Test.setMock(HttpCalloutMock.class, HttpSimpleMock.fromStaticResource(200, 'OK', 'HttpSimpleMockTest'));
+            HttpResponse response = new Http().send(request);
+            Test.stopTest();
+
+
+        } catch (Exception e) {
+        }
     }
 }

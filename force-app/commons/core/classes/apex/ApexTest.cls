@@ -28,13 +28,13 @@ private class ApexTest {
     public class ExampleClass {
     }
 
-    
+
     /**
      *@description
      * getSObjectFieldType() should return type of value stored in SObject field
      */
     @IsTest
-    static void testGetSObjectFieldType(){
+    static void testGetSObjectFieldType() {
         System.assertEquals(String.class, Apex.getSObjectFieldType(Account.Name));
         System.assertEquals(Datetime.class, Apex.getSObjectFieldType(Account.CreatedDate));
         System.assertEquals(Id.class, Apex.getSObjectFieldType(Account.CreatedById));
@@ -126,6 +126,18 @@ private class ApexTest {
         System.assertEquals('ApexTest.testGetStackLocation', line.method);
     }
 
+    /**
+     *@description
+     * Apex.getCaller() should return name of class which precedes given class in stack trace.
+     */
+    @IsTest
+    static void testGetCaller() {
+        System.assertEquals(
+                ApexTest.class.getName(),
+                new GetRunningClassExample().getCaller()
+        );
+    }
+
 
     private class GetRunningClassExample {
         public String doTestRunningClass() {
@@ -134,6 +146,10 @@ private class ApexTest {
 
         public String doTestRunningMethod() {
             return Apex.getRunningMethod();
+        }
+
+        public String getCaller() {
+            return Apex.getCaller(GetRunningClassExample.class).apexClass;
         }
     }
 }

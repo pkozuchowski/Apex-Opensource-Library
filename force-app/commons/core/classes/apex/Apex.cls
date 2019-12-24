@@ -158,6 +158,16 @@ public with sharing class Apex {
         return stackTraceLines;
     }
 
+    public static StackTraceLine getCaller(Type className) {
+        for (StackTraceLine stackTraceLine : getStackTrace()) {
+            if (stackTraceLine.apexClass != className.getName()) {
+                return stackTraceLine;
+            }
+        }
+
+        return null;
+    }
+
     public class StackTraceLine {
         @AuraEnabled public String apexClass { get; private set; }
         @AuraEnabled public String method { get; private set; }

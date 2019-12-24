@@ -158,6 +158,9 @@ public with sharing class Apex {
         return stackTraceLines;
     }
 
+    /**
+     * @return First stack trace line preceding given class.
+     */
     public static StackTraceLine getCaller(Type className) {
         for (StackTraceLine stackTraceLine : getStackTrace()) {
             if (stackTraceLine.apexClass != className.getName()) {

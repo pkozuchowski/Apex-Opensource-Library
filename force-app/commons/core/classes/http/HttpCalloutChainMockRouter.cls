@@ -68,6 +68,23 @@ public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock 
 
 
     /**
+    * Register HttpCalloutMock for given Http method and endpoint pattern.
+    * */
+    public HttpCalloutChainMockRouter registerMock(String method, String endpoint, Integer statusCode, String status, String body) {
+        return registerMock(method, endpoint, new HttpSimpleMock(statusCode, status, body));
+    }
+
+
+    /**
+    * Register HttpCalloutMock for given Http method and endpoint pattern.
+    * */
+    public HttpCalloutChainMockRouter registerMock(String method, String endpoint, HttpCalloutMock mock) {
+        registeredMocks.add(0, new HttpMockEndpointRouter(method, endpoint, mock));
+        return this;
+    }
+
+
+    /**
      * Responds with first registered mock which can handle the request.
      * If none if the registered mocks can handle the request, then exception is thrown.
      */

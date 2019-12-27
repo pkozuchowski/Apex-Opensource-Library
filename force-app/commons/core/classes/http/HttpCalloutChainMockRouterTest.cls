@@ -24,6 +24,29 @@
 @IsTest(IsParallel=true)
 private class HttpCalloutChainMockRouterTest {
 
+    /**
+     *@description
+     * Endpoint Router is able to route request to correct mock by Http Method and endpoint regexp pattern
+     */
+    @IsTest
+    static void testEndpointRouter() {
+        HttpRequest request = new HttpRequest();
+        request.setMethod('GET');
+        request.setEndpoint('www.acme.com/rest/accounts/ACCID123TQR?expand=true');
+
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new HttpCalloutChainMockRouter()
+                .registerMock('GET', 'www.acme.com/rest/accounts/[A-Z0-9]{11}(\\?.*)', 200, 'OK', '{"name":"Test Account"}}')
+                .registerMock('POST', 'www.acme.com/rest/accounts/[A-Z0-9]{11}(\\?.*)', 200, 'OK', '')
+        );
+        HttpResponse response = new Http().send(request);
+        Test.stopTest();
+
+
+        System.assertEquals('{"name":"Test Account"}}', response.getBody());
+    }
+
 
     @IsTest
     static void testRouter() {

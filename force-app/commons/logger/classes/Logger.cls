@@ -164,8 +164,8 @@ public with sharing class Logger {
         log(loggingLevel, new Log__c(
                 ReferenceId__c = referenceId,
                 Message__c = String.join(new List<String>{
-                        formatter.format(request),
-                        formatter.format(response)
+                        '<Request>\n' + formatter.format(request),
+                        '<Response>\n' + formatter.format(response)
                 }, '\n\n')
         ));
     }

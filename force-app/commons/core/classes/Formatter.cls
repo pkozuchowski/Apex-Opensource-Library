@@ -49,8 +49,7 @@ public with sharing class Formatter {
 
     public String format(HttpResponse response) {
         if (response != null) {
-            return 'Response:\n'
-                    + response.getStatusCode() + ' ' + response.getStatus()
+            return response.getStatusCode() + ' ' + response.getStatus()
                     + '\n' + response.getBody();
         } else {
             return '';

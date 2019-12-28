@@ -63,7 +63,7 @@ public inherited sharing class PermissionSetSelector {
 
     public PermissionSet[] selectUserPermissionSets(Id userId) {
         List<PermissionSetAssignment> assignments = [SELECT PermissionSetId FROM PermissionSetAssignment WHERE AssigneeId = :userId];
-        List<Id> permissionSetIds = (List<Id>) Collection.of(assignments).reduce().toList(PermissionSetAssignment.PermissionSetId);
+        List<Id> permissionSetIds = (List<Id>) Collection.of(assignments).listOf(PermissionSetAssignment.PermissionSetId);
         return cache.retrieve(PermissionSet.Id, permissionSetIds);
     }
 }

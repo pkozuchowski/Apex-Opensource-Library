@@ -77,6 +77,14 @@ public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock 
 
     /**
     * Register HttpCalloutMock for given Http method and endpoint pattern.
+    * */
+    public HttpCalloutChainMockRouter registerStaticResourceMock(String method, String endpoint, Integer statusCode, String status, String resource) {
+        return registerMock(method, endpoint, HttpSimpleMock.fromStaticResource(statusCode, status, resource));
+    }
+
+
+    /**
+    * Register HttpCalloutMock for given Http method and endpoint pattern.
     * @param methods Comma separated list of methods ('GET,POST')
     * @param endpointPattern Regexp pattern for endpoint
     * @param mock mock to respond with

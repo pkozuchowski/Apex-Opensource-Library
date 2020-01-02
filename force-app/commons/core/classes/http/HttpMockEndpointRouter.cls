@@ -25,7 +25,7 @@
 /**
  * Routes HttpCalloutChainMock to given method and endpoint pattern.
  */
-public with sharing class HttpMockEndpointRouter implements HttpCalloutChainMock {
+public virtual with sharing class HttpMockEndpointRouter implements HttpCalloutChainMock {
     private Pattern endpointPattern;
     private Set<String> methods;
     private HttpCalloutMock mock;
@@ -41,12 +41,12 @@ public with sharing class HttpMockEndpointRouter implements HttpCalloutChainMock
         this.mock = mock;
     }
 
-    public Boolean handles(HttpRequest request) {
+    public virtual Boolean handles(HttpRequest request) {
         return this.methods.contains(request.getMethod().toUpperCase())
                 && endpointPattern.matcher(request.getEndpoint()).matches();
     }
 
-    public HttpResponse respond(HttpRequest request) {
+    public virtual HttpResponse respond(HttpRequest request) {
         return mock.respond(request);
     }
 }

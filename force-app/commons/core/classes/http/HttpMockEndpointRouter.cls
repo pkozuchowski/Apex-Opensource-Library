@@ -27,17 +27,22 @@
  */
 public with sharing class HttpMockEndpointRouter implements HttpCalloutChainMock {
     private Pattern endpointPattern;
-    private String method;
+    private Set<String> methods;
     private HttpCalloutMock mock;
 
-    public HttpMockEndpointRouter(String method, String endpointPattern, HttpCalloutMock mock) {
-        this.method = method;
+    /**
+     * @param methods HTTP methods separated by coma ex. "POST,PUT"
+     * @param endpointPattern Regexp pattern for Endpoint
+     * @param mock Mock to respond with.
+     */
+    public HttpMockEndpointRouter(String methods, String endpointPattern, HttpCalloutMock mock) {
+        this.methods = new Set<String>(methods.toUpperCase().split(','));
         this.endpointPattern = Pattern.compile(endpointPattern);
         this.mock = mock;
     }
 
     public Boolean handles(HttpRequest request) {
-        return this.method == request.getMethod()
+        return this.methods.contains(request.getMethod().toUpperCase())
                 && endpointPattern.matcher(request.getEndpoint()).matches();
     }
 

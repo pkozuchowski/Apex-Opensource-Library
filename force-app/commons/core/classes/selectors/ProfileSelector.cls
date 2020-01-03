@@ -41,7 +41,7 @@ public inherited sharing class ProfileSelector {
     /**
      * @return Profile record by given name or null
      */
-    public Profile selectByName(String name) {
+    public Profile byName(String name) {
         return (Profile) cache.retrieveFirst(Profile.Name, name);
     }
 
@@ -49,7 +49,7 @@ public inherited sharing class ProfileSelector {
     /**
      * @return Profile records by given names.
      */
-    public Profile[] selectByNames(Set<String> names) {
+    public Profile[] byNames(Set<String> names) {
         return cache.retrieve(Profile.Name, new List<String>(names));
     }
 
@@ -57,7 +57,7 @@ public inherited sharing class ProfileSelector {
     /**
      * @return Profile record with given Id
      */
-    public Profile selectById(Id profileId) {
+    public Profile byId(Id profileId) {
         return (Profile) cache.retrieveFirst(Profile.Id, profileId);
     }
 
@@ -65,7 +65,7 @@ public inherited sharing class ProfileSelector {
     /**
      * @return Profile records by given ids
      */
-    public Profile[] selectByIds(Set<Id> profileIds) {
+    public Profile[] byIds(Set<Id> profileIds) {
         return cache.retrieve(Profile.Id, new List<Id>(profileIds));
     }
 }

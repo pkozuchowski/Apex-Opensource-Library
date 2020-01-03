@@ -5,9 +5,9 @@ private class PermissionSetSelectorTest {
 
     @IsTest
     static void testSelectNull() {
-        System.assertEquals(null, permissionSetSelector.selectByName('PermissionSetSelectorTest'));
-        System.assertEquals(null, permissionSetSelector.selectIdByName('PermissionSetSelectorTest'));
-        System.assertEquals(null, permissionSetSelector.selectById('001000000000000'));
+        System.assertEquals(null, permissionSetSelector.byName('PermissionSetSelectorTest'));
+        System.assertEquals(null, permissionSetSelector.idByName('PermissionSetSelectorTest'));
+        System.assertEquals(null, permissionSetSelector.byId('001000000000000'));
     }
 
     @IsTest
@@ -17,7 +17,7 @@ private class PermissionSetSelectorTest {
 
             System.assertEquals(
                     permissionSet.Id,
-                    permissionSetSelector.selectById(permissionSet.Id).Id
+                    permissionSetSelector.byId(permissionSet.Id).Id
             );
         }
     }
@@ -29,7 +29,7 @@ private class PermissionSetSelectorTest {
 
             System.assertEquals(
                     permissionSet.Id,
-                    permissionSetSelector.selectByName(permissionSet.Name).Id
+                    permissionSetSelector.byName(permissionSet.Name).Id
             );
         }
     }
@@ -41,7 +41,7 @@ private class PermissionSetSelectorTest {
 
             System.assertEquals(
                     permissionSet.Id,
-                    permissionSetSelector.selectIdByName(permissionSet.Name)
+                    permissionSetSelector.idByName(permissionSet.Name)
             );
         }
     }

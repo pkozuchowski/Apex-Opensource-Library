@@ -42,7 +42,7 @@ public inherited sharing class UserRoleSelector {
     /**
      * @return UserRole record by given name or null
      */
-    public UserRole selectByDeveloperName(String developerName) {
+    public UserRole byDeveloperName(String developerName) {
         return (UserRole) cache.retrieveFirst(UserRole.DeveloperName, developerName);
     }
 
@@ -50,7 +50,7 @@ public inherited sharing class UserRoleSelector {
     /**
      * @return UserRoles by given developer names
      */
-    public UserRole[] selectByDeveloperNames(Set<String> developerNames) {
+    public UserRole[] byDeveloperNames(Set<String> developerNames) {
         return cache.retrieve(UserRole.DeveloperName, new List<String>(developerNames));
     }
 
@@ -58,7 +58,7 @@ public inherited sharing class UserRoleSelector {
     /**
      * @return UserRole record by given Id or null
      */
-    public UserRole selectById(Id userRoleId) {
+    public UserRole byId(Id userRoleId) {
         return (UserRole) cache.retrieveFirst(UserRole.Id, userRoleId);
     }
 
@@ -66,7 +66,7 @@ public inherited sharing class UserRoleSelector {
     /**
      * @return UserRoles by given ids
      */
-    public UserRole[] selectByIds(Set<Id> userRoleIds) {
+    public UserRole[] byIds(Set<Id> userRoleIds) {
         return cache.retrieve(UserRole.Id, (List<Object>) new List<Id>(userRoleIds));
     }
 }

@@ -26,54 +26,39 @@
  * Selector layer for User sObject
  * @see UserSelectorTest
  */
-public inherited sharing class UserSelector {
+public inherited sharing class UserSelector extends Selector {
+    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
+            User.Id,
+            User.Name,
+            User.FirstName,
+            User.LastName,
+            User.Username,
+            User.Email
+    };
+
+    public UserSelector() {
+        super(QUERIED_FIELDS, User.SObjectType);
+    }
 
     /**
      * @return User records with given UserName or null if user does not exist.
      */
-    public User selectByUsername(String username) {
-        List<User> users = selectByUsernames(new List<String>{username});
-        return users.isEmpty() ? null : users.get(0);
+    public User byUsername(String username) {
+        return (User) firstOrNull(byUsernames(new List<String>{username}));
     }
 
     /**
      * @return User with given usernames.
      */
-    public List<User> selectByUsernames(List<String> usernames) {
-        return [
-                SELECT Id,
-                        Name,
-                        Username
-                FROM User
-                WHERE Username IN :usernames
-        ];
+    public List<User> byUsernames(List<String> usernames) {
+        this.query.setWhere('Username IN :usernames');
+        return Database.query(this.query.build());
     }
 
     /**
      * @return User record identified by UserInfo.getUserId().
      */
-    public User selectCurrentUser() {
-        return selectById(UserInfo.getUserId());
-    }
-
-    /**
-     * @return User records with given Id or null if user does not exist.
-     */
-    public User selectById(Id userId) {
-        List<User> users = selectByIds(new Set<Id>{userId});
-        return users.isEmpty() ? null : users.get(0);
-    }
-
-    /**
-     * @return User records with given Id or null if user does not exist.
-     */
-    public User[] selectByIds(Set<Id> userIds) {
-        return [
-                SELECT Id,
-                        Name,
-                        Username
-                FROM User
-                WHERE Id IN :userIds
-        ];
+    public User currentUser() {
+        return (User) byId(UserInfo.getUserId());
     }
 }

@@ -27,13 +27,13 @@ private class UserSelectorTest {
 
     @IsTest
     static void testSelectCurrentUser() {
-        User currentUser = new UserSelector().selectCurrentUser();
+        User currentUser = new UserSelector().currentUser();
         System.assertEquals(currentUser.Id, UserInfo.getUserId());
     }
 
     @IsTest
     static void testSelectUserByUsername() {
-        User currentUser = new UserSelector().selectCurrentUser();
-        System.assertEquals(currentUser.Id, new UserSelector().selectByUsername(currentUser.Username).Id);
+        User currentUser = new UserSelector().currentUser();
+        System.assertEquals(currentUser.Id, new UserSelector().byUsername(currentUser.Username).Id);
     }
 }

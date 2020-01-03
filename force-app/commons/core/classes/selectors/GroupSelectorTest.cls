@@ -34,14 +34,14 @@ private class GroupSelectorTest {
             developerNames.add(queue.DeveloperName);
             names.add(queue.Name);
 
-            System.assertEquals(queue.DeveloperName, new GroupSelector().selectById(queue.Id).DeveloperName);
-            System.assertEquals(queue.Id, new GroupSelector().selectQueueByDeveloperName(queue.DeveloperName).Id);
-            System.assertEquals(queue.Id, new GroupSelector().selectQueueByName(queue.Name).Id);
+            System.assertEquals(queue.DeveloperName, new QueueSelector().byId(queue.Id).DeveloperName);
+            System.assertEquals(queue.Id, new QueueSelector().byDeveloperName(queue.DeveloperName).Id);
+            System.assertEquals(queue.Id, new QueueSelector().byName(queue.Name).Id);
         }
 
-        System.assertEquals(queues.size(), new GroupSelector().selectQueuesByDeveloperNames(developerNames).size());
-        System.assertEquals(queues.size(), new GroupSelector().selectQueueByNames(names).size());
-        System.assertEquals(queues.size(), new GroupSelector().selectByIds(queues.keySet()).size());
+        System.assertEquals(queues.size(), new QueueSelector().byDeveloperNames(developerNames).size());
+        System.assertEquals(queues.size(), new QueueSelector().byNames(names).size());
+        System.assertEquals(queues.size(), new QueueSelector().byIds(queues.keySet()).size());
     }
 
     private static Map<Id, Group> getGroups(String type) {

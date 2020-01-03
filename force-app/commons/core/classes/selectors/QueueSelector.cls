@@ -29,71 +29,60 @@
 * include Role groups initialization and so on.
 * @see GroupSelectorTest
 * */
-public inherited sharing class GroupSelector {
-    private static Boolean areQueuesQueried = false;
-    private static SObjectCache cache = new SObjectCache();
+public inherited sharing class QueueSelector {
+    private static SObjectCache cache = new SObjectCache([
+            SELECT Id,Type,DeveloperName,Name
+            FROM Group
+            WHERE Type = 'Queue'
+
+    ], new List<SObjectField>{
+            Group.Id,
+            Group.Name,
+            Group.DeveloperName
+    });
 
 
     /**
      * @return Group with given Id or null.
      */
-    public Group selectById(Id groupId) {
-        queryQueues();
+    public Group byId(Id groupId) {
         return (Group) cache.retrieveFirst(Group.Id, groupId);
     }
 
     /**
      * @return List of Groups with given ids.
      */
-    public Group[] selectByIds(Set<Id> ids) {
-        queryQueues();
-        return cache.retrieve(Group.Id, new List<Id>(ids));
+    public Group[] byIds(Set<Id> ids) {
+        return cache.retrieve(Group.Id, ids);
     }
 
 
     /**
      * @return Queue for given Developer Name. If there is no such Queue, null is returned
      */
-    public Group selectQueueByDeveloperName(String developerName) {
-        queryQueues();
+    public Group byDeveloperName(String developerName) {
         return (Group) cache.retrieveFirst(Group.DeveloperName, developerName);
     }
 
     /**
      * @return List of Queues for given Developer Names.
      */
-    public Group[] selectQueuesByDeveloperNames(Set<String> developerNames) {
-        queryQueues();
-        return cache.retrieve(Group.DeveloperName, new List<String>(developerNames));
+    public Group[] byDeveloperNames(Set<String> developerNames) {
+        return cache.retrieve(Group.DeveloperName, developerNames);
     }
 
 
     /**
      * @return Queue for given Name (label). If there is no such Queue, null is returned
      */
-    public Group selectQueueByName(String name) {
-        queryQueues();
+    public Group byName(String name) {
         return (Group) cache.retrieveFirst(Group.Name, name);
     }
 
     /**
      * @return Queues with given names (label).
      */
-    public Group[] selectQueueByNames(Set<String> names) {
-        queryQueues();
-        return cache.retrieve(Group.Name, new List<String>(names));
-    }
-
-
-    private static void queryQueues() {
-        if (!areQueuesQueried) {
-            List<Group> queues = [SELECT Id,Type,DeveloperName,Name FROM Group WHERE Type = 'Queue'];
-
-            cache.store(Group.Id, queues);
-            cache.store(Group.DeveloperName, queues);
-            cache.store(Group.Name, queues);
-
-            areQueuesQueried = true;
-        }
+    public Group[] byNames(Set<String> names) {
+        return cache.retrieve(Group.Name, names);
     }
 }

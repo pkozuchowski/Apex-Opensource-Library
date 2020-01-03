@@ -42,14 +42,14 @@ private class PricebookSelectorTest {
     static void testSelectStandardPricebookId() {
         System.assertEquals(
                 Test.getStandardPricebookId(),
-                new PricebookSelector().selectStandardPricebookId()
+                new PricebookSelector().standardPricebookId()
         );
     }
 
     @IsTest
     static void testSelectById() {
         Pricebook2 actual = [SELECT Id FROM Pricebook2 WHERE Name = 'Test Pricebook 0'];
-        Pricebook2 expected = new PricebookSelector().selectById(actual.Id);
+        Pricebook2 expected = (Pricebook2) new PricebookSelector().byId(actual.Id);
 
         System.assertEquals(actual.Id, expected.Id);
     }
@@ -62,7 +62,7 @@ private class PricebookSelectorTest {
                 WHERE Name IN ('Test Pricebook 0', 'Test Pricebook 1')
         ]);
         Map<Id, Pricebook2> expected = new Map<Id, Pricebook2>(
-                new PricebookSelector().selectByIds(actual.keySet())
+                (Pricebook2[]) new PricebookSelector().byIds((Iterable<Id>) actual.keySet())
         );
 
         System.assertEquals(actual.keySet(), expected.keySet());
@@ -71,7 +71,7 @@ private class PricebookSelectorTest {
     @IsTest
     static void testSelectByName() {
         Pricebook2 actual = [SELECT Id FROM Pricebook2 WHERE Name = 'Test Pricebook 0'];
-        Pricebook2 expected = new PricebookSelector().selectByName('Test Pricebook 0');
+        Pricebook2 expected = new PricebookSelector().byName('Test Pricebook 0');
 
         System.assertEquals(actual.Id, expected.Id);
     }
@@ -84,7 +84,7 @@ private class PricebookSelectorTest {
                 WHERE Name IN ('Test Pricebook 0', 'Test Pricebook 1')
         ]);
         Map<Id, Pricebook2> expected = new Map<Id, Pricebook2>(
-                new PricebookSelector().selectByNames(new Set<String>{
+                new PricebookSelector().byNames(new List<String>{
                         'Test Pricebook 0', 'Test Pricebook 1'
                 })
         );
@@ -94,14 +94,6 @@ private class PricebookSelectorTest {
 
     @IsTest
     static void testSelectorReturnsNullWhenPricebookIsNotFound() {
-        System.assertEquals(null, new PricebookSelector().selectByName('Other'));
-    }
-
-    @IsTest
-    static void testSelectorQueriesOnlyActivePricebooks() {
-        Pricebook2 inactivePricebook = [SELECT Id,Name FROM Pricebook2 WHERE IsActive = FALSE LIMIT 1];
-
-        System.assertEquals(null, new PricebookSelector().selectById(inactivePricebook.Id));
-        System.assertEquals(null, new PricebookSelector().selectByName(inactivePricebook.Name));
+        System.assertEquals(null, new PricebookSelector().byName('Other'));
     }
 }

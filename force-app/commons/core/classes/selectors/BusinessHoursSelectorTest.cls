@@ -27,7 +27,7 @@ private class BusinessHoursSelectorTest {
     @IsTest
     static void testSelectDefault() {
         BusinessHours[] expected = [SELECT Id FROM BusinessHours WHERE IsDefault = TRUE];
-        BusinessHours actual = new BusinessHoursSelector().selectDefault();
+        BusinessHours actual = new BusinessHoursSelector().default();
 
         if (!expected.isEmpty()) {
             System.assertEquals(expected[0].Id, actual.Id);
@@ -42,7 +42,7 @@ private class BusinessHoursSelectorTest {
         if (!expected.isEmpty()) {
             System.assertEquals(
                     expected[0].Id,
-                    new BusinessHoursSelector().selectByName(expected[0].Name).Id
+                    new BusinessHoursSelector().byName(expected[0].Name).Id
             );
         }
     }
@@ -54,16 +54,8 @@ private class BusinessHoursSelectorTest {
         if (!expected.isEmpty()) {
             System.assertEquals(
                     expected[0].Id,
-                    new BusinessHoursSelector().selectById(expected[0].Id).Id
+                    new BusinessHoursSelector().byId(expected[0].Id).Id
             );
         }
-    }
-
-    @IsTest
-    static void testSelectMapByIds() {
-        Map<Id, BusinessHours> expected = new Map<Id, BusinessHours>([SELECT Id FROM BusinessHours WHERE IsActive = TRUE]);
-        Map<Id, BusinessHours> actual = new BusinessHoursSelector().selectMapByIds(expected.keySet());
-
-        System.assertEquals(expected.keySet(), actual.keySet());
     }
 }

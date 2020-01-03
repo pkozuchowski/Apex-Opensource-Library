@@ -25,22 +25,11 @@
 private class UserRoleSelectorTest {
 
     @IsTest
-    static void testSelectUserRoleByDeveloperName() {
+    static void testSelectByDeveloperName() {
         List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
 
         for (UserRole userRole : userRoles) {
-            System.assertEquals(userRole.DeveloperName, new UserRoleSelector().selectByDeveloperName(userRole.DeveloperName).DeveloperName);
-        }
-
-        System.assertEquals(2, Limits.getQueries());
-    }
-
-    @IsTest
-    static void testSelectUserRoleById() {
-        List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
-
-        for (UserRole userRole : userRoles) {
-            System.assertEquals(userRole.DeveloperName, new UserRoleSelector().selectById(userRole.Id).DeveloperName);
+            System.assertEquals(userRole.DeveloperName, new UserRoleSelector().byDeveloperName(userRole.DeveloperName).DeveloperName);
         }
 
         System.assertEquals(2, Limits.getQueries());
@@ -54,14 +43,25 @@ private class UserRoleSelectorTest {
             devNames.add(userRole.DeveloperName);
         }
 
-        Map<Id, UserRole> result = new Map<Id, UserRole>(new UserRoleSelector().selectByIds(expected.keySet()));
+        Map<Id, UserRole> result = new Map<Id, UserRole>(new UserRoleSelector().byDeveloperNames(devNames));
         System.assertEquals(expected.keySet(), result.keySet());
+    }
+
+    @IsTest
+    static void testSelectById() {
+        List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
+
+        for (UserRole userRole : userRoles) {
+            System.assertEquals(userRole.DeveloperName, new UserRoleSelector().byId(userRole.Id).DeveloperName);
+        }
+
+        System.assertEquals(2, Limits.getQueries());
     }
 
     @IsTest
     static void testSelectByIds() {
         Map<Id, UserRole> expected = new Map<Id, UserRole>([SELECT Id,DeveloperName FROM UserRole]);
-        Map<Id, UserRole> result = new Map<Id, UserRole>(new UserRoleSelector().selectByIds(expected.keySet()));
+        Map<Id, UserRole> result = new Map<Id, UserRole>(new UserRoleSelector().byIds(expected.keySet()));
 
         System.assertEquals(expected.keySet(), result.keySet());
     }

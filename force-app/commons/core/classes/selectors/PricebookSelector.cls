@@ -26,65 +26,41 @@
  * Selector layer for Pricebook2 SObject.
  * @see PricebookSelectorTest
  */
-public inherited sharing class PricebookSelector {
+public inherited sharing class PricebookSelector extends Selector {
 
-    /**
-     * @return Cached Pricebook2 record with given id or null.
-     */
-    public Pricebook2 selectById(Id id) {
-        Pricebook2[] pbs = selectByIds(new Set<Id>{id});
-        return pbs.isEmpty() ? null : pbs.get(0);
-    }
-
-    /**
-     * @return Cached Pricebook2 records with given ids.
-     */
-    public Pricebook2[] selectByIds(Set<Id> ids) {
-        return [
-                SELECT Id,
-                        Name,
-                        IsStandard
-                FROM Pricebook2
-                WHERE Id IN :ids
-                AND IsActive = TRUE
-        ];
+    public PricebookSelector() {
+        super(new List<SObjectField>{
+                Pricebook2.Id,
+                Pricebook2.Name,
+                Pricebook2.IsStandard
+        }, Pricebook2.SObjectType);
     }
 
 
     /**
-     * @return Cached Pricebook2 record with given name or null.
+     * @return Pricebook2 record with given name or null.
      */
-    public Pricebook2 selectByName(String name) {
-        Pricebook2[] pbs = selectByNames(new Set<String>{name});
-        return pbs.isEmpty() ? null : pbs.get(0);
+    public Pricebook2 byName(String name) {
+        return (Pricebook2) firstOrNull(byNames(new List<String>{name}));
     }
 
     /**
-     * @return Cached Pricebook2 records with given names.
+     * @return Pricebook2 records with given names.
      */
-    public Pricebook2[] selectByNames(Set<String> names) {
-        return [
-                SELECT Id,
-                        Name,
-                        IsStandard
-                FROM Pricebook2
-                WHERE Name IN :names
-                AND IsActive = TRUE
-        ];
+    public Pricebook2[] byNames(Iterable<String> names) {
+        this.query.setWhere('Name IN :names');
+        return Database.query(query.build());
     }
 
     /**
      * @return Id of Standard Pricebook. In Unit Test context Test.getStandardPricebookId() value is returned.
      */
-    public Id selectStandardPricebookId() {
+    public Id standardPricebookId() {
         if (Test.isRunningTest()) {
             return Test.getStandardPricebookId();
         } else {
-            return [
-                    SELECT Id
-                    FROM Pricebook2
-                    WHERE IsStandard = TRUE
-            ].Id;
+            this.query.setWhere('IsStandard = TRUE');
+            return Database.query(query.build())[0].Id;
         }
     }
 }

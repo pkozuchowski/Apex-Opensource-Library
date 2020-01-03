@@ -60,7 +60,7 @@ public inherited sharing class BusinessHoursSelector {
     /**
      * @return Default Business Hours for running environment.
      */
-    public BusinessHours selectDefault() {
+    public BusinessHours default() {
         return (BusinessHours) cache.retrieveFirst(BusinessHours.IsDefault, true);
     }
 
@@ -68,7 +68,7 @@ public inherited sharing class BusinessHoursSelector {
     /**
      * @return Active Business Hours with given name
      */
-    public BusinessHours selectByName(String name) {
+    public BusinessHours byName(String name) {
         return (BusinessHours) cache.retrieveFirst(BusinessHours.Name, name);
     }
 
@@ -76,21 +76,14 @@ public inherited sharing class BusinessHoursSelector {
     /**
      * @return Active Business Hours with given id
      */
-    public BusinessHours selectById(Id businessHoursId) {
+    public BusinessHours byId(Id businessHoursId) {
         return (BusinessHours) cache.retrieveFirst(BusinessHours.Id, businessHoursId);
     }
 
     /**
      * @return Active Business Hours with given ids
      */
-    public BusinessHours[] selectByIds(Set<Id> businessHoursIds) {
+    public BusinessHours[] byIds(Set<Id> businessHoursIds) {
         return cache.retrieve(BusinessHours.Id, new List<Id>(businessHoursIds));
-    }
-
-    /**
-     * @return Active Business Hours with given ids
-     */
-    public Map<Id, BusinessHours> selectMapByIds(Set<Id> businessHoursIds) {
-        return new Map<Id, BusinessHours>(selectByIds(businessHoursIds));
     }
 }

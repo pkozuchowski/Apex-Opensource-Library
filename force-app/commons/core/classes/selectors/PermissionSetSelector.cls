@@ -41,7 +41,7 @@ public inherited sharing class PermissionSetSelector {
      * @param permissionSetId Id of Permission Set
      * @return Permission Set or null
      */
-    public PermissionSet selectById(Id permissionSetId) {
+    public PermissionSet byId(Id permissionSetId) {
         return (PermissionSet) cache.retrieveFirst(PermissionSet.Id, permissionSetId);
     }
 
@@ -49,7 +49,7 @@ public inherited sharing class PermissionSetSelector {
      * @param name Name of Permission Set
      * @return Permission Set with given name or null if it does not exist.
      */
-    public PermissionSet selectByName(String name) {
+    public PermissionSet byName(String name) {
         return (PermissionSet) cache.retrieveFirst(PermissionSet.Name, name);
     }
 
@@ -57,11 +57,11 @@ public inherited sharing class PermissionSetSelector {
      * @param name Name of Permission Set
      * @return Id of permission set or null.
      */
-    public Id selectIdByName(String name) {
+    public Id idByName(String name) {
         return (Id) cache.retrieveFirstValue(PermissionSet.Name, name, PermissionSet.Id);
     }
 
-    public PermissionSet[] selectUserPermissionSets(Id userId) {
+    public PermissionSet[] userPermissionSets(Id userId) {
         List<PermissionSetAssignment> assignments = [SELECT PermissionSetId FROM PermissionSetAssignment WHERE AssigneeId = :userId];
         List<Id> permissionSetIds = (List<Id>) Collection.of(assignments).listOf(PermissionSetAssignment.PermissionSetId);
         return cache.retrieve(PermissionSet.Id, permissionSetIds);

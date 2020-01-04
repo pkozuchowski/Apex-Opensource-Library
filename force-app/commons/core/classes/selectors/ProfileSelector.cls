@@ -50,7 +50,6 @@ public inherited sharing class ProfileSelector {
      * @return Profile records by given names.
      */
     public Profile[] byName(Iterable<String> names) {
-        System.debug('bynames' + names);
         return cache.retrieveAll(Profile.Name, (Iterable<Object>) names);
     }
 

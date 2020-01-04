@@ -65,6 +65,6 @@ public with sharing class HistorySelector extends Selector {
      * @return Share records for given records (List or Set of parent ids)
      */
     public SObject[] byParentId(Iterable<Id> parentIds) {
-        return byField(parentField, parentIds);
+        return byField(parentField, 'IN', parentIds);
     }
 }

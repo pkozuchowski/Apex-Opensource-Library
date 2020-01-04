@@ -19,38 +19,30 @@ public abstract class Selector {
      * @return Records by given Salesforce Ids
      */
     public virtual SObject[] byId(Iterable<Id> recordIds) {
-        return byField('Id', recordIds);
+        return byField('Id', 'IN', recordIds);
     }
 
     /**
      * @return SObject with field equals given value or null
      */
-    public virtual SObject oneByField(SObjectField field, Object value) {
-        return firstOrNull(byField(field, value));
-    }
-
-    /**
-     * @return SObjects with field equals given value
-     */
-    public virtual SObject[] byField(SObjectField field, Object value) {
-        query.setWhere('' + field + ' = :value');
-        return Database.query(query.build());
+    public virtual SObject oneRecordByField(SObjectField field, String operator, Object value) {
+        return firstOrNull(byField(field, operator, value));
     }
 
     /**
      * @values List or Set of any type, cast to (Iterable<Object>)
      * @return SObjects with field values in given value set.
      */
-    public virtual SObject[] byField(SObjectField field, Iterable<Object> values) {
-        return byField('' + field, values);
+    public virtual SObject[] byField(SObjectField field, String operator, Object values) {
+        return byField('' + field, operator, values);
     }
 
     /**
      * @values List or Set of any type, cast to (Iterable<Object>)
      * @return SObjects with field values in given value set.
      */
-    public virtual SObject[] byField(String field, Iterable<Object> values) {
-        query.setWhere(field + ' IN :values');
+    public virtual SObject[] byField(String field, String operator, Object values) {
+        query.setWhere(field + ' ' + operator + ' :values');
         return Database.query(query.build());
     }
 

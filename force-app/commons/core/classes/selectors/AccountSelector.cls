@@ -90,13 +90,13 @@ public virtual inherited sharing class AccountSelector extends Selector {
      * @return Accounts with given name
      */
     public Account[] byName(String name) {
-        return byField(Account.Name, name);
+        return byField(Account.Name, '=', name);
     }
 
     /**
      * @return Accounts with given names (List or Set)
      */
     public Account[] byName(Iterable<String> names) {
-        return byField(Account.Name, names);
+        return byField(Account.Name, 'IN', names);
     }
 }

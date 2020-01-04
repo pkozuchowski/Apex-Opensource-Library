@@ -69,14 +69,14 @@ public with sharing class ContactSelector extends Selector {
      * @return Contacts with given names (List or Set)
      */
     public Contact[] byName(String name) {
-        return byField(Contact.Name, name);
+        return byField(Contact.Name, '=', name);
     }
 
     /**
      * @return Contacts with given names (List or Set)
      */
     public Contact[] byName(Iterable<String> names) {
-        return byField(Contact.Name, names);
+        return byField(Contact.Name, 'IN', names);
     }
 
 
@@ -84,14 +84,14 @@ public with sharing class ContactSelector extends Selector {
      * @return Contacts with given emails (List or Set)
      */
     public Contact[] byEmail(String email) {
-        return byField(Contact.Email, email);
+        return byField(Contact.Email, '=', email);
     }
 
     /**
      * @return Contacts with given emails (List or Set)
      */
     public Contact[] byEmail(Iterable<String> emails) {
-        return byField(Contact.Email, emails);
+        return byField(Contact.Email, 'IN', emails);
     }
 
 
@@ -99,13 +99,13 @@ public with sharing class ContactSelector extends Selector {
      * @return Contacts related to given account Ids (List or Set)
      */
     public Contact[] byAccountId(Id accountId) {
-        return byField(Contact.AccountId, accountId);
+        return byField(Contact.AccountId, '=', accountId);
     }
 
     /**
      * @return Contacts related to given account Ids (List or Set)
      */
     public Contact[] byAccountId(Iterable<Id> accountIds) {
-        return byField(Contact.AccountId, accountIds);
+        return byField(Contact.AccountId, 'IN', accountIds);
     }
 }

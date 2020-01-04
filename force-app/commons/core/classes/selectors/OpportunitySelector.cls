@@ -54,14 +54,14 @@ public with sharing class OpportunitySelector extends Selector {
      * @return Opportunities by given name
      */
     public Opportunity[] byName(String name) {
-        return byField(Opportunity.Name, name);
+        return byField(Opportunity.Name, '=', name);
     }
 
     /**
      * @return Opportunities by given names (List or Set)
      */
     public Opportunity[] byName(Iterable<String> names) {
-        return byField(Opportunity.Name, names);
+        return byField(Opportunity.Name, 'IN', names);
     }
 
 
@@ -69,13 +69,13 @@ public with sharing class OpportunitySelector extends Selector {
      * @return Opportunities related to given account Ids (List or Set)
      */
     public Opportunity[] byAccountId(Id accountId) {
-        return byField(Opportunity.AccountId, accountId);
+        return byField(Opportunity.AccountId, '=', accountId);
     }
 
     /**
      * @return Opportunities related to given account Ids (List or Set)
      */
     public Opportunity[] byAccountId(Iterable<Id> accountIds) {
-        return byField(Opportunity.AccountId, accountIds);
+        return byField(Opportunity.AccountId, 'IN', accountIds);
     }
 }

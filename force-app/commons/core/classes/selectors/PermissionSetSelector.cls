@@ -91,10 +91,6 @@ public inherited sharing class PermissionSetSelector {
             permissionSetsByUser.put(it.next(), new PermissionSet[]{});
         }
 
-        System.debug('userIds: ' + JSON.serializePretty(userIds));
-        System.debug('permissionSetsByUser: ' + JSON.serializePretty(permissionSetsByUser));
-
-
         List<PermissionSetAssignment> assignments = Database.query('SELECT AssigneeId,PermissionSetId ' +
                 'FROM PermissionSetAssignment WHERE AssigneeId IN :userIds');
 

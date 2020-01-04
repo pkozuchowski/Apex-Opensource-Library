@@ -55,14 +55,14 @@ public with sharing class CaseSelector extends Selector {
      * @return Cases by given name
      */
     public Case[] bySubject(String name) {
-        return byField(Case.Subject, name);
+        return byField(Case.Subject, '=', name);
     }
 
     /**
      * @return Cases by given names (List or Set)
      */
     public Case[] bySubject(Iterable<String> names) {
-        return byField(Case.Subject, names);
+        return byField(Case.Subject, 'IN', names);
     }
 
 
@@ -70,13 +70,13 @@ public with sharing class CaseSelector extends Selector {
      * @return Cases related to given account Ids (List or Set)
      */
     public Contact[] byAccountId(Id accountId) {
-        return byField(Case.AccountId, accountId);
+        return byField(Case.AccountId, '=', accountId);
     }
 
     /**
      * @return Cases related to given account Ids (List or Set)
      */
     public Contact[] byAccountId(Iterable<Id> accountIds) {
-        return byField(Case.AccountId, accountIds);
+        return byField(Case.AccountId, 'IN', accountIds);
     }
 }

@@ -62,7 +62,7 @@ public with sharing class ShareSelector extends Selector {
      * @return Share records for given users
      */
     public SObject[] byUserOrGroupIds(Iterable<Id> userOrGroupIds) {
-        return byField('UserOrGroupId', userOrGroupIds);
+        return byField('UserOrGroupId', 'IN', userOrGroupIds);
     }
 
     /**
@@ -70,7 +70,7 @@ public with sharing class ShareSelector extends Selector {
      * @return Share records for given records
      */
     public SObject[] byParentIds(Iterable<Id> parentIds) {
-        return byField(parentField, parentIds);
+        return byField(parentField, 'IN', parentIds);
     }
 
     /**

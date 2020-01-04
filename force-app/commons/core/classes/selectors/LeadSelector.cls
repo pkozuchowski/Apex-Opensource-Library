@@ -46,41 +46,41 @@ public inherited sharing class LeadSelector extends Selector {
      * @return Leads by given name
      */
     public Lead[] byName(String name) {
-        return byField(Lead.Name, name);
+        return byField(Lead.Name, '=', name);
     }
 
     /**
      * @return Leads by given names (List or Set)
      */
     public Lead[] byName(Iterable<String> names) {
-        return byField(Lead.Name, names);
+        return byField(Lead.Name, 'IN', names);
     }
 
     /**
      * @return Leads by given email
      */
     public Lead[] byEmail(String email) {
-        return byField(Lead.Email, email);
+        return byField(Lead.Email, '=', email);
     }
 
     /**
      * @return Leads by given emails (List or Set)
      */
     public Lead[] byEmail(Iterable<String> emails) {
-        return byField(Lead.Email, emails);
+        return byField(Lead.Email, 'IN', emails);
     }
 
     /**
      * @return Leads by given company
      */
     public Lead[] byCompany(String company) {
-        return byField(Lead.Company, company);
+        return byField(Lead.Company, '=', company);
     }
 
     /**
      * @return Leads by given companies (List or Set)
      */
     public Lead[] byCompany(Iterable<String> companies) {
-        return byField(Lead.Company, companies);
+        return byField(Lead.Company, 'IN', companies);
     }
 }

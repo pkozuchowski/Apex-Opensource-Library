@@ -62,13 +62,13 @@ public with sharing class EmailTemplateSelector extends Selector {
      * @return Email Template by given name or null
      */
     public EmailTemplate byDeveloperName(String developerName) {
-        return (EmailTemplate) oneByField(EmailTemplate.DeveloperName, developerName);
+        return (EmailTemplate) oneRecordByField(EmailTemplate.DeveloperName, '=', developerName);
     }
 
     /**
      * @return Email Templates By given names (List or Set)
      */
     public EmailTemplate[] byDeveloperName(Iterable<String> developerNames) {
-        return byField(EmailTemplate.DeveloperName, developerNames);
+        return byField(EmailTemplate.DeveloperName, 'IN', developerNames);
     }
 }

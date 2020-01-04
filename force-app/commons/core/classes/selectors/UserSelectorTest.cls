@@ -41,7 +41,7 @@ private class UserSelectorTest {
         List<String> names = new List<String>{UserInfo.getName()};
         System.assertEquals(
         [SELECT COUNT() FROM User WHERE Name IN :names],
-                new UserSelector().byNames(names).size()
+                new UserSelector().byName(names).size()
         );
     }
 
@@ -55,7 +55,7 @@ private class UserSelectorTest {
         List<String> emails = new List<String>{UserInfo.getUserEmail()};
         System.assertEquals(
         [SELECT COUNT() FROM User WHERE Email IN :emails],
-                new UserSelector().byEmails(emails).size()
+                new UserSelector().byEmail(emails).size()
         );
     }
 
@@ -69,7 +69,7 @@ private class UserSelectorTest {
         List<String> usernames = new List<String>{UserInfo.getUserName()};
         System.assertEquals(
         [SELECT COUNT() FROM User WHERE Username IN :usernames],
-                new UserSelector().byUsernames(usernames).size()
+                new UserSelector().byUsername(usernames).size()
         );
     }
 }

@@ -62,7 +62,7 @@ private class PricebookSelectorTest {
                 WHERE Name IN ('Test Pricebook 0', 'Test Pricebook 1')
         ]);
         Map<Id, Pricebook2> expected = new Map<Id, Pricebook2>(
-                (Pricebook2[]) new PricebookSelector().byIds((Iterable<Id>) actual.keySet())
+                (Pricebook2[]) new PricebookSelector().byId((Iterable<Id>) actual.keySet())
         );
 
         System.assertEquals(actual.keySet(), expected.keySet());

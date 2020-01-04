@@ -44,10 +44,10 @@ public with sharing class ContactSelector extends Selector {
             Contact.OtherPostalCode,
             Contact.OtherState,
             Contact.OtherStreet,
+            Contact.OwnerId,
             Contact.Phone,
             Contact.Salutation,
-            Contact.Title,
-            Contact.OwnerId
+            Contact.Title
     };
 
 
@@ -66,17 +66,46 @@ public with sharing class ContactSelector extends Selector {
 
 
     /**
-     * @param names List<String> or (Iterable<String>) Set<String>
-     * @return Contacts with given names
+     * @return Contacts with given names (List or Set)
      */
-    public SObject[] byNames(Iterable<String> names) {
-        return byField(Contact.Name, names);
+    public Contact[] byName(String name) {
+        return byField(Contact.Name, name);
     }
 
     /**
-     * @return Contacts related to given account Ids
+     * @return Contacts with given names (List or Set)
      */
-    public SObject[] byAccountIds(Iterable<Id> accountIds) {
+    public Contact[] byName(Iterable<String> names) {
+        return byField(Contact.Name, names);
+    }
+
+
+    /**
+     * @return Contacts with given emails (List or Set)
+     */
+    public Contact[] byEmail(String email) {
+        return byField(Contact.Email, email);
+    }
+
+    /**
+     * @return Contacts with given emails (List or Set)
+     */
+    public Contact[] byEmail(Iterable<String> emails) {
+        return byField(Contact.Email, emails);
+    }
+
+
+    /**
+     * @return Contacts related to given account Ids (List or Set)
+     */
+    public Contact[] byAccountId(Id accountId) {
+        return byField(Contact.AccountId, accountId);
+    }
+
+    /**
+     * @return Contacts related to given account Ids (List or Set)
+     */
+    public Contact[] byAccountId(Iterable<Id> accountIds) {
         return byField(Contact.AccountId, accountIds);
     }
 }

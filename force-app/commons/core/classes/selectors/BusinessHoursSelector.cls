@@ -83,7 +83,7 @@ public inherited sharing class BusinessHoursSelector {
     /**
      * @return Active Business Hours with given ids
      */
-    public BusinessHours[] byIds(Set<Id> businessHoursIds) {
-        return cache.retrieve(BusinessHours.Id, new List<Id>(businessHoursIds));
+    public BusinessHours[] byId(Iterable<Id> businessHoursIds) {
+        return cache.retrieveAll(BusinessHours.Id, businessHoursIds);
     }
 }

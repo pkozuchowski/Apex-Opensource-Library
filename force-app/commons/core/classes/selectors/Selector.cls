@@ -11,14 +11,14 @@ public abstract class Selector {
      * @return Record by given Salesforce Id or null
      */
     public virtual SObject byId(Id recordId) {
-        return firstOrNull(byIds(new List<Id>{recordId}));
+        return firstOrNull(byId(new List<Id>{recordId}));
     }
 
     /**
      * @param recordIds List<Id> or (Iterable<Id>) Set<Id>
      * @return Records by given Salesforce Ids
      */
-    public virtual SObject[] byIds(Iterable<Id> recordIds) {
+    public virtual SObject[] byId(Iterable<Id> recordIds) {
         return byField('Id', recordIds);
     }
 

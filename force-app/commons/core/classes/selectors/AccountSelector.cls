@@ -54,6 +54,22 @@ public virtual inherited sharing class AccountSelector extends Selector {
     }
 
     /**
+     * Accounts will be queried with related Opportunity records
+     */
+    public AccountSelector withOpportunities() {
+        this.query.addChildFields(OpportunitySelector.QUERIED_FIELDS, 'Opportunities');
+        return this;
+    }
+
+    /**
+     * Accounts will be queried with related Contact records
+     */
+    public AccountSelector withCases() {
+        this.query.addChildFields(CaseSelector.QUERIED_FIELDS, 'Cases');
+        return this;
+    }
+
+    /**
      * Accounts will be queried with related child Account records
      */
     public AccountSelector withChildrenAccounts() {
@@ -71,10 +87,16 @@ public virtual inherited sharing class AccountSelector extends Selector {
 
 
     /**
-     * @param names List<String> or (Iterable<String>) Set<String> of Account Names
-     * @return Accounts with given names
+     * @return Accounts with given name
      */
-    public Account[] byNames(Iterable<String> names) {
+    public Account[] byName(String name) {
+        return byField(Account.Name, name);
+    }
+
+    /**
+     * @return Accounts with given names (List or Set)
+     */
+    public Account[] byName(Iterable<String> names) {
         return byField(Account.Name, names);
     }
 }

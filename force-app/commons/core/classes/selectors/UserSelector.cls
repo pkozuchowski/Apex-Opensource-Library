@@ -51,7 +51,7 @@ public inherited sharing class UserSelector extends Selector {
     /**
      * @return User with given names.
      */
-    public List<User> byNames(List<String> names) {
+    public User[] byName(List<String> names) {
         return byField(User.Name, names);
     }
 
@@ -65,7 +65,7 @@ public inherited sharing class UserSelector extends Selector {
     /**
      * @return User with given emails.
      */
-    public List<User> byEmails(List<String> emails) {
+    public User[] byEmail(List<String> emails) {
         return byField(User.Email, emails);
     }
 
@@ -79,7 +79,7 @@ public inherited sharing class UserSelector extends Selector {
     /**
      * @return User with given usernames.
      */
-    public List<User> byUsernames(List<String> usernames) {
+    public User[] byUsername(List<String> usernames) {
         return byField(User.Username, usernames);
     }
 

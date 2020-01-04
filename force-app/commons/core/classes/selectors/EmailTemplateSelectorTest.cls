@@ -46,10 +46,11 @@ private class EmailTemplateSelectorTest {
             System.assertEquals(template.HtmlValue, actual.HtmlValue);
             System.assertEquals(1, new EmailTemplateSelector().byDeveloperNames(new List<String>{template.DeveloperName}).size());
         } catch (QueryException ex) {
-            EmailTemplate actual = new EmailTemplateSelector()
+            new EmailTemplateSelector()
                     .withHtmlBody()
                     .withTextBody()
-                    .byDeveloperName('any');
+                    .byDeveloperName('');
+            System.assertEquals(0, new EmailTemplateSelector().byDeveloperNames(new List<String>{''}).size());
         }
     }
 }

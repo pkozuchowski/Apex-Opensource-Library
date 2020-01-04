@@ -22,50 +22,39 @@
 * SOFTWARE.
 */
 @IsTest(IsParallel=true)
-private class ContactSelectorTest {
+private class CaseSelectorTest {
 
     @TestSetup
     static void testSetup() {
         Account account = new Account(Name = 'Parent Account');
         insert account;
 
-        insert new List<Contact>{
-                new Contact(AccountId = account.Id, LastName = 'Name 1', Email = '1@example.com'),
-                new Contact(AccountId = account.Id, LastName = 'Name 2', Email = '2@example.com'),
-                new Contact(AccountId = account.Id, LastName = 'Name 3', Email = '3@example.com')
+        insert new List<Case>{
+                new Case(AccountId = account.Id, Subject = 'Subject 1', Status = 'New', Origin = 'Web'),
+                new Case(AccountId = account.Id, Subject = 'Subject 2', Status = 'New', Origin = 'Web'),
+                new Case(AccountId = account.Id, Subject = 'Subject 3', Status = 'New', Origin = 'Web')
         };
     }
 
     @IsTest
     static void testSelectWithParentAccount() {
         System.assertEquals('Parent Account',
-                new ContactSelector()
+                new CaseSelector()
                         .withParentAccount()
-                        .byName(new List<String>{'Name 1'})[0]
+                        .bySubject(new List<String>{'Subject 1'})[0]
                         .Account.Name
         );
     }
 
     @IsTest
-    static void testSelectByName() {
+    static void testSelectBySubject() {
         SelectorTest.assertEquals(
-                ([SELECT Id FROM Contact WHERE Name = 'Name 1']),
-                new ContactSelector().byName('Name 1'));
+                ([SELECT Id FROM Case WHERE Subject = 'Subject 1']),
+                new CaseSelector().bySubject('Subject 1'));
 
         SelectorTest.assertEquals(
-                ([SELECT Id FROM Contact WHERE Name IN ('Name 1', 'Name 2')]),
-                new ContactSelector().byName(new List<String>{'Name 1', 'Name 2'}));
-    }
-
-    @IsTest
-    static void testSelectByEmail() {
-        SelectorTest.assertEquals(
-                ([SELECT Id FROM Contact WHERE Email = '1@example.com']),
-                new ContactSelector().byEmail('1@example.com'));
-
-        SelectorTest.assertEquals(
-                ([SELECT Id FROM Contact WHERE Email IN ('1@example.com', '2@example.com')]),
-                new ContactSelector().byEmail(new List<String>{'1@example.com', '2@example.com'}));
+                ([SELECT Id FROM Case WHERE Subject IN ('Subject 1', 'Subject 2')]),
+                new CaseSelector().bySubject(new List<String>{'Subject 1', 'Subject 2'}));
     }
 
     @IsTest
@@ -73,11 +62,11 @@ private class ContactSelectorTest {
         Account account = [SELECT Id FROM Account];
 
         SelectorTest.assertEquals(
-                ([SELECT Id FROM Contact WHERE AccountId = :account.Id]),
-                new ContactSelector().byAccountId(account.Id));
+                ([SELECT Id FROM Case WHERE AccountId = :account.Id]),
+                new CaseSelector().byAccountId(account.Id));
 
         SelectorTest.assertEquals(
-                ([SELECT Id FROM Contact WHERE AccountId IN (:account.Id)]),
-                new ContactSelector().byAccountId(new List<Id>{account.Id}));
+                ([SELECT Id FROM Case WHERE AccountId IN (:account.Id)]),
+                new CaseSelector().byAccountId(new List<Id>{account.Id}));
     }
 }

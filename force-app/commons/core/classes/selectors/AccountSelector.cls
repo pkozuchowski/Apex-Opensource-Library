@@ -75,7 +75,6 @@ public virtual inherited sharing class AccountSelector extends Selector {
      * @return Accounts with given names
      */
     public Account[] byNames(Iterable<String> names) {
-        query.setWhere('Name IN :names');
-        return Database.query(query.build());
+        return byField(Account.Name, names);
     }
 }

@@ -41,15 +41,14 @@ public inherited sharing class PricebookSelector extends Selector {
      * @return Pricebook2 record with given name or null.
      */
     public Pricebook2 byName(String name) {
-        return (Pricebook2) firstOrNull(byNames(new List<String>{name}));
+        return (Pricebook2) oneByField(Pricebook2.Name, name);
     }
 
     /**
      * @return Pricebook2 records with given names.
      */
     public Pricebook2[] byNames(Iterable<String> names) {
-        this.query.setWhere('Name IN :names');
-        return Database.query(query.build());
+        return byField(Pricebook2.Name, names);
     }
 
     /**
@@ -59,8 +58,7 @@ public inherited sharing class PricebookSelector extends Selector {
         if (Test.isRunningTest()) {
             return Test.getStandardPricebookId();
         } else {
-            this.query.setWhere('IsStandard = TRUE');
-            return Database.query(query.build())[0].Id;
+            return oneByField(Pricebook2.IsStandard, true).Id;
         }
     }
 }

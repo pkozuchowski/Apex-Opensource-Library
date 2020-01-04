@@ -22,14 +22,15 @@
 * SOFTWARE.
 */
 @IsTest(IsParallel=true)
-private class GroupSelectorTest {
+private class QueueSelectorTest {
+
 
     @IsTest
     static void testQueueSelector() {
         Map<Id, Group> queues = getGroups('Queue');
 
-        Set<String> developerNames = new Set<String>();
-        Set<String> names = new Set<String>();
+        List<String> developerNames = new List<String>();
+        List<String> names = new List<String>();
         for (Group queue : queues.values()) {
             developerNames.add(queue.DeveloperName);
             names.add(queue.Name);
@@ -40,8 +41,8 @@ private class GroupSelectorTest {
         }
 
         System.assertEquals(queues.size(), new QueueSelector().byDeveloperNames(developerNames).size());
-        System.assertEquals(queues.size(), new QueueSelector().byNames(names).size());
-        System.assertEquals(queues.size(), new QueueSelector().byIds(queues.keySet()).size());
+        System.assertEquals(queues.size(), new QueueSelector().byNames((Iterable<String>) names).size());
+        System.assertEquals(queues.size(), new QueueSelector().byIds((Iterable<Id>) queues.keySet()).size());
     }
 
     private static Map<Id, Group> getGroups(String type) {

@@ -34,13 +34,10 @@ private class SObjectCacheTest {
             new Account(Id = '001000000000007', Name = 'Test Account 7'),
             new Account(Id = '001000000000008', Name = 'Test Account 8')
     };
-    static SObjectCache cache;
-
-    static {
-        cache = new SObjectCache();
-        cache.store(Account.Id, accounts);
-        cache.store(Account.Name, accounts);
-    }
+    static SObjectCache cache = new SObjectCache(accounts, new List<SObjectField>{
+            Account.Id,
+            Account.Name
+    });
 
 
     /**
@@ -83,7 +80,7 @@ private class SObjectCacheTest {
      */
     @IsTest
     static void testCacheByMultipleValues() {
-        List<Account> accounts = cache.retrieve(Account.Name, new List<String>{
+        List<Account> accounts = cache.retrieveAll(Account.Name, new List<Object>{
                 'Enterprise Account',
                 'Test Account 0',
                 'Test Account 1'

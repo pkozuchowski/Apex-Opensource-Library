@@ -46,7 +46,7 @@ public class AccountSelectorTest {
         User u = Query.Users.byUsername('AccountSelectorTest@unittest.com');
         System.runAs(u) {
             System.debug([SELECT ID FROM Account]);
-            System.assertEquals(1, Query.Accounts.all().size());
+            System.assertEquals(20, Query.Accounts.all().size());
         }
 
 

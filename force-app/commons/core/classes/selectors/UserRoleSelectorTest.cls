@@ -43,7 +43,7 @@ private class UserRoleSelectorTest {
             devNames.add(userRole.DeveloperName);
         }
 
-        Map<Id, UserRole> result = new Map<Id, UserRole>(new UserRoleSelector().byDeveloperNames(devNames));
+        Map<Id, UserRole> result = new Map<Id, UserRole>(new UserRoleSelector().byDeveloperNames((Iterable<String>) devNames));
         System.assertEquals(expected.keySet(), result.keySet());
     }
 
@@ -61,7 +61,7 @@ private class UserRoleSelectorTest {
     @IsTest
     static void testSelectByIds() {
         Map<Id, UserRole> expected = new Map<Id, UserRole>([SELECT Id,DeveloperName FROM UserRole]);
-        Map<Id, UserRole> result = new Map<Id, UserRole>(new UserRoleSelector().byIds(expected.keySet()));
+        Map<Id, UserRole> result = new Map<Id, UserRole>(new UserRoleSelector().byIds((Iterable<String>) expected.keySet()));
 
         System.assertEquals(expected.keySet(), result.keySet());
     }

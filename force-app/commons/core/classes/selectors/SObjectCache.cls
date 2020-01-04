@@ -62,10 +62,14 @@ public inherited sharing class SObjectCache {
     /**
      * @return All cached SOBjects with given SObject field value.
      */
-    public List<SObject> retrieve(SObjectField field, List<Object> values) {
+    public List<SObject> retrieveAll(SObjectField field, Iterable<Object> values) {
         List<SObject> result = new List<SObject>();
 
-        for (Object value : values) {
+        System.debug('values: ' + JSON.serializePretty(values));
+        Iterator<Object> it = values.iterator();
+        while (it.hasNext()) {
+            Object value = it.next();
+            System.debug('value: ' + value);
             result.addAll(retrieve(field, value));
         }
 
@@ -76,6 +80,7 @@ public inherited sharing class SObjectCache {
      * @return All cached SOBjects with given SObject field value.
      */
     public List<SObject> retrieve(SObjectField field, Object value) {
+        System.debug('other');
         if (storage.containsKey(field) && storage.get(field).containsKey(value)) {
             return storage.get(field).get(value);
         } else {

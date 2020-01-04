@@ -40,19 +40,47 @@ public inherited sharing class UserSelector extends Selector {
         super(QUERIED_FIELDS, User.SObjectType);
     }
 
+
+    /**
+     * @return User records with given name or null if user does not exist.
+     */
+    public User byName(String name) {
+        return (User) oneByField(User.Name, name);
+    }
+
+    /**
+     * @return User with given names.
+     */
+    public List<User> byNames(List<String> names) {
+        return byField(User.Name, names);
+    }
+
+    /**
+     * @return User records with given email or null if user does not exist.
+     */
+    public User byEmail(String email) {
+        return (User) oneByField(User.Email, email);
+    }
+
+    /**
+     * @return User with given emails.
+     */
+    public List<User> byEmails(List<String> emails) {
+        return byField(User.Email, emails);
+    }
+
     /**
      * @return User records with given UserName or null if user does not exist.
      */
     public User byUsername(String username) {
-        return (User) firstOrNull(byUsernames(new List<String>{username}));
+        return (User) oneByField(User.Username, username);
     }
 
     /**
      * @return User with given usernames.
      */
     public List<User> byUsernames(List<String> usernames) {
-        this.query.setWhere('Username IN :usernames');
-        return Database.query(this.query.build());
+        return byField(User.Username, usernames);
     }
 
     /**

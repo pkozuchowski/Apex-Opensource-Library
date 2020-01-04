@@ -30,6 +30,7 @@ public inherited sharing class PermissionSetSelector {
     private static SObjectCache cache = new SObjectCache([
             SELECT Id,Name
             FROM PermissionSet
+            WHERE IsOwnedByProfile = FALSE
 
     ], new List<SObjectField>{
             PermissionSet.Id,
@@ -43,6 +44,14 @@ public inherited sharing class PermissionSetSelector {
      */
     public PermissionSet byId(Id permissionSetId) {
         return (PermissionSet) cache.retrieveFirst(PermissionSet.Id, permissionSetId);
+    }
+
+    /**
+     * @param permissionSetIds Ids of Permission Set (Set or List, cast to iterable if needed)
+     * @return Permission Sets for given ids
+     */
+    public PermissionSet[] byIds(Iterable<Id> permissionSetIds) {
+        return cache.retrieveAll(PermissionSet.Id, permissionSetIds);
     }
 
     /**
@@ -61,9 +70,46 @@ public inherited sharing class PermissionSetSelector {
         return (Id) cache.retrieveFirstValue(PermissionSet.Name, name, PermissionSet.Id);
     }
 
-    public PermissionSet[] userPermissionSets(Id userId) {
-        List<PermissionSetAssignment> assignments = [SELECT PermissionSetId FROM PermissionSetAssignment WHERE AssigneeId = :userId];
-        List<Id> permissionSetIds = (List<Id>) Collection.of(assignments).listOf(PermissionSetAssignment.PermissionSetId);
-        return cache.retrieve(PermissionSet.Id, permissionSetIds);
+    /**
+     * @return Permission Sets of given user
+     */
+    public PermissionSet[] byCurrentUser() {
+        return byUser(UserInfo.getUserId());
+    }
+
+    /**
+     * @return Permission Sets of given user
+     */
+    public PermissionSet[] byUser(Id userId) {
+        return byUsers(new List<Id>{userId}).get(userId);
+    }
+
+    /**
+     * @return Permission Sets of given user
+     */
+    public Map<Id, PermissionSet[]> byUsers(Iterable<Id> userIds) {
+        Map<Id, PermissionSet[]> permissionSetsByUser = new Map<Id, PermissionSet[]>();
+
+        Iterator<Id> it = userIds.iterator();
+        while (it.hasNext()) {
+            permissionSetsByUser.put(it.next(), new PermissionSet[]{});
+        }
+
+        System.debug('userIds: ' + JSON.serializePretty(userIds));
+        System.debug('permissionSetsByUser: ' + JSON.serializePretty(permissionSetsByUser));
+
+
+        List<PermissionSetAssignment> assignments = Database.query('SELECT AssigneeId,PermissionSetId ' +
+                'FROM PermissionSetAssignment WHERE AssigneeId IN :userIds');
+
+        for (PermissionSetAssignment assignment : assignments) {
+            PermissionSet permissionSet = (PermissionSet) cache.retrieveFirst(PermissionSet.Id, assignment.PermissionSetId);
+
+            if (permissionSet != null) {
+                permissionSetsByUser.get(assignment.AssigneeId).add(permissionSet);
+            }
+        }
+
+        return permissionSetsByUser;
     }
 }

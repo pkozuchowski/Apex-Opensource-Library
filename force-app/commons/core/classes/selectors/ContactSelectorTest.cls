@@ -20,4 +20,14 @@ private class ContactSelectorTest {
         System.assertEquals(1, contacts.size());
         System.assertEquals('Parent Account', contacts[0].Account.Name);
     }
+
+    @IsTest
+    static void testSelectByAccountId() {
+        Account account = [SELECT Id FROM Account];
+
+        Integer expected = [SELECT COUNT() FROM Contact WHERE AccountId = :account.Id];
+        Integer actual = new ContactSelector().byAccountIds(new List<Id>{account.Id}).size();
+
+        System.assertEquals(expected, actual);
+    }
 }

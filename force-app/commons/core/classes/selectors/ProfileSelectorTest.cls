@@ -43,7 +43,7 @@ private class ProfileSelectorTest {
                 FROM Profile
                 WHERE Name IN ('Standard User', 'System Administrator')
         ]);
-        Map<Id, Profile> actual = new Map<Id, Profile>(new ProfileSelector().byIds((Iterable<Id>) expected.keySet()));
+        Map<Id, Profile> actual = new Map<Id, Profile>(new ProfileSelector().byId((Iterable<Id>) expected.keySet()));
 
         System.assertEquals(expected.keySet(), actual.keySet());
     }
@@ -55,7 +55,7 @@ private class ProfileSelectorTest {
                 FROM Profile
                 WHERE Name IN ('Standard User', 'System Administrator')
         ]);
-        Map<Id, Profile> actual = new Map<Id, Profile>(new ProfileSelector().byNames(
+        Map<Id, Profile> actual = new Map<Id, Profile>(new ProfileSelector().byName(
                 (Iterable<String>) new Set<String>{'Standard User', 'System Administrator'}
         ));
 

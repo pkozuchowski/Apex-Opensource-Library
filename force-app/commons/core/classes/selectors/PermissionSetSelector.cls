@@ -39,31 +39,27 @@ public inherited sharing class PermissionSetSelector {
 
 
     /**
-     * @param permissionSetId Id of Permission Set
-     * @return Permission Set or null
+     * @return Permission Set by given Id or null
      */
     public PermissionSet byId(Id permissionSetId) {
         return (PermissionSet) cache.retrieveFirst(PermissionSet.Id, permissionSetId);
     }
 
     /**
-     * @param permissionSetIds Ids of Permission Set (Set or List, cast to iterable if needed)
-     * @return Permission Sets for given ids
+     * @return Permission Sets by given ids (List or Set)
      */
     public PermissionSet[] byIds(Iterable<Id> permissionSetIds) {
         return cache.retrieveAll(PermissionSet.Id, permissionSetIds);
     }
 
     /**
-     * @param name Name of Permission Set
-     * @return Permission Set with given name or null if it does not exist.
+     * @return Permission Set by given name or null if it does not exist.
      */
     public PermissionSet byName(String name) {
         return (PermissionSet) cache.retrieveFirst(PermissionSet.Name, name);
     }
 
     /**
-     * @param name Name of Permission Set
      * @return Id of permission set or null.
      */
     public Id idByName(String name) {
@@ -74,20 +70,20 @@ public inherited sharing class PermissionSetSelector {
      * @return Permission Sets of given user
      */
     public PermissionSet[] byCurrentUser() {
-        return byUser(UserInfo.getUserId());
+        return byAssigneeId(UserInfo.getUserId());
     }
 
     /**
      * @return Permission Sets of given user
      */
-    public PermissionSet[] byUser(Id userId) {
-        return byUsers(new List<Id>{userId}).get(userId);
+    public PermissionSet[] byAssigneeId(Id userId) {
+        return byAssigneeId(new List<Id>{userId}).get(userId);
     }
 
     /**
      * @return Permission Sets of given user
      */
-    public Map<Id, PermissionSet[]> byUsers(Iterable<Id> userIds) {
+    public Map<Id, PermissionSet[]> byAssigneeId(Iterable<Id> userIds) {
         Map<Id, PermissionSet[]> permissionSetsByUser = new Map<Id, PermissionSet[]>();
 
         Iterator<Id> it = userIds.iterator();

@@ -62,10 +62,9 @@ public with sharing class HistorySelector extends Selector {
 
 
     /**
-     * @param parentIds List<Id> or (Iterable<Id>) Set<Id> of records
-     * @return Share records for given records
+     * @return Share records for given records (List or Set of parent ids)
      */
-    public SObject[] byParentIds(Iterable<Id> parentIds) {
+    public SObject[] byParentId(Iterable<Id> parentIds) {
         return byField(parentField, parentIds);
     }
 }

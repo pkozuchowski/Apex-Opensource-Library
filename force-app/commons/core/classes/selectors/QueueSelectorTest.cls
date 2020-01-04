@@ -40,9 +40,9 @@ private class QueueSelectorTest {
             System.assertEquals(queue.Id, new QueueSelector().byName(queue.Name).Id);
         }
 
-        System.assertEquals(queues.size(), new QueueSelector().byDeveloperNames(developerNames).size());
-        System.assertEquals(queues.size(), new QueueSelector().byNames((Iterable<String>) names).size());
-        System.assertEquals(queues.size(), new QueueSelector().byIds((Iterable<Id>) queues.keySet()).size());
+        System.assertEquals(queues.size(), new QueueSelector().byDeveloperName(developerNames).size());
+        System.assertEquals(queues.size(), new QueueSelector().byName((Iterable<String>) names).size());
+        System.assertEquals(queues.size(), new QueueSelector().byId((Iterable<Id>) queues.keySet()).size());
     }
 
     private static Map<Id, Group> getGroups(String type) {

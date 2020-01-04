@@ -50,7 +50,7 @@ public inherited sharing class QueueSelector {
     /**
      * @return List of Groups with given ids.
      */
-    public Group[] byIds(Iterable<Id> ids) {
+    public Group[] byId(Iterable<Id> ids) {
         return cache.retrieveAll(Group.Id, (Iterable<Object>) ids);
     }
 
@@ -65,7 +65,7 @@ public inherited sharing class QueueSelector {
     /**
      * @return List of Queues for given Developer Names.
      */
-    public Group[] byDeveloperNames(Iterable<String> developerNames) {
+    public Group[] byDeveloperName(Iterable<String> developerNames) {
         return cache.retrieveAll(Group.DeveloperName, (Iterable<Object>) developerNames);
     }
 
@@ -80,7 +80,7 @@ public inherited sharing class QueueSelector {
     /**
      * @return Queues with given names (label).
      */
-    public Group[] byNames(Iterable<String> names) {
+    public Group[] byName(Iterable<String> names) {
         return cache.retrieveAll(Group.Name, (Iterable<Object>) names);
     }
 }

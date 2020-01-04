@@ -47,7 +47,7 @@ public inherited sharing class PricebookSelector extends Selector {
     /**
      * @return Pricebook2 records with given names.
      */
-    public Pricebook2[] byNames(Iterable<String> names) {
+    public Pricebook2[] byName(Iterable<String> names) {
         return byField(Pricebook2.Name, names);
     }
 

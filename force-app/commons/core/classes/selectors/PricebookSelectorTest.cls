@@ -84,7 +84,7 @@ private class PricebookSelectorTest {
                 WHERE Name IN ('Test Pricebook 0', 'Test Pricebook 1')
         ]);
         Map<Id, Pricebook2> expected = new Map<Id, Pricebook2>(
-                new PricebookSelector().byNames(new List<String>{
+                new PricebookSelector().byName(new List<String>{
                         'Test Pricebook 0', 'Test Pricebook 1'
                 })
         );

@@ -59,18 +59,16 @@ public with sharing class EmailTemplateSelector extends Selector {
 
 
     /**
-     * @param developerName Developer Name of Email Template
-     * @return Email Template with given name or null
+     * @return Email Template by given name or null
      */
     public EmailTemplate byDeveloperName(String developerName) {
         return (EmailTemplate) oneByField(EmailTemplate.DeveloperName, developerName);
     }
 
     /**
-     * @param developerNames List<String> or (Iterable<String>) Set<String> of Email Template developer names
-     * @return Email Templates with given names
+     * @return Email Templates By given names (List or Set)
      */
-    public EmailTemplate[] byDeveloperNames(Iterable<String> developerNames) {
+    public EmailTemplate[] byDeveloperName(Iterable<String> developerNames) {
         return byField(EmailTemplate.DeveloperName, developerNames);
     }
 }

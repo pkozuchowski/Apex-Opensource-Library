@@ -44,13 +44,13 @@ private class EmailTemplateSelectorTest {
             System.assertEquals(template.DeveloperName, actual.DeveloperName);
             System.assertEquals(template.Body, actual.Body);
             System.assertEquals(template.HtmlValue, actual.HtmlValue);
-            System.assertEquals(1, new EmailTemplateSelector().byDeveloperNames(new List<String>{template.DeveloperName}).size());
+            System.assertEquals(1, new EmailTemplateSelector().byDeveloperName(new List<String>{template.DeveloperName}).size());
         } catch (QueryException ex) {
             new EmailTemplateSelector()
                     .withHtmlBody()
                     .withTextBody()
                     .byDeveloperName('');
-            System.assertEquals(0, new EmailTemplateSelector().byDeveloperNames(new List<String>{''}).size());
+            System.assertEquals(0, new EmailTemplateSelector().byDeveloperName(new List<String>{''}).size());
         }
     }
 }

@@ -1,7 +1,7 @@
 /**
 * MIT License
 *
-* Copyright (c) 2018 Piotr Kożuchowski
+* Copyright (c) 2019 Piotr Kożuchowski
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,6 @@
 
 /**
  * Selector layer for PricebookEntry SObject.
- * @see PricebookSelectorTest
  */
 public inherited sharing class PricebookEntrySelector extends Selector {
     public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{

@@ -46,6 +46,7 @@ public inherited sharing class Query {
     public final static StaticResourceSelector StaticResources { get {return new StaticResourceSelector();} }
     public final static UserRoleSelector UserRoles { get {return new UserRoleSelector();} }
     public final static UserSelector Users { get {return new UserSelector();} }
+    public final static OrgWideEmailAddressSelector OrgWideEmailAddresses { get {return new OrgWideEmailAddressSelector();} }
 
     public static ShareSelector SObjectShares(SObjectType shareSObjectType) {
         return new ShareSelector(shareSObjectType);

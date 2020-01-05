@@ -65,11 +65,9 @@ public inherited sharing class SObjectCache {
     public List<SObject> retrieveAll(SObjectField field, Iterable<Object> values) {
         List<SObject> result = new List<SObject>();
 
-        System.debug('values: ' + JSON.serializePretty(values));
         Iterator<Object> it = values.iterator();
         while (it.hasNext()) {
             Object value = it.next();
-            System.debug('value: ' + value);
             result.addAll(retrieve(field, value));
         }
 

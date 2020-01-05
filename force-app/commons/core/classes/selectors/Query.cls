@@ -28,10 +28,7 @@
  * Query.EmailTemplates.byDeveloperName('FirmQuote');
  */
 public inherited sharing class Query {
-    private final static SelectorFactory factory = new SelectorFactory();
-
-//    public final static AccountSelector Accounts { get {return new AccountSelector();} }
-    public final static AccountSelector Accounts { get {return (AccountSelector) factory.getSelector(Account.SObjectType)} }
+    public final static AccountSelector Accounts { get {return new AccountSelector();} }
     public final static BusinessHoursSelector BusinessHours { get {return new BusinessHoursSelector();} }
     public final static CaseSelector Cases { get {return new CaseSelector();} }
     public final static ContactSelector Contacts { get {return new ContactSelector();} }
@@ -43,6 +40,7 @@ public inherited sharing class Query {
     public final static ProfileSelector Profiles { get {return new ProfileSelector();} }
     public final static QueueSelector Queues { get {return new QueueSelector();} }
     public final static RecordTypeSelector RecordTypes { get {return new RecordTypeSelector();} }
+    public final static StaticResourceSelector StaticResources { get {return new StaticResourceSelector();} }
     public final static UserRoleSelector UserRoles { get {return new UserRoleSelector();} }
     public final static UserSelector Users { get {return new UserSelector();} }
 
@@ -52,12 +50,5 @@ public inherited sharing class Query {
 
     public static HistorySelector SObjectHistory(SObjectType shareSObjectType) {
         return new HistorySelector(shareSObjectType);
-    }
-
-    public class SelectorFactory {
-        public Object getSelector(SObjectType sObjectType) {
-            if (sObjectType == Account.SObjectType) return new AccountSelector();
-            return null;
-        }
     }
 }

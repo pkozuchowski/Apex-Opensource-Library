@@ -21,27 +21,36 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest(IsParallel=true)
-private class QueryTest {
 
-    @IsTest
-    static void coverage() {
-        Query.Accounts.byId('001000000000000');
-        Query.BusinessHours.byId('001000000000000');
-        Query.Cases.byId('001000000000000');
-        Query.Contacts.byId('001000000000000');
-        Query.EmailTemplates.byId('001000000000000');
-        Query.Leads.byId('001000000000000');
-        Query.Opportunities.byId('001000000000000');
-        Query.PermissionSets.byId('001000000000000');
-        Query.Pricebooks.byId('001000000000000');
-        Query.Profiles.byId('001000000000000');
-        Query.Queues.byId('001000000000000');
-        Query.UserRoles.byId('001000000000000');
-        Query.Users.byId('001000000000000');
-        Query.SObjectShares(MacroShare.SObjectType).byId('001000000000000');
-        Query.SObjectHistory(MacroShare.SObjectType).byId('001000000000000');
-        Query.RecordTypes.byDeveloperName(Account.SObjectType, '');
-        Query.StaticResources.byName('');
+/**
+ * Selector layer for Static Resources.
+ */
+public inherited sharing class StaticResourceSelector extends Selector {
+
+    public StaticResourceSelector() {
+        super(new List<SObjectField>{
+                StaticResource.Id,
+                StaticResource.Body,
+                StaticResource.BodyLength,
+                StaticResource.ContentType,
+                StaticResource.Description,
+                StaticResource.Name,
+                StaticResource.NamespacePrefix
+        }, StaticResource.SObjectType);
+    }
+
+
+    /**
+     * @return Static Resource by given name or null
+     */
+    public StaticResource byName(String name) {
+        return (StaticResource) oneRecordByField(StaticResource.Name, '=', name);
+    }
+
+    /**
+     * @return Static Resource by given names (List or Set)
+     */
+    public StaticResource[] byName(Iterable<String> names) {
+        return byField(StaticResource.Name, 'IN', names);
     }
 }

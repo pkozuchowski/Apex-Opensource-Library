@@ -21,27 +21,13 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest(IsParallel=true)
-private class QueryTest {
+@IsTest
+private class StaticResourceSelectorTest {
 
     @IsTest
     static void coverage() {
-        Query.Accounts.byId('001000000000000');
-        Query.BusinessHours.byId('001000000000000');
-        Query.Cases.byId('001000000000000');
-        Query.Contacts.byId('001000000000000');
-        Query.EmailTemplates.byId('001000000000000');
-        Query.Leads.byId('001000000000000');
-        Query.Opportunities.byId('001000000000000');
-        Query.PermissionSets.byId('001000000000000');
-        Query.Pricebooks.byId('001000000000000');
-        Query.Profiles.byId('001000000000000');
-        Query.Queues.byId('001000000000000');
-        Query.UserRoles.byId('001000000000000');
-        Query.Users.byId('001000000000000');
-        Query.SObjectShares(MacroShare.SObjectType).byId('001000000000000');
-        Query.SObjectHistory(MacroShare.SObjectType).byId('001000000000000');
-        Query.RecordTypes.byDeveloperName(Account.SObjectType, '');
-        Query.StaticResources.byName('');
+        new StaticResourceSelector().byName('Test');
+        new StaticResourceSelector().byName(new List<String>{'Test'});
+        new StaticResourceSelector().byName((Iterable<String>) new Set<String>{'Test'});
     }
 }

@@ -33,15 +33,15 @@ public inherited sharing class RecordTypeSelector {
     /**
      * @return Id of Record Type for given sObjectType and Record Type's Developer Name
      */
-    public Id selectIdByDeveloperName(SObjectType sObjType, String devName) {
-        RecordTypeInfo recordTypeInfo = selectByDeveloperName(sObjType, devName);
+    public Id idByDeveloperName(SObjectType sObjType, String devName) {
+        RecordTypeInfo recordTypeInfo = byDeveloperName(sObjType, devName);
         return recordTypeInfo == null ? null : recordTypeInfo.getRecordTypeId();
     }
 
     /**
      * @return Id of Record Type for given sObjectType and Record Type's Developer Name
      */
-    public RecordTypeInfo selectByDeveloperName(SObjectType sObjType, String devName) {
+    public RecordTypeInfo byDeveloperName(SObjectType sObjType, String devName) {
         if (!recordTypeInfoMap.containsKey(sObjType)) {
             recordTypeInfoMap.put(sObjType, sObjType.getDescribe().getRecordTypeInfosByDeveloperName());
         }

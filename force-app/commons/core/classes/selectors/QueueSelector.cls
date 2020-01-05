@@ -23,11 +23,9 @@
 */
 
 /**
-* Selector Layer for Groups and Queues.
-* Performs lazy query of groups by type and exposes methods to retrieve group by Developer name, label or id
-* Groups are initialized by type - Only queues are retrieved in one query, if this class gets bigger, it might
-* include Role groups initialization and so on.
-* @see GroupSelectorTest
+* Selector Layer for Queues.
+* Queues are cached to save SOQL queries in subsequent calls.
+* @see QueueSelectorTest.cls
 * */
 public inherited sharing class QueueSelector {
     private static SObjectCache cache = new SObjectCache([
@@ -52,8 +50,8 @@ public inherited sharing class QueueSelector {
     /**
      * @return List of Groups with given ids.
      */
-    public Group[] byIds(Set<Id> ids) {
-        return cache.retrieve(Group.Id, ids);
+    public Group[] byId(Iterable<Id> ids) {
+        return cache.retrieveAll(Group.Id, (Iterable<Object>) ids);
     }
 
 
@@ -67,8 +65,8 @@ public inherited sharing class QueueSelector {
     /**
      * @return List of Queues for given Developer Names.
      */
-    public Group[] byDeveloperNames(Set<String> developerNames) {
-        return cache.retrieve(Group.DeveloperName, developerNames);
+    public Group[] byDeveloperName(Iterable<String> developerNames) {
+        return cache.retrieveAll(Group.DeveloperName, (Iterable<Object>) developerNames);
     }
 
 
@@ -82,7 +80,7 @@ public inherited sharing class QueueSelector {
     /**
      * @return Queues with given names (label).
      */
-    public Group[] byNames(Set<String> names) {
-        return cache.retrieve(Group.Name, names);
+    public Group[] byName(Iterable<String> names) {
+        return cache.retrieveAll(Group.Name, (Iterable<Object>) names);
     }
 }

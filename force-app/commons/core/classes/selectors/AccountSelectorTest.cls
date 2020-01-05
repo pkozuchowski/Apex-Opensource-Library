@@ -1,81 +1,80 @@
-@IsTest
-public class AccountSelectorTest {
+/**
+* MIT License
+*
+* Copyright (c) 2019 Piotr Kożuchowski
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
+@IsTest(IsParallel=true)
+private without sharing class AccountSelectorTest {
 
     @TestSetup
     static void testSetup() {
-        Profile stdUser = Query.Profiles.byName('Standard User');
+        List<Account> accounts = new List<Account>{
+                new Account(Name = 'Name 0'),
+                new Account(Name = 'Name 1'),
+                new Account(Name = 'Name 2'),
+                new Account(Name = 'Name 3')
+        };
+        insert accounts;
 
-        List<User> users = new TestDataBuilder()
-                .create(new User(Username = 'AccountSelectorTest@unittest.com', ProfileId = stdUser.Id))
-                .create(new User(Username = 'AccountSelectorTest2@unittest.com', ProfileId = stdUser.Id))
-                .insertRecords();
+        Account account = new Account(ParentId = accounts[0].Id, Name = 'Test Child Account');
+        insert account;
 
-
-        System.runAs(users[0]) {
-            TestDataBuilder builder = new TestDataBuilder();
-            List<Account> accounts = builder
-                    .create(10, new Account(Name = 'Test'))
-                    .insertRecords();
-
-            for (Account account : accounts) {
-                builder.create(new Contact(AccountId = account.Id, LastName = 'Test'));
-            }
-            for (Account account : accounts) {
-                builder.create(new Account(ParentId = account.Id, Name = 'Child'));
-            }
-            builder.insertRecords();
-
-
-//            List<Account> accounts = new List<Account>{
-//                    new Account(Name = 'Test 0'),
-//                    new Account(Name = 'Test 1'),
-//                    new Account(Name = 'Test 2'),
-//                    new Account(Name = 'Test 3'),
-//                    new Account(Name = 'Test 4')
-//            };
-//            insert accounts;
-        }
+        insert new Contact(AccountId = account.Id, LastName = 'Test Contact');
+        insert new Case(AccountId = account.Id, Subject = 'Test Case');
+        insert new Opportunity(AccountId = account.Id, Name = 'Test Opportunity', CloseDate = Date.today(), StageName = 'Prospecting');
     }
 
-    /**
-     *@description
-     *
-     */
     @IsTest
-    static void testX() {
-        User u = Query.Users.byUsername('AccountSelectorTest@unittest.com');
-        System.runAs(u) {
-            System.debug([SELECT ID FROM Account]);
-            System.assertEquals(1, Query.Accounts.all().size());
-        }
+    static void testSelectByName() {
+        SelectorTest.assertEquals(
+                ([SELECT Id FROM Account WHERE Name = 'Name 1']),
+                new AccountSelector().byName('Name 1'));
 
-
-        User u2 = Query.Users.byUsername('AccountSelectorTest2@unittest.com');
-        System.runAs(u2) {
-            System.debug([SELECT ID FROM Account]);
-            System.assertEquals(0, Query.Accounts.all().size());
-//            System.assertEquals(0, QueryWithoutSharing.Accounts.all().size());
-        }
+        SelectorTest.assertEquals(
+                ([SELECT Id FROM Account WHERE Name IN ('Name 1', 'Name 2')]),
+                new AccountSelector().byName(new List<String>{'Name 1', 'Name 2'}));
     }
 
-
     @IsTest
-    static void testSelectWithRelatedByNames() {
-        List<String> names = new List<String>{'Test'};
-        List<Account> expected = [
-                SELECT Id, (SELECT Id FROM Contacts), (SELECT Id FROM ChildAccounts), Parent.Name
+    static void testSelectWithRelated() {
+        Account expected = [
+                SELECT Id,Name, (SELECT Id FROM Contacts), (SELECT Id FROM Cases), (SELECT Id FROM Opportunities), (SELECT Id FROM ChildAccounts),
+                        Parent.Name
                 FROM Account
-                WHERE Name IN :names
+                WHERE Name = 'Test Child Account'
         ];
 
-        List<Account> actual = new AccountSelector()
-                .withContacts()
+        Account actual = new AccountSelector()
                 .withParentAccount()
                 .withChildrenAccounts()
-                .byNames(names);
+                .withContacts()
+                .withCases()
+                .withOpportunities()
+                .byName(expected.Name)[0];
 
-        System.assertEquals(expected.size(), actual.size());
-        System.assertEquals(expected[0].Contacts.size(), actual[0].Contacts.size());
-        System.assertEquals(expected[0].ChildAccounts.size(), actual[0].ChildAccounts.size());
+        System.assertEquals(expected.Id, actual.Id);
+        System.assertEquals(expected.Parent.Name, actual.Parent.Name);
+        System.assertEquals(expected.ChildAccounts.size(), actual.ChildAccounts.size());
+        System.assertEquals(expected.Contacts.size(), actual.Contacts.size());
+        System.assertEquals(expected.Cases.size(), actual.Cases.size());
+        System.assertEquals(expected.Opportunities.size(), actual.Opportunities.size());
     }
 }

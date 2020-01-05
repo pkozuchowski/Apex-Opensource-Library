@@ -1,7 +1,7 @@
 @IsTest(IsParallel=true)
 private class PermissionSetSelectorTest {
     private final static PermissionSetSelector permissionSetSelector = new PermissionSetSelector();
-    private final static PermissionSet[] permissionSets = [SELECT Id, Name FROM PermissionSet];
+    private final static PermissionSet[] permissionSets = [SELECT Id, Name FROM PermissionSet WHERE IsOwnedByProfile = FALSE];
 
     @IsTest
     static void testSelectNull() {
@@ -19,6 +19,8 @@ private class PermissionSetSelectorTest {
                     permissionSet.Id,
                     permissionSetSelector.byId(permissionSet.Id).Id
             );
+
+            System.assertEquals(1, permissionSetSelector.byId(new List<Id>{permissionSet.Id}).size());
         }
     }
 
@@ -44,5 +46,21 @@ private class PermissionSetSelectorTest {
                     permissionSetSelector.idByName(permissionSet.Name)
             );
         }
+    }
+
+    @IsTest
+    static void testSelectByCurrentUser() {
+        PermissionSet[] expected = [
+                SELECT Id, Name
+                FROM PermissionSet
+                WHERE IsOwnedByProfile = FALSE AND Id IN (
+                        SELECT PermissionSetId
+                        FROM PermissionSetAssignment
+                        WHERE AssigneeId = :UserInfo.getUserId()
+                )
+        ];
+        PermissionSet[] actual = new PermissionSetSelector().byCurrentUser();
+
+        System.assertEquals(expected, actual);
     }
 }

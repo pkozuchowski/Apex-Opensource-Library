@@ -50,8 +50,8 @@ public inherited sharing class UserRoleSelector {
     /**
      * @return UserRoles by given developer names
      */
-    public UserRole[] byDeveloperNames(Set<String> developerNames) {
-        return cache.retrieve(UserRole.DeveloperName, new List<String>(developerNames));
+    public UserRole[] byDeveloperName(Iterable<String> developerNames) {
+        return cache.retrieveAll(UserRole.DeveloperName, developerNames);
     }
 
 
@@ -66,7 +66,7 @@ public inherited sharing class UserRoleSelector {
     /**
      * @return UserRoles by given ids
      */
-    public UserRole[] byIds(Set<Id> userRoleIds) {
-        return cache.retrieve(UserRole.Id, (List<Object>) new List<Id>(userRoleIds));
+    public UserRole[] byId(Iterable<Id> userRoleIds) {
+        return cache.retrieveAll(UserRole.Id, userRoleIds);
     }
 }

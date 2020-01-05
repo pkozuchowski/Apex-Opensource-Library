@@ -62,10 +62,12 @@ public inherited sharing class SObjectCache {
     /**
      * @return All cached SOBjects with given SObject field value.
      */
-    public List<SObject> retrieve(SObjectField field, List<Object> values) {
+    public List<SObject> retrieveAll(SObjectField field, Iterable<Object> values) {
         List<SObject> result = new List<SObject>();
 
-        for (Object value : values) {
+        Iterator<Object> it = values.iterator();
+        while (it.hasNext()) {
+            Object value = it.next();
             result.addAll(retrieve(field, value));
         }
 

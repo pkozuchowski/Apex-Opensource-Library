@@ -34,6 +34,12 @@ private class PricebookSelectorTest {
         };
     }
 
+    @IsTest
+    static void testWithRelated() {
+        new PricebookSelector()
+                .withEntries()
+                .byName('Test Pricebook 0');
+    }
 
     /**
      * Standard pricebook Id value in unit test context should be the same as Test.getStandardPricebookId() call result.
@@ -62,7 +68,7 @@ private class PricebookSelectorTest {
                 WHERE Name IN ('Test Pricebook 0', 'Test Pricebook 1')
         ]);
         Map<Id, Pricebook2> expected = new Map<Id, Pricebook2>(
-                (Pricebook2[]) new PricebookSelector().byIds((Iterable<Id>) actual.keySet())
+                (Pricebook2[]) new PricebookSelector().byId((Iterable<Id>) actual.keySet())
         );
 
         System.assertEquals(actual.keySet(), expected.keySet());
@@ -84,7 +90,7 @@ private class PricebookSelectorTest {
                 WHERE Name IN ('Test Pricebook 0', 'Test Pricebook 1')
         ]);
         Map<Id, Pricebook2> expected = new Map<Id, Pricebook2>(
-                new PricebookSelector().byNames(new List<String>{
+                new PricebookSelector().byName(new List<String>{
                         'Test Pricebook 0', 'Test Pricebook 1'
                 })
         );

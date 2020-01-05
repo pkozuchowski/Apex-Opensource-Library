@@ -32,8 +32,44 @@ private class UserSelectorTest {
     }
 
     @IsTest
-    static void testSelectUserByUsername() {
-        User currentUser = new UserSelector().currentUser();
-        System.assertEquals(currentUser.Id, new UserSelector().byUsername(currentUser.Username).Id);
+    static void testSelectByName() {
+        System.assertEquals(
+                [SELECT Id FROM User WHERE Name = :UserInfo.getName()].Id,
+                new UserSelector().byName(UserInfo.getName()).Id
+        );
+
+        List<String> names = new List<String>{UserInfo.getName()};
+        System.assertEquals(
+        [SELECT COUNT() FROM User WHERE Name IN :names],
+                new UserSelector().byName(names).size()
+        );
+    }
+
+    @IsTest
+    static void testSelectByEmail() {
+        System.assertEquals(
+                [SELECT Id FROM User WHERE Email = :UserInfo.getUserEmail()].Id,
+                new UserSelector().byEmail(UserInfo.getUserEmail()).Id
+        );
+
+        List<String> emails = new List<String>{UserInfo.getUserEmail()};
+        System.assertEquals(
+        [SELECT COUNT() FROM User WHERE Email IN :emails],
+                new UserSelector().byEmail(emails).size()
+        );
+    }
+
+    @IsTest
+    static void testSelectByUsername() {
+        System.assertEquals(
+                [SELECT Id FROM User WHERE Username = :UserInfo.getUserName()].Id,
+                new UserSelector().byUsername(UserInfo.getUserName()).Id
+        );
+
+        List<String> usernames = new List<String>{UserInfo.getUserName()};
+        System.assertEquals(
+        [SELECT COUNT() FROM User WHERE Username IN :usernames],
+                new UserSelector().byUsername(usernames).size()
+        );
     }
 }

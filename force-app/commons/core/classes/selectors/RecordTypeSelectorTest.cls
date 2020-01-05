@@ -21,21 +21,15 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-
 @IsTest(IsParallel=true)
 private class RecordTypeSelectorTest {
-
-    @IsTest
-    static void whenRecordTypeDoesNotExistThenSelectorReturnsNullId() {
-        System.assertEquals(null, new RecordTypeSelector().selectIdByDeveloperName(Account.SObjectType, '**Unit Test Record Type**'));
-    }
 
     @IsTest
     static void testRecordTypeSelector() {
         Map<String, RecordTypeInfo> accountRTs = Account.SObjectType.getDescribe().getRecordTypeInfosByDeveloperName();
 
         for (String devName : accountRTs.keySet()) {
-            System.assertEquals(accountRTs.get(devName).getRecordTypeId(), new RecordTypeSelector().selectIdByDeveloperName(Account.SObjectType, devName));
+            System.assertEquals(accountRTs.get(devName).getRecordTypeId(), new RecordTypeSelector().idByDeveloperName(Account.SObjectType, devName));
         }
     }
 }

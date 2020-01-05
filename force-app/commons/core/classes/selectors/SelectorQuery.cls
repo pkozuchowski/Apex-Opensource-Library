@@ -54,6 +54,7 @@ public with sharing class SelectorQuery {
                 offsetQueryPart
         };
 
+        System.debug(String.join(query, ' ').trim());
         return String.join(query, ' ').trim();
     }
 
@@ -146,5 +147,25 @@ public with sharing class SelectorQuery {
     public SelectorQuery setOffset(Integer offsetOf) {
         this.offsetQueryPart = 'OFFSET ' + offsetOf;
         return this;
+    }
+
+    /**
+     * Converts list to SOQL string representation ('a','b'...)
+     */
+    public static String toSoqlList(Iterable<Object> values) {
+        Set<String> escapedValues = new Set<String>();
+
+        Iterator<Object> it = values.iterator();
+        while (it.hasNext()) {
+            String val = String.escapeSingleQuotes('' + it.next());
+            escapedValues.add(val);
+        }
+
+        if (escapedValues.isEmpty()) {
+            /*List cannot be empty in dynamic query*/
+            return '(\'<null>\')';
+        } else {
+            return '(\'' + String.join(new List<String>(escapedValues), '\',\'') + '\')';
+        }
     }
 }

@@ -36,6 +36,17 @@ public inherited sharing class PricebookSelector extends Selector {
         }, Pricebook2.SObjectType);
     }
 
+    /**
+     * Add Pricebook Entries to query
+     */
+    public PricebookSelector withEntries() {
+        this.query.addSubquery(new SelectorQuery()
+                .selectFields(PricebookEntrySelector.QUERIED_FIELDS)
+                .addParentFields(ProductSelector.QUERIED_FIELDS, PricebookEntry.Product2Id)
+                .fromObject('PricebookEntries')
+        );
+        return this;
+    }
 
     /**
      * @return Pricebook2 record with given name or null.

@@ -38,6 +38,8 @@ public inherited sharing class Query {
     public final static OpportunitySelector Opportunities { get {return new OpportunitySelector();} }
     public final static PermissionSetSelector PermissionSets { get {return new PermissionSetSelector();} }
     public final static PricebookSelector Pricebooks { get {return new PricebookSelector();} }
+    public final static PricebookEntrySelector PricebookEntries { get {return new PricebookEntrySelector();} }
+    public final static ProductSelector Products { get {return new ProductSelector();} }
     public final static ProfileSelector Profiles { get {return new ProfileSelector();} }
     public final static QueueSelector Queues { get {return new QueueSelector();} }
     public final static RecordTypeSelector RecordTypes { get {return new RecordTypeSelector();} }

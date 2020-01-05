@@ -34,6 +34,12 @@ private class PricebookSelectorTest {
         };
     }
 
+    @IsTest
+    static void testWithRelated() {
+        new PricebookSelector()
+                .withEntries()
+                .byName('Test Pricebook 0');
+    }
 
     /**
      * Standard pricebook Id value in unit test context should be the same as Test.getStandardPricebookId() call result.

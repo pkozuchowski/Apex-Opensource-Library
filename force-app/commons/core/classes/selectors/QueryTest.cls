@@ -26,23 +26,31 @@ private class QueryTest {
 
     @IsTest
     static void coverage() {
-        Query.Accounts.byId('001000000000000');
-        Query.BusinessHours.byId('001000000000000');
-        Query.Cases.byId('001000000000000');
-        Query.Contacts.byId('001000000000000');
-        Query.EmailTemplates.byId('001000000000000');
-        Query.Leads.byId('001000000000000');
-        Query.Opportunities.byId('001000000000000');
-        Query.PermissionSets.byId('001000000000000');
-        Query.Pricebooks.byId('001000000000000');
-        Query.Profiles.byId('001000000000000');
-        Query.Queues.byId('001000000000000');
-        Query.UserRoles.byId('001000000000000');
-        Query.Users.byId('001000000000000');
-        Query.SObjectShares(MacroShare.SObjectType).byId('001000000000000');
-        Query.SObjectHistory(MacroShare.SObjectType).byId('001000000000000');
-        Query.RecordTypes.byDeveloperName(Account.SObjectType, '');
-        Query.StaticResources.byName('');
-        Query.ContentDocuments.byLinkedEntityId('001000000000000');
+        System.assertNotEquals(null, Query.Accounts);
+        System.assertNotEquals(null, Query.Attachments);
+        System.assertNotEquals(null, Query.BusinessHours);
+        System.assertNotEquals(null, Query.Cases);
+        System.assertNotEquals(null, Query.Contacts);
+        System.assertNotEquals(null, Query.ContentDocuments);
+        System.assertNotEquals(null, Query.ContentDocuments);
+        System.assertNotEquals(null, Query.EmailMessages);
+        System.assertNotEquals(null, Query.EmailTemplates);
+        System.assertNotEquals(null, Query.Events);
+        System.assertNotEquals(null, Query.Leads);
+        System.assertNotEquals(null, Query.Opportunities);
+        System.assertNotEquals(null, Query.OrgWideEmailAddresses);
+        System.assertNotEquals(null, Query.PermissionSets);
+        System.assertNotEquals(null, Query.PricebookEntries);
+        System.assertNotEquals(null, Query.Pricebooks);
+        System.assertNotEquals(null, Query.Products);
+        System.assertNotEquals(null, Query.Profiles);
+        System.assertNotEquals(null, Query.Queues);
+        System.assertNotEquals(null, Query.RecordTypes);
+        System.assertNotEquals(null, Query.SObjectHistory(MacroShare.SObjectType));
+        System.assertNotEquals(null, Query.SObjectShares(MacroShare.SObjectType));
+        System.assertNotEquals(null, Query.StaticResources);
+        System.assertNotEquals(null, Query.Tasks);
+        System.assertNotEquals(null, Query.UserRoles);
+        System.assertNotEquals(null, Query.Users);
     }
 }

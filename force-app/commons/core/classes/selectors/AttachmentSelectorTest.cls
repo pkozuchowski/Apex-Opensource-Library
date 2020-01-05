@@ -21,16 +21,29 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
+
 @IsTest(IsParallel=true)
-private class OrgWideEmailAddressSelectorTest {
+public with sharing class AttachmentSelectorTest {
+
+    @TestSetup
+    static void testSetup() {
+        Account account = new Account(Name = 'Parent Account');
+        insert account;
+
+        insert new Attachment(ParentId = account.Id, Name = 'Test', Body = Blob.valueOf('Test'));
+    }
 
     @IsTest
-    static void testCoverage() {
-        new OrgWideEmailAddressSelector().byId('0D2000000000000');
-        new OrgWideEmailAddressSelector().byId(new List<Id>{'0D2000000000000'});
-        new OrgWideEmailAddressSelector().byDisplayName('test@example.com');
-        new OrgWideEmailAddressSelector().byDisplayName(new List<String>{'test@example.com'});
-        new OrgWideEmailAddressSelector().byAddress('test@example.com');
-        new OrgWideEmailAddressSelector().byAddress(new List<String>{'test@example.com'});
+    static void testSelectByParentId() {
+        Account account = [SELECT Id FROM Account];
+
+        SelectorTest.assertEquals(
+                ([SELECT Id FROM Attachment WHERE ParentId = :account.Id]),
+                new AttachmentSelector().byParentId(account.Id)
+        );
+        SelectorTest.assertEquals(
+                ([SELECT Id FROM Attachment WHERE ParentId = :account.Id]),
+                new AttachmentSelector().byParentId(new List<Id>{account.Id})
+        );
     }
 }

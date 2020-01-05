@@ -21,16 +21,37 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest(IsParallel=true)
-private class OrgWideEmailAddressSelectorTest {
 
-    @IsTest
-    static void testCoverage() {
-        new OrgWideEmailAddressSelector().byId('0D2000000000000');
-        new OrgWideEmailAddressSelector().byId(new List<Id>{'0D2000000000000'});
-        new OrgWideEmailAddressSelector().byDisplayName('test@example.com');
-        new OrgWideEmailAddressSelector().byDisplayName(new List<String>{'test@example.com'});
-        new OrgWideEmailAddressSelector().byAddress('test@example.com');
-        new OrgWideEmailAddressSelector().byAddress(new List<String>{'test@example.com'});
+/**
+ * Selector layer for Attachment SObjects
+ */
+public with sharing class AttachmentSelector extends Selector {
+    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
+            Attachment.Id,
+            Attachment.Body,
+            Attachment.BodyLength,
+            Attachment.ContentType,
+            Attachment.Description,
+            Attachment.Name,
+            Attachment.ParentId
+    };
+
+    public AttachmentSelector() {
+        super(QUERIED_FIELDS, Attachment.SObjectType);
+    }
+
+
+    /**
+     * @return Attachments associated with given record
+     */
+    public Attachment[] byParentId(Id parentId) {
+        return byField(Attachment.ParentId, '=', parentId);
+    }
+
+    /**
+     * @return Attachments associated with given records (List or Set)
+     */
+    public Attachment[] byParentId(Iterable<Id> parentIds) {
+        return byField(Attachment.ParentId, 'IN', parentIds);
     }
 }

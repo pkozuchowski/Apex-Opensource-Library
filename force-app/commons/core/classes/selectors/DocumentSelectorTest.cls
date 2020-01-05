@@ -21,16 +21,29 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
+
 @IsTest(IsParallel=true)
-private class OrgWideEmailAddressSelectorTest {
+public with sharing class DocumentSelectorTest {
+
+    @TestSetup
+    static void testSetup() {
+        insert new Document(
+                Name = 'DocumentSelectorTest',
+                DeveloperName = 'DocumentSelectorTest',
+                Body = Blob.valueOf('12'),
+                FolderId = UserInfo.getUserId()
+        );
+    }
 
     @IsTest
-    static void testCoverage() {
-        new OrgWideEmailAddressSelector().byId('0D2000000000000');
-        new OrgWideEmailAddressSelector().byId(new List<Id>{'0D2000000000000'});
-        new OrgWideEmailAddressSelector().byDisplayName('test@example.com');
-        new OrgWideEmailAddressSelector().byDisplayName(new List<String>{'test@example.com'});
-        new OrgWideEmailAddressSelector().byAddress('test@example.com');
-        new OrgWideEmailAddressSelector().byAddress(new List<String>{'test@example.com'});
+    static void testSelectByParentId() {
+        SelectorTest.assertEquals(
+                ([SELECT Id FROM Document WHERE DeveloperName = 'DocumentSelectorTest']),
+                new DocumentSelector().byDeveloperName('DocumentSelectorTest')
+        );
+        SelectorTest.assertEquals(
+                ([SELECT Id FROM Document WHERE DeveloperName = 'DocumentSelectorTest']),
+                new DocumentSelector().byDeveloperName(new List<String>{'DocumentSelectorTest'})
+        );
     }
 }

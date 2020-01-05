@@ -29,24 +29,28 @@
  */
 public inherited sharing class Query {
     public final static AccountSelector Accounts { get {return new AccountSelector();} }
+    public final static AttachmentSelector Attachments { get {return new AttachmentSelector();} }
     public final static BusinessHoursSelector BusinessHours { get {return new BusinessHoursSelector();} }
     public final static CaseSelector Cases { get {return new CaseSelector();} }
     public final static ContactSelector Contacts { get {return new ContactSelector();} }
     public final static ContentDocumentSelector ContentDocuments { get {return new ContentDocumentSelector();} }
+    public final static EmailMessageSelector EmailMessages { get {return new EmailMessageSelector();} }
     public final static EmailTemplateSelector EmailTemplates { get {return new EmailTemplateSelector();} }
+    public final static EventSelector Events { get {return new EventSelector();} }
     public final static LeadSelector Leads { get {return new LeadSelector();} }
     public final static OpportunitySelector Opportunities { get {return new OpportunitySelector();} }
+    public final static OrgWideEmailAddressSelector OrgWideEmailAddresses { get {return new OrgWideEmailAddressSelector();} }
     public final static PermissionSetSelector PermissionSets { get {return new PermissionSetSelector();} }
-    public final static PricebookSelector Pricebooks { get {return new PricebookSelector();} }
     public final static PricebookEntrySelector PricebookEntries { get {return new PricebookEntrySelector();} }
+    public final static PricebookSelector Pricebooks { get {return new PricebookSelector();} }
     public final static ProductSelector Products { get {return new ProductSelector();} }
     public final static ProfileSelector Profiles { get {return new ProfileSelector();} }
     public final static QueueSelector Queues { get {return new QueueSelector();} }
     public final static RecordTypeSelector RecordTypes { get {return new RecordTypeSelector();} }
     public final static StaticResourceSelector StaticResources { get {return new StaticResourceSelector();} }
+    public final static TaskSelector Tasks { get {return new TaskSelector();} }
     public final static UserRoleSelector UserRoles { get {return new UserRoleSelector();} }
     public final static UserSelector Users { get {return new UserSelector();} }
-    public final static OrgWideEmailAddressSelector OrgWideEmailAddresses { get {return new OrgWideEmailAddressSelector();} }
 
     public static ShareSelector SObjectShares(SObjectType shareSObjectType) {
         return new ShareSelector(shareSObjectType);
@@ -54,5 +58,8 @@ public inherited sharing class Query {
 
     public static HistorySelector SObjectHistory(SObjectType shareSObjectType) {
         return new HistorySelector(shareSObjectType);
+    }
+
+    private Query() {
     }
 }

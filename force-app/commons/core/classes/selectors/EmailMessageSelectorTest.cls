@@ -21,16 +21,32 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
+
 @IsTest(IsParallel=true)
-private class OrgWideEmailAddressSelectorTest {
+public with sharing class EmailMessageSelectorTest {
+
+    @TestSetup
+    static void testSetup() {
+        Account account = new Account(Name = 'Parent Account');
+        insert account;
+
+        Case caase = new Case(AccountId = account.Id, Subject = 'Subject 1', Status = 'New', Origin = 'Web');
+        insert caase;
+
+        insert new EmailMessage(ParentId = caase.Id);
+    }
 
     @IsTest
-    static void testCoverage() {
-        new OrgWideEmailAddressSelector().byId('0D2000000000000');
-        new OrgWideEmailAddressSelector().byId(new List<Id>{'0D2000000000000'});
-        new OrgWideEmailAddressSelector().byDisplayName('test@example.com');
-        new OrgWideEmailAddressSelector().byDisplayName(new List<String>{'test@example.com'});
-        new OrgWideEmailAddressSelector().byAddress('test@example.com');
-        new OrgWideEmailAddressSelector().byAddress(new List<String>{'test@example.com'});
+    static void testSelectByParentId() {
+        Case caase = [SELECT Id FROM Case];
+
+        SelectorTest.assertEquals(
+                ([SELECT Id FROM EmailMessage WHERE ParentId = :caase.Id]),
+                new EmailMessageSelector().byParentId(caase.Id)
+        );
+        SelectorTest.assertEquals(
+                ([SELECT Id FROM EmailMessage WHERE ParentId = :caase.Id]),
+                new EmailMessageSelector().byParentId(new List<Id>{caase.Id})
+        );
     }
 }

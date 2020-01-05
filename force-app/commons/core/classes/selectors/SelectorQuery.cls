@@ -54,7 +54,6 @@ public with sharing class SelectorQuery {
                 offsetQueryPart
         };
 
-        System.debug(String.join(query, ' ').trim());
         return String.join(query, ' ').trim();
     }
 

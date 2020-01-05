@@ -70,7 +70,6 @@ private class FormatterTest {
         response.setBody('success');
 
         System.assertEquals(
-                'Response:\n' +
                         '200 OK\n' +
                         'success',
                 formatter.format(response)

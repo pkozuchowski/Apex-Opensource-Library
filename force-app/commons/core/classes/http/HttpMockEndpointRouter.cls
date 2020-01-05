@@ -35,7 +35,7 @@ public virtual with sharing class HttpMockEndpointRouter implements HttpCalloutC
      * @param endpointPattern Regexp pattern for Endpoint
      * @param mock Mock to respond with.
      */
-    public HttpMockEndpointRouter(String methods, String endpointPattern, HttpCalloutMock mock) {
+    public virtual HttpMockEndpointRouter(String methods, String endpointPattern, HttpCalloutMock mock) {
         this.methods = new Set<String>(methods.toUpperCase().split(','));
         this.endpointPattern = Pattern.compile(endpointPattern);
         this.mock = mock;

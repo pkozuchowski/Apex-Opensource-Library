@@ -32,6 +32,7 @@ public inherited sharing class Query {
     public final static BusinessHoursSelector BusinessHours { get {return new BusinessHoursSelector();} }
     public final static CaseSelector Cases { get {return new CaseSelector();} }
     public final static ContactSelector Contacts { get {return new ContactSelector();} }
+    public final static ContentDocumentSelector ContentDocuments { get {return new ContentDocumentSelector();} }
     public final static EmailTemplateSelector EmailTemplates { get {return new EmailTemplateSelector();} }
     public final static LeadSelector Leads { get {return new LeadSelector();} }
     public final static OpportunitySelector Opportunities { get {return new OpportunitySelector();} }

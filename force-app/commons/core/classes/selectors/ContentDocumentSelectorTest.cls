@@ -21,28 +21,38 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
+
 @IsTest(IsParallel=true)
-private class QueryTest {
+private class ContentDocumentSelectorTest {
+
+    @TestSetup
+    static void testSetup() {
+        Account account = new Account(Name = 'Test');
+        insert account;
+
+        ContentVersion contentVersionInsert = new ContentVersion(
+                Title = 'Test',
+                PathOnClient = 'Test.jpg',
+                VersionData = Blob.valueOf('Test Data'),
+                IsMajorVersion = true
+        );
+        insert contentVersionInsert;
+
+        ContentDocument document = [SELECT Id FROM ContentDocument];
+
+        insert new ContentDocumentLink(
+                LinkedEntityId = account.Id,
+                ContentDocumentId = document.Id,
+                ShareType = 'I'
+        );
+    }
 
     @IsTest
-    static void coverage() {
-        Query.Accounts.byId('001000000000000');
-        Query.BusinessHours.byId('001000000000000');
-        Query.Cases.byId('001000000000000');
-        Query.Contacts.byId('001000000000000');
-        Query.EmailTemplates.byId('001000000000000');
-        Query.Leads.byId('001000000000000');
-        Query.Opportunities.byId('001000000000000');
-        Query.PermissionSets.byId('001000000000000');
-        Query.Pricebooks.byId('001000000000000');
-        Query.Profiles.byId('001000000000000');
-        Query.Queues.byId('001000000000000');
-        Query.UserRoles.byId('001000000000000');
-        Query.Users.byId('001000000000000');
-        Query.SObjectShares(MacroShare.SObjectType).byId('001000000000000');
-        Query.SObjectHistory(MacroShare.SObjectType).byId('001000000000000');
-        Query.RecordTypes.byDeveloperName(Account.SObjectType, '');
-        Query.StaticResources.byName('');
-        Query.ContentDocuments.byLinkedEntityId('001000000000000');
+    static void testSelectByLinkedEntityId() {
+        Account account = [SELECT Id FROM Account];
+        ContentDocument[] documents = new ContentDocumentSelector().byLinkedEntityId(account.Id);
+
+        System.assertEquals(1, documents.size());
+        System.assertEquals('Test', documents[0].LatestPublishedVersion.Title);
     }
 }

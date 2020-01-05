@@ -57,5 +57,8 @@ private class BusinessHoursSelectorTest {
                     new BusinessHoursSelector().byId(expected[0].Id).Id
             );
         }
+
+        new BusinessHoursSelector().byId('01m000000000000');
+        new BusinessHoursSelector().byId(new List<Id>{'01m000000000000'});
     }
 }

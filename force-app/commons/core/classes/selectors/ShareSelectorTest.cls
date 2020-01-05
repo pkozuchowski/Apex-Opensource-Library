@@ -21,8 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-
-@IsTest
+@IsTest(IsParallel=true)
 private class ShareSelectorTest {
 
     @TestSetup
@@ -34,7 +33,7 @@ private class ShareSelectorTest {
     static void testSelectByUserOrGroup() {
         List<Id> userIds = new List<Id>{UserInfo.getUserId()};
         List<MacroShare> expected = [SELECT Id FROM MacroShare WHERE UserOrGroupId IN :userIds];
-        List<MacroShare> actual = new ShareSelector(MacroShare.SObjectType).byUserOrGroupIds(userIds);
+        List<MacroShare> actual = new ShareSelector(MacroShare.SObjectType).byUserOrGroupId(userIds);
 
         System.assertEquals(
                 new Map<Id, MacroShare>(expected).keySet(),
@@ -46,7 +45,7 @@ private class ShareSelectorTest {
     static void testSelectByParentId() {
         List<Id> parentIds = new List<Id>{[SELECT Id FROM Macro LIMIT 1][0].Id};
         List<MacroShare> expected = [SELECT Id FROM MacroShare WHERE ParentId IN :parentIds];
-        List<MacroShare> actual = new ShareSelector(MacroShare.SObjectType).byParentIds(parentIds);
+        List<MacroShare> actual = new ShareSelector(MacroShare.SObjectType).byParentId(parentIds);
 
         System.assertEquals(
                 new Map<Id, MacroShare>(expected).keySet(),
@@ -60,11 +59,18 @@ private class ShareSelectorTest {
         List<Id> userIds = new List<Id>{UserInfo.getUserId()};
 
         List<MacroShare> expected = [SELECT Id FROM MacroShare WHERE ParentId IN :parentIds AND UserOrGroupId IN :userIds];
-        List<MacroShare> actual = new ShareSelector(MacroShare.SObjectType).byParentIdsAndUserOrGroupIds(parentIds, userIds);
+        List<MacroShare> actual = new ShareSelector(MacroShare.SObjectType).byParentIdAndUserOrGroupId(parentIds, userIds);
 
         System.assertEquals(
                 new Map<Id, MacroShare>(expected).keySet(),
                 new Map<Id, MacroShare>(actual).keySet()
         );
+    }
+
+    @IsTest
+    static void coverage() {
+        List<Id> userIds = new List<Id>{UserInfo.getUserId()};
+
+        new ShareSelector(AssetShare.SObjectType).byUserOrGroupId(userIds);
     }
 }

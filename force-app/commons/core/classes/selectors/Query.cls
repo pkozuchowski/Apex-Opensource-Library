@@ -24,10 +24,14 @@
 
 /**
  * Facade for verbose selector queries:
- * Query.Accounts.byIds(...);
+ * Query.Accounts.byId(...);
+ * Query.EmailTemplates.byDeveloperName('FirmQuote');
  */
 public inherited sharing class Query {
-    public final static AccountSelector Accounts { get {return new AccountSelector();} }
+    private final static SelectorFactory factory = new SelectorFactory();
+
+//    public final static AccountSelector Accounts { get {return new AccountSelector();} }
+    public final static AccountSelector Accounts { get {return (AccountSelector) factory.getSelector(Account.SObjectType)} }
     public final static BusinessHoursSelector BusinessHours { get {return new BusinessHoursSelector();} }
     public final static CaseSelector Cases { get {return new CaseSelector();} }
     public final static ContactSelector Contacts { get {return new ContactSelector();} }
@@ -42,27 +46,18 @@ public inherited sharing class Query {
     public final static UserRoleSelector UserRoles { get {return new UserRoleSelector();} }
     public final static UserSelector Users { get {return new UserSelector();} }
 
-    public static ShareSelector RecordShares(SObjectType shareSObjectType) {
+    public static ShareSelector SObjectShares(SObjectType shareSObjectType) {
         return new ShareSelector(shareSObjectType);
     }
 
-    public static HistorySelector RecordHistory(SObjectType shareSObjectType) {
+    public static HistorySelector SObjectHistory(SObjectType shareSObjectType) {
         return new HistorySelector(shareSObjectType);
     }
 
-
     public class SelectorFactory {
-        public Selector create(SObjectType sobj) {
-            String sobjType = '' + sobj;
-
-            switch on sobjType {
-                when 'Account' {
-                    return new AccountSelector();
-                }
-                when else {
-                    return null;
-                }
-            }
+        public Object getSelector(SObjectType sObjectType) {
+            if (sObjectType == Account.SObjectType) return new AccountSelector();
+            return null;
         }
     }
 }

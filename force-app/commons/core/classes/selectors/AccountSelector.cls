@@ -24,6 +24,8 @@
 
 /**
  * Selector layer for Account SObjects
+ * User through Query facade:
+ * Query.Accounts.byName(...);
  */
 public virtual inherited sharing class AccountSelector extends Selector {
     public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{

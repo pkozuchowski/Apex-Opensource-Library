@@ -1,14 +1,31 @@
-public with sharing class SelectorQuery {
-    private static String
-            SYNTAX_SELECT = 'SELECT',
-            SYNTAX_FROM = 'FROM',
-            SYNTAX_WHERE = 'WHERE',
-            SYNTAX_GROUP_BY = 'GROUP BY',
-            SYNTAX_HAVING = 'HAVING',
-            SYNTAX_ORDER_BY = 'ORDER BY',
-            SYNTAX_LIMIT = 'LIMIT',
-            SYNTAX_OFFSET = 'OFFSET';
+/**
+* MIT License
+*
+* Copyright (c) 2019 Piotr Kożuchowski
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
 
+/**
+ * Very simple query builder used in Selector layer
+ */
+public with sharing class SelectorQuery {
     private Set<String> fields;
     private String fromObject = '';
     private String orderBy = '';
@@ -23,8 +40,8 @@ public with sharing class SelectorQuery {
         this.fields = new Set<String>{};
     }
 
-    public String build() {
-        String fieldsQueryPart = SYNTAX_SELECT + ' ' + String.join(new List<String>(fields), ', ');
+    public String toSOQL() {
+        String fieldsQueryPart = 'SELECT ' + String.join(new List<String>(fields), ', ');
 
         String[] query = new String[]{
                 fieldsQueryPart,
@@ -36,7 +53,6 @@ public with sharing class SelectorQuery {
                 limitQueryPart,
                 offsetQueryPart
         };
-
 
         return String.join(query, ' ').trim();
     }
@@ -68,7 +84,7 @@ public with sharing class SelectorQuery {
     public SelectorQuery addSubquery(SelectorQuery subqueryBuilder) {
         String subQuery = String.join(
                 new String[]{
-                        '(', subqueryBuilder.build(), ')'
+                        '(', subqueryBuilder.toSOQL(), ')'
                 }, ' ');
 
         this.fields.add(subQuery);
@@ -97,38 +113,38 @@ public with sharing class SelectorQuery {
     }
 
     public SelectorQuery fromObject(String fromObject) {
-        this.fromObject = SYNTAX_FROM + ' ' + fromObject;
+        this.fromObject = 'FROM ' + fromObject;
         return this;
     }
 
 
     public SelectorQuery setWhere(String condition) {
-        this.whereConditions = SYNTAX_WHERE + ' ' + condition;
+        this.whereConditions = 'WHERE ' + condition;
         return this;
     }
 
     public SelectorQuery setGroupBy(String groupBy) {
-        this.groupBy = SYNTAX_GROUP_BY + ' ' + groupBy;
+        this.groupBy = 'GROUP BY ' + groupBy;
         return this;
     }
 
     public SelectorQuery setHaving(String havingConditionExpression) {
-        this.havingConditions = SYNTAX_HAVING + ' ' + havingConditionExpression;
+        this.havingConditions = 'HAVING ' + havingConditionExpression;
         return this;
     }
 
     public SelectorQuery setOrderBy(String orderBy) {
-        this.orderBy = SYNTAX_ORDER_BY + ' ' + orderBy;
+        this.orderBy = 'ORDER BY ' + orderBy;
         return this;
     }
 
     public SelectorQuery setLimit(Integer limitOf) {
-        this.limitQueryPart = SYNTAX_LIMIT + ' ' + String.valueOf(limitOf);
+        this.limitQueryPart = 'LIMIT ' + limitOf;
         return this;
     }
 
     public SelectorQuery setOffset(Integer offsetOf) {
-        this.offsetQueryPart = SYNTAX_OFFSET + ' ' + String.valueOf(offsetOf);
+        this.offsetQueryPart = 'OFFSET ' + offsetOf;
         return this;
     }
 }

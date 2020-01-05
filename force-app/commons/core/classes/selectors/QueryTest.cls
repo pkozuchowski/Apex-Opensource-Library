@@ -1,7 +1,7 @@
 /**
 * MIT License
 *
-* Copyright (c) 2018 Piotr Kożuchowski
+* Copyright (c) 2019 Piotr Kożuchowski
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +22,25 @@
 * SOFTWARE.
 */
 @IsTest(IsParallel=true)
-private class RecordTypeSelectorTest {
+private class QueryTest {
 
     @IsTest
-    static void testRecordTypeSelector() {
-        Map<String, RecordTypeInfo> accountRTs = Account.SObjectType.getDescribe().getRecordTypeInfosByDeveloperName();
-
-        for (String devName : accountRTs.keySet()) {
-            System.assertEquals(accountRTs.get(devName).getRecordTypeId(), new RecordTypeSelector().idByDeveloperName(Account.SObjectType, devName));
-        }
+    static void coverage() {
+        Query.Accounts.byId('001000000000000');
+        Query.BusinessHours.byId('001000000000000');
+        Query.Cases.byId('001000000000000');
+        Query.Contacts.byId('001000000000000');
+        Query.EmailTemplates.byId('001000000000000');
+        Query.Leads.byId('001000000000000');
+        Query.Opportunities.byId('001000000000000');
+        Query.PermissionSets.byId('001000000000000');
+        Query.Pricebooks.byId('001000000000000');
+        Query.Profiles.byId('001000000000000');
+        Query.Queues.byId('001000000000000');
+        Query.UserRoles.byId('001000000000000');
+        Query.Users.byId('001000000000000');
+        Query.SObjectShares(MacroShare.SObjectType).byId('001000000000000');
+        Query.SObjectHistory(MacroShare.SObjectType).byId('001000000000000');
+        Query.RecordTypes.byDeveloperName(Account.SObjectType, '');
     }
 }

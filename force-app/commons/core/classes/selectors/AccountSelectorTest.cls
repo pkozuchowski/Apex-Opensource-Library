@@ -21,37 +21,26 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest
-public class AccountSelectorTest {
+@IsTest(IsParallel=true)
+private without sharing class AccountSelectorTest {
 
     @TestSetup
     static void testSetup() {
-        Profile stdUser = Query.Profiles.byName('Standard User');
+        List<Account> accounts = new List<Account>{
+                new Account(Name = 'Name 0'),
+                new Account(Name = 'Name 1'),
+                new Account(Name = 'Name 2'),
+                new Account(Name = 'Name 3')
+        };
+        insert accounts;
 
-        List<User> users = new TestDataBuilder()
-                .create(new User(Username = 'AccountSelectorTest@unittest.com', ProfileId = stdUser.Id))
-                .create(new User(Username = 'AccountSelectorTest2@unittest.com', ProfileId = stdUser.Id))
-                .insertRecords();
+        Account account = new Account(ParentId = accounts[0].Id, Name = 'Test Child Account');
+        insert account;
 
-
-        System.runAs(users[0]) {
-            List<Account> accounts = new List<Account>{
-                    new Account(Name = 'Name 0'),
-                    new Account(Name = 'Name 1'),
-                    new Account(Name = 'Name 2'),
-                    new Account(Name = 'Name 3')
-            };
-            insert accounts;
-
-            Account account = new Account(ParentId = accounts[0].Id, Name = 'Test Child Account');
-            insert account;
-
-            insert new Contact(AccountId = account.Id, LastName = 'Test Contact');
-            insert new Case(AccountId = account.Id, Subject = 'Test Case');
-            insert new Opportunity(AccountId = account.Id, Name = 'Test Opportunity', CloseDate = Date.today(), StageName = 'Prospecting');
-        }
+        insert new Contact(AccountId = account.Id, LastName = 'Test Contact');
+        insert new Case(AccountId = account.Id, Subject = 'Test Case');
+        insert new Opportunity(AccountId = account.Id, Name = 'Test Opportunity', CloseDate = Date.today(), StageName = 'Prospecting');
     }
-
 
     @IsTest
     static void testSelectByName() {
@@ -87,23 +76,5 @@ public class AccountSelectorTest {
         System.assertEquals(expected.Contacts.size(), actual.Contacts.size());
         System.assertEquals(expected.Cases.size(), actual.Cases.size());
         System.assertEquals(expected.Opportunities.size(), actual.Opportunities.size());
-    }
-
-
-    @IsTest
-    static void testWithoutSharing() {
-        User u = Query.Users.byUsername('AccountSelectorTest@unittest.com');
-        System.runAs(u) {
-            System.debug([SELECT ID FROM Account]);
-            System.assertEquals(5, Query.Accounts.all().size());
-        }
-
-
-        User u2 = Query.Users.byUsername('AccountSelectorTest2@unittest.com');
-        System.runAs(u2) {
-            System.debug([SELECT ID FROM Account]);
-            System.assertEquals(0, Query.Accounts.all().size());
-//            System.assertEquals(0, QueryWithoutSharing.Accounts.all().size());
-        }
     }
 }

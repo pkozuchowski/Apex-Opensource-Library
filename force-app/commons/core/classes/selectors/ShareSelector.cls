@@ -58,28 +58,24 @@ public with sharing class ShareSelector extends Selector {
 
 
     /**
-     * @param userOrGroupIds List<Id> or (Iterable<Id>) Set<Id> of users or groups (queues)
-     * @return Share records for given users
+     * @return Share records for given user or group ids (List or Set)
      */
-    public SObject[] byUserOrGroupIds(Iterable<Id> userOrGroupIds) {
+    public SObject[] byUserOrGroupId(Iterable<Id> userOrGroupIds) {
         return byField('UserOrGroupId', 'IN', userOrGroupIds);
     }
 
     /**
-     * @param parentIds List<Id> or (Iterable<Id>) Set<Id> of records
      * @return Share records for given records
      */
-    public SObject[] byParentIds(Iterable<Id> parentIds) {
+    public SObject[] byParentId(Iterable<Id> parentIds) {
         return byField(parentField, 'IN', parentIds);
     }
 
     /**
-     * @param parentIds List<Id> or (Iterable<Id>) Set<Id> of records
-     * @param userOrGroupIds List<Id> or (Iterable<Id>) Set<Id> of users or groups (queues)
-     * @return Share records for given records and users
+     * @return Share records for given records and users/groups (List or cast Set may be supplied as iterable)
      */
-    public SObject[] byParentIdsAndUserOrGroupIds(Iterable<Id> parentIds, Iterable<Id> userOrGroupIds) {
+    public SObject[] byParentIdAndUserOrGroupId(Iterable<Id> parentIds, Iterable<Id> userOrGroupIds) {
         query.setWhere('' + parentField + ' IN :parentIds AND UserOrGroupId IN :userOrGroupIds');
-        return Database.query(query.build());
+        return Database.query(query.toSOQL());
     }
 }

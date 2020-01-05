@@ -37,7 +37,7 @@ private class ProfileSelectorTest {
     }
 
     @IsTest
-    static void testSelectByIds() {
+    static void testSelectById() {
         Map<Id, Profile> expected = new Map<Id, Profile>([
                 SELECT Id
                 FROM Profile
@@ -49,7 +49,7 @@ private class ProfileSelectorTest {
     }
 
     @IsTest
-    static void testSelectByNames() {
+    static void testSelectByName() {
         Map<Id, Profile> expected = new Map<Id, Profile>([
                 SELECT Id
                 FROM Profile

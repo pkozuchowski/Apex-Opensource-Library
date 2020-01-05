@@ -79,7 +79,7 @@ private class SObjectCacheTest {
      * When multiple values are specified, single result list is returned with sobjects cached by specified values
      */
     @IsTest
-    static void testCacheByMultipleValues() {
+    static void testCacheByMultipleValue() {
         List<Account> accounts = cache.retrieveAll(Account.Name, new List<Object>{
                 'Enterprise Account',
                 'Test Account 0',

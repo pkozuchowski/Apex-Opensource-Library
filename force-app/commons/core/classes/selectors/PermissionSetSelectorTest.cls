@@ -20,7 +20,7 @@ private class PermissionSetSelectorTest {
                     permissionSetSelector.byId(permissionSet.Id).Id
             );
 
-            System.assertEquals(1, permissionSetSelector.byIds(new List<Id>{permissionSet.Id}).size());
+            System.assertEquals(1, permissionSetSelector.byId(new List<Id>{permissionSet.Id}).size());
         }
     }
 

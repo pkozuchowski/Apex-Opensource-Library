@@ -48,7 +48,7 @@ public inherited sharing class PermissionSetSelector {
     /**
      * @return Permission Sets by given ids (List or Set)
      */
-    public PermissionSet[] byIds(Iterable<Id> permissionSetIds) {
+    public PermissionSet[] byId(Iterable<Id> permissionSetIds) {
         return cache.retrieveAll(PermissionSet.Id, permissionSetIds);
     }
 

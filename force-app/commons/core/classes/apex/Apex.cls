@@ -162,14 +162,20 @@ public with sharing class Apex {
      * @return First stack trace line preceding given class.
      */
     public static StackTraceLine getCaller(Type className) {
+        Boolean occured = false;
         for (StackTraceLine stackTraceLine : getStackTrace()) {
-            if (stackTraceLine.apexClass != className.getName()) {
+            if (!occured && stackTraceLine.apexClass == className.getName()) {
+                occured = true;
+            }
+
+            if (occured && stackTraceLine.apexClass != className.getName()) {
                 return stackTraceLine;
             }
         }
 
         return null;
     }
+
 
     public class StackTraceLine {
         @AuraEnabled public String apexClass { get; private set; }

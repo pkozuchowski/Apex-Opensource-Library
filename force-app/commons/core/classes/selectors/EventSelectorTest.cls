@@ -40,8 +40,6 @@ public with sharing class EventSelectorTest {
                         WhatId = account.Id,
                         WhoId = contact.Id)
         };
-
-        System.debug([SELECT Id, WhatId, WhoId FROM Event]);
     }
 
     @IsTest

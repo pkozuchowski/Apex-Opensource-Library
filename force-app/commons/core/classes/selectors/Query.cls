@@ -60,6 +60,41 @@ public inherited sharing class Query {
         return new HistorySelector(shareSObjectType);
     }
 
+
+    /**
+     * Queries will be run in "without sharing" context
+     */
+    public static QueryWithoutSharing withoutSharing() {
+        return new QueryWithoutSharing();
+    }
+
+    public without sharing class QueryWithoutSharing {
+        public final AccountSelector Accounts { get {return (AccountSelector) new AccountSelector().withoutSharing();} }
+        public final AttachmentSelector Attachments { get {return (AttachmentSelector) new AttachmentSelector().withoutSharing();} }
+        public final CaseSelector Cases { get {return (CaseSelector) new CaseSelector().withoutSharing();} }
+        public final ContactSelector Contacts { get {return (ContactSelector) new ContactSelector().withoutSharing();} }
+        public final ContentDocumentSelector ContentDocuments { get {return (ContentDocumentSelector) new ContentDocumentSelector().withoutSharing();} }
+        public final EmailMessageSelector EmailMessages { get {return (EmailMessageSelector) new EmailMessageSelector().withoutSharing();} }
+        public final EmailTemplateSelector EmailTemplates { get {return (EmailTemplateSelector) new EmailTemplateSelector().withoutSharing();} }
+        public final EventSelector Events { get {return (EventSelector) new EventSelector().withoutSharing();} }
+        public final LeadSelector Leads { get {return (LeadSelector) new LeadSelector().withoutSharing();} }
+        public final OpportunitySelector Opportunities { get {return (OpportunitySelector) new OpportunitySelector().withoutSharing();} }
+        public final PricebookEntrySelector PricebookEntries { get {return (PricebookEntrySelector) new PricebookEntrySelector().withoutSharing();} }
+        public final PricebookSelector Pricebooks { get {return (PricebookSelector) new PricebookSelector().withoutSharing();} }
+        public final ProductSelector Products { get {return (ProductSelector) new ProductSelector().withoutSharing();} }
+        public final StaticResourceSelector StaticResources { get {return (StaticResourceSelector) new StaticResourceSelector().withoutSharing();} }
+        public final TaskSelector Tasks { get {return (TaskSelector) new TaskSelector().withoutSharing();} }
+        public final UserSelector Users { get {return (UserSelector) new UserSelector().withoutSharing();} }
+
+        public ShareSelector SObjectShares(SObjectType shareSObjectType) {
+            return new ShareSelector(shareSObjectType);
+        }
+
+        public HistorySelector SObjectHistory(SObjectType shareSObjectType) {
+            return new HistorySelector(shareSObjectType);
+        }
+    }
+
     private Query() {
     }
 }

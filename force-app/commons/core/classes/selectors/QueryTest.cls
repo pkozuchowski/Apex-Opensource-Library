@@ -53,4 +53,28 @@ private class QueryTest {
         System.assertNotEquals(null, Query.UserRoles);
         System.assertNotEquals(null, Query.Users);
     }
+
+
+    @IsTest
+    static void coverageWithoutSharing() {
+        System.assertNotEquals(null, Query.withoutSharing().Accounts);
+        System.assertNotEquals(null, Query.withoutSharing().Attachments);
+        System.assertNotEquals(null, Query.withoutSharing().Cases);
+        System.assertNotEquals(null, Query.withoutSharing().Contacts);
+        System.assertNotEquals(null, Query.withoutSharing().ContentDocuments);
+        System.assertNotEquals(null, Query.withoutSharing().ContentDocuments);
+        System.assertNotEquals(null, Query.withoutSharing().EmailMessages);
+        System.assertNotEquals(null, Query.withoutSharing().EmailTemplates);
+        System.assertNotEquals(null, Query.withoutSharing().Events);
+        System.assertNotEquals(null, Query.withoutSharing().Leads);
+        System.assertNotEquals(null, Query.withoutSharing().Opportunities);
+        System.assertNotEquals(null, Query.withoutSharing().PricebookEntries);
+        System.assertNotEquals(null, Query.withoutSharing().Pricebooks);
+        System.assertNotEquals(null, Query.withoutSharing().SObjectHistory(MacroShare.SObjectType));
+        System.assertNotEquals(null, Query.withoutSharing().SObjectShares(MacroShare.SObjectType));
+        System.assertNotEquals(null, Query.withoutSharing().Products);
+        System.assertNotEquals(null, Query.withoutSharing().StaticResources);
+        System.assertNotEquals(null, Query.withoutSharing().Tasks);
+        System.assertNotEquals(null, Query.withoutSharing().Users);
+    }
 }

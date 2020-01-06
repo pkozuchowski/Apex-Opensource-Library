@@ -32,6 +32,15 @@ public inherited sharing abstract class Selector {
         this.query.selectFields(queryFields).fromObject(sObjectType);
     }
 
+    /**
+     * Query will be executed in "without sharing" context, returning records
+     * users does not have access to
+     */
+    public Selector withoutSharing() {
+        this.query.setSharing(Sharing.WITHOUT_SHARING);
+        return this;
+    }
+
 
     /**
      * @return Record by given Salesforce Id or null
@@ -68,23 +77,24 @@ public inherited sharing abstract class Selector {
      * @return SObjects with field values in given value set.
      */
     public virtual SObject[] byField(String field, String operator, Object values) {
+        query.bindVariable('values', values);
         query.setWhere(field + ' ' + operator + ' :values');
-        return Database.query(query.toSOQL());
+        return query.execute();
     }
 
     /**
      * @return All records in database
      */
     public virtual SObject[] all() {
-        return Database.query(query.toSOQL());
+        return query.execute();
     }
 
     /**
-     * @return first record returned by query without any conditions.
+     * @return first record returned by query without any conditions or null.
      */
     public virtual SObject one() {
         query.setLimit(1);
-        return Database.query(query.toSOQL());
+        return firstOrNull(query.execute());
     }
 
     /**

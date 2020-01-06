@@ -60,10 +60,11 @@ public virtual inherited sharing class ProductSelector extends Selector {
      * Adds pricebook entries to given pricebooks
      */
     public ProductSelector withPricebookEntries(Iterable<Id> pricebookIds) {
+        this.query.bindVariable('pricebookIds', pricebookIds);
         this.query.addSubquery(new SelectorQuery()
                 .selectFields(PricebookEntrySelector.QUERIED_FIELDS)
                 .fromObject('PricebookEntries')
-                .setWhere('Pricebook2Id IN ' + SelectorQuery.toSoqlList(pricebookIds))
+                .setWhere('Pricebook2Id IN :pricebookIds')
         );
         return this;
     }

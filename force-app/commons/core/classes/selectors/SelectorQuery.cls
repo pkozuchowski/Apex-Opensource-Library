@@ -26,6 +26,9 @@
  * Very simple query builder used in Selector layer
  */
 public with sharing class SelectorQuery {
+    protected DatabaseService databaseService = new DatabaseService();
+
+    private Map<String, Object> boundVars;
     private Set<String> fields;
     private String fromObject = '';
     private String orderBy = '';
@@ -37,7 +40,19 @@ public with sharing class SelectorQuery {
 
 
     public SelectorQuery() {
+        this.boundVars = new Map<String, Object>();
         this.fields = new Set<String>{};
+    }
+
+    /**
+     * Sets sharing mode on Database Service:
+     * - With Sharing
+     * - Without Sharing
+     * - Inherited Sharing (default)
+     */
+    public SelectorQuery setSharing(Sharing sharing) {
+        this.databaseService.setSharing(sharing);
+        return this;
     }
 
     public String toSOQL() {
@@ -57,6 +72,19 @@ public with sharing class SelectorQuery {
         return String.join(query, ' ').trim();
     }
 
+    public SObject[] execute() {
+        return databaseService.query(toSOQL(), boundVars);
+    }
+
+    public SelectorQuery bindVariable(String name, Object value) {
+        this.boundVars.put(name, value);
+        return this;
+    }
+
+    public SelectorQuery bindVariables(Map<String, Object> boundVars) {
+        this.boundVars.putAll(boundVars);
+        return this;
+    }
 
     public SelectorQuery selectField(SObjectField field) {
         this.fields.add('' + field);
@@ -146,25 +174,5 @@ public with sharing class SelectorQuery {
     public SelectorQuery setOffset(Integer offsetOf) {
         this.offsetQueryPart = 'OFFSET ' + offsetOf;
         return this;
-    }
-
-    /**
-     * Converts list to SOQL string representation ('a','b'...)
-     */
-    public static String toSoqlList(Iterable<Object> values) {
-        Set<String> escapedValues = new Set<String>();
-
-        Iterator<Object> it = values.iterator();
-        while (it.hasNext()) {
-            String val = String.escapeSingleQuotes('' + it.next());
-            escapedValues.add(val);
-        }
-
-        if (escapedValues.isEmpty()) {
-            /*List cannot be empty in dynamic query*/
-            return '(\'<null>\')';
-        } else {
-            return '(\'' + String.join(new List<String>(escapedValues), '\',\'') + '\')';
-        }
     }
 }

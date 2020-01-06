@@ -38,7 +38,6 @@ public with sharing class TaskSelectorTest {
                 new Task(Subject = 'Test', WhatId = account.Id, WhoId = contact.Id)
         };
 
-        System.debug([SELECT Id, WhatId, WhoId FROM Task]);
     }
 
     @IsTest

@@ -138,7 +138,7 @@ public inherited sharing class CollectionImpl extends Collection {
         return filterUsing(new FilterByPrototype(prototype));
     }
     public override Collection filterUsing(Filter filter) {
-        List<Object> filteredItems = Apex.newListOfTheSameType(items);
+        List<Object> filteredItems = ApexService.newListOfTheSameType(items);
 
         for (Integer i = 0, size = this.size(); i < size; i++) {
             if (filter.accepts(items[i])) {
@@ -190,14 +190,14 @@ public inherited sharing class CollectionImpl extends Collection {
 
 
     public override List<Object> listOf(SObjectField field) {
-        return listOf('' + field, Apex.getSObjectFieldType(field));
+        return listOf('' + field, ApexService.getSObjectFieldType(field));
     }
     public override List<Object> listOf(String field, Type fieldType) {
         assertSObjectCollection();
         return listOf(new FieldMapper(field, fieldType));
     }
     public override List<Object> listOf(Mapper valueMapper) {
-        List<Object> values = Apex.newListOfItemType(valueMapper.valueType());
+        List<Object> values = ApexService.newListOfItemType(valueMapper.valueType());
 
         for (Integer i = 0, size = size(); i < size; i++) {
             values.add(valueMapper.value(items[i]));
@@ -208,7 +208,7 @@ public inherited sharing class CollectionImpl extends Collection {
 
 
     public override Object setOf(SObjectField field) {
-        return setOf('' + field, Apex.getSObjectFieldType(field));
+        return setOf('' + field, ApexService.getSObjectFieldType(field));
     }
     public override Object setOf(String field, Type fieldType) {
         assertSObjectCollection();
@@ -220,10 +220,10 @@ public inherited sharing class CollectionImpl extends Collection {
 
 
     public override Object mapBy(SObjectField field) {
-        return mapBy('' + field, Apex.getSObjectFieldType(field));
+        return mapBy('' + field, ApexService.getSObjectFieldType(field));
     }
     public override Object mapBy(SObjectField keyField, SObjectField valueField) {
-        return mapBy('' + keyField, '' + valueField, Apex.getSObjectFieldType(keyField), Apex.getSObjectFieldType(valueField));
+        return mapBy('' + keyField, '' + valueField, ApexService.getSObjectFieldType(keyField), ApexService.getSObjectFieldType(valueField));
     }
     public override Object mapBy(String field, Type fieldType) {
         assertSObjectCollection();
@@ -252,10 +252,10 @@ public inherited sharing class CollectionImpl extends Collection {
 
 
     public override Object groupBy(SObjectField field) {
-        return groupBy('' + field, Apex.getSObjectFieldType(field));
+        return groupBy('' + field, ApexService.getSObjectFieldType(field));
     }
     public override Object groupBy(SObjectField keyField, SObjectField valueField) {
-        return groupBy('' + keyField, '' + valueField, Apex.getSObjectFieldType(keyField), Apex.getSObjectFieldType(valueField));
+        return groupBy('' + keyField, '' + valueField, ApexService.getSObjectFieldType(keyField), ApexService.getSObjectFieldType(valueField));
     }
     public override Object groupBy(String field, Type fieldType) {
         assertSObjectCollection();
@@ -270,7 +270,7 @@ public inherited sharing class CollectionImpl extends Collection {
     }
     public override Object groupBy(Mapper keyMapper, Mapper valueMapper) {
         UntypedMap groupMap = newMap(keyMapper.valueType(), Type.forName('List<' + valueMapper.valueType() + '>'));
-        List<Object> emptyList = Apex.newListOfItemType(valueMapper.valueType());
+        List<Object> emptyList = ApexService.newListOfItemType(valueMapper.valueType());
 
         for (Integer i = 0, size = size(); i < size; i++) {
             Object item = (Object) items[i];
@@ -293,7 +293,7 @@ public inherited sharing class CollectionImpl extends Collection {
         return wrap(new WrapperFactoryAdatper(wrapperType), wrapperType);
     }
     public override Collection wrap(WrapperFactory wrapperFactory, Type wrapperType) {
-        List<Object> wrappers = (List<Object>) Apex.newListOfItemType(wrapperType, new List<Object>());
+        List<Object> wrappers = (List<Object>) ApexService.newListOfItemType(wrapperType, new List<Object>());
 
         for (Integer i = 0, j = size(); i < j; i++) {
             Object wrapper = wrapperFactory.wrap(items[i]);
@@ -316,7 +316,7 @@ public inherited sharing class CollectionImpl extends Collection {
         }
 
         comparables.sort();
-        List<Object> sorted = Apex.newListOfTheSameType(items);
+        List<Object> sorted = ApexService.newListOfTheSameType(items);
 
         for (Integer i = 0, size = comparables.size(); i < size; i++) {
             sorted.add(comparables[i].item);
@@ -757,7 +757,7 @@ public inherited sharing class CollectionImpl extends Collection {
         private Type fieldType;
 
         public FieldMapper(SObjectField field) {
-            this.fieldType = Apex.getSObjectFieldType(field);
+            this.fieldType = ApexService.getSObjectFieldType(field);
             this.field = '' + field;
         }
 
@@ -779,7 +779,7 @@ public inherited sharing class CollectionImpl extends Collection {
         private Type itemType;
 
         public ItemMapper(List<Object> items) {
-            this.itemType = Apex.getListItemType(items);
+            this.itemType = ApexService.getListItemType(items);
         }
 
         public Type valueType() {

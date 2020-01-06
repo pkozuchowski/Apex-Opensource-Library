@@ -92,13 +92,13 @@ public abstract class XmlNode {
      * @param prefix Prefix of the created child nodes. (Serialization phase only)
      */
     protected void registerChildren(List<XmlNode> childNodes, String name, String namespace, String prefix) {
-        Type childType = Apex.getListItemType(childNodes);
+        Type childType = ApexService.getListItemType(childNodes);
 
         if (childType == null) {
             throw new TypeException('Child class is not public.');
         }
 
-        registerChildren(childNodes, name, namespace, prefix, Apex.getListItemType(childNodes));
+        registerChildren(childNodes, name, namespace, prefix, ApexService.getListItemType(childNodes));
     }
 
     /**

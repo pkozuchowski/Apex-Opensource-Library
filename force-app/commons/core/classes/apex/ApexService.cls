@@ -24,9 +24,9 @@
 
 /**
  * Utility class with methods concerning Apex programming language.
- * @see ApexTest
+ * @see ApexServiceTest
  */
-public with sharing class Apex {
+public with sharing class ApexService {
     private final static Map<Schema.SoapType, Type> FIELD_TYPE_MAP = new Map<SoapType, Type>{
             Schema.SoapType.ID => Id.class,
             Schema.SoapType.INTEGER => Integer.class,
@@ -128,7 +128,7 @@ public with sharing class Apex {
      * "CalleeClass.method"
      */
     public static String getRunningMethod() {
-        return getStackTrace()[0].method;
+        return getStackTrace()[0].apexClassMethod;
     }
 
     /**
@@ -151,7 +151,7 @@ public with sharing class Apex {
 
         List<StackTraceLine> stackTraceLines = new List<StackTraceLine>();
         for (Integer i = 1; i < lines.size(); i++) {
-            if (!lines[i].contains('Class.Apex.')) {
+            if (!lines[i].contains('Class.ApexService.')) {
                 stackTraceLines.add(new StackTraceLine(lines[i]));
             }
         }
@@ -162,13 +162,16 @@ public with sharing class Apex {
      * @return First stack trace line preceding given class.
      */
     public static StackTraceLine getCaller(Type className) {
+        return getCaller(className.getName());
+    }
+    public static StackTraceLine getCaller(String className) {
         Boolean occured = false;
         for (StackTraceLine stackTraceLine : getStackTrace()) {
-            if (!occured && stackTraceLine.apexClass == className.getName()) {
+            if (!occured && stackTraceLine.apexClass == className) {
                 occured = true;
             }
 
-            if (occured && stackTraceLine.apexClass != className.getName()) {
+            if (occured && stackTraceLine.apexClass != className) {
                 return stackTraceLine;
             }
         }
@@ -178,14 +181,16 @@ public with sharing class Apex {
 
 
     public class StackTraceLine {
+        @AuraEnabled public String apexClassMethod { get; private set; }
         @AuraEnabled public String apexClass { get; private set; }
         @AuraEnabled public String method { get; private set; }
         @AuraEnabled public Integer line { get; private set; }
         @AuraEnabled public Integer column { get; private set; }
 
         private StackTraceLine(String line) {
-            this.method = line.remove('Class.').substringBefore(':');
-            this.apexClass = method.substringBeforeLast('.');
+            this.apexClassMethod = line.remove('Class.').substringBefore(':');
+            this.apexClass = apexClassMethod.substringBeforeLast('.');
+            this.method = apexClassMethod.substringAfterLast('.');
             this.line = Integer.valueOf(line.substringBetween('line ', ','));
             this.column = Integer.valueOf(line.substringAfter('column '));
         }

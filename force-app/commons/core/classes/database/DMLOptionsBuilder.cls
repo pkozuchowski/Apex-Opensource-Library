@@ -34,7 +34,7 @@ public class DMLOptionsBuilder {
      * Prevent duplicate records from being saved by setting this property to false.
      */
     public DMLOptionsBuilder allowDuplicates(Boolean allowDuplicates) {
-        dmlOptions.DuplicateRuleHeader.allowSave = allowDuplicates;
+        dmlOptions.duplicateRuleHeader.allowSave = allowDuplicates;
         return this;
     }
 
@@ -44,7 +44,7 @@ public class DMLOptionsBuilder {
      * If no sharing rules are specified, Apex code runs in system context and sharing rules for the current user are not enforced.
      */
     public DMLOptionsBuilder runDuplicateRulesAsCurrentUser(Boolean runAsCurrentUser) {
-        dmlOptions.DuplicateRuleHeader.runAsCurrentUser = runAsCurrentUser;
+        dmlOptions.duplicateRuleHeader.runAsCurrentUser = runAsCurrentUser;
         return this;
     }
 
@@ -53,8 +53,8 @@ public class DMLOptionsBuilder {
      * Specifies the ID of a specific assignment rule to run for the case or lead. The assignment rule can be active or inactive.
      */
     public DMLOptionsBuilder assignmentRuleID(Id assignmentRuleId) {
-        dmlOptions.AssignmentRuleHeader.useDefaultRule = false;
-        dmlOptions.AssignmentRuleHeader.assignmentRuleID = assignmentRuleId;
+        dmlOptions.assignmentRuleHeader.useDefaultRule = false;
+        dmlOptions.assignmentRuleHeader.assignmentRuleId = assignmentRuleId;
         return this;
 
     }
@@ -64,8 +64,8 @@ public class DMLOptionsBuilder {
      * If specified, do not specify an assignmentRuleId.
      */
     public DMLOptionsBuilder useDefaultAssignmentRule() {
-        dmlOptions.AssignmentRuleHeader.useDefaultRule = true;
-        dmlOptions.AssignmentRuleHeader.assignmentRuleID = null;
+        dmlOptions.assignmentRuleHeader.useDefaultRule = true;
+        dmlOptions.assignmentRuleHeader.assignmentRuleId = null;
         return this;
 
     }
@@ -75,7 +75,7 @@ public class DMLOptionsBuilder {
      * Indicates whether to trigger auto-response rules (true) or not (false), for leads and cases.
      */
     public DMLOptionsBuilder triggerAutoResponseEmail(Boolean doTrigger) {
-        this.dmlOptions.EmailHeader.triggerAutoResponseEmail = doTrigger;
+        this.dmlOptions.emailHeader.triggerAutoResponseEmail = doTrigger;
         return this;
     }
 
@@ -83,7 +83,7 @@ public class DMLOptionsBuilder {
      * Indicates whether to trigger email outside the organization (true) or not (false).
      */
     public DMLOptionsBuilder triggerOtherEmail(Boolean doTrigger) {
-        this.dmlOptions.EmailHeader.triggerOtherEmail = doTrigger;
+        this.dmlOptions.emailHeader.triggerOtherEmail = doTrigger;
         return this;
     }
 
@@ -91,7 +91,7 @@ public class DMLOptionsBuilder {
      * Indicates whether to trigger email that is sent to users in the organization (true) or not (false).
      */
     public DMLOptionsBuilder triggerUserEmail(Boolean doTrigger) {
-        this.dmlOptions.EmailHeader.triggerUserEmail = doTrigger;
+        this.dmlOptions.emailHeader.triggerUserEmail = doTrigger;
         return this;
     }
 
@@ -100,7 +100,7 @@ public class DMLOptionsBuilder {
      * Specifies whether the DMLs allows for partial success.
      */
     public DMLOptionsBuilder allOrNone(Boolean allOrNone) {
-        this.dmlOptions.OptAllOrNone = allOrNone;
+        this.dmlOptions.optAllOrNone = allOrNone;
         return this;
     }
 

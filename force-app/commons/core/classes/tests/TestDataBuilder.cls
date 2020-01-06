@@ -237,15 +237,20 @@ public inherited sharing class TestDataBuilder {
 
     private class VanillaUserFactory implements SObjectFactory {
         private Integer counter = 0;
+        private Id orgId = UserInfo.getOrganizationId();
 
         public SObject create() {
             counter++;
+            String uid = '' + counter + Crypto.getRandomInteger();
+
             return new User(
                     FirstName = 'Test',
                     LastName = 'User',
                     Email = 'test@example.com',
-                    Alias = 'tst.' + counter,
-                    CommunityNickname = 'tst.' + counter,
+                    Username = uid + '@' + orgId + '.test.com',
+                    ProfileId = UserInfo.getProfileId(),
+                    Alias = uid.left(8),
+                    CommunityNickname = uid.left(40),
                     TimeZoneSidKey = 'GMT',
                     LocaleSidKey = 'en_US',
                     EmailEncodingKey = 'UTF-8',

@@ -24,74 +24,44 @@
 @IsTest(IsParallel=true)
 private class DatabaseServiceTest {
 
-    /**
-     * Replace the content with TestDataFactory.createAccount() to match
-     * your environment needs.
-     */
-    private static Account getTestAccount() {
-        return new Account(
+    @IsTest
+    static void testDML() {
+        Account acc = new Account(
                 Name = 'Test'
         );
-    }
 
 
-    @IsTest
-    static void coverageTestWithSharing() {
-        Account acc = getTestAccount();
+        for (Sharing s : Sharing.values()) {
+            DatabaseService databaseService = new DatabaseService()
+                    .setSharing(s)
+                    .setDMLOptions(new DMLOptionsBuilder()
+                            .allowDuplicates(true)
+                            .build()
+                    );
 
-
-        DatabaseService databaseService = new DatabaseService()
-                .setSharing(Sharing.WITH_SHARING)
-                .setDMLOptions(new DMLOptionsBuilder()
-                        .allowDuplicates(true)
-                        .build()
-                );
-
-        databaseService.doInsert(acc);
-        databaseService.doUpdate(acc);
-        databaseService.doUpsert(acc, Account.Id);
-        databaseService.doDelete(acc);
-        databaseService.doUndelete(acc);
-        databaseService.query('SELECT ID FROM Account');
+            databaseService.doInsert(acc);
+            databaseService.doUpdate(acc);
+            databaseService.doUpsert(acc, Account.Id);
+            databaseService.doDelete(acc);
+            databaseService.doUndelete(acc);
+            databaseService.query('SELECT ID FROM Account');
+        }
     }
 
     @IsTest
-    static void coverageTestWithoutSharing() {
-        Account acc = getTestAccount();
+    static void testQuery() {
+        DatabaseService databaseService = new DatabaseService();
 
+        List<User> expected = [SELECT Id FROM User LIMIT 50];
 
-        DatabaseService databaseService = new DatabaseService()
-                .setSharing(Sharing.WITHOUT_SHARING)
-                .setDMLOptions(new DMLOptionsBuilder()
-                        .allowDuplicates(true)
-                        .build()
-                );
+        for (Sharing s : Sharing.values()) {
+            databaseService.setSharing(s);
+            List<User> actual = databaseService.query('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
 
-        databaseService.doInsert(acc);
-        databaseService.doUpdate(acc);
-        databaseService.doUpsert(acc, Account.Id);
-        databaseService.doDelete(acc);
-        databaseService.doUndelete(acc);
-        databaseService.query('SELECT ID FROM Account');
-    }
-
-    @IsTest
-    static void coverageTestWithInheritedSharing() {
-        Account acc = getTestAccount();
-
-
-        DatabaseService databaseService = new DatabaseService()
-                .setSharing(Sharing.INHERITED_SHARING)
-                .setDMLOptions(new DMLOptionsBuilder()
-                        .allowDuplicates(true)
-                        .build()
-                );
-
-        databaseService.doInsert(acc);
-        databaseService.doUpdate(acc);
-        databaseService.doUpsert(acc, Account.Id);
-        databaseService.doDelete(acc);
-        databaseService.doUndelete(acc);
-        databaseService.query('SELECT ID FROM Account');
+            System.assertEquals(
+                    new Map<Id, User>(expected).keySet(),
+                    new Map<Id, User>(actual).keySet()
+            );
+        }
     }
 }

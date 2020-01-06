@@ -32,7 +32,7 @@ public class DatabaseService {
     private DMLIssuer dmlIssuer = new InheritedSharingDMLIssuer();
 
     public DatabaseService() {
-        this.dmlOptions.OptAllOrNone = true;
+        this.dmlOptions.optAllOrNone = true;
     }
 
     /**
@@ -66,7 +66,15 @@ public class DatabaseService {
 
 
     public List<SObject> query(String query) {
-        return dmlIssuer.query(String.escapeSingleQuotes(query));
+        return query(query, null);
+    }
+
+    /**
+     * Performs query with given Sharing and bound variables
+     * @param boundVars Variables to bind to query
+     */
+    public List<SObject> query(String query, Map<String, Object> boundVars) {
+        return dmlIssuer.query(query, boundVars == null ? new Map<String, Object>() : boundVars);
     }
 
 
@@ -136,14 +144,52 @@ public class DatabaseService {
         List<Database.UpsertResult> doUpsert(List<SObject> records, SObjectField field);
         List<Database.DeleteResult> doDelete(List<SObject> records, Boolean allOrNone);
         List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone);
-        List<SObject> query(String query);
+        List<SObject> query(String query, Map<String, Object> boundVars);
+    }
+
+
+    private abstract inherited sharing class AbstractDMLIssuer implements DMLIssuer {
+        public virtual List<SObject> query(String query, Map<String, Object> boundVars) {
+            Object var0, var1, var2, var3, var4, var5, var6, var7, var8, var9,
+                    var10, var11, var12, var13, var14, var15, var16, var17, var18, var19;
+            String finalQuery = query;
+
+            Integer i = 0;
+            for (String var : boundVars.keySet()) {
+                finalQuery = finalQuery.replace(':' + var, ':var' + i);
+
+                if (i == 0) var0 = boundVars.get(var);
+                if (i == 1) var1 = boundVars.get(var);
+                if (i == 2) var2 = boundVars.get(var);
+                if (i == 3) var3 = boundVars.get(var);
+                if (i == 4) var4 = boundVars.get(var);
+                if (i == 5) var5 = boundVars.get(var);
+                if (i == 6) var6 = boundVars.get(var);
+                if (i == 7) var7 = boundVars.get(var);
+                if (i == 8) var8 = boundVars.get(var);
+                if (i == 9) var9 = boundVars.get(var);
+                if (i == 10) var10 = boundVars.get(var);
+                if (i == 11) var11 = boundVars.get(var);
+                if (i == 12) var12 = boundVars.get(var);
+                if (i == 13) var13 = boundVars.get(var);
+                if (i == 14) var14 = boundVars.get(var);
+                if (i == 15) var15 = boundVars.get(var);
+                if (i == 16) var16 = boundVars.get(var);
+                if (i == 17) var17 = boundVars.get(var);
+                if (i == 18) var18 = boundVars.get(var);
+                if (i == 19) var19 = boundVars.get(var);
+                i++;
+            }
+
+            return Database.query(finalQuery);
+        }
     }
 
 
     /**
     * Issues DMLs with sharing
     * */
-    public with sharing class WithSharingDMLIssuer implements DMLIssuer {
+    private with sharing class WithSharingDMLIssuer extends AbstractDMLIssuer {
 
         public List<Database.SaveResult> doInsert(List<SObject> records, Database.DMLOptions options) {
             return Database.insert(records, options);
@@ -165,8 +211,8 @@ public class DatabaseService {
             return Database.undelete(records, allOrNone);
         }
 
-        public List<SObject> query(String query) {
-            return Database.query(query);
+        public override List<SObject> query(String query, Map<String, Object> boundVars) {
+            return super.query(query, boundVars);
         }
     }
 
@@ -174,7 +220,7 @@ public class DatabaseService {
     /**
     * Issues DMLs without sharing
     * */
-    public without sharing class WithoutSharingDMLIssuer implements DMLIssuer {
+    private without sharing class WithoutSharingDMLIssuer extends AbstractDMLIssuer {
 
         public List<Database.SaveResult> doInsert(List<SObject> records, Database.DMLOptions options) {
             return Database.insert(records, options);
@@ -196,8 +242,8 @@ public class DatabaseService {
             return Database.undelete(records, allOrNone);
         }
 
-        public List<SObject> query(String query) {
-            return Database.query(query);
+        public override List<SObject> query(String query, Map<String, Object> boundVars) {
+            return super.query(query, boundVars);
         }
     }
 
@@ -205,7 +251,7 @@ public class DatabaseService {
     /**
     * Issues DMLs with inherited sharing
     * */
-    public inherited sharing class InheritedSharingDMLIssuer implements DMLIssuer {
+    private inherited sharing class InheritedSharingDMLIssuer extends AbstractDMLIssuer {
 
         public List<Database.SaveResult> doInsert(List<SObject> records, Database.DMLOptions options) {
             return Database.insert(records, options);
@@ -227,8 +273,8 @@ public class DatabaseService {
             return Database.undelete(records, allOrNone);
         }
 
-        public List<SObject> query(String query) {
-            return Database.query(query);
+        public override List<SObject> query(String query, Map<String, Object> boundVars) {
+            return super.query(query, boundVars);
         }
     }
 }

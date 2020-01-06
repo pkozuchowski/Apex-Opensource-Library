@@ -81,8 +81,6 @@ private class SchedulerTest {
         Id jobId = new Scheduler().scheduleHourly('Test hourly schedule', 30, new TestSchedulable());
         Test.stopTest();
 
-        System.debug(JSON.serializePretty([SELECT NextFireTime,CronExpression FROM CronTrigger WHERE Id = :jobId]));
-
         Datetime now = Datetime.now();
         Datetime expected = Datetime.newInstance(
                 now.year(),

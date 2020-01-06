@@ -39,7 +39,6 @@ private class SObjectTriggersTest {
     public class TestTriggerLogic implements TriggerLogic {
         public void execute(List<SObject> records, TriggerContext ctx) {
             for (SObject record : records) {
-                System.debug(record);
                 processedIds.add(record.Id);
             }
         }

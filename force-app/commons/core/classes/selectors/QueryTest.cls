@@ -77,4 +77,35 @@ private class QueryTest {
         System.assertNotEquals(null, Query.withoutSharing().Tasks);
         System.assertNotEquals(null, Query.withoutSharing().Users);
     }
+
+    @IsTest
+    static void testMocking() {
+        SelectorQuery.setMock(AccountSelector.class, new QueryMock());
+        List<Account> result = Query.Accounts.byName('Mock Result');
+
+        System.assertEquals(1, result.size());
+        System.assertEquals('Mock Result', result[0].Name);
+    }
+
+    private class QueryMock implements SelectorQueryMock {
+        public SObject[] handleQuery(
+                String caller,
+                String callerMethod,
+                String selector,
+                String selectorMethod,
+                Map<String, Object> queryBoundVariables,
+                SObject[] queryResult) {
+
+            System.assertEquals(QueryTest.class.getName(), caller);
+            System.assertEquals('testMocking', callerMethod);
+            System.assertEquals(AccountSelector.class.getName(), selector);
+            System.assertEquals('byName', selectorMethod);
+            System.assertEquals(new List<Object>{'Mock Result'}, queryBoundVariables.values());
+            System.assertEquals(new List<Account>(), queryResult);
+
+            return new List<Account>{
+                    new Account(Name = 'Mock Result')
+            };
+        }
+    }
 }

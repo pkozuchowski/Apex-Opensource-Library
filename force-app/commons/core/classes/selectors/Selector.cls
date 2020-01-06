@@ -26,9 +26,10 @@
  * Base class for selectors. Contains query builder and common query methods.
  */
 public inherited sharing abstract class Selector {
-    protected SelectorQuery query = new SelectorQuery();
+    protected transient SelectorQuery query;
 
     protected Selector(List<SObjectField> queryFields, SObjectType sObjectType) {
+        this.query = new SelectorQuery(this);
         this.query.selectFields(queryFields).fromObject(sObjectType);
     }
 

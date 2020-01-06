@@ -74,6 +74,40 @@ public class SelectorTest {
     }
 
     @IsTest
+    static void testMocking() {
+        SelectorQuery.setMock(ExampleSelector.class, new QueryMock());
+        List<User> result = new ExampleSelector().byField(User.Id, 'IN', new List<Id>{'005000000000000'});
+
+        System.assertEquals(1, result.size());
+        System.assertEquals('Mock Result', result[0].Username);
+    }
+
+    private class QueryMock implements SelectorQueryMock {
+        public SObject[] handleQuery(
+                String caller,
+                String callerMethod,
+                String selector,
+                String selectorMethod,
+                Map<String, Object> queryBoundVariables,
+                SObject[] queryResult) {
+
+            System.assertEquals(SelectorTest.class.getName(), caller);
+            System.assertEquals('testMocking', callerMethod);
+            System.assertEquals('SelectorTest.ExampleSelector', selector);
+            System.assertEquals('byField', selectorMethod);
+            System.assertEquals(new List<Object>{
+                    new List<Id>{Id.valueOf('005000000000000')}
+            }, queryBoundVariables.values());
+            System.assertEquals(new List<User>(), queryResult);
+
+
+            return new List<User>{
+                    new User(Username = 'Mock Result')
+            };
+        }
+    }
+
+    @IsTest
     static void queryBuilderCoverage() {
         new SelectorQuery()
                 .selectField(Account.Id)

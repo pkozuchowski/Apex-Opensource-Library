@@ -26,8 +26,10 @@
  * Very simple query builder used in Selector layer
  */
 public with sharing class SelectorQuery {
+    private static Map<String, SelectorQueryMock> mocks = new Map<String, SelectorQueryMock>();
     protected DatabaseService databaseService = new DatabaseService();
 
+    private String selectorName;
     private Map<String, Object> boundVars;
     private Set<String> fields;
     private String fromObject = '';
@@ -38,10 +40,27 @@ public with sharing class SelectorQuery {
     private String limitQueryPart = '';
     private String offsetQueryPart = '';
 
+    /**
+     * Mocks query result for given selector type
+     */
+    public static void setMock(Type selectorType, SelectorQueryMock mock) {
+        if (Test.isRunningTest()) {
+            mocks.put('' + selectorType, mock);
+        } else {
+            throw new QueryException('.setMock() can only be called from test methods');
+        }
+    }
 
     public SelectorQuery() {
+        this(null);
+    }
+
+    public SelectorQuery(Selector selector) {
         this.boundVars = new Map<String, Object>();
         this.fields = new Set<String>{};
+        if (selector != null) {
+            this.selectorName = ApexService.getRunningTypeName(selector);
+        }
     }
 
     /**
@@ -55,6 +74,9 @@ public with sharing class SelectorQuery {
         return this;
     }
 
+    /**
+     * Builds and returns SOQL query
+     */
     public String toSOQL() {
         String fieldsQueryPart = 'SELECT ' + String.join(new List<String>(fields), ', ');
 
@@ -72,8 +94,16 @@ public with sharing class SelectorQuery {
         return String.join(query, ' ').trim();
     }
 
+    /**
+     * Builds and executes dynamic SOQL query
+     */
     public SObject[] execute() {
-        return databaseService.query(toSOQL(), boundVars);
+        if (mocks.containsKey(selectorName)) {
+            return mockResponse();
+
+        } else {
+            return databaseService.query(toSOQL(), boundVars);
+        }
     }
 
     public SelectorQuery bindVariable(String name, Object value) {
@@ -174,5 +204,22 @@ public with sharing class SelectorQuery {
     public SelectorQuery setOffset(Integer offsetOf) {
         this.offsetQueryPart = 'OFFSET ' + offsetOf;
         return this;
+    }
+
+    private SObject[] mockResponse() {
+        String selectorMethod, caller, callerMethod;
+
+        for (ApexService.StackTraceLine line : ApexService.getStackTrace()) {
+            if (line.apexClass == selectorName || line.apexClass == Selector.class.getName()) {
+                selectorMethod = line.method;
+
+            } else if (String.isNotBlank(selectorMethod)) {
+                caller = line.apexClass;
+                callerMethod = line.method;
+            }
+        }
+
+        SelectorQueryMock mock = mocks.get(selectorName);
+        return mock.handleQuery(caller, callerMethod, selectorName, selectorMethod, boundVars, databaseService.query(toSOQL(), boundVars));
     }
 }

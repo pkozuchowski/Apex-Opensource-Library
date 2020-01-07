@@ -61,6 +61,17 @@ public class SelectorTest {
     }
 
     @IsTest
+    static void testSelectByRelation() {
+        List<LoginHistory> loginHistories = [SELECT Id, UserId FROM LoginHistory LIMIT 100];
+        List<User> users = new ExampleSelector().byRelation(LoginHistory.UserId, loginHistories);
+
+        assertEquals(
+                ([SELECT Id FROM User WHERE ID IN (SELECT UserId FROM LoginHistory WHERE ID IN :loginHistories)]),
+                users
+        );
+    }
+
+    @IsTest
     static void testSelectOne() {
         User usr = (User) new ExampleSelector().one();
         System.assertNotEquals(null, usr);

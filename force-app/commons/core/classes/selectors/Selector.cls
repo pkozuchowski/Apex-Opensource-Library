@@ -51,11 +51,26 @@ public inherited sharing abstract class Selector {
     }
 
     /**
-     * @param recordIds List<Id> or (Iterable<Id>) Set<Id>
+     * @param recordIds List<Id> or (Iterable<Id>) Set<Id> or (Iterable<Id>) List<SObject>
      * @return Records by given Salesforce Ids
      */
     public virtual SObject[] byId(Iterable<Id> recordIds) {
         return byField('Id', 'IN', recordIds);
+    }
+
+    /**
+     * @param relationShipField Parent field on records (ex. Contact.AccountId for list of Contacts)
+     * @param records List of child records in relationship
+     *
+     * @return Queried list of parents related to given child records
+     */
+    public virtual SObject[] byRelation(SObjectField relationShipField, List<SObject> records) {
+        Set<Id> parentIds = new Set<Id>();
+        for (SObject record : records) {
+            parentIds.add((Id) record.get(relationShipField));
+        }
+
+        return byId((Iterable<Id>) parentIds);
     }
 
     /**

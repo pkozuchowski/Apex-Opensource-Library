@@ -23,8 +23,8 @@
 */
 @IsTest(IsParallel=true)
 public class SelectorTest {
-    private class ExampleSelector extends Selector {
-        private ExampleSelector() {
+    private class TestUserSelector extends Selector {
+        private TestUserSelector() {
             super(new List<SObjectField>{
                     User.Id,
                     User.Name,
@@ -36,7 +36,7 @@ public class SelectorTest {
 
     @IsTest
     static void testSelectById() {
-        User user = (User) new ExampleSelector().byId(UserInfo.getUserId());
+        User user = (User) new TestUserSelector().byId(UserInfo.getUserId());
 
         System.assertEquals(UserInfo.getUserId(), user.Id);
         System.assertEquals(UserInfo.getName(), user.Name);
@@ -45,7 +45,7 @@ public class SelectorTest {
 
     @IsTest
     static void testSelectByField() {
-        User user = (User) new ExampleSelector().oneRecordByField(User.Username, '=', UserInfo.getUserName());
+        User user = (User) new TestUserSelector().oneRecordByField(User.Username, '=', UserInfo.getUserName());
 
         System.assertEquals(UserInfo.getUserId(), user.Id);
         System.assertEquals(UserInfo.getName(), user.Name);
@@ -56,24 +56,35 @@ public class SelectorTest {
     static void testSelectAll() {
         assertEquals(
                 ([SELECT Id FROM User]),
-                new ExampleSelector().all()
+                new TestUserSelector().all()
         );
     }
 
     @IsTest
-    static void testSelectByRelation() {
+    static void testSelectByChild() {
         List<LoginHistory> loginHistories = [SELECT Id, UserId FROM LoginHistory LIMIT 100];
-        List<User> users = new ExampleSelector().byRelation(LoginHistory.UserId, loginHistories);
+        List<User> users = new TestUserSelector().byChild(LoginHistory.UserId, loginHistories);
 
         assertEquals(
-                ([SELECT Id FROM User WHERE ID IN (SELECT UserId FROM LoginHistory WHERE ID IN :loginHistories)]),
+                ([SELECT Id FROM User WHERE Id IN (SELECT UserId FROM LoginHistory WHERE Id IN :loginHistories)]),
+                users
+        );
+    }
+
+    @IsTest
+    static void testSelectByParent() {
+        List<Profile> profiles = [SELECT Id FROM Profile WHERE Name = 'System Administrator'];
+        List<User> users = new TestUserSelector().byParent(User.ProfileId, profiles);
+
+        assertEquals(
+                ([SELECT Id FROM User WHERE ProfileId IN :profiles]),
                 users
         );
     }
 
     @IsTest
     static void testSelectOne() {
-        User usr = (User) new ExampleSelector().one();
+        User usr = (User) new TestUserSelector().one();
         System.assertNotEquals(null, usr);
     }
 
@@ -86,8 +97,8 @@ public class SelectorTest {
 
     @IsTest
     static void testMocking() {
-        SelectorQuery.setMock(ExampleSelector.class, new QueryMock());
-        List<User> result = new ExampleSelector().byField(User.Id, 'IN', new List<Id>{'005000000000000'});
+        SelectorQuery.setMock(TestUserSelector.class, new QueryMock());
+        List<User> result = new TestUserSelector().byField(User.Id, 'IN', new List<Id>{'005000000000000'});
 
         System.assertEquals(1, result.size());
         System.assertEquals('Mock Result', result[0].Username);
@@ -104,7 +115,7 @@ public class SelectorTest {
 
             System.assertEquals(SelectorTest.class.getName(), caller);
             System.assertEquals('testMocking', callerMethod);
-            System.assertEquals('SelectorTest.ExampleSelector', selector);
+            System.assertEquals(TestUserSelector.class.getName(), selector);
             System.assertEquals('byField', selectorMethod);
             System.assertEquals(new List<Object>{
                     new List<Id>{Id.valueOf('005000000000000')}

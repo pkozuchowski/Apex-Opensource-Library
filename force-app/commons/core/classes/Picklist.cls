@@ -1,7 +1,7 @@
 /**
 * MIT License
 *
-* Copyright (c) 2018 Piotr Kożuchowski
+* Copyright (c) 2019 Piotr Kożuchowski
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -23,46 +23,40 @@
 */
 
 /**
- * @description
- *
- *
- * @author Piotr Kożuchowski
+* This class provides easy access to picklist field values, labels or controlling values.
  */
-public with sharing class PicklistEntries {
-    private transient List<PicklistEntry> entries;
-    private String defaultValue;
+public with sharing class Picklist {
+    private List<Entry> entries;
     private List<String> values;
-    private List<String> labels;
-    private transient Map<String, String> valueToLabel;
+    private String defaultValue;
     private Boolean isRestricted;
     private Boolean isDependant;
+    private transient Map<String, String> valueToLabel;
+    private transient DescribeFieldResult picklistDescribe;
+
 
     /**
-     * Factory method which creates instance of PicklistEntries for given SObjectField
+     * Constructs Picklist instance from SObjectField of picklist type.
      */
-    public static PicklistEntries of(SObjectField field) {
-        return new PicklistEntries(field);
-    }
-
-    private PicklistEntries(SObjectField field) {
-        DescribeFieldResult describe = field.getDescribe();
-        this.entries = new List<PicklistEntry>();
+    public Picklist(SObjectField field) {
+        this.picklistDescribe = field.getDescribe();
+        this.entries = new List<Entry>();
         this.values = new List<String>();
-        this.labels = new List<String>();
         this.valueToLabel = new Map<String, String>();
-        this.isRestricted = describe.isRestrictedPicklist();
-        this.isDependant = describe.isDependentPicklist();
+        this.isRestricted = picklistDescribe.isRestrictedPicklist();
+        this.isDependant = picklistDescribe.isDependentPicklist();
 
-        for (PicklistEntry entry : describe.getPicklistValues()) {
-            if (entry.isActive()) {
+        List<PicklistEntry> picklistEntries = picklistDescribe.getPicklistValues();
+        List<Entry> allEntries = (List<Entry>) JSON.deserialize(JSON.serialize(picklistEntries), Entry[].class);
+
+        for (Entry entry : allEntries) {
+            if (entry.active) {
+                this.values.add(entry.value);
+                this.valueToLabel.put(entry.value.toLowerCase(), entry.label);
+
                 this.entries.add(entry);
-                this.values.add(entry.getValue());
-                this.labels.add(entry.getLabel());
-                this.valueToLabel.put(entry.getValue().toLowerCase(), entry.getLabel());
 
-                if (entry.isDefaultValue()) {
-                    this.defaultValue = entry.getValue();
-                }
+                if (entry.defaultValue == true) this.defaultValue = entry.value;
             }
         }
     }
@@ -71,14 +65,14 @@ public with sharing class PicklistEntries {
     /**
      * @return True, if picklist is restricted.
      */
-    public Boolean isRestrictedPicklist() {
+    public Boolean isRestricted() {
         return this.isRestricted;
     }
 
     /**
      * @return True, if picklist is dependant picklist
      */
-    public Boolean isDependentPicklist() {
+    public Boolean isDependent() {
         return this.isDependant;
     }
 
@@ -107,7 +101,7 @@ public with sharing class PicklistEntries {
      * @return Labels of all active picklist values.
      */
     public List<String> getLabels() {
-        return labels;
+        return valueToLabel.values();
     }
 
     /**
@@ -121,13 +115,7 @@ public with sharing class PicklistEntries {
      * @return AuraEnabled collection of active picklist entries
      */
     public List<Entry> getEntries() {
-        List<Entry> selectOptions = new List<Entry>();
-
-        for (PicklistEntry picklistEntry : entries) {
-            selectOptions.add(new Entry(picklistEntry));
-        }
-
-        return selectOptions;
+        return entries;
     }
 
     /**
@@ -136,11 +124,44 @@ public with sharing class PicklistEntries {
     public List<SelectOption> getSelectOptions() {
         List<SelectOption> selectOptions = new List<SelectOption>();
 
-        for (PicklistEntry picklistEntry : entries) {
-            selectOptions.add(new SelectOption(picklistEntry.getValue(), picklistEntry.getLabel()));
+        for (Entry entry : entries) {
+            selectOptions.add(new SelectOption(entry.value, entry.label));
         }
 
         return selectOptions;
+    }
+
+    /**
+     * @return Picklist entries by controlling values (picklist API value or checkbox true/false)
+     */
+    public Map<Object, Entry[]> getEntriesByControllingValue() {
+        if (isDependant) {
+            Map<Object, Entry[]> entriesByControllingEntry = new Map<Object, Entry[]>();
+            List<Object> controllingValues = picklistDescribe.getController().getDescribe().getType() == DisplayType.PICKLIST ?
+                    new Picklist(picklistDescribe.getController()).getValues() : new List<Object>{false, true};
+
+            for (Entry entry : entries) {
+                BitSet bitset = BitSet.valueOfBase64(entry.validFor);
+
+                for (Integer i = 0; i < controllingValues.size(); i++) {
+                    if (bitset.get(i) == true) {
+                        Object controllingValue = controllingValues.get(i);
+
+                        if (!entriesByControllingEntry.containsKey(controllingValue)) {
+                            entriesByControllingEntry.put(controllingValue, new Entry[]{});
+                        }
+
+                        entriesByControllingEntry.get(controllingValue).add(entry);
+                    }
+                }
+            }
+
+            return entriesByControllingEntry;
+        } else {
+            return new Map<Object, Entry[]>{
+                    '' => entries
+            };
+        }
     }
 
 
@@ -150,12 +171,8 @@ public with sharing class PicklistEntries {
     public class Entry {
         @AuraEnabled public String label { get; private set; }
         @AuraEnabled public String value { get; private set; }
-        @AuraEnabled public Boolean isDefault { get; private set; }
-
-        private Entry(PicklistEntry picklistEntry) {
-            this.label = picklistEntry.getLabel();
-            this.value = picklistEntry.getValue();
-            this.isDefault = picklistEntry.isDefaultValue();
-        }
+        @AuraEnabled public Boolean defaultValue { get; private set; }
+        private String validFor;
+        private Boolean active;
     }
 }

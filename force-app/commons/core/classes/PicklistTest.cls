@@ -22,7 +22,7 @@
 * SOFTWARE.
 */
 @IsTest
-private class PicklistEntriesTest {
+private class PicklistTest {
     private static String defaultValue;
     private static List<String> values;
     private static List<String> labels;
@@ -49,10 +49,10 @@ private class PicklistEntriesTest {
 
     @IsTest
     static void testBehavior() {
-        PicklistEntries accountSource = PicklistEntries.of(Account.AccountSource);
+        Picklist accountSource = new Picklist(Account.AccountSource);
 
-        System.assertEquals(false, accountSource.isDependentPicklist());
-        System.assertEquals(false, accountSource.isRestrictedPicklist());
+        System.assertEquals(false, accountSource.isDependent());
+        System.assertEquals(false, accountSource.isRestricted());
         System.assertEquals(defaultValue, accountSource.getDefaultValue());
         System.assertEquals(values, accountSource.getValues());
         System.assertEquals(labels, accountSource.getLabels());
@@ -62,12 +62,14 @@ private class PicklistEntriesTest {
         System.assertEquals(true, accountSource.containsValue(testValue.toLowerCase()));
         System.assertEquals(false, accountSource.containsValue('PicklistEntriesTest'));
 
-        List<PicklistEntries.Entry> entries = accountSource.getEntries();
+        List<Picklist.Entry> entries = accountSource.getEntries();
         List<SelectOption> selectOptions = accountSource.getSelectOptions();
 
         for (Integer i = 0; i < entries.size(); i++) {
             System.assertEquals(values[i], entries[i].value);
             System.assertEquals(values[i], selectOptions[i].getValue());
         }
+
+        Map<Object, Picklist.Entry[]> entriesByController = accountSource.getEntriesByControllingValue();
     }
 }

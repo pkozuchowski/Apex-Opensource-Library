@@ -61,14 +61,14 @@ public with sharing class BitSet {
         return new BitSet(bits);
     }
 
+
     /**
-     * Constructs bitset by given
-     *
-     * @param bits
+     * Constructs bitset by given string which consists of '0's or '1's
      */
     public BitSet(String bits) {
         this.bits = bits;
     }
+
 
     /**
      * @return Bit at given index.

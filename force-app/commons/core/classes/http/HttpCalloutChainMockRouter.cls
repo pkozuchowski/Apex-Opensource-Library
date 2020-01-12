@@ -57,31 +57,28 @@ public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock 
 
 
     /**
-    * Register HttpCalloutChainMock implementation.
-    * Each registered mock in queue will be asked if it can handle the request, until the first mock that can handle.
-    * New mocks are registered at the beginning of the mock queue.
-    * */
-    public HttpCalloutChainMockRouter registerMock(HttpCalloutChainMock handler) {
-        registeredMocks.add(0, handler);
-        return this;
+     * Registers string response for given endpoint.
+     * @param methods Comma separated list of methods ('GET,POST')
+     * @param endpointPattern Regexp pattern for endpoint
+     * @param statusCode Status code of the response
+     * @param status Status of the response
+     * @param body Body of the response
+     */
+    public HttpCalloutChainMockRouter registerMock(String methods, String endpointPattern, Integer statusCode, String status, String body) {
+        return registerMock(methods, endpointPattern, new HttpSimpleMock(statusCode, status, body));
     }
-
 
     /**
-    * Register HttpCalloutMock for given Http method and endpoint pattern.
-    * */
-    public HttpCalloutChainMockRouter registerMock(String method, String endpoint, Integer statusCode, String status, String body) {
-        return registerMock(method, endpoint, new HttpSimpleMock(statusCode, status, body));
+     * Registers static resource response for given endpoint.
+     * @param methods Comma separated list of methods ('GET,POST')
+     * @param endpointPattern Regexp pattern for endpoint
+     * @param statusCode Status code of the response
+     * @param status Status of the response
+     * @param resource Name of static resource file, which contains body of the response.
+     */
+    public HttpCalloutChainMockRouter registerStaticResourceMock(String methods, String endpointPattern, Integer statusCode, String status, String resource) {
+        return registerMock(methods, endpointPattern, HttpSimpleMock.fromStaticResource(statusCode, status, resource));
     }
-
-
-    /**
-    * Register HttpCalloutMock for given Http method and endpoint pattern.
-    * */
-    public HttpCalloutChainMockRouter registerStaticResourceMock(String method, String endpoint, Integer statusCode, String status, String resource) {
-        return registerMock(method, endpoint, HttpSimpleMock.fromStaticResource(statusCode, status, resource));
-    }
-
 
     /**
     * Register HttpCalloutMock for given Http method and endpoint pattern.
@@ -90,7 +87,16 @@ public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock 
     * @param mock mock to respond with
     * */
     public HttpCalloutChainMockRouter registerMock(String methods, String endpointPattern, HttpCalloutMock mock) {
-        registeredMocks.add(0, new HttpMockEndpointRouter(methods, endpointPattern, mock));
+        return registerMock(new HttpMockEndpointRouter(methods, endpointPattern, mock));
+    }
+
+    /**
+    * Register HttpCalloutChainMock implementation.
+    * Each registered mock in queue will be asked if it can handle the request, until the first mock that can handle.
+    * New mocks are registered at the beginning of the mock queue.
+    * */
+    public HttpCalloutChainMockRouter registerMock(HttpCalloutChainMock handler) {
+        registeredMocks.add(0, handler);
         return this;
     }
 
@@ -115,7 +121,13 @@ public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock 
      * @return Boolean whether this mock class can handle the request.
      */
     public virtual Boolean handles(HttpRequest request) {
-        return true;
+        for (HttpCalloutChainMock mock : registeredMocks) {
+            if (mock.handles(request)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 

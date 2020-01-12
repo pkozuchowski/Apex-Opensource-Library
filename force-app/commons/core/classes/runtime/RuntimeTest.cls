@@ -23,7 +23,7 @@
 */
 
 @IsTest(IsParallel=true)
-private class ApexServiceTest {
+private class RuntimeTest {
 
     public class ExampleClass {
     }
@@ -35,9 +35,9 @@ private class ApexServiceTest {
      */
     @IsTest
     static void testGetSObjectFieldType() {
-        System.assertEquals(String.class, ApexService.getSObjectFieldType(Account.Name));
-        System.assertEquals(Datetime.class, ApexService.getSObjectFieldType(Account.CreatedDate));
-        System.assertEquals(Id.class, ApexService.getSObjectFieldType(Account.CreatedById));
+        System.assertEquals(String.class, Runtime.getSObjectFieldType(Account.Name));
+        System.assertEquals(Datetime.class, Runtime.getSObjectFieldType(Account.CreatedDate));
+        System.assertEquals(Id.class, Runtime.getSObjectFieldType(Account.CreatedById));
     }
 
     /**
@@ -47,13 +47,13 @@ private class ApexServiceTest {
     @IsTest
     static void testGetRunningType() {
         ExampleClass instance = new ExampleClass();
-        System.assertEquals(ExampleClass.class, ApexService.getRunningType(instance));
+        System.assertEquals(ExampleClass.class, Runtime.getRunningType(instance));
     }
 
     @IsTest
     static void testGetDatesRunningType() {
         Date instance = Date.today();
-        System.assertEquals(Date.class, ApexService.getRunningType(instance));
+        System.assertEquals(Date.class, Runtime.getRunningType(instance));
     }
 
 
@@ -64,7 +64,7 @@ private class ApexServiceTest {
     @IsTest
     static void testGetRunningTypeName() {
         ExampleClass instance = new ExampleClass();
-        System.assertEquals('ApexServiceTest.ExampleClass', ApexService.getRunningTypeName(instance));
+        System.assertEquals('ApexServiceTest.ExampleClass', Runtime.getRunningTypeName(instance));
     }
 
     /**
@@ -73,10 +73,10 @@ private class ApexServiceTest {
      */
     @IsTest
     static void testGetListItemType() {
-        System.assertEquals(Account.class, ApexService.getListItemType(new List<Account>()));
+        System.assertEquals(Account.class, Runtime.getListItemType(new List<Account>()));
 
         List<SObject> records = new List<Opportunity>();
-        System.assertEquals(Opportunity.class, ApexService.getListItemType(records));
+        System.assertEquals(Opportunity.class, Runtime.getListItemType(records));
     }
 
 
@@ -87,7 +87,7 @@ private class ApexServiceTest {
     @IsTest
     static void testNewListOfTheSameType() {
         List<SObject> records = new List<Opportunity>();
-        List<Object> result = ApexService.newListOfTheSameType(records);
+        List<Object> result = Runtime.newListOfTheSameType(records);
 
         System.assert(result instanceof List<Opportunity>);
     }
@@ -98,7 +98,7 @@ private class ApexServiceTest {
      */
     @IsTest
     static void testNewListOfItemType() {
-        List<Object> result = ApexService.newListOfItemType(Opportunity.class);
+        List<Object> result = Runtime.newListOfItemType(Opportunity.class);
         System.assert(result instanceof List<Opportunity>);
     }
 
@@ -109,9 +109,9 @@ private class ApexServiceTest {
      */
     @IsTest
     static void testGetRunning() {
-        System.assertEquals('ApexServiceTest', ApexService.getRunningClass());
+        System.assertEquals('ApexServiceTest', Runtime.getRunningClass());
         System.assertEquals('ApexServiceTest.GetRunningClassExample', new GetRunningClassExample().doTestRunningClass());
-        System.assertEquals('ApexServiceTest.testGetRunning', ApexService.getRunningMethod());
+        System.assertEquals('ApexServiceTest.testGetRunning', Runtime.getRunningMethod());
         System.assertEquals('ApexServiceTest.GetRunningClassExample.doTestRunningMethod', new GetRunningClassExample().doTestRunningMethod());
     }
 
@@ -121,7 +121,7 @@ private class ApexServiceTest {
      */
     @IsTest
     static void testGetStackLocation() {
-        ApexService.StackTraceLine line = ApexService.getStackLocation();
+        Runtime.StackTraceLine line = Runtime.getStackLocation();
         System.assertEquals('ApexServiceTest', line.apexClass);
         System.assertEquals('ApexServiceTest.testGetStackLocation', line.apexClassMethod);
         System.assertEquals('testGetStackLocation', line.method);
@@ -134,7 +134,7 @@ private class ApexServiceTest {
     @IsTest
     static void testGetCaller() {
         System.assertEquals(
-                ApexServiceTest.class.getName(),
+                RuntimeTest.class.getName(),
                 new GetRunningClassExample().getCaller()
         );
     }
@@ -142,15 +142,15 @@ private class ApexServiceTest {
 
     private class GetRunningClassExample {
         public String doTestRunningClass() {
-            return ApexService.getRunningClass();
+            return Runtime.getRunningClass();
         }
 
         public String doTestRunningMethod() {
-            return ApexService.getRunningMethod();
+            return Runtime.getRunningMethod();
         }
 
         public String getCaller() {
-            return ApexService.getCaller(GetRunningClassExample.class).apexClass;
+            return Runtime.getCaller(GetRunningClassExample.class).apexClass;
         }
     }
 }

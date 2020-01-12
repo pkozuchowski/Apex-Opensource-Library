@@ -48,9 +48,9 @@
  * Mocks are stored in LIFO queue, the most recently added mock will be the first to handle the request.
  * This way, routers can have predefined list of default registered mocks, which can be overridden
  * in partial unit tests with custom response mocks.
- * @see HttpCalloutChainMockRouterTest
+ * @see HttpCalloutMockRouterTest
  */
-public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock {
+public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     private List<HttpCalloutChainMock> registeredMocks = new List<HttpCalloutChainMock>{
             new UnsupportedRequest()
     };
@@ -64,7 +64,7 @@ public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock 
      * @param status Status of the response
      * @param body Body of the response
      */
-    public HttpCalloutChainMockRouter registerMock(String methods, String endpointPattern, Integer statusCode, String status, String body) {
+    public HttpCalloutMockRouter registerMock(String methods, String endpointPattern, Integer statusCode, String status, String body) {
         return registerMock(methods, endpointPattern, new HttpSimpleMock(statusCode, status, body));
     }
 
@@ -76,7 +76,7 @@ public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock 
      * @param status Status of the response
      * @param resource Name of static resource file, which contains body of the response.
      */
-    public HttpCalloutChainMockRouter registerStaticResourceMock(String methods, String endpointPattern, Integer statusCode, String status, String resource) {
+    public HttpCalloutMockRouter registerStaticResourceMock(String methods, String endpointPattern, Integer statusCode, String status, String resource) {
         return registerMock(methods, endpointPattern, HttpSimpleMock.fromStaticResource(statusCode, status, resource));
     }
 
@@ -86,7 +86,7 @@ public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock 
     * @param endpointPattern Regexp pattern for endpoint
     * @param mock mock to respond with
     * */
-    public HttpCalloutChainMockRouter registerMock(String methods, String endpointPattern, HttpCalloutMock mock) {
+    public HttpCalloutMockRouter registerMock(String methods, String endpointPattern, HttpCalloutMock mock) {
         return registerMock(new HttpMockEndpointRouter(methods, endpointPattern, mock));
     }
 
@@ -95,7 +95,7 @@ public virtual class HttpCalloutChainMockRouter implements HttpCalloutChainMock 
     * Each registered mock in queue will be asked if it can handle the request, until the first mock that can handle.
     * New mocks are registered at the beginning of the mock queue.
     * */
-    public HttpCalloutChainMockRouter registerMock(HttpCalloutChainMock handler) {
+    public HttpCalloutMockRouter registerMock(HttpCalloutChainMock handler) {
         registeredMocks.add(0, handler);
         return this;
     }

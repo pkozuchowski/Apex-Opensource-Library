@@ -59,7 +59,7 @@ public with sharing class SelectorQuery {
         this.boundVars = new Map<String, Object>();
         this.fields = new Set<String>{};
         if (selector != null) {
-            this.selectorName = ApexService.getRunningTypeName(selector);
+            this.selectorName = Runtime.getRunningTypeName(selector);
         }
     }
 
@@ -209,7 +209,7 @@ public with sharing class SelectorQuery {
     private SObject[] mockResponse() {
         String selectorMethod, caller, callerMethod;
 
-        for (ApexService.StackTraceLine line : ApexService.getStackTrace()) {
+        for (Runtime.StackTraceLine line : Runtime.getStackTrace()) {
             if (line.apexClass == selectorName || line.apexClass == Selector.class.getName()) {
                 selectorMethod = line.method;
 

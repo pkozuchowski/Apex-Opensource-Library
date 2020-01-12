@@ -25,7 +25,7 @@
 /**
  * Logs persistent messages in custom object records and emits platform event.
  *
- * @dependency commmons.core.Apex @see ApexService
+ * @dependency commmons.core.Apex @see Runtime
  * @dependency commmons.core.Formatter @see Formatter
  */
 public with sharing class Logger {
@@ -176,7 +176,7 @@ public with sharing class Logger {
      */
     public void log(LoggingLevel loggingLevel, Log__c log) {
         if (LoggingSettings.shouldCreateLog(loggingLevel)) {
-            log.ApexClass__c = ApexService.getCaller(Logger.class).apexClassMethod;
+            log.ApexClass__c = Runtime.getCaller(Logger.class).apexClassMethod;
             log.LoggingLevel__c = loggingLevel.name();
             logs.add(log);
 

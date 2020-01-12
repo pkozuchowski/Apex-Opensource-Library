@@ -23,10 +23,10 @@
 */
 
 /**
- * Utility class with methods concerning Apex programming language.
+ * Utility class with methods related to dynamic/reflection aspect of Apex language
  * @see ApexServiceTest
  */
-public with sharing class ApexService {
+public with sharing class Runtime {
     private final static Map<Schema.SoapType, Type> FIELD_TYPE_MAP = new Map<SoapType, Type>{
             Schema.SoapType.ID => Id.class,
             Schema.SoapType.INTEGER => Integer.class,

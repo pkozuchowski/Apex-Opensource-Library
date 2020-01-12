@@ -22,7 +22,7 @@
 * SOFTWARE.
 */
 @IsTest(IsParallel=true)
-private class HttpCalloutChainMockRouterTest {
+private class HttpCalloutMockRouterTest {
 
     @IsTest
     static void coverage() {
@@ -30,7 +30,7 @@ private class HttpCalloutChainMockRouterTest {
         request.setMethod('GET');
         request.setEndpoint('https://example.com');
 
-        new HttpCalloutChainMockRouter()
+        new HttpCalloutMockRouter()
                 .registerMock('GET', 'https://example.com', 200, 'OK', 'success')
                 .registerStaticResourceMock('POST', 'https://example.com', 200, 'OK', 'StaticResourceName')
                 .handles(request);
@@ -47,7 +47,7 @@ private class HttpCalloutChainMockRouterTest {
         In reality, you could have only overrides here + top most mock for whole organization.
         */
         Test.setMock(HttpCalloutMock.class,
-                new HttpCalloutChainMockRouter()
+                new HttpCalloutMockRouter()
                         .registerMock(
                         new AcmeMocksRouter()
                                 .registerMock('POST', '.*/auth', 200, 'OK', 'sessionToken: abc')
@@ -95,7 +95,7 @@ private class HttpCalloutChainMockRouterTest {
         try {
             doCallout('POST', 'www.test.com', null, null);
             System.assert(false, 'Router did not throw exception for unhandled request.');
-        } catch (HttpCalloutChainMockRouter.HttpCalloutChainMockBaseException ex) {
+        } catch (HttpCalloutMockRouter.HttpCalloutChainMockBaseException ex) {
         }
         Test.stopTest();
     }
@@ -119,7 +119,7 @@ private class HttpCalloutChainMockRouterTest {
     /**
     * Mock Router for ACME callouts.
     * */
-    private class AcmeMocksRouter extends HttpCalloutChainMockRouter {
+    private class AcmeMocksRouter extends HttpCalloutMockRouter {
 
         public override Boolean handles(HttpRequest request) {
             return request.getEndpoint().contains('acme.com/rest');
@@ -149,7 +149,7 @@ private class HttpCalloutChainMockRouterTest {
     /**
     * Mock Router for Example company service callouts.
     * */
-    private class ExampleMocksRouter extends HttpCalloutChainMockRouter {
+    private class ExampleMocksRouter extends HttpCalloutMockRouter {
         public override Boolean handles(HttpRequest request) {
             return request.getEndpoint().contains('example.com/rest');
         }

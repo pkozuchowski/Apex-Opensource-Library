@@ -25,8 +25,9 @@
 /**
  * Logs persistent messages in custom object records and emits platform event.
  *
- * @dependency commmons.core.Apex @see Runtime
- * @dependency commmons.core.Formatter @see Formatter
+ * @dependency:
+  * @see Runtime
+ *  @see Formatter
  */
 public with sharing class Logger {
     private final static Formatter formatter = new Formatter();

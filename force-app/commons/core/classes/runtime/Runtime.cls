@@ -151,7 +151,7 @@ public with sharing class Runtime {
 
         List<StackTraceLine> stackTraceLines = new List<StackTraceLine>();
         for (Integer i = 1; i < lines.size(); i++) {
-            if (!lines[i].contains('Class.ApexService.')) {
+            if (!lines[i].contains('Class.' + Runtime.class + '.')) {
                 stackTraceLines.add(new StackTraceLine(lines[i]));
             }
         }
@@ -159,19 +159,14 @@ public with sharing class Runtime {
     }
 
     /**
-     * @return First stack trace line preceding given class.
+     * @return Stack trace line of apex class which called method where Runtime.getCaller() is executed.
      */
-    public static StackTraceLine getCaller(Type className) {
-        return getCaller(className.getName());
-    }
-    public static StackTraceLine getCaller(String className) {
-        Boolean occured = false;
-        for (StackTraceLine stackTraceLine : getStackTrace()) {
-            if (!occured && stackTraceLine.apexClass == className) {
-                occured = true;
-            }
+    public static StackTraceLine getCaller() {
+        List<StackTraceLine> lines = getStackTrace();
+        String callerOfRuntime = lines.get(0).apexClass;
 
-            if (occured && stackTraceLine.apexClass != className) {
+        for (StackTraceLine stackTraceLine : getStackTrace()) {
+            if (stackTraceLine.apexClass != callerOfRuntime) {
                 return stackTraceLine;
             }
         }

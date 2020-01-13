@@ -64,7 +64,7 @@ private class RuntimeTest {
     @IsTest
     static void testGetRunningTypeName() {
         ExampleClass instance = new ExampleClass();
-        System.assertEquals('ApexServiceTest.ExampleClass', Runtime.getRunningTypeName(instance));
+        System.assertEquals('RuntimeTest.ExampleClass', Runtime.getRunningTypeName(instance));
     }
 
     /**
@@ -109,10 +109,10 @@ private class RuntimeTest {
      */
     @IsTest
     static void testGetRunning() {
-        System.assertEquals('ApexServiceTest', Runtime.getRunningClass());
-        System.assertEquals('ApexServiceTest.GetRunningClassExample', new GetRunningClassExample().doTestRunningClass());
-        System.assertEquals('ApexServiceTest.testGetRunning', Runtime.getRunningMethod());
-        System.assertEquals('ApexServiceTest.GetRunningClassExample.doTestRunningMethod', new GetRunningClassExample().doTestRunningMethod());
+        System.assertEquals('' + RuntimeTest.class, Runtime.getRunningClass());
+        System.assertEquals('' + RuntimeTest.class + '.GetRunningClassExample', new GetRunningClassExample().doTestRunningClass());
+        System.assertEquals('' + RuntimeTest.class + '.testGetRunning', Runtime.getRunningMethod());
+        System.assertEquals('' + RuntimeTest.class + '.GetRunningClassExample.doTestRunningMethod', new GetRunningClassExample().doTestRunningMethod());
     }
 
     /**
@@ -122,8 +122,8 @@ private class RuntimeTest {
     @IsTest
     static void testGetStackLocation() {
         Runtime.StackTraceLine line = Runtime.getStackLocation();
-        System.assertEquals('ApexServiceTest', line.apexClass);
-        System.assertEquals('ApexServiceTest.testGetStackLocation', line.apexClassMethod);
+        System.assertEquals('' + RuntimeTest.class + '', line.apexClass);
+        System.assertEquals('' + RuntimeTest.class + '.testGetStackLocation', line.apexClassMethod);
         System.assertEquals('testGetStackLocation', line.method);
     }
 
@@ -150,7 +150,7 @@ private class RuntimeTest {
         }
 
         public String getCaller() {
-            return Runtime.getCaller(GetRunningClassExample.class).apexClass;
+            return Runtime.getCaller().apexClass;
         }
     }
 }

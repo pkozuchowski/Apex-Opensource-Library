@@ -176,7 +176,7 @@ public with sharing class Logger {
      */
     public void log(LoggingLevel loggingLevel, Log__c log) {
         if (LoggingSettings.shouldCreateLog(loggingLevel)) {
-            log.ApexClass__c = Runtime.getCaller(Logger.class).apexClassMethod;
+            log.ApexClass__c = Runtime.getCaller().apexClassMethod;
             log.LoggingLevel__c = loggingLevel.name();
             logs.add(log);
 

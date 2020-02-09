@@ -51,6 +51,7 @@
  * @see HttpCalloutMockRouterTest
  */
 public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
+    private Map<String, String> expressions = new Map<String, String>();
     private List<HttpCalloutChainMock> registeredMocks = new List<HttpCalloutChainMock>{
             new UnsupportedRequest()
     };
@@ -87,7 +88,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     * @param mock mock to respond with
     * */
     public HttpCalloutMockRouter registerMock(String methods, String endpointPattern, HttpCalloutMock mock) {
-        return registerMock(new HttpMockEndpointRouter(methods, endpointPattern, mock));
+        return registerMock(new HttpMockEndpointRouter(methods, replaceVariables(endpointPattern), mock));
     }
 
     /**
@@ -97,6 +98,24 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     * */
     public HttpCalloutMockRouter registerMock(HttpCalloutChainMock handler) {
         registeredMocks.add(0, handler);
+        return this;
+    }
+
+
+    /**
+     * Registers regexp expression which will can be referenced in endpoint:
+     * <pre>
+     * router.registerEndpointExpression('endpoint', 'https://api.sf.com/rest'); // Regexp for API endpoint
+     * router.registerEndpointExpression('id', '([a-z0-9]{32}') // Regexp for external id
+     *
+     * router.registerStaticResourceMock('GET','{{endpoint}}/accounts/{{id}}', 200, 'OK', 'Mock_GetAccountResource');
+     * </pre>
+     *
+     * @param name Name of variable to be used in endpoints
+     * @param regexp Regexp of the variable
+     */
+    public HttpCalloutMockRouter registerEndpointExpression(String name, String regexp) {
+        expressions.put(name, regexp);
         return this;
     }
 
@@ -128,6 +147,21 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
         }
 
         return false;
+    }
+
+
+    /**
+     * Replaces expression variables in endpoint
+     */
+    private String replaceVariables(String endpoint) {
+        String endpointWithVariables = endpoint;
+
+        for (String expressionName : expressions.keySet()) {
+            String variable = '{{' + expressionName + '}}';
+            endpointWithVariables = endpointWithVariables.replace(variable, expressions.get(expressionName));
+        }
+
+        return endpointWithVariables;
     }
 
 

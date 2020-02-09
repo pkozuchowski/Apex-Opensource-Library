@@ -52,22 +52,9 @@
  */
 public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     private Map<String, String> expressions = new Map<String, String>();
-    private List<HttpCalloutChainMock> registeredMocks = new List<HttpCalloutChainMock>{
-            new UnsupportedRequest()
-    };
+    private Map<String, HttpCalloutChainMock> registeredMocks = new Map<String, HttpCalloutChainMock>();
+    private Map<String, HttpCalloutMock> mocksOverrides = new Map<String, HttpCalloutMock>();
 
-
-    /**
-     * Registers string response for given endpoint.
-     * @param methods Comma separated list of methods ('GET,POST')
-     * @param endpointPattern Regexp pattern for endpoint
-     * @param statusCode Status code of the response
-     * @param status Status of the response
-     * @param body Body of the response
-     */
-    public HttpCalloutMockRouter registerMock(String methods, String endpointPattern, Integer statusCode, String status, String body) {
-        return registerMock(methods, endpointPattern, new HttpSimpleMock(statusCode, status, body));
-    }
 
     /**
      * Registers static resource response for given endpoint.
@@ -77,18 +64,42 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
      * @param status Status of the response
      * @param resource Name of static resource file, which contains body of the response.
      */
-    public HttpCalloutMockRouter registerStaticResourceMock(String methods, String endpointPattern, Integer statusCode, String status, String resource) {
-        return registerMock(methods, endpointPattern, HttpSimpleMock.fromStaticResource(statusCode, status, resource));
+    public HttpCalloutMockRouter registerStaticResourceMock(String name, String methods, String endpointPattern, Integer statusCode, String status, String resource) {
+        return registerMock(name, methods, endpointPattern, HttpSimpleMock.fromStaticResource(statusCode, status, resource));
+    }
+
+    /**
+     * Registers JSON response for given endpoint.
+     * @param methods Comma separated list of methods ('GET,POST')
+     * @param endpointPattern Regexp pattern for endpoint
+     * @param statusCode Status code of the response
+     * @param status Status of the response
+     * @param objectToSerialize Object to serialize as response's body
+     */
+    public HttpCalloutMockRouter registerJsonMock(String name, String methods, String endpointPattern, Integer statusCode, String status, Object objectToSerialize) {
+        return registerMock(name, methods, endpointPattern, statusCode, status, JSON.serialize(objectToSerialize));
+    }
+
+    /**
+     * Registers string response for given endpoint.
+     * @param methods Comma separated list of methods ('GET,POST')
+     * @param endpointPattern Regexp pattern for endpoint
+     * @param statusCode Status code of the response
+     * @param status Status of the response
+     * @param body Body of the response
+     */
+    public HttpCalloutMockRouter registerMock(String name, String methods, String endpointPattern, Integer statusCode, String status, String body) {
+        return registerMock(name, methods, endpointPattern, new HttpSimpleMock(statusCode, status, body));
     }
 
     /**
     * Register HttpCalloutMock for given Http method and endpoint pattern.
     * @param methods Comma separated list of methods ('GET,POST')
     * @param endpointPattern Regexp pattern for endpoint
-    * @param mock mock to respond with
+    * @param mock Mock to respond with
     * */
-    public HttpCalloutMockRouter registerMock(String methods, String endpointPattern, HttpCalloutMock mock) {
-        return registerMock(new HttpMockEndpointRouter(methods, replaceVariables(endpointPattern), mock));
+    public HttpCalloutMockRouter registerMock(String name, String methods, String endpointPattern, HttpCalloutMock mock) {
+        return registerMock(name, new HttpMockEndpointRouter(methods, replaceVariables(endpointPattern), mock));
     }
 
     /**
@@ -96,9 +107,61 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     * Each registered mock in queue will be asked if it can handle the request, until the first mock that can handle.
     * New mocks are registered at the beginning of the mock queue.
     * */
-    public HttpCalloutMockRouter registerMock(HttpCalloutChainMock handler) {
-        registeredMocks.add(0, handler);
+    public HttpCalloutMockRouter registerMock(String name, HttpCalloutChainMock handler) {
+        registeredMocks.put(name, handler);
         return this;
+    }
+
+
+    /**
+     * Overrides previously registered mock with given name with supplied substitute.
+     * This method is used when main mock class for given API defines "happy path" success responses, but developer
+     * has to test error response in one of the tests.
+     *
+     * Override uses Method and Endpoint routing (or handles method of HttpCalloutChainMock) of original mock.
+     *
+     * @param name User defined identifier of the endpoint (ex. 'token', 'GET Account', 'Update Order')
+     * @param statusCode Status code of the response
+     * @param status Status of the response
+     * @param resource Name of static resource file, which contains body of the response.
+     */
+    public HttpCalloutMockRouter overrideMockWithStaticResource(String name, Integer statusCode, String status, String resource) {
+        return overrideMock(name, HttpSimpleMock.fromStaticResource(statusCode, status, resource));
+    }
+
+    /**
+     * @param methods Comma separated list of methods ('GET,POST')
+     * @param endpointPattern Regexp pattern for endpoint
+     * @param statusCode Status code of the response
+     * @param status Status of the response
+     * @param objectToSerialize Object to serialize as response's body
+     */
+    public HttpCalloutMockRouter overrideJsonMock(String name, Integer statusCode, String status, Object objectToSerialize) {
+        return overrideMock(name, statusCode, status, JSON.serialize(objectToSerialize));
+    }
+
+    /**
+     * @param name User defined identifier of the endpoint (ex. 'token', 'GET Account', 'Update Order')
+     * @param statusCode Status code of the response
+     * @param status Status of the response
+     * @param body Body of the response
+     */
+    public HttpCalloutMockRouter overrideMock(String name, Integer statusCode, String status, String body) {
+        return overrideMock(name, new HttpSimpleMock(statusCode, status, body));
+    }
+
+    /**
+     * @param name User defined identifier of the endpoint (ex. 'token', 'GET Account', 'Update Order')
+     * @param mock Mock to respond with
+     */
+    public HttpCalloutMockRouter overrideMock(String name, HttpCalloutMock mock) {
+        if (registeredMocks.containsKey(name)) {
+            mocksOverrides.put(name, mock);
+            return this;
+
+        } else {
+            throw new HttpCalloutMockRouterException('There is no mock to override with given name (' + name + ')');
+        }
     }
 
 
@@ -126,13 +189,17 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
      */
     public HttpResponse respond(HttpRequest request) {
 
-        for (HttpCalloutChainMock mock : registeredMocks) {
+        for (String name : registeredMocks.keySet()) {
+            HttpCalloutChainMock mock = registeredMocks.get(name);
+            HttpCalloutMock mockOverride = mocksOverrides.get(name);
+
+
             if (mock.handles(request)) {
-                return mock.respond(request);
+                return (mockOverride != null ? mockOverride : mock).respond(request);
             }
         }
 
-        return null;
+        throw new HttpCalloutMockRouterException('Unhandled request: ' + request);
     }
 
 
@@ -140,7 +207,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
      * @return Boolean whether this mock class can handle the request.
      */
     public virtual Boolean handles(HttpRequest request) {
-        for (HttpCalloutChainMock mock : registeredMocks) {
+        for (HttpCalloutChainMock mock : registeredMocks.values()) {
             if (mock.handles(request)) {
                 return true;
             }
@@ -165,20 +232,6 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     }
 
 
-    /**
-     * Last Mock in the queue. If request was not handled by now, then exception is thrown.
-     */
-    private class UnsupportedRequest implements HttpCalloutChainMock {
-
-        public Boolean handles(HttpRequest request) {
-            return true;
-        }
-
-        public HttpResponse respond(HttpRequest param1) {
-            throw new HttpCalloutChainMockBaseException('Unhandled request');
-        }
-    }
-
-    private class HttpCalloutChainMockBaseException extends Exception {
+    private class HttpCalloutMockRouterException extends Exception {
     }
 }

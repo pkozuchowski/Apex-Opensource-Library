@@ -137,7 +137,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
      * @param objectToSerialize Object to serialize as response's body
      */
     public HttpCalloutMockRouter overrideJsonMock(String name, Integer statusCode, String status, Object objectToSerialize) {
-        return overrideMock(name, statusCode, status, JSON.serialize(objectToSerialize));
+        return overrideMock(name, HttpSimpleMock.fromJSON(statusCode, status, objectToSerialize));
     }
 
     /**
@@ -232,6 +232,6 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     }
 
 
-    private class HttpCalloutMockRouterException extends Exception {
+    public class HttpCalloutMockRouterException extends Exception {
     }
 }

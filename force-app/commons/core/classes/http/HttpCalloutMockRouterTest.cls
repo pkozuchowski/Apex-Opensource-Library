@@ -23,154 +23,172 @@
 */
 @IsTest(IsParallel=true)
 private class HttpCalloutMockRouterTest {
+    private final static String ACCOUNT_ID = '001D000000IqhSLIAZ';
+    private final static String ACCOUNT_NAME = 'Test Account';
+
+    private class SalesforceRestAPIMocks extends HttpCalloutMockRouter {
+
+        public SalesforceRestAPIMocks() {
+            this.registerEndpointExpression('endpoint', 'https://yourInstance.salesforce.com/services/data/v47.0');
+            this.registerEndpointExpression('id', '([0-9a-zA-Z]{15,18})');
+
+            this.registerJsonMock('Create Account', 'POST', '{{endpoint}}/sobjects/Account/', 201, 'Created', new CreateRecordResult(true));
+            this.registerJsonMock('Get Account', 'GET', '{{endpoint}}/sobjects/Account/{{id}}', 200, 'OK', new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME));
+            this.registerMock('Delete Account', 'DELETE', '{{endpoint}}/sobjects/Account/{{id}}', 204, 'No Content', '');
+            this.registerStaticResourceMock('Query', 'GET', '{{endpoint}}/query/?q=.*', 200, 'OK', 'StaticResourceWithResponse');
+        }
+    }
+
+    private class CreateRecordResult {
+        public String id;
+        public Boolean success;
+
+        public CreateRecordResult(Boolean success) {
+            this.id = ACCOUNT_ID;
+            this.success = success;
+        }
+    }
+
+    private class Error {
+        public String message;
+        public String errorCode;
+
+        public Error(String message, String errorCode) {
+            this.message = message;
+            this.errorCode = errorCode;
+        }
+    }
+
 
     @IsTest
-    static void coverage() {
+    static void testSuccessfulCreateAccountCall() {
+        HttpRequest request = new HttpRequest();
+        request.setMethod('POST');
+        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v47.0/sobjects/Account/');
+        request.setBody('{"Name":"Test Account}');
+
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new SalesforceRestAPIMocks());
+        HttpResponse response = new Http().send(request);
+        Test.stopTest();
+
+
+        System.assertEquals(201, response.getStatusCode());
+        System.assertEquals('Created', response.getStatus());
+
+        CreateRecordResult result = (CreateRecordResult) JSON.deserialize(response.getBody(), CreateRecordResult.class);
+        System.assertEquals(true, result.success);
+    }
+
+    @IsTest
+    static void testErrorCreateAccountCall() {
+        HttpRequest request = new HttpRequest();
+        request.setMethod('POST');
+        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v47.0/sobjects/Account/');
+        request.setBody('{"Name":"Test Account}');
+
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new SalesforceRestAPIMocks()
+                .overrideJsonMock('Create Account', 401, 'Unauthorized', new List<Error>{
+                        new Error('Session expired or invalid', 'INVALID_SESSION_ID')
+                })
+        );
+        HttpResponse response = new Http().send(request);
+        Test.stopTest();
+
+
+        System.assertEquals(401, response.getStatusCode());
+        System.assertEquals('Unauthorized', response.getStatus());
+        System.assert(response.getBody().contains('INVALID_SESSION_ID'));
+    }
+
+
+    @IsTest
+    static void testGetAccountCall() {
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
-        request.setEndpoint('https://example.com');
+        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v47.0/sobjects/Account/' + ACCOUNT_ID);
 
-        new HttpCalloutMockRouter()
-                .registerMock('GET', 'https://example.com', 200, 'OK', 'success')
-                .registerStaticResourceMock('POST', 'https://example.com', 200, 'OK', 'StaticResourceName')
-                .handles(request);
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new SalesforceRestAPIMocks());
+        HttpResponse response = new Http().send(request);
+        Test.stopTest();
+
+
+        System.assertEquals(200, response.getStatusCode());
+        System.assertEquals('OK', response.getStatus());
+        System.assert(response.getBody().contains('"Name":"' + ACCOUNT_NAME + '"'));
     }
 
     @IsTest
-    static void testRouter() {
+    static void testDeleteAccountCall() {
+        HttpRequest request = new HttpRequest();
+        request.setMethod('DELETE');
+        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v47.0/sobjects/Account/' + ACCOUNT_ID);
+
+
         Test.startTest();
-
-        /*
-        Default mocks can be registered directly in Router of each API,
-        but I decided to explicitly register all mocks in this example.
-
-        In reality, you could have only overrides here + top most mock for whole organization.
-        */
-        Test.setMock(HttpCalloutMock.class,
-                new HttpCalloutMockRouter()
-                        .registerMock(
-                        new AcmeMocksRouter()
-                                .registerMock('POST', '.*/auth', 200, 'OK', 'sessionToken: abc')
-                                .registerMock(new AcmeGetAccountsMock())
-                                .registerMock('POST', '.*/accounts', 200, 'OK', '{"success":"true"}'))
-
-                        .registerMock(
-                        new ExampleMocksRouter()
-                                .registerMock('POST', '.*/auth', 200, 'OK', 'sessionToken: xyz')
-                                .registerMock(new ExampleGetAccountsMock())
-                                .registerMock('POST', '.*/accounts', 200, 'OK', '{"success":"true"}'))
-        );
+        Test.setMock(HttpCalloutMock.class, new SalesforceRestAPIMocks());
+        HttpResponse response = new Http().send(request);
+        Test.stopTest();
 
 
-        /*Acme Requests*/
-        System.assertEquals('sessionToken: abc', doCallout('POST', 'www.acme.com/rest/auth', null, null));
-
-        List<Account> acmeAccounts = (List<Account>) doCallout('GET', 'www.acme.com/rest/accounts', null, Account[].class);
-        System.assertEquals(3, acmeAccounts.size());
-
-        for (Account account : acmeAccounts) {
-            System.assert(account.Name.contains('ACME'));
-        }
-
-        System.assertEquals('{"success":"true"}', doCallout('POST', 'www.acme.com/rest/accounts', acmeAccounts, null));
+        System.assertEquals(204, response.getStatusCode());
+        System.assertEquals('No Content', response.getStatus());
+    }
 
 
-        /*
-        * Example requests
-        * */
-        System.assertEquals('sessionToken: xyz', doCallout('POST', 'www.example.com/rest/auth', null, null));
-
-        List<Account> exampleAccounts = (List<Account>) doCallout('GET', 'www.example.com/rest/accounts', null, Account[].class);
-        System.assertEquals(3, exampleAccounts.size());
-
-        for (Account account : exampleAccounts) {
-            System.assert(account.Name.contains('Example'));
-        }
+    /**
+     * When there is no registered mock which could handle request, exception is thrown.
+     */
+    @IsTest
+    static void testUnhandledException() {
+        HttpRequest request = new HttpRequest();
+        request.setMethod('GET');
+        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v47.0/sobjects/User/005D0000001KyEIIA0');
+        Exception ex;
 
 
-        System.assertEquals('{"success":"true"}', doCallout('POST', 'www.example.com/rest/accounts', null, null));
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new SalesforceRestAPIMocks());
 
-
-        /*Other Requests*/
         try {
-            doCallout('POST', 'www.test.com', null, null);
-            System.assert(false, 'Router did not throw exception for unhandled request.');
-        } catch (HttpCalloutMockRouter.HttpCalloutChainMockBaseException ex) {
+            new Http().send(request);
+        } catch (HttpCalloutMockRouter.HttpCalloutMockRouterException e) {
+            ex = e;
         }
         Test.stopTest();
+
+
+        System.assertNotEquals(null, ex);
+        System.assert(ex.getMessage().contains('Unhandled request'));
     }
 
-    private static Object doCallout(String method, String endpoint, Object body, Type responseBodyType) {
+
+    /**
+     * Coverage for static resource mocks (not included in library, therefore it would leads to exception)
+     */
+    @IsTest
+    static void testStaticResourceCoverage() {
         HttpRequest request = new HttpRequest();
-        request.setMethod(method);
-        request.setEndpoint(endpoint);
+        request.setMethod('GET');
+        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v47.0/sobjects/Account/' + ACCOUNT_ID);
 
-        if (body != null) request.setBody(JSON.serialize(body));
-        HttpResponse response = new Http().send(request);
 
-        if (responseBodyType != null) {
-            return JSON.deserialize(response.getBody(), responseBodyType);
-        } else {
-            return response.getBody();
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new HttpCalloutMockRouter()
+                .registerMock('Salesforce API', new SalesforceRestAPIMocks()
+                        .overrideMock('Delete Account', 401, 'Unauthorized', '')
+                        .overrideMockWithStaticResource('Query', 200, 'OK', 'OtherStaticResource')
+                ));
+
+        try {
+            new Http().send(request);
+        } catch (Exception e) {
         }
-    }
-
-
-    /**
-    * Mock Router for ACME callouts.
-    * */
-    private class AcmeMocksRouter extends HttpCalloutMockRouter {
-
-        public override Boolean handles(HttpRequest request) {
-            return request.getEndpoint().contains('acme.com/rest');
-        }
-    }
-
-    private class AcmeGetAccountsMock implements HttpCalloutChainMock {
-
-        public Boolean handles(HttpRequest request) {
-            return request.getEndpoint().contains('/accounts') && request.getMethod() == 'GET';
-        }
-
-        public HttpResponse respond(HttpRequest param1) {
-            HttpResponse response = new HttpResponse();
-            response.setStatusCode(200);
-            response.setBody(JSON.serialize(new Account[]{
-                    new Account(Name = 'ACME Account 1'),
-                    new Account(Name = 'ACME Account 2'),
-                    new Account(Name = 'ACME Account 3')
-            }));
-
-            return response;
-        }
-    }
-
-
-    /**
-    * Mock Router for Example company service callouts.
-    * */
-    private class ExampleMocksRouter extends HttpCalloutMockRouter {
-        public override Boolean handles(HttpRequest request) {
-            return request.getEndpoint().contains('example.com/rest');
-        }
-    }
-
-    private class ExampleGetAccountsMock implements HttpCalloutChainMock {
-
-        public Boolean handles(HttpRequest request) {
-            return request.getEndpoint().contains('/accounts') && request.getMethod() == 'GET';
-        }
-
-        public HttpResponse respond(HttpRequest param1) {
-            HttpResponse response = new HttpResponse();
-            response.setStatusCode(200);
-            response.setBody(JSON.serialize(new Account[]{
-                    new Account(Name = 'Example Account 1'),
-                    new Account(Name = 'Example Account 2'),
-                    new Account(Name = 'Example Account 3')
-            }));
-
-            return response;
-        }
+        Test.stopTest();
     }
 }

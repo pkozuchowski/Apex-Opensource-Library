@@ -29,9 +29,10 @@ private class HttpCalloutMockRouterTest {
     private class SalesforceRestAPIMocks extends HttpCalloutMockRouter {
 
         public SalesforceRestAPIMocks() {
-            this.registerEndpointExpression('endpoint', 'https://yourInstance.salesforce.com/services/data/v47.0');
-            this.registerEndpointExpression('id', '([0-9a-zA-Z]{15,18})');
+            this.registerEndpointVariable('endpoint', 'https://yourInstance.salesforce.com/services/data/v47.0');
+            this.registerEndpointVariable('id', '([0-9a-zA-Z]{15,18})');
 
+            this.registerStaticResourceMock('Query', 'GET', '{{endpoint}}/query/?q=.*', 200, 'OK', 'StaticResourceWithResponse');
             this.registerJsonMock('Create Account', 'POST', '{{endpoint}}/sobjects/Account/', 201, 'Created', new CreateRecordResult(true));
             this.registerJsonMock('Get Account', 'GET', '{{endpoint}}/sobjects/Account/{{id}}', 200, 'OK', new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME));
             this.registerMock('Delete Account', 'DELETE', '{{endpoint}}/sobjects/Account/{{id}}', 204, 'No Content', '');

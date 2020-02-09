@@ -23,35 +23,12 @@
 */
 
 /**
- * Base Router class for HttpCalloutChainMocks based on Chain of Responsibility design pattern.
- * This class iterates through registered HttpCalloutChainMocks and responds
- * with the first mock that can handle the request.
- * Other routers can also be registered, therefore it's possible to create a whole hierarchy of mocks for
- * entire organization:
- * <pre>
- *     HttpCalloutChainMockRouter
- *         - Integration #1 Router
- *              - Auth Mock
- *              - Other Mocks...
- *
- *         - Integration #2 Router
- *              - Auth Mock
- *              - Other Mocks...
- *
- *         - Integration #3 Router
- *              - Auth Mock
- *              - Other Mocks...
- *
- *
- * </pre>
- *
- * Mocks are stored in LIFO queue, the most recently added mock will be the first to handle the request.
- * This way, routers can have predefined list of default registered mocks, which can be overridden
- * in partial unit tests with custom response mocks.
- * @see HttpCalloutMockRouterTest
+ * Mock Router class which provides ability to easily associate mock with given HTTP Method and Endpoint,
+ * has shorthand for creating Static Resource, JSON, String or HttpCalloutMock mocks.
+ * There is also an option to override default API responses in particular unit tests with different response.
  */
 public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
-    private Map<String, String> expressions = new Map<String, String>();
+    private Map<String, String> variables = new Map<String, String>();
     private Map<String, HttpCalloutChainMock> registeredMocks = new Map<String, HttpCalloutChainMock>();
     private Map<String, HttpCalloutMock> mocksOverrides = new Map<String, HttpCalloutMock>();
 
@@ -166,10 +143,10 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
 
 
     /**
-     * Registers regexp expression which will can be referenced in endpoint:
+     * Registers regexp variable which will can be referenced in endpoint:
      * <pre>
-     * router.registerEndpointExpression('endpoint', 'https://api.sf.com/rest'); // Regexp for API endpoint
-     * router.registerEndpointExpression('id', '([a-z0-9]{32}') // Regexp for external id
+     * router.registerEndpointVariable('endpoint', 'https://api.sf.com/rest'); // Regexp for API endpoint
+     * router.registerEndpointVariable('id', '([a-z0-9]{32}') // Regexp for external id
      *
      * router.registerStaticResourceMock('GET','{{endpoint}}/accounts/{{id}}', 200, 'OK', 'Mock_GetAccountResource');
      * </pre>
@@ -177,8 +154,8 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
      * @param name Name of variable to be used in endpoints
      * @param regexp Regexp of the variable
      */
-    public HttpCalloutMockRouter registerEndpointExpression(String name, String regexp) {
-        expressions.put(name, regexp);
+    public HttpCalloutMockRouter registerEndpointVariable(String name, String regexp) {
+        variables.put(name, regexp);
         return this;
     }
 
@@ -223,9 +200,9 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     private String replaceVariables(String endpoint) {
         String endpointWithVariables = endpoint;
 
-        for (String expressionName : expressions.keySet()) {
+        for (String expressionName : variables.keySet()) {
             String variable = '{{' + expressionName + '}}';
-            endpointWithVariables = endpointWithVariables.replace(variable, expressions.get(expressionName));
+            endpointWithVariables = endpointWithVariables.replace(variable, variables.get(expressionName));
         }
 
         return endpointWithVariables;

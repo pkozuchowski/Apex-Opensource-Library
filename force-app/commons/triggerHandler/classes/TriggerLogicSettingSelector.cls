@@ -62,8 +62,9 @@ public with sharing class TriggerLogicSettingSelector {
                     FROM TriggerLogic__mdt
                     WHERE IsEnabled__c = TRUE
                     AND Type__c = :type
-                    AND SObject__c = :sObjectType AND Trigger__c = :triggerOperation
-                    ORDER BY Order__c ASC NULLS LAST
+                    AND SObject__c = :sObjectType
+                    AND Trigger__c = :triggerOperation
+                    ORDER BY Order__c ASC NULLS LAST, ApexClass__c ASC
             ];
         }
     }

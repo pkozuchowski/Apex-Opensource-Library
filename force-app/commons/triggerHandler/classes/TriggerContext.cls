@@ -195,6 +195,15 @@ public class TriggerContext {
         }
     }
 
+    /**
+     * This method is meant to be called only from within TriggerDispatcher.
+     *
+     * Caches value of the new map at the end of trigger execution, so subsequent reruns of the same trigger on workflow updates
+     * will not rerun the same methods again if they check for updated fields.
+     *
+     * By example, when trigger logic was executed on Account.Name change and workflow updated different field,
+     * the subsequent trigger run will see new account name as "old" and will not execute logic.
+     */
     public void cacheOldMap(TriggerDispatcher.Context ctx) {
         if (ctx != null) {
             PREVIOUS_OLD_MAPS.put(originalOldMap, triggerNewMap);

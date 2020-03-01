@@ -149,6 +149,8 @@ private class TriggerDispatcherTest {
         System.assertEquals(false, ctx.isChanged(record, Account.BillingCountry));
         System.assertEquals(false, ctx.isChangedTo(record, Account.BillingCity, 'New York'));
         System.assertEquals(false, ctx.isChangedFrom(record, Account.BillingCity, null));
+        System.assert(ctx.getRecordsMap().containsKey('001000000000000'));
+        System.assert(ctx.getRecordsIds().contains('001000000000000'));
     }
 
 
@@ -299,7 +301,7 @@ private class TriggerDispatcherTest {
                 new TriggerLogic__mdt(
                         IsEnabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestAccountBillingCountryValidation',
-                        Trigger__c = 'BEFORE_UPDATE',
+                        Trigger__c = 'BEFORE_INSERT',
                         SObject__c = 'Account',
                         Type__c = 'Validation Rule'
                 )

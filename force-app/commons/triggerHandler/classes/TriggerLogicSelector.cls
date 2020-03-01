@@ -30,7 +30,8 @@ public with sharing class TriggerLogicSelector {
     @TestVisible private static Map<String, TriggerLogic__mdt[]> mockResponseByType = new Map<String, TriggerLogic__mdt[]>{
             'Validation Rule' => null,
             'Field Default' => null,
-            'Logic' => null
+            'Logic' => null,
+            'Async Logic' => null
     };
 
     /**
@@ -55,6 +56,14 @@ public with sharing class TriggerLogicSelector {
      */
     public static List<TriggerLogic> getTriggerLogic(TriggerContext tc) {
         return (List<TriggerLogic>) getInstances('Logic', tc, new List<TriggerLogic>());
+    }
+
+    /**
+     * @param tc Trigger Context of running trigger
+     * @return Trigger Logic for currently executing trigger
+     */
+    public static List<TriggerAsyncLogic> getTriggerAsyncLogic(TriggerContext tc) {
+        return (List<TriggerAsyncLogic>) getInstances('Async Logic', tc, new List<TriggerAsyncLogic>());
     }
 
 

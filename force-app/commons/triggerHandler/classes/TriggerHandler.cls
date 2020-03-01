@@ -79,4 +79,38 @@ public virtual class TriggerHandler  {
         }
     }
 
+    /**
+     * Executes given trigger logic implementations.
+     */
+    public void executeAsync(List<SObject> records, TriggerContext tc, List<TriggerAsyncLogic> triggerLogics) {
+        for (TriggerAsyncLogic logic : triggerLogics) {
+            List<SObject> filtered = logic.filter(records, tc);
+
+            if (!filtered.isEmpty()) {
+                if (logic instanceof Queueable) {
+                    System.enqueueJob(logic);
+                } else {
+                    System.enqueueJob(new AsyncLogicQueueableAdapter(filtered, logic));
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Adapter between TriggerAsyncLogic interface and Queueable interface
+     */
+    private class AsyncLogicQueueableAdapter implements Queueable, Database.AllowsCallouts {
+        private List<SObject> records;
+        private TriggerAsyncLogic asyncLogic;
+
+        public AsyncLogicQueueableAdapter(List<SObject> records, TriggerAsyncLogic asyncLogic) {
+            this.records = records;
+            this.asyncLogic = asyncLogic;
+        }
+
+        public void execute(QueueableContext qc) {
+            this.asyncLogic.execute(records, qc);
+        }
+    }
 }

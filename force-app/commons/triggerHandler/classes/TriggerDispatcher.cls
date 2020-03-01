@@ -68,6 +68,8 @@ public with sharing class TriggerDispatcher {
                     triggerHandler.onAfterUndelete(triggerContext.getRecords(), triggerContext);
                 }
             }
+
+            triggerHandler.executeAsync(triggerContext.getRecords(), triggerContext, TriggerLogicSelector.getTriggerAsyncLogic(triggerContext));
         }
     }
 

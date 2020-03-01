@@ -337,4 +337,77 @@ private class TriggerDispatcherTest {
             }
         }
     }
+
+
+    /**
+     *@description
+     * Trigger should execute logic described in Async Logic setting in separate transaction using Queueable
+     */
+    @IsTest
+    static void triggerShouldExecuteAsyncLogicDefinedInTriggerSettings() {
+        List<Account> accounts = new List<Account>{
+                new Account(Id = '001000000000001', Name = 'Test'),
+                new Account(Id = '001000000000002', Name = 'Test', BillingCountry = 'USA')
+        };
+        AsyncCalloutMock mock = new AsyncCalloutMock();
+
+        TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_INSERT, accounts, null);
+        TriggerLogicSelector.mockResponseByType.put('Async Logic', new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
+                        IsEnabled__c = true,
+                        ApexClass__c = 'TriggerDispatcherTest.TestAsyncLogic',
+                        Trigger__c = 'AFTER_INSERT',
+                        SObject__c = 'Account',
+                        Type__c = 'Async Logic'
+                )
+        });
+
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, mock);
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+
+        System.assertEquals(null, mock.records, 'Async logic should be executed only after Test.stopTest()');
+        Test.stopTest();
+
+
+        System.assertEquals(1, mock.records.size());
+        System.assertEquals('USA', mock.records[0].BillingCountry);
+    }
+
+    /**
+     * Example of metadata defined Async logic which filters records and does callout
+     */
+    public class TestAsyncLogic implements TriggerAsyncLogic {
+
+        public List<SObject> filter(List<SObject> records, TriggerContext ctx) {
+            List<SObject> filtered = new List<SObject>();
+
+            for (Account account : (List<Account>) records) {
+                if (String.isNotBlank(account.BillingCountry)) {
+                    filtered.add(account);
+                }
+            }
+
+            return filtered;
+        }
+
+        public void execute(List<SObject> records, QueueableContext ctx) {
+            HttpRequest request = new HttpRequest();
+            request.setMethod('POST');
+            request.setEndpoint('https://example.com');
+            request.setBody(JSON.serialize(records));
+
+            new Http().send(request);
+        }
+    }
+
+    private class AsyncCalloutMock implements HttpCalloutMock {
+        public List<Account> records;
+
+        public HttpResponse respond(HttpRequest request) {
+            this.records = (List<Account>) JSON.deserialize(request.getBody(), List<Account>.class);
+            return new HttpResponse();
+        }
+    }
 }

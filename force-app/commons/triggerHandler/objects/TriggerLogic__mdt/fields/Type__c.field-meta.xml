@@ -2,7 +2,7 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Type__c</fullName>
     <externalId>false</externalId>
-    <fieldManageability>Locked</fieldManageability>
+    <fieldManageability>DeveloperControlled</fieldManageability>
     <inlineHelpText>Depending on the selected value, Apex class should implement following interface:
 Field Default - TriggerFieldDefault
 Validation Rule - TriggerValidationRule
@@ -16,7 +16,7 @@ Logic - TriggerLogic</inlineHelpText>
             <sorted>false</sorted>
             <value>
                 <fullName>Field Default</fullName>
-                <default>true</default>
+                <default>false</default>
                 <label>Field Default</label>
             </value>
             <value>
@@ -26,8 +26,13 @@ Logic - TriggerLogic</inlineHelpText>
             </value>
             <value>
                 <fullName>Logic</fullName>
-                <default>false</default>
+                <default>true</default>
                 <label>Logic</label>
+            </value>
+            <value>
+                <fullName>Async Logic</fullName>
+                <default>false</default>
+                <label>Async Logic</label>
             </value>
         </valueSetDefinition>
     </valueSet>

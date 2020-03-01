@@ -52,15 +52,15 @@ private class LogCleanerBatchTest {
 
 
     /**
-     * LogRetention__mdt custom metadata contains configuration for how many days logs of each severity should be retained.
+     * LoggerSetting__mdt custom metadata contains configuration for how many days logs of each severity should be retained.
      * Logs which pass retention date counted since CreateDate should be deleted by daily batch.
      */
     @IsTest
     static void testLogsShouldBeDeletedAfterPassingRetentionDate() {
-        LoggingSettings.settings = new Map<LoggingLevel, LogRetention__mdt>{
-                LoggingLevel.INFO => new LogRetention__mdt(RetentionDays__c = 7),
-                LoggingLevel.WARN => new LogRetention__mdt(RetentionDays__c = 21),
-                LoggingLevel.ERROR => new LogRetention__mdt(RetentionDays__c = 60)
+        LoggerSettings.settingByLoggingLevel = new Map<LoggingLevel, LoggerSetting__mdt>{
+                LoggingLevel.INFO => new LoggerSetting__mdt(RetentionDays__c = 7),
+                LoggingLevel.WARN => new LoggerSetting__mdt(RetentionDays__c = 21),
+                LoggingLevel.ERROR => new LoggerSetting__mdt(RetentionDays__c = 60)
         };
 
 

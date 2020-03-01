@@ -23,30 +23,36 @@
 */
 
 /**
- * Accessor class for custom metadata settings in LogRetention__mdt
+ * Accessor class for custom metadata settings in LoggerSetting__mdt
  */
-public with sharing class LoggingSettings {
+public with sharing class LoggerSettings {
     @TestVisible
-    private static Map<LoggingLevel, LogRetention__mdt> settings = new Map<LoggingLevel, LogRetention__mdt>();
+    private static Map<LoggingLevel, LoggerSetting__mdt> settingByLoggingLevel = new Map<LoggingLevel, LoggerSetting__mdt>();
+    private static Map<String, LoggingLevel> loggingLevelEnumByName = new Map<String, LoggingLevel>{
+            'INFO' => LoggingLevel.INFO,
+            'WARN' => LoggingLevel.WARN,
+            'ERROR' => LoggingLevel.ERROR
+    };
 
     static {
-        settings.put(LoggingLevel.INFO, [SELECT Create__c, RetentionDays__c FROM LogRetention__mdt WHERE LoggingLevel__c = 'INFO']);
-        settings.put(LoggingLevel.WARN, [SELECT Create__c, RetentionDays__c FROM LogRetention__mdt WHERE LoggingLevel__c = 'WARN']);
-        settings.put(LoggingLevel.ERROR, [SELECT Create__c, RetentionDays__c FROM LogRetention__mdt WHERE LoggingLevel__c = 'ERROR']);
+        for (LoggerSetting__mdt setting : [SELECT Create__c, RetentionDays__c, LoggingLevel__c FROM LoggerSetting__mdt]) {
+            LoggingLevel level = loggingLevelEnumByName.get(setting.LoggingLevel__c);
+            settingByLoggingLevel.put(level, setting);
+        }
     }
 
     /**
      * @return True if log with given LoggingLevel should be created.
      */
     public static Boolean shouldCreateLog(LoggingLevel level) {
-        return settings.get(level).Create__c;
+        return settingByLoggingLevel.get(level).Create__c;
     }
 
     /**
      * @return Date of the last day when log should be retained.
      */
     public static Date getRetentionDate(LoggingLevel level) {
-        LogRetention__mdt setting = settings.get(level);
+        LoggerSetting__mdt setting = settingByLoggingLevel.get(level);
 
         if (setting == null || setting.RetentionDays__c == null) {
             return Date.newInstance(1900, 1, 1);

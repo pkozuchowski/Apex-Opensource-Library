@@ -41,9 +41,9 @@ public without sharing class LogCleanerBatch implements Database.Batchable<SObje
     }
 
     public Database.QueryLocator start(Database.BatchableContext bc) {
-        Date infoDate = LoggingSettings.getRetentionDate(LoggingLevel.INFO);
-        Date warnDate = LoggingSettings.getRetentionDate(LoggingLevel.WARN);
-        Date errorDate = LoggingSettings.getRetentionDate(LoggingLevel.ERROR);
+        Date infoDate = LoggerSettings.getRetentionDate(LoggingLevel.INFO);
+        Date warnDate = LoggerSettings.getRetentionDate(LoggingLevel.WARN);
+        Date errorDate = LoggerSettings.getRetentionDate(LoggingLevel.ERROR);
 
 
         return Database.getQueryLocator('SELECT ID' +
@@ -54,10 +54,10 @@ public without sharing class LogCleanerBatch implements Database.Batchable<SObje
         );
     }
 
-    public void execute(Database.BatchableContext param1, List<Log__c> logs) {
+    public void execute(Database.BatchableContext bc, List<Log__c> logs) {
         delete logs;
     }
 
-    public void finish(Database.BatchableContext param1) {
+    public void finish(Database.BatchableContext bc) {
     }
 }

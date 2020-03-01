@@ -26,8 +26,33 @@
  * This class is responsible for querying custom metadata (TriggerLogic__mdt)
  * and creating instances of classes defined in ApexClass__c field.
  */
-public with sharing class TriggerLogicSettingSelector {
+public with sharing class TriggerLogicSelector {
     @TestVisible private static List<TriggerLogic__mdt> mockResponse;
+
+    /**
+     * @param tc Trigger Context of running trigger
+     * @return Trigger Validation Rules for currently executing trigger
+     */
+    public static List<TriggerValidationRule> getTriggerValidationRules(TriggerContext tc) {
+        return (List<TriggerValidationRule>) getInstances('Validation Rule', tc, new List<TriggerValidationRule>());
+    }
+
+    /**
+     * @param tc Trigger Context of running trigger
+     * @return Trigger Field Defaults for currently executing trigger
+     */
+    public static List<TriggerFieldDefault> getTriggerFieldDefault(TriggerContext tc) {
+        return (List<TriggerFieldDefault>) getInstances('Field Default', tc, new List<TriggerFieldDefault>());
+    }
+
+    /**
+     * @param tc Trigger Context of running trigger
+     * @return Trigger Logic for currently executing trigger
+     */
+    public static List<TriggerLogic> getTriggerLogic(TriggerContext tc) {
+        return (List<TriggerLogic>) getInstances('Logic', tc, new List<TriggerLogic>());
+    }
+
 
     /**
      * @param customMetadata Type of custom metadata to query TriggerValidationRule__mdt/TriggerLogic__mdt/TriggerFieldDefault__mdt
@@ -37,15 +62,15 @@ public with sharing class TriggerLogicSettingSelector {
      * @return New instances of classes defined in ApexClass__c field of the custom metadata.
      * @throws TypeException if Type.newInstance() failed.
      */
-    public static List<Object> getInstances(String logicType, TriggerContext tc, List<Object> instances) {
-        for (SObject setting : getCustomMetadataRecords(logicType, String.valueOf(tc.sObjectType), tc.operationType.name())) {
+    private static List<Object> getInstances(String logicType, TriggerContext tc, List<Object> instances) {
+        for (TriggerLogic__mdt setting : getCustomMetadataRecords(logicType, String.valueOf(tc.sObjectType), tc.operationType.name())) {
             try {
-                Type ruleClass = Type.forName((String) setting.get('ApexClass__c'));
+                Type ruleClass = Type.forName(setting.ApexClass__c);
                 instances.add(ruleClass.newInstance());
 
             } catch (Exception ex) {
-                throw new TypeException('Apex class defined in custom metadata TriggerLogic__mdt.' + setting.get('DeveloperName') + '"'
-                        + ' is invalid. Please check if corresponding class is public and implements correct interface.'
+                throw new TypeException('Apex class defined in custom metadata TriggerLogic__mdt.' + setting.DeveloperName
+                        + ' (' + setting.ApexClass__c + ') is invalid. Please check if corresponding class is public and implements correct interface.'
                 );
             }
         }
@@ -53,7 +78,7 @@ public with sharing class TriggerLogicSettingSelector {
         return instances;
     }
 
-    private static List<SObject> getCustomMetadataRecords(String type, String sObjectType, String triggerOperation) {
+    private static List<TriggerLogic__mdt> getCustomMetadataRecords(String type, String sObjectType, String triggerOperation) {
         if (mockResponse != null) {
             return mockResponse;
         } else {

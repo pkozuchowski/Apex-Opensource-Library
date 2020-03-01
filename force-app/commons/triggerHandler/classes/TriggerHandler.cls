@@ -42,4 +42,41 @@ public virtual class TriggerHandler  {
     public virtual void onAfterDelete(List<SObject> triggerOld, TriggerContext tc){}
 
     public virtual void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc){}
+
+
+    /**
+     * Applies given FieldDefaultRules to inserted or updated records.
+     */
+    public void apply(List<SObject> records, TriggerContext tc, List<TriggerFieldDefault> triggerFieldDefaults) {
+        for (TriggerFieldDefault fieldDefaultRule : triggerFieldDefaults) {
+            fieldDefaultRule.prepare(records, tc);
+
+            for (SObject record : records) {
+                fieldDefaultRule.populate(record, tc);
+            }
+        }
+    }
+
+    /**
+     * Validates triggered records with a set of specified rules (ValidationRule implementations).
+     */
+    public void validate(List<SObject> records, TriggerContext tc, List<TriggerValidationRule> validationRules) {
+        for (TriggerValidationRule validationRule : validationRules) {
+            validationRule.prepare(records, tc);
+
+            for (SObject record : records) {
+                validationRule.validate(record, tc);
+            }
+        }
+    }
+
+    /**
+     * Executes given trigger logic implementations.
+     */
+    public void execute(List<SObject> records, TriggerContext tc, List<TriggerLogic> triggerLogics) {
+        for (TriggerLogic logic : triggerLogics) {
+            logic.execute(records, tc);
+        }
+    }
+
 }

@@ -40,9 +40,9 @@ public with sharing class TriggerDispatcher {
     @TestVisible
     private static void run(TriggerHandler triggerHandler, TriggerContext triggerContext) {
         if (triggerContext.isExecuting && !Bypass_Settings__c.getInstance().Bypass_Triggers__c) {
-            SObjectFieldDefaults.apply(triggerContext.getRecords(), triggerContext);
-            SObjectValidator.validate(triggerContext.getRecords(), triggerContext);
-            SObjectTriggers.execute(triggerContext.getRecords(), triggerContext);
+            triggerHandler.apply(triggerContext.getRecords(), triggerContext, TriggerLogicSelector.getTriggerFieldDefault(triggerContext));
+            triggerHandler.validate(triggerContext.getRecords(), triggerContext, TriggerLogicSelector.getTriggerValidationRules(triggerContext));
+            triggerHandler.execute(triggerContext.getRecords(), triggerContext, TriggerLogicSelector.getTriggerLogic(triggerContext));
 
             switch on triggerContext.operationType {
                 when BEFORE_INSERT {

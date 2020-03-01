@@ -106,6 +106,9 @@ private class TriggerDispatcherTest {
     }
 
 
+    /**
+     * Coverage tests for TriggerContext helper methods
+     */
     @IsTest
     static void testIsChangedHelperMethods() {
         Account record = new Account(
@@ -146,5 +149,190 @@ private class TriggerDispatcherTest {
         System.assertEquals(false, ctx.isChanged(record, Account.BillingCountry));
         System.assertEquals(false, ctx.isChangedTo(record, Account.BillingCity, 'New York'));
         System.assertEquals(false, ctx.isChangedFrom(record, Account.BillingCity, null));
+    }
+
+
+    /**
+     * Trigger should execute field default rules specified in custom metadata for before update trigger.
+     */
+    @IsTest
+    static void triggerShouldPopulateFieldsUsingTriggerFieldDefaultDefinedInSettings() {
+        List<Account> accounts = new List<Account>{
+                new Account(Id = '001000000000000'),
+                new Account(Id = '001000000000001'),
+                new Account(Id = '001000000000002')
+        };
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
+        TriggerLogicSelector.mockResponseByType.put('Field Default', new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
+                        IsEnabled__c = true,
+                        ApexClass__c = 'TriggerDispatcherTest.TestAccountBillingAddressDefault',
+                        Trigger__c = 'BEFORE_UPDATE',
+                        SObject__c = 'Account',
+                        Type__c = 'Field Default'
+                )
+        });
+
+
+        Test.startTest();
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        Test.stopTest();
+
+
+        for (Account account : accounts) {
+            System.assertEquals('USA', account.BillingCountry);
+        }
+    }
+
+    /**
+     * Test field default.
+     * Populates Account's Name to be "Test".
+     */
+    public class TestAccountBillingAddressDefault implements TriggerFieldDefault {
+        public void prepare(List<SObject> records, TriggerContext tc) {
+        }
+
+        public void populate(SObject record, TriggerContext tc) {
+            Account account = (Account) record;
+
+            if (String.isBlank(account.BillingCountry)) {
+                account.BillingCountry = 'USA';
+            }
+        }
+    }
+
+
+    /**
+     * When invalid or unreachable type is specified in custom metadata, TypeException should be thrown with meaningful message.
+     */
+    @IsTest
+    static void typeExceptionShouldBeThrownWhenInvalidClassIsDefinedInSettings() {
+        List<Account> accounts = new List<Account>{
+                new Account(Id = '001000000000000'),
+                new Account(Id = '001000000000001'),
+                new Account(Id = '001000000000002')
+        };
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_DELETE, accounts, accounts);
+        TriggerLogicSelector.mockResponseByType.put('Field Default', new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
+                        IsEnabled__c = true,
+                        ApexClass__c = 'TriggerDispatcherTest.InvalidClass',
+                        Trigger__c = 'BEFORE_DELETE',
+                        SObject__c = 'Account',
+                        Type__c = 'Field Default'
+                )
+        });
+        Exception ex;
+
+
+        Test.startTest();
+        try {
+            TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        } catch (Exception e) {
+            ex = e;
+        }
+        Test.stopTest();
+
+
+        System.assert(ex instanceof TypeException);
+        System.assert(ex.getMessage().contains('(TriggerDispatcherTest.InvalidClass)'));
+    }
+
+
+    @IsTest
+    static void triggerShouldExecuteTriggerLogicClassesDefinedInSettings() {
+        List<Account> accounts = new List<Account>{
+                new Account(Id = '001000000000000', Name = 'Test'),
+                new Account(Id = '001000000000001', Name = 'Test'),
+                new Account(Id = '001000000000002', Name = 'Test')
+        };
+        TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_UPDATE, accounts, accounts);
+        TriggerLogicSelector.mockResponseByType.put('Logic', new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
+                        IsEnabled__c = true,
+                        ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
+                        Trigger__c = 'AFTER_UPDATE',
+                        SObject__c = 'Account'
+                )
+        });
+
+
+        Test.startTest();
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        Test.stopTest();
+
+
+        for (Account account : accounts) {
+            System.assert(account.Name.startsWith('(Customer)'));
+        }
+    }
+
+    /**
+     * Simulates custom metadata defined class which performs some trigger logic.
+     */
+    public class TestTriggerLogic implements TriggerLogic {
+        public void execute(List<SObject> records, TriggerContext ctx) {
+            List<Account> accounts = records;
+
+            for (Account account : accounts) {
+                if (!account.Name.contains('(Customer)')) {
+                    account.Name = '(Customer) ' + account.Name;
+                }
+            }
+        }
+    }
+
+
+    private static Map<Id, Boolean> ERRORS = new Map<Id, Boolean>();
+    /**
+     * Trigger should execute field default rules specified in custom metadata for before insert trigger.
+     */
+    @IsTest
+    static void triggerShouldValidateRecordsUsingValidationRulesDefinedInSettings() {
+        List<Account> accounts = new List<Account>{
+                new Account(Id = '001000000000001', Name = 'Test'),
+                new Account(Id = '001000000000002', Name = 'Test', BillingCountry = 'USA'),
+                new Account(Id = '001000000000003', Name = 'Test')
+        };
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
+        TriggerLogicSelector.mockResponseByType.put('Validation Rule', new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
+                        IsEnabled__c = true,
+                        ApexClass__c = 'TriggerDispatcherTest.TestAccountBillingCountryValidation',
+                        Trigger__c = 'BEFORE_UPDATE',
+                        SObject__c = 'Account',
+                        Type__c = 'Validation Rule'
+                )
+        });
+
+
+        Test.startTest();
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        Test.stopTest();
+
+
+        for (Account account : accounts) {
+            Boolean hasError = String.isEmpty(account.BillingCountry);
+            System.assertEquals(hasError, ERRORS.containsKey(account.Id));
+        }
+    }
+
+    /**
+     * Test Validation Rule.
+     * Checks if Billing Country is filled.
+     * ERRORS map is only populated because field.addError() can't be tested without inserting records.
+     */
+    public class TestAccountBillingCountryValidation implements TriggerValidationRule {
+        public void prepare(List<SObject> records, TriggerContext tc) {
+        }
+
+        public void validate(SObject record, TriggerContext tc) {
+            Account account = (Account) record;
+
+            if (String.isEmpty(account.BillingCountry)) {
+                ERRORS.put(record.Id, true);
+                ((Account) record).BillingCountry.addError('Billing Country cannot be empty');
+            }
+        }
     }
 }

@@ -24,6 +24,7 @@
 
 @IsTest(IsParallel=true)
 private class TriggerDispatcherTest {
+    private static Map<Id, Boolean> ERRORS = new Map<Id, Boolean>();
 
     /**
      * Emulation of AccountTriggerHandler class
@@ -51,11 +52,86 @@ private class TriggerDispatcherTest {
         }
     }
 
+    /**
+     * Populates Billing Country to USA if it's blank
+     */
+    public class TestAccountBillingAddressDefault implements TriggerFieldDefault {
+        public void prepare(List<SObject> records, TriggerContext tc) {
+        }
+
+        public void populate(SObject record, TriggerContext tc) {
+            Account account = (Account) record;
+
+            if (String.isBlank(account.BillingCountry)) {
+                account.BillingCountry = 'USA';
+            }
+        }
+    }
+
+    /**
+     * Checks if Billing Country is filled.
+     * ERRORS map is only populated because field.addError() can't be tested without inserting records.
+     */
+    public class TestAccountBillingCountryValidation implements TriggerValidationRule {
+        public void prepare(List<SObject> records, TriggerContext tc) {
+        }
+
+        public void validate(SObject record, TriggerContext tc) {
+            Account account = (Account) record;
+
+            if (String.isEmpty(account.BillingCountry)) {
+                ERRORS.put(record.Id, true);
+                ((Account) record).BillingCountry.addError('Billing Country cannot be empty');
+            }
+        }
+    }
+
+    /**
+     * Simulates custom metadata defined class which performs some trigger logic.
+     */
+    public class TestTriggerLogic implements TriggerLogic {
+        public void execute(List<SObject> records, TriggerContext ctx) {
+            List<Account> accounts = records;
+
+            for (Account account : accounts) {
+                if (!account.Name.contains('(Customer)')) {
+                    account.Name = '(Customer) ' + account.Name;
+                }
+            }
+        }
+    }
+
+    /**
+     * Example of metadata defined Async logic which filters records and does callout
+     */
+    public class TestAsyncLogic implements TriggerAsyncLogic {
+
+        public List<SObject> filter(List<SObject> records, TriggerContext ctx) {
+            List<SObject> filtered = new List<SObject>();
+
+            for (Account account : (List<Account>) records) {
+                if (String.isNotBlank(account.BillingCountry)) {
+                    filtered.add(account);
+                }
+            }
+
+            return filtered;
+        }
+
+        public void execute(List<SObject> records, QueueableContext ctx) {
+            HttpRequest request = new HttpRequest();
+            request.setMethod('POST');
+            request.setEndpoint('https://example.com');
+            request.setBody(JSON.serialize(records));
+
+            new Http().send(request);
+        }
+    }
+
 
     /**
      *@description
      * This test simulates Account saving execution with triggers, workflow field updates and process builders.
-     *
      */
     @IsTest
     static void testUpdateFlow() {
@@ -186,23 +262,6 @@ private class TriggerDispatcherTest {
         }
     }
 
-    /**
-     * Test field default.
-     * Populates Account's Name to be "Test".
-     */
-    public class TestAccountBillingAddressDefault implements TriggerFieldDefault {
-        public void prepare(List<SObject> records, TriggerContext tc) {
-        }
-
-        public void populate(SObject record, TriggerContext tc) {
-            Account account = (Account) record;
-
-            if (String.isBlank(account.BillingCountry)) {
-                account.BillingCountry = 'USA';
-            }
-        }
-    }
-
 
     /**
      * When invalid or unreachable type is specified in custom metadata, TypeException should be thrown with meaningful message.
@@ -269,23 +328,7 @@ private class TriggerDispatcherTest {
         }
     }
 
-    /**
-     * Simulates custom metadata defined class which performs some trigger logic.
-     */
-    public class TestTriggerLogic implements TriggerLogic {
-        public void execute(List<SObject> records, TriggerContext ctx) {
-            List<Account> accounts = records;
 
-            for (Account account : accounts) {
-                if (!account.Name.contains('(Customer)')) {
-                    account.Name = '(Customer) ' + account.Name;
-                }
-            }
-        }
-    }
-
-
-    private static Map<Id, Boolean> ERRORS = new Map<Id, Boolean>();
     /**
      * Trigger should execute field default rules specified in custom metadata for before insert trigger.
      */
@@ -316,25 +359,6 @@ private class TriggerDispatcherTest {
         for (Account account : accounts) {
             Boolean hasError = String.isEmpty(account.BillingCountry);
             System.assertEquals(hasError, ERRORS.containsKey(account.Id));
-        }
-    }
-
-    /**
-     * Test Validation Rule.
-     * Checks if Billing Country is filled.
-     * ERRORS map is only populated because field.addError() can't be tested without inserting records.
-     */
-    public class TestAccountBillingCountryValidation implements TriggerValidationRule {
-        public void prepare(List<SObject> records, TriggerContext tc) {
-        }
-
-        public void validate(SObject record, TriggerContext tc) {
-            Account account = (Account) record;
-
-            if (String.isEmpty(account.BillingCountry)) {
-                ERRORS.put(record.Id, true);
-                ((Account) record).BillingCountry.addError('Billing Country cannot be empty');
-            }
         }
     }
 
@@ -373,33 +397,6 @@ private class TriggerDispatcherTest {
 
         System.assertEquals(1, mock.records.size());
         System.assertEquals('USA', mock.records[0].BillingCountry);
-    }
-
-    /**
-     * Example of metadata defined Async logic which filters records and does callout
-     */
-    public class TestAsyncLogic implements TriggerAsyncLogic {
-
-        public List<SObject> filter(List<SObject> records, TriggerContext ctx) {
-            List<SObject> filtered = new List<SObject>();
-
-            for (Account account : (List<Account>) records) {
-                if (String.isNotBlank(account.BillingCountry)) {
-                    filtered.add(account);
-                }
-            }
-
-            return filtered;
-        }
-
-        public void execute(List<SObject> records, QueueableContext ctx) {
-            HttpRequest request = new HttpRequest();
-            request.setMethod('POST');
-            request.setEndpoint('https://example.com');
-            request.setBody(JSON.serialize(records));
-
-            new Http().send(request);
-        }
     }
 
     private class AsyncCalloutMock implements HttpCalloutMock {

@@ -96,21 +96,21 @@ public class TriggerContext {
      * @return Trigger.old in DELETE triggers and Trigger.new in all other cases
      */
     public SObject[] getRecords() {
-        return triggerNew != null ? triggerNew : triggerOld;
+        return triggerNew == null ? triggerOld : triggerNew;
     }
 
     /**
      * @return Trigger.oldMap in DELETE triggers and Trigger.newMap in all other cases
      */
     public Map<Id, SObject> getRecordsMap() {
-        return triggerNewMap != null ? triggerNewMap : triggerOldMap;
+        return triggerNewMap == null ? triggerOldMap : triggerNewMap;
     }
 
     /**
      * @return Set of record ids or empty set in BEFORE INSERT
      */
     public Set<Id> getRecordsIds() {
-        return getRecordsMap() != null ? getRecordsMap().keySet() : new Set<Id>();
+        return getRecordsMap() == null ? new Set<Id>() : getRecordsMap().keySet();
     }
 
     /**

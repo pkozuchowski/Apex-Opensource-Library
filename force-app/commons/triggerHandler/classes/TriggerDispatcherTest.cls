@@ -220,6 +220,8 @@ private class TriggerDispatcherTest {
         System.assertEquals(true, ctx.isChangedFrom(record, Account.Phone, '(541) 754-3011'));
         System.assertEquals(false, ctx.isChangedFrom(record, Account.Name, 'Washington'));
 
+        System.assertEquals(true, ctx.isChangedFromTo(record, Account.BillingCity, null, 'New York'));
+
 
         ctx = new TriggerContext(TriggerOperation.AFTER_INSERT, new List<SObject>{record}, new List<SObject>{oldRecord});
         System.assertEquals(false, ctx.isChanged(record, Account.BillingCountry));

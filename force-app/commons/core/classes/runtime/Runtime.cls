@@ -74,6 +74,8 @@ public with sharing class Runtime {
     }
 
     private static String getRunningTypeName(Object o, String open, String close) {
+        if (o == null) throw new NullPointerException();
+
         try {
             Date d = (Date) o;
             return 'Date';

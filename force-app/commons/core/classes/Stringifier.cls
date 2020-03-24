@@ -25,20 +25,20 @@
 /**
  * Formats objects into org-uniform String representation
  */
-public with sharing class Formatter {
+public with sharing class Stringifier {
 
-    public String format(Exception ex) {
+    public String toString(Exception ex) {
         if (ex != null) {
             return ex.getTypeName() + ': ' + ex.getMessage()
                     + '\n' + ex.getStackTraceString().substringBefore('Caused by')
-                    + (ex.getCause() != null ? '\nCaused by\n' + format(ex.getCause()) : '');
+                    + (ex.getCause() != null ? '\nCaused by\n' + toString(ex.getCause()) : '');
 
         } else {
             return '';
         }
     }
 
-    public String format(HttpRequest request) {
+    public String toString(HttpRequest request) {
         if (request != null) {
             return request.getMethod() + ' ' + request.getEndpoint() + '\n'
                     + request.getBody();
@@ -47,7 +47,7 @@ public with sharing class Formatter {
         }
     }
 
-    public String format(HttpResponse response) {
+    public String toString(HttpResponse response) {
         if (response != null) {
             return response.getStatusCode() + ' ' + response.getStatus()
                     + '\n' + response.getBody();
@@ -56,10 +56,10 @@ public with sharing class Formatter {
         }
     }
 
-    public String format(RestRequest request) {
+    public String toString(RestRequest request) {
         if (request != null) {
-            String params = format(request.params);
-            String body = format(request.requestBody);
+            String params = toString(request.params);
+            String body = toString(request.requestBody);
 
             return request.httpMethod + ' ' + request.resourcePath
                     + (String.isEmpty(params) ? '' : '\nParams:\n' + params)
@@ -69,10 +69,10 @@ public with sharing class Formatter {
         }
     }
 
-    public String format(RestResponse response) {
+    public String toString(RestResponse response) {
         if (response != null) {
-            String body = format(response.responseBody);
-            String headers = format(response.headers);
+            String body = toString(response.responseBody);
+            String headers = toString(response.headers);
 
             return 'Response:\n'
                     + response.statusCode
@@ -83,7 +83,7 @@ public with sharing class Formatter {
         }
     }
 
-    public String format(Map<String, String> mapInstance) {
+    public String toString(Map<String, String> mapInstance) {
         List<String> values = new List<String>();
         for (String key : mapInstance.keySet()) {
             values.add('"' + key + '" : "' + mapInstance.get(key) + '"');
@@ -91,7 +91,7 @@ public with sharing class Formatter {
         return String.join(values, '\n');
     }
 
-    public String format(Blob b) {
+    public String toString(Blob b) {
         try {
             return b.toString();
         } catch (Exception ex) {

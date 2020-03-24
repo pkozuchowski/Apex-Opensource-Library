@@ -27,10 +27,10 @@
  *
  * @dependency:
   * @see Runtime
- *  @see Formatter
+ *  @see Stringifier
  */
 public with sharing class Logger {
-    private Formatter formatter = new Formatter();
+    private Stringifier stringifier = new Stringifier();
     private Boolean immediate;
     private List<Log__c> logs = new List<Log__c>();
 
@@ -151,7 +151,7 @@ public with sharing class Logger {
      */
     public void log(LoggingLevel loggingLevel, String referenceId, Exception ex) {
         log(loggingLevel, new Log__c(
-                Message__c = formatter.format(ex),
+                Message__c = stringifier.toString(ex),
                 ReferenceId__c = referenceId
         ));
     }
@@ -163,8 +163,8 @@ public with sharing class Logger {
         log(loggingLevel, new Log__c(
                 ReferenceId__c = referenceId,
                 Message__c = String.join(new List<String>{
-                        formatter.format(request),
-                        formatter.format(response)
+                        stringifier.toString(request),
+                        stringifier.toString(response)
                 }, '\n\n')
         ));
     }
@@ -176,8 +176,8 @@ public with sharing class Logger {
         log(loggingLevel, new Log__c(
                 ReferenceId__c = referenceId,
                 Message__c = String.join(new List<String>{
-                        '<Request>\n' + formatter.format(request),
-                        '<Response>\n' + formatter.format(response)
+                        '<Request>\n' + stringifier.toString(request),
+                        '<Response>\n' + stringifier.toString(response)
                 }, '\n\n')
         ));
     }

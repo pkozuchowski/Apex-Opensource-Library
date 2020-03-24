@@ -22,12 +22,12 @@
 * SOFTWARE.
 */
 @IsTest(IsParallel=true)
-private class FormatterTest {
-    private final static Formatter formatter = new Formatter();
+private class StringifierTest {
+    private final static Stringifier stringifier = new Stringifier();
 
 
     @IsTest
-    static void testFormattingException() {
+    static void testStringifyException() {
 
         try {
             try {
@@ -37,19 +37,19 @@ private class FormatterTest {
             }
         } catch (Exception ex) {
             System.assertEquals(
-                    'System.CalloutException: Script-thrown exception\n'
-                            + 'Class.FormatterTest.testFormattingException: line 36, column 1\n'
+                    ('System.CalloutException: Script-thrown exception\n'
+                            + 'Class.StringifierTest.testStringifyException: line 36, column 1\n'
                             + '\n'
                             + 'Caused by\n'
                             + 'System.CalloutException: test\n'
-                            + 'Class.FormatterTest.testFormattingException: line 34, column 1',
-                    formatter.format(ex)
+                            + 'Class.StringifierTest.testStringifyException: line 34, column 1'),
+                    stringifier.toString(ex)
             );
         }
     }
 
     @IsTest
-    static void testFormattingHttpRequest() {
+    static void testStringifyHttpRequest() {
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
         request.setEndpoint('https://www.example.com');
@@ -58,26 +58,26 @@ private class FormatterTest {
         System.assertEquals(
                 'GET https://www.example.com\n'
                         + '{"value":"test"}',
-                formatter.format(request)
+                stringifier.toString(request)
         );
     }
 
     @IsTest
-    static void testFormattingHttpResponse() {
+    static void testStringifyHttpResponse() {
         HttpResponse response = new HttpResponse();
         response.setStatus('OK');
         response.setStatusCode(200);
         response.setBody('success');
 
         System.assertEquals(
-                        '200 OK\n' +
+                '200 OK\n' +
                         'success',
-                formatter.format(response)
+                stringifier.toString(response)
         );
     }
 
     @IsTest
-    static void testFormattingRESTRequest() {
+    static void testStringifyRESTRequest() {
         RestRequest request = new RestRequest();
         request.httpMethod = 'GET';
         request.resourcePath = 'https://www.example.com?param=value';
@@ -90,13 +90,13 @@ private class FormatterTest {
                         + '\n"param" : "value"'
                         + '\nBody:\n'
                         + 'request',
-                formatter.format(request)
+                stringifier.toString(request)
         );
 
     }
 
     @IsTest
-    static void testFormattingRESTResponse() {
+    static void testStringifyRESTResponse() {
         RestResponse response = new RestResponse();
         response.statusCode = 200;
         response.responseBody = Blob.valueOf('success');
@@ -106,14 +106,14 @@ private class FormatterTest {
                         '200' +
                         '\nBody:\n' +
                         'success',
-                formatter.format(response)
+                stringifier.toString(response)
         );
     }
 
     @IsTest
-    static void testFormattingBlob() {
+    static void testStringifyBlob() {
         Blob b = Blob.valueOf('test');
 
-        System.assertEquals('test', formatter.format(b));
+        System.assertEquals('test', stringifier.toString(b));
     }
 }

@@ -34,13 +34,17 @@ public with sharing class Logger {
     private Boolean immediate;
     private List<Log__c> logs = new List<Log__c>();
 
-//    /**
-//     * Default constructor works in immediate mode.
-//     * This is preferred mode for controllers and async apex.
-//     */
-//    public Logger() {
-//        this(true);
-//    }
+    /**
+     * Default constructor works in immediate mode.
+     * This is preferred mode for controllers and async apex.
+     */
+    public Logger() {
+        this(true);
+    }
+
+    public Logger(Boolean immediate) {
+        this.immediate = true;
+    }
 
     public enum MODE {
         INSTANT,

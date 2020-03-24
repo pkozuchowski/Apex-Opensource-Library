@@ -27,12 +27,7 @@
  * and creating instances of classes defined in ApexClass__c field.
  */
 public with sharing class TriggerLogicSelector {
-    @TestVisible private static Map<String, TriggerLogic__mdt[]> mockResponseByType = new Map<String, TriggerLogic__mdt[]>{
-            'Validation Rule' => null,
-            'Field Default' => null,
-            'Logic' => null,
-            'Async Logic' => null
-    };
+    @TestVisible static Map<String, TriggerLogic__mdt[]> mockSettings = new Map<String, TriggerLogic__mdt[]>();
 
     /**
      * @param tc Trigger Context of running trigger
@@ -92,8 +87,8 @@ public with sharing class TriggerLogicSelector {
     }
 
     private List<TriggerLogic__mdt> getCustomMetadataRecords(String type, String sObjectType, String triggerOperation) {
-        if (mockResponseByType.get(type) != null) {
-            return mockResponseByType.get(type);
+        if (mockSettings.get(type) != null) {
+            return mockSettings.get(type);
 
         } else {
             return [
@@ -106,5 +101,14 @@ public with sharing class TriggerLogicSelector {
                     ORDER BY Order__c ASC NULLS LAST, ApexClass__c ASC
             ];
         }
+    }
+
+
+    /**
+     * Mocks custom metadata query in unit tests
+     */
+    @TestVisible
+    private static void mockQuery(TriggerContext ctx, List<TriggerLogic__mdt> records) {
+        mockSettings.put('' + ctx.sObjectType + ctx.operationType.name(), records);
     }
 }

@@ -22,6 +22,7 @@
 * SOFTWARE.
 */
 public with sharing class TriggerDispatcher {
+    private static TriggerLogicSelector logicSelector = new TriggerLogicSelector();
 
     /**
      * Runs trigger field defaults, validations and logic defined in custom metadata
@@ -40,9 +41,9 @@ public with sharing class TriggerDispatcher {
     @TestVisible
     private static void run(TriggerHandler triggerHandler, TriggerContext triggerContext) {
         if (triggerContext.isExecuting && !Bypass_Settings__c.getInstance().Bypass_Triggers__c) {
-            triggerHandler.apply(triggerContext.getRecords(), triggerContext, TriggerLogicSelector.getTriggerFieldDefault(triggerContext));
-            triggerHandler.validate(triggerContext.getRecords(), triggerContext, TriggerLogicSelector.getTriggerValidationRules(triggerContext));
-            triggerHandler.execute(triggerContext.getRecords(), triggerContext, TriggerLogicSelector.getTriggerLogic(triggerContext));
+            triggerHandler.apply(triggerContext.getRecords(), triggerContext, logicSelector.getTriggerFieldDefault(triggerContext));
+            triggerHandler.validate(triggerContext.getRecords(), triggerContext, logicSelector.getTriggerValidationRules(triggerContext));
+            triggerHandler.execute(triggerContext.getRecords(), triggerContext, logicSelector.getTriggerLogic(triggerContext));
 
             switch on triggerContext.operationType {
                 when BEFORE_INSERT {
@@ -69,7 +70,7 @@ public with sharing class TriggerDispatcher {
                 }
             }
 
-            triggerHandler.executeAsync(triggerContext.getRecords(), triggerContext, TriggerLogicSelector.getTriggerAsyncLogic(triggerContext));
+            triggerHandler.executeAsync(triggerContext.getRecords(), triggerContext, logicSelector.getTriggerAsyncLogic(triggerContext));
         }
     }
 

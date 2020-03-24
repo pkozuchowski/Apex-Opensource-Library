@@ -38,7 +38,7 @@ public with sharing class TriggerLogicSelector {
      * @param tc Trigger Context of running trigger
      * @return Trigger Validation Rules for currently executing trigger
      */
-    public static List<TriggerValidationRule> getTriggerValidationRules(TriggerContext tc) {
+    public List<TriggerValidationRule> getTriggerValidationRules(TriggerContext tc) {
         return (List<TriggerValidationRule>) getInstances('Validation Rule', tc, new List<TriggerValidationRule>());
     }
 
@@ -46,7 +46,7 @@ public with sharing class TriggerLogicSelector {
      * @param tc Trigger Context of running trigger
      * @return Trigger Field Defaults for currently executing trigger
      */
-    public static List<TriggerFieldDefault> getTriggerFieldDefault(TriggerContext tc) {
+    public List<TriggerFieldDefault> getTriggerFieldDefault(TriggerContext tc) {
         return (List<TriggerFieldDefault>) getInstances('Field Default', tc, new List<TriggerFieldDefault>());
     }
 
@@ -54,7 +54,7 @@ public with sharing class TriggerLogicSelector {
      * @param tc Trigger Context of running trigger
      * @return Trigger Logic for currently executing trigger
      */
-    public static List<TriggerLogic> getTriggerLogic(TriggerContext tc) {
+    public List<TriggerLogic> getTriggerLogic(TriggerContext tc) {
         return (List<TriggerLogic>) getInstances('Logic', tc, new List<TriggerLogic>());
     }
 
@@ -62,7 +62,7 @@ public with sharing class TriggerLogicSelector {
      * @param tc Trigger Context of running trigger
      * @return Trigger Logic for currently executing trigger
      */
-    public static List<TriggerAsyncLogic> getTriggerAsyncLogic(TriggerContext tc) {
+    public List<TriggerAsyncLogic> getTriggerAsyncLogic(TriggerContext tc) {
         return (List<TriggerAsyncLogic>) getInstances('Async Logic', tc, new List<TriggerAsyncLogic>());
     }
 
@@ -75,7 +75,7 @@ public with sharing class TriggerLogicSelector {
      * @return New instances of classes defined in ApexClass__c field of the custom metadata.
      * @throws TypeException if Type.newInstance() failed.
      */
-    private static List<Object> getInstances(String logicType, TriggerContext tc, List<Object> instances) {
+    private List<Object> getInstances(String logicType, TriggerContext tc, List<Object> instances) {
         for (TriggerLogic__mdt setting : getCustomMetadataRecords(logicType, String.valueOf(tc.sObjectType), tc.operationType.name())) {
             try {
                 Type ruleClass = Type.forName(setting.ApexClass__c);
@@ -91,7 +91,7 @@ public with sharing class TriggerLogicSelector {
         return instances;
     }
 
-    private static List<TriggerLogic__mdt> getCustomMetadataRecords(String type, String sObjectType, String triggerOperation) {
+    private List<TriggerLogic__mdt> getCustomMetadataRecords(String type, String sObjectType, String triggerOperation) {
         if (mockResponseByType.get(type) != null) {
             return mockResponseByType.get(type);
 

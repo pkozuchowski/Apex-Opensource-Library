@@ -26,6 +26,51 @@
 private class TriggerDispatcherTest {
     private static Map<Id, Boolean> ERRORS = new Map<Id, Boolean>();
 
+
+    /**
+     * This constructor can be called in Unit Tests to mock trigger execution for certain
+     */
+    private class TestTriggerContextImpl extends TriggerDispatcher.TriggerContextImpl {
+        private TestTriggerContextImpl(TriggerOperation operation, List<SObject> triggerNew, List<SObject> triggerOld) {
+            this.isExecuting = true;
+            this.operationType = operation;
+            this.isInsert = operation.name().contains('INSERT');
+            this.isUpdate = operation.name().contains('UPDATE');
+            this.isDelete = operation.name().contains('DELETE');
+            this.isUndelete = operation.name().contains('UNDELETE');
+            this.isBefore = operation.name().contains('BEFORE');
+            this.isAfter = operation.name().contains('AFTER');
+            this.size = triggerNew.size();
+
+            this.triggerNew = triggerNew;
+            this.triggerOld = triggerOld;
+            this.triggerOldMap = triggerOld == null ? null : new Map<Id, SObject>(triggerOld);
+            if (triggerNew != null && operation != TriggerOperation.BEFORE_INSERT) {
+                this.triggerNewMap = new Map<Id, SObject>(triggerNew);
+            }
+            this.sObjectType = getRecords().getSObjectType();
+        }
+    }
+
+    public static void mockInsert(List<SObject> records) {
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), new TestTriggerContextImpl(TriggerOperation.BEFORE_INSERT, records, null));
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), new TestTriggerContextImpl(TriggerOperation.AFTER_INSERT, records, null));
+    }
+
+    public static void mockUpdate(List<SObject> records, List<SObject> oldRecords) {
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, records, oldRecords));
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, records, oldRecords));
+    }
+
+    public static void mockDelete(List<SObject> records) {
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), new TestTriggerContextImpl(TriggerOperation.BEFORE_DELETE, records, null));
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), new TestTriggerContextImpl(TriggerOperation.AFTER_DELETE, records, null));
+    }
+
+    public static void mockUndelete(List<SObject> records) {
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), new TestTriggerContextImpl(TriggerOperation.AFTER_UNDELETE, records, null));
+    }
+
     /**
      * Emulation of AccountTriggerHandler class
      */
@@ -150,34 +195,29 @@ private class TriggerDispatcherTest {
 
         Test.startTest();
         /*Record is updated from user interface and Billing address is added*/
-        doUpdate(record, oldRecord);
+        mockUpdate(new List<Account>{record}, new List<Account>{oldRecord});
 
 
         /*Workflow updates field on the record. Trigger is rerun with updated Trigger.new and original Trigger.old*/
         record.Website = 'www.TestAccount.com';
-        doUpdate(record, oldRecord);
+        mockUpdate(new List<Account>{record}, new List<Account>{oldRecord});
 
 
         /*Process Builder updates field on the record. Trigger is rerun with updated Trigger.new and Trigger.old*/
         oldRecord = record.clone(true);
         record.Phone = '(541) 754-3010';
-        doUpdate(record, oldRecord);
+        mockUpdate(new List<Account>{record}, new List<Account>{oldRecord});
         Test.stopTest();
 
 
         System.assertEquals(1, record.NumberOfEmployees, 'Record should go through trigger logic only once, because workflow did not change any of the observed fields.');
     }
 
-    private static void doUpdate(SObject newRecord, SObject oldRecord) {
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), new TriggerContext(TriggerOperation.BEFORE_UPDATE, new List<SObject>{newRecord}, new List<SObject>{oldRecord}));
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), new TriggerContext(TriggerOperation.AFTER_UPDATE, new List<SObject>{newRecord}, new List<SObject>{oldRecord}));
-    }
-
 
     @IsTest
     static void testCoverage() {
         for (TriggerOperation triggerOperation : TriggerOperation.values()) {
-            TriggerDispatcher.run(new TestAccountTriggerHandler(), new TriggerContext(triggerOperation, new List<SObject>(), new List<SObject>()));
+            TriggerDispatcher.run(new TestAccountTriggerHandler(), new TestTriggerContextImpl(triggerOperation, new List<SObject>(), new List<SObject>()));
         }
     }
 
@@ -201,7 +241,7 @@ private class TriggerDispatcherTest {
                 Phone = '(541) 754-3011'
         );
 
-        TriggerContext ctx = new TriggerContext(TriggerOperation.AFTER_UPDATE, new List<SObject>{record}, new List<SObject>{oldRecord});
+        TriggerContext ctx = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, new List<SObject>{record}, new List<SObject>{oldRecord});
 
         System.assertEquals(false, ctx.isNew());
         System.assertEquals(true, ctx.isChanged());
@@ -223,7 +263,7 @@ private class TriggerDispatcherTest {
         System.assertEquals(true, ctx.isChangedFromTo(record, Account.BillingCity, null, 'New York'));
 
 
-        ctx = new TriggerContext(TriggerOperation.AFTER_INSERT, new List<SObject>{record}, new List<SObject>{oldRecord});
+        ctx = new TestTriggerContextImpl(TriggerOperation.AFTER_INSERT, new List<SObject>{record}, new List<SObject>{oldRecord});
         System.assertEquals(false, ctx.isChanged(record, Account.BillingCountry));
         System.assertEquals(false, ctx.isChangedTo(record, Account.BillingCity, 'New York'));
         System.assertEquals(false, ctx.isChangedFrom(record, Account.BillingCity, null));
@@ -242,7 +282,7 @@ private class TriggerDispatcherTest {
                 new Account(Id = '001000000000001'),
                 new Account(Id = '001000000000002')
         };
-        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
+        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
         TriggerLogicSelector.mockResponseByType.put('Field Default', new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         IsEnabled__c = true,
@@ -275,7 +315,7 @@ private class TriggerDispatcherTest {
                 new Account(Id = '001000000000001'),
                 new Account(Id = '001000000000002')
         };
-        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_DELETE, accounts, accounts);
+        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_DELETE, accounts, accounts);
         TriggerLogicSelector.mockResponseByType.put('Field Default', new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         IsEnabled__c = true,
@@ -309,7 +349,7 @@ private class TriggerDispatcherTest {
                 new Account(Id = '001000000000001', Name = 'Test'),
                 new Account(Id = '001000000000002', Name = 'Test')
         };
-        TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_UPDATE, accounts, accounts);
+        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
         TriggerLogicSelector.mockResponseByType.put('Logic', new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         IsEnabled__c = true,
@@ -341,7 +381,7 @@ private class TriggerDispatcherTest {
                 new Account(Id = '001000000000002', Name = 'Test', BillingCountry = 'USA'),
                 new Account(Id = '001000000000003', Name = 'Test')
         };
-        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
+        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_INSERT, accounts, null);
         TriggerLogicSelector.mockResponseByType.put('Validation Rule', new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         IsEnabled__c = true,
@@ -377,7 +417,7 @@ private class TriggerDispatcherTest {
         };
         AsyncCalloutMock mock = new AsyncCalloutMock();
 
-        TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_INSERT, accounts, null);
+        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_INSERT, accounts, null);
         TriggerLogicSelector.mockResponseByType.put('Async Logic', new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         IsEnabled__c = true,

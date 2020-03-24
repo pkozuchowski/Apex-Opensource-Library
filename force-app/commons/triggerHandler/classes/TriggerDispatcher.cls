@@ -35,7 +35,7 @@ public with sharing class TriggerDispatcher {
      * Runs instance of concrete Trigger Handler implementation
      */
     public static void run(TriggerHandler triggerHandler) {
-        run(triggerHandler, new TriggerContext());
+        run(triggerHandler, new TriggerContextImpl());
     }
 
     @TestVisible
@@ -60,7 +60,7 @@ public with sharing class TriggerDispatcher {
                 }
                 when AFTER_UPDATE {
                     triggerHandler.onAfterUpdate(triggerContext.getRecords(), triggerContext);
-                    triggerContext.cacheOldMap(new Context());
+                    ((TriggerContextImpl) triggerContext).cacheOldMap();
                 }
                 when AFTER_DELETE {
                     triggerHandler.onAfterDelete(triggerContext.getRecords(), triggerContext);
@@ -74,15 +74,20 @@ public with sharing class TriggerDispatcher {
         }
     }
 
-    private TriggerDispatcher(){
+    private TriggerDispatcher() {
     }
 
-    /**
-     * Flag class which ensures TriggerContext.cacheOldMap() is called only in this context.
-     */
-    public class Context {
-        @TestVisible
-        private Context() {
+    @TestVisible
+    private virtual class TriggerContextImpl extends TriggerContext {
+        /**
+         * Caches value of the new map at the end of trigger execution, so subsequent reruns of the same trigger on workflow updates
+         * will not rerun the same methods again if they check for updated fields.
+         *
+         * For example, when trigger logic was executed on Account.Name change and workflow updated different field,
+         * the subsequent trigger run will see new account name as "old" and will not execute logic.
+         */
+        private void cacheOldMap() {
+            getPreviousMapsCache().put(originalOldMap, triggerNewMap);
         }
     }
 }

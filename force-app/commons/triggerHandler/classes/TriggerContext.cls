@@ -24,36 +24,38 @@
 
 /**
  * Encapsulation for Trigger context variables.
- * This class can be used to mock triggers in unit tests or as flag interface in methods to ensure they are run in trigger context.
+ * This class is used as flag interface in methods to ensure they are run in trigger context,
+ * but may also be used to mock trigger execution in unit tests.
+ * It also contains helper method for checking field changes.
  */
-public class TriggerContext {
-    private final static Map<Map<Id, SObject>, Map<Id, SObject>> PREVIOUS_OLD_MAPS = new Map<Map<Id, SObject>, Map<Id, SObject>>();
+public virtual class TriggerContext {
+    private final static Map<Map<Id, SObject>, Map<Id, SObject>> PREVIOUS_NEW_MAPS = new Map<Map<Id, SObject>, Map<Id, SObject>>();
 
-    public Boolean isExecuting { get; private set; }
-    public Boolean isInsert { get; private set; }
-    public Boolean isUpdate { get; private set; }
-    public Boolean isDelete { get; private set; }
-    public Boolean isUndelete { get; private set; }
-    public Boolean isBefore { get; private set; }
-    public Boolean isAfter { get; private set; }
-    public Integer size { get; private set; }
-    public TriggerOperation operationType { get; private set; }
-    public transient SObjectType sObjectType { get; private set; }
-    private List<SObject> triggerNew { get; private set; }
-    private List<SObject> triggerOld { get; private set; }
-    private Map<Id, SObject> triggerNewMap { get; private set; }
-    private Map<Id, SObject> triggerOldMap {
+    public Boolean isExecuting { get; protected set; }
+    public Boolean isInsert { get; protected set; }
+    public Boolean isUpdate { get; protected set; }
+    public Boolean isDelete { get; protected set; }
+    public Boolean isUndelete { get; protected set; }
+    public Boolean isBefore { get; protected set; }
+    public Boolean isAfter { get; protected set; }
+    public Integer size { get; protected set; }
+    public TriggerOperation operationType { get; protected set; }
+    public transient SObjectType sObjectType { get; protected set; }
+    protected List<SObject> triggerNew { get; protected set; }
+    protected List<SObject> triggerOld { get; protected set; }
+    protected Map<Id, SObject> triggerNewMap { get; protected set; }
+    protected Map<Id, SObject> triggerOldMap {
         get;
-        private set {
+        protected set {
             if (value != null) {
                 this.originalOldMap = value;
-                this.triggerOldMap = PREVIOUS_OLD_MAPS.containsKey(value) ? PREVIOUS_OLD_MAPS.get(value) : value;
+                this.triggerOldMap = PREVIOUS_NEW_MAPS.containsKey(originalOldMap) ? PREVIOUS_NEW_MAPS.get(value) : value;
             }
         }
     }
-    private Map<Id, SObject> originalOldMap;
+    protected Map<Id, SObject> originalOldMap;
 
-    public TriggerContext() {
+    protected TriggerContext() {
         this.isExecuting = Trigger.isExecuting == true;
         this.isInsert = Trigger.isInsert == true;
         this.isUpdate = Trigger.isUpdate == true;
@@ -67,28 +69,9 @@ public class TriggerContext {
         this.triggerNewMap = Trigger.newMap;
         this.triggerOldMap = Trigger.oldMap;
         this.triggerOld = triggerOldMap == null ? null : triggerOldMap.values();
-        this.sObjectType = getRecords().getSObjectType();
-    }
-
-    @TestVisible
-    private TriggerContext(TriggerOperation operation, List<SObject> triggerNew, List<SObject> triggerOld) {
-        this.isExecuting = true;
-        this.operationType = operation;
-        this.isInsert = operation.name().contains('INSERT');
-        this.isUpdate = operation.name().contains('UPDATE');
-        this.isDelete = operation.name().contains('DELETE');
-        this.isUndelete = operation.name().contains('UNDELETE');
-        this.isBefore = operation.name().contains('BEFORE');
-        this.isAfter = operation.name().contains('AFTER');
-        this.size = triggerNew.size();
-
-        this.triggerNew = triggerNew;
-        this.triggerOld = triggerOld;
-        this.triggerOldMap = triggerOld == null ? null : new Map<Id, SObject>(triggerOld);
-        if (triggerNew != null && operation != TriggerOperation.BEFORE_INSERT) {
-            this.triggerNewMap = new Map<Id, SObject>(triggerNew);
+        if (getRecords() != null) {
+            this.sObjectType = getRecords().getSObjectType();
         }
-        this.sObjectType = getRecords().getSObjectType();
     }
 
 
@@ -195,18 +178,7 @@ public class TriggerContext {
         }
     }
 
-    /**
-     * This method is meant to be called only from within TriggerDispatcher.
-     *
-     * Caches value of the new map at the end of trigger execution, so subsequent reruns of the same trigger on workflow updates
-     * will not rerun the same methods again if they check for updated fields.
-     *
-     * By example, when trigger logic was executed on Account.Name change and workflow updated different field,
-     * the subsequent trigger run will see new account name as "old" and will not execute logic.
-     */
-    public void cacheOldMap(TriggerDispatcher.Context ctx) {
-        if (ctx != null) {
-            PREVIOUS_OLD_MAPS.put(originalOldMap, triggerNewMap);
-        }
+    protected Map<Map<Id, SObject>, Map<Id, SObject>> getPreviousMapsCache() {
+        return PREVIOUS_NEW_MAPS;
     }
 }

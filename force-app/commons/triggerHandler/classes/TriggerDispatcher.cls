@@ -74,6 +74,9 @@ public with sharing class TriggerDispatcher {
         }
     }
 
+    private TriggerDispatcher(){
+    }
+
     /**
      * Flag class which ensures TriggerContext.cacheOldMap() is called only in this context.
      */

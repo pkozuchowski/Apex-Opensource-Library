@@ -30,25 +30,22 @@
  *  @see Formatter
  */
 public with sharing class Logger {
-    private final static Formatter formatter = new Formatter();
+    private Formatter formatter = new Formatter();
     private Boolean immediate;
     private List<Log__c> logs = new List<Log__c>();
 
-    /**
-     * Default constructor works in immediate mode.
-     * This is preferred mode for controllers and async apex.
-     */
-    public Logger() {
-        this(true);
-    }
+//    /**
+//     * Default constructor works in immediate mode.
+//     * This is preferred mode for controllers and async apex.
+//     */
+//    public Logger() {
+//        this(true);
+//    }
 
-    /**
-     * @param immediate If true, flushes logs immediately after logging action.
-     * Immediate mode is preferred in situation of multiple subsequent callouts
-     * and when you want to reuse one logger (trigger?)
-     */
-    public Logger(Boolean immediate) {
-        this.immediate = immediate;
+    public enum MODE {
+        INSTANT,
+        BUFFERED,
+        REST
     }
 
     /**
@@ -122,6 +119,20 @@ public with sharing class Logger {
         log(LoggingLevel.ERROR, referenceId, request, response);
     }
 
+
+    /**
+     * Logs ERROR log when condition is not met.
+     *
+     * @param condition When false, error is logged
+     * @param log Message to record
+     */
+    public void assert(Boolean condition, Log__c log) {
+        if (!condition) {
+            log(LoggingLevel.ERROR, log);
+        }
+    }
+
+
     /**
      * Logs message with given logging level
      */
@@ -180,8 +191,9 @@ public with sharing class Logger {
             log.ApexClass__c = Runtime.getCaller().apexClassMethod;
             log.LoggingLevel__c = loggingLevel.name();
             logs.add(log);
+            System.debug(loggingLevel, JSON.serializePretty(log));
 
-            if (immediate) {
+            if (immediate == true) {
                 flush();
             }
         }

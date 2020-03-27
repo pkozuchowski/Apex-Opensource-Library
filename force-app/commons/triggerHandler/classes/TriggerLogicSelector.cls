@@ -87,8 +87,9 @@ public with sharing class TriggerLogicSelector {
     }
 
     private List<TriggerLogic__mdt> getCustomMetadataRecords(String type, String sObjectType, String triggerOperation) {
-        if (mockSettings.get(type) != null) {
-            return mockSettings.get(type);
+        String key = sObjectType + triggerOperation + type;
+        if (mockSettings.get(key) != null) {
+            return mockSettings.get(key);
 
         } else {
             return [
@@ -108,7 +109,17 @@ public with sharing class TriggerLogicSelector {
      * Mocks custom metadata query in unit tests
      */
     @TestVisible
-    private static void mockQuery(TriggerContext ctx, List<TriggerLogic__mdt> records) {
-        mockSettings.put('' + ctx.sObjectType + ctx.operationType.name(), records);
+    private static void mockQuery(List<TriggerLogic__mdt> records) {
+        for (TriggerLogic__mdt logic : records) {
+            if (logic.IsEnabled__c == true) {
+                String key = logic.SObject__c + logic.Trigger__c + logic.Type__c;
+
+                if (mockSettings.containsKey(key)) {
+                    mockSettings.get(key).add(logic);
+                } else {
+                    mockSettings.put(key, new List<TriggerLogic__mdt>{logic});
+                }
+            }
+        }
     }
 }

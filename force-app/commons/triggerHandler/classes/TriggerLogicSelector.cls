@@ -95,7 +95,7 @@ public with sharing class TriggerLogicSelector {
             return [
                     SELECT ApexClass__c, DeveloperName
                     FROM TriggerLogic__mdt
-                    WHERE IsEnabled__c = TRUE
+                    WHERE Enabled__c = TRUE
                     AND Type__c = :type
                     AND SObject__c = :sObjectType
                     AND Trigger__c = :triggerOperation
@@ -111,7 +111,7 @@ public with sharing class TriggerLogicSelector {
     @TestVisible
     private static void mockQuery(List<TriggerLogic__mdt> records) {
         for (TriggerLogic__mdt logic : records) {
-            if (logic.IsEnabled__c == true) {
+            if (logic.Enabled__c == true) {
                 String key = logic.SObject__c + logic.Trigger__c + logic.Type__c;
 
                 if (mockSettings.containsKey(key)) {

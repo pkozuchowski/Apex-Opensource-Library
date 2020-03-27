@@ -285,7 +285,7 @@ private class TriggerDispatcherTest {
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
         TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
-                        IsEnabled__c = true,
+                        Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestAccountBillingAddressDefault',
                         Trigger__c = 'BEFORE_UPDATE',
                         SObject__c = 'Account',
@@ -318,7 +318,7 @@ private class TriggerDispatcherTest {
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_DELETE, accounts, accounts);
         TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
-                        IsEnabled__c = true,
+                        Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.InvalidClass',
                         Trigger__c = 'BEFORE_DELETE',
                         SObject__c = 'Account',
@@ -352,7 +352,7 @@ private class TriggerDispatcherTest {
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
         TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
-                        IsEnabled__c = true,
+                        Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
                         Trigger__c = 'AFTER_UPDATE',
                         SObject__c = 'Account',
@@ -385,7 +385,7 @@ private class TriggerDispatcherTest {
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_INSERT, accounts, null);
         TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
-                        IsEnabled__c = true,
+                        Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestAccountBillingCountryValidation',
                         Trigger__c = 'BEFORE_INSERT',
                         SObject__c = 'Account',
@@ -421,7 +421,7 @@ private class TriggerDispatcherTest {
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_INSERT, accounts, null);
         TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
-                        IsEnabled__c = true,
+                        Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestAsyncLogic',
                         Trigger__c = 'AFTER_INSERT',
                         SObject__c = 'Account',
@@ -463,7 +463,7 @@ private class TriggerDispatcherTest {
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
         TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
-                        IsEnabled__c = true,
+                        Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
                         Trigger__c = 'AFTER_UPDATE',
                         SObject__c = 'Account',
@@ -500,7 +500,7 @@ private class TriggerDispatcherTest {
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
         TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
-                        IsEnabled__c = true,
+                        Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
                         Trigger__c = 'AFTER_UPDATE',
                         SObject__c = 'Account',

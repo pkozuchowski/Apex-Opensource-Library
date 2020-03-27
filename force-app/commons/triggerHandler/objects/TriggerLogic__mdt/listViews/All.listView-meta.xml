@@ -2,7 +2,7 @@
 <ListView xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>All</fullName>
     <columns>MasterLabel</columns>
-    <columns>IsEnabled__c</columns>
+    <columns>Enabled__c</columns>
     <columns>SObject__c</columns>
     <columns>Type__c</columns>
     <columns>Trigger__c</columns>

@@ -450,4 +450,72 @@ private class TriggerDispatcherTest {
             return new HttpResponse();
         }
     }
+
+
+    /**
+     * Trigger should not execute when it's disabled for transaction using TriggerDispatcher.disableTrigger() method
+     */
+    @IsTest
+    static void triggerShouldNotExecuteWhenDisabledForTransaction() {
+        List<Account> accounts = new List<Account>{
+                new Account(Id = '001000000000000', Name = 'Test')
+        };
+        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
+        TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
+                        IsEnabled__c = true,
+                        ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
+                        Trigger__c = 'AFTER_UPDATE',
+                        SObject__c = 'Account',
+                        Type__c = 'Logic'
+                )
+        });
+
+
+        Test.startTest();
+        TriggerDispatcher.disableTrigger(Account.SObjectType);
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        TriggerDispatcher.enableTrigger(Account.SObjectType);
+        Test.stopTest();
+
+
+        for (Account account : accounts) {
+            System.assertEquals(false, account.Name.startsWith('(Customer)'));
+        }
+    }
+
+
+    /**
+     * Trigger should not execute when it's disabled via custom setting
+     */
+    @IsTest
+    static void triggerShouldNotExecuteWhenDisabledInCustomSetting() {
+        upsert new Bypass_Settings__c(
+                SetupOwnerId = UserInfo.getUserId(),
+                Bypass_Triggers__c = true
+        );
+        List<Account> accounts = new List<Account>{
+                new Account(Id = '001000000000000', Name = 'Test')
+        };
+        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
+        TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
+                        IsEnabled__c = true,
+                        ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
+                        Trigger__c = 'AFTER_UPDATE',
+                        SObject__c = 'Account',
+                        Type__c = 'Logic'
+                )
+        });
+
+
+        Test.startTest();
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        Test.stopTest();
+
+
+        for (Account account : accounts) {
+            System.assertEquals(false, account.Name.startsWith('(Customer)'));
+        }
+    }
 }

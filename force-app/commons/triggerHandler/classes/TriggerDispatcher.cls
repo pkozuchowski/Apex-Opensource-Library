@@ -22,6 +22,7 @@
 * SOFTWARE.
 */
 public with sharing class TriggerDispatcher {
+    private static Set<SObjectType> disabledTriggers = new Set<SObjectType>();
     private static TriggerLogicSelector logicSelector = new TriggerLogicSelector();
 
     /**
@@ -40,7 +41,7 @@ public with sharing class TriggerDispatcher {
 
     @TestVisible
     private static void run(TriggerHandler triggerHandler, TriggerContext triggerContext) {
-        if (triggerContext.isExecuting && !Bypass_Settings__c.getInstance().Bypass_Triggers__c) {
+        if (shouldRun(triggerContext)) {
             triggerHandler.apply(triggerContext.getRecords(), triggerContext, logicSelector.getTriggerFieldDefault(triggerContext));
             triggerHandler.validate(triggerContext.getRecords(), triggerContext, logicSelector.getTriggerValidationRules(triggerContext));
             triggerHandler.execute(triggerContext.getRecords(), triggerContext, logicSelector.getTriggerLogic(triggerContext));
@@ -72,6 +73,32 @@ public with sharing class TriggerDispatcher {
 
             triggerHandler.executeAsync(triggerContext.getRecords(), triggerContext, logicSelector.getTriggerAsyncLogic(triggerContext));
         }
+    }
+
+    /**
+    * Disable all triggers execution for given sObjectType for current transaction or until enableTrigger is called
+    */
+    public static void disableTrigger(SObjectType sObjectType) {
+        disabledTriggers.add(sObjectType);
+    }
+
+    /**
+    * Enabled previously disabled trigger execution for given sObjectType
+    */
+    public static void enableTrigger(SObjectType sObjectType) {
+        disabledTriggers.remove(sObjectType);
+    }
+
+    /**
+    * Trigger should run:
+    * - Only in trigger context
+    * - Only if it's not disabled in Bypass Triggers settings
+    * - Only if it's not manually disabled in code via  disableTrigger();
+    */
+    private static Boolean shouldRun(TriggerContext triggerContext) {
+        return triggerContext.isExecuting
+                && !Bypass_Settings__c.getInstance().Bypass_Triggers__c
+                && !disabledTriggers.contains(triggerContext.sObjectType);
     }
 
     private TriggerDispatcher() {

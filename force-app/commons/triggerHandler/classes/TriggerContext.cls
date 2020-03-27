@@ -83,7 +83,7 @@ public virtual class TriggerContext {
     }
 
     /**
-     * @return Trigger.oldMap in DELETE triggers and Trigger.newMap in all other cases
+     * @return Trigger.oldMap in DELETE trsiggers and Trigger.newMap in all other cases
      */
     public Map<Id, SObject> getRecordsMap() {
         return triggerNewMap == null ? triggerOldMap : triggerNewMap;

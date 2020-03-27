@@ -283,15 +283,15 @@ private class TriggerDispatcherTest {
                 new Account(Id = '001000000000002')
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
-        TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
+        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestAccountBillingAddressDefault',
-                        Trigger__c = 'BEFORE_UPDATE',
+                        BeforeUpdate__c = true,
                         SObject__c = 'Account',
                         Type__c = 'Field Default'
                 )
-        });
+        };
 
 
         Test.startTest();
@@ -316,15 +316,15 @@ private class TriggerDispatcherTest {
                 new Account(Id = '001000000000002')
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_DELETE, accounts, accounts);
-        TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
+        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.InvalidClass',
-                        Trigger__c = 'BEFORE_DELETE',
+                        BeforeDelete__c = true,
                         SObject__c = 'Account',
                         Type__c = 'Field Default'
                 )
-        });
+        };
         Exception ex;
 
 
@@ -350,15 +350,15 @@ private class TriggerDispatcherTest {
                 new Account(Id = '001000000000002', Name = 'Test')
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
-        TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
+        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
-                        Trigger__c = 'AFTER_UPDATE',
+                        AfterUpdate__c = true,
                         SObject__c = 'Account',
                         Type__c = 'Logic'
                 )
-        });
+        };
 
 
         Test.startTest();
@@ -383,15 +383,15 @@ private class TriggerDispatcherTest {
                 new Account(Id = '001000000000003', Name = 'Test')
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_INSERT, accounts, null);
-        TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
+        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestAccountBillingCountryValidation',
-                        Trigger__c = 'BEFORE_INSERT',
+                        BeforeInsert__c = true,
                         SObject__c = 'Account',
                         Type__c = 'Validation Rule'
                 )
-        });
+        };
 
 
         Test.startTest();
@@ -419,15 +419,15 @@ private class TriggerDispatcherTest {
         AsyncCalloutMock mock = new AsyncCalloutMock();
 
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_INSERT, accounts, null);
-        TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
+        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestAsyncLogic',
-                        Trigger__c = 'AFTER_INSERT',
+                        AfterInsert__c = true,
                         SObject__c = 'Account',
                         Type__c = 'Async Logic'
                 )
-        });
+        };
 
 
         Test.startTest();
@@ -461,15 +461,15 @@ private class TriggerDispatcherTest {
                 new Account(Id = '001000000000000', Name = 'Test')
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
-        TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
+        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
-                        Trigger__c = 'AFTER_UPDATE',
+                        AfterUpdate__c = true,
                         SObject__c = 'Account',
                         Type__c = 'Logic'
                 )
-        });
+        };
 
 
         Test.startTest();
@@ -498,15 +498,15 @@ private class TriggerDispatcherTest {
                 new Account(Id = '001000000000000', Name = 'Test')
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
-        TriggerLogicSelector.mockQuery(new List<TriggerLogic__mdt>{
+        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
-                        Trigger__c = 'AFTER_UPDATE',
+                        AfterUpdate__c = true,
                         SObject__c = 'Account',
                         Type__c = 'Logic'
                 )
-        });
+        };
 
 
         Test.startTest();

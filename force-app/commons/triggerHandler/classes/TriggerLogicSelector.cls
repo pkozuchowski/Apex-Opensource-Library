@@ -27,7 +27,7 @@
  * and creating instances of classes defined in ApexClass__c field.
  */
 public with sharing class TriggerLogicSelector {
-    @TestVisible static Map<String, TriggerLogic__mdt[]> mockSettings = new Map<String, TriggerLogic__mdt[]>();
+    @TestVisible static List<TriggerLogic__mdt> mockMetadata;
 
     /**
      * @param tc Trigger Context of running trigger
@@ -71,12 +71,13 @@ public with sharing class TriggerLogicSelector {
      * @throws TypeException if Type.newInstance() failed.
      */
     private List<Object> getInstances(String logicType, TriggerContext tc, List<Object> instances) {
-        for (TriggerLogic__mdt setting : getCustomMetadataRecords(logicType, String.valueOf(tc.sObjectType), tc.operationType.name())) {
+        for (TriggerLogic__mdt setting : getCustomMetadataRecords(logicType, String.valueOf(tc.sObjectType), tc.operationType)) {
             try {
                 Type ruleClass = Type.forName(setting.ApexClass__c);
                 instances.add(ruleClass.newInstance());
 
             } catch (Exception ex) {
+                System.debug('ex: ' + ex);
                 throw new TypeException('Apex class defined in custom metadata TriggerLogic__mdt.' + setting.DeveloperName
                         + ' (' + setting.ApexClass__c + ') is invalid. Please check if corresponding class is public and implements correct interface.'
                 );
@@ -86,40 +87,39 @@ public with sharing class TriggerLogicSelector {
         return instances;
     }
 
-    private List<TriggerLogic__mdt> getCustomMetadataRecords(String type, String sObjectType, String triggerOperation) {
-        String key = sObjectType + triggerOperation + type;
-        if (mockSettings.get(key) != null) {
-            return mockSettings.get(key);
+    private List<TriggerLogic__mdt> getCustomMetadataRecords(String type, String sObjectType, TriggerOperation op) {
+        SObjectField triggerField = new Map<TriggerOperation, SObjectField>{
+                TriggerOperation.BEFORE_INSERT => TriggerLogic__mdt.BeforeInsert__c,
+                TriggerOperation.BEFORE_UPDATE => TriggerLogic__mdt.BeforeUpdate__c,
+                TriggerOperation.BEFORE_DELETE => TriggerLogic__mdt.BeforeDelete__c,
+                TriggerOperation.AFTER_INSERT => TriggerLogic__mdt.AfterInsert__c,
+                TriggerOperation.AFTER_UPDATE => TriggerLogic__mdt.AfterUpdate__c,
+                TriggerOperation.AFTER_DELETE => TriggerLogic__mdt.AfterDelete__c,
+                TriggerOperation.AFTER_UNDELETE => TriggerLogic__mdt.AfterUndelete__c
+        }.get(op);
 
+        if (mockMetadata == null) {
+            return Database.query('SELECT ApexClass__c, DeveloperName'
+                    + ' FROM TriggerLogic__mdt'
+                    + ' WHERE Enabled__c = TRUE'
+                    + ' AND SObject__c = :sObjectType'
+                    + ' AND Type__c =:type'
+                    + ' AND ' + triggerField + ' = TRUE'
+                    + ' ORDER BY Order__c ASC NULLS LAST, ApexClass__c ASC'
+            );
         } else {
-            return [
-                    SELECT ApexClass__c, DeveloperName
-                    FROM TriggerLogic__mdt
-                    WHERE Enabled__c = TRUE
-                    AND Type__c = :type
-                    AND SObject__c = :sObjectType
-                    AND Trigger__c = :triggerOperation
-                    ORDER BY Order__c ASC NULLS LAST, ApexClass__c ASC
-            ];
-        }
-    }
+            List<TriggerLogic__mdt> settings = new List<TriggerLogic__mdt>();
 
-
-    /**
-     * Mocks custom metadata query in unit tests
-     */
-    @TestVisible
-    private static void mockQuery(List<TriggerLogic__mdt> records) {
-        for (TriggerLogic__mdt logic : records) {
-            if (logic.Enabled__c == true) {
-                String key = logic.SObject__c + logic.Trigger__c + logic.Type__c;
-
-                if (mockSettings.containsKey(key)) {
-                    mockSettings.get(key).add(logic);
-                } else {
-                    mockSettings.put(key, new List<TriggerLogic__mdt>{logic});
+            for (TriggerLogic__mdt logic : mockMetadata) {
+                if (logic.Enabled__c = true
+                        && logic.SObject__c == sObjectType
+                        && logic.get(triggerField) == true
+                        && logic.Type__c == type) {
+                    settings.add(logic);
                 }
             }
+
+            return settings;
         }
     }
 }

@@ -75,7 +75,7 @@ private class TriggerDispatcherTest {
      * Emulation of AccountTriggerHandler class
      */
     private class TestAccountTriggerHandler extends TriggerHandler {
-        public override void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
+        public override void handleBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
             new AccountAddressPopulator().copyBillingAddressToEmptyShippingAddress(triggerNew, tc);
         }
     }

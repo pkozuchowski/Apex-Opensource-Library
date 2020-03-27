@@ -48,26 +48,26 @@ public with sharing class TriggerDispatcher {
 
             switch on triggerContext.operationType {
                 when BEFORE_INSERT {
-                    triggerHandler.onBeforeInsert(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.handleBeforeInsert(triggerContext.getRecords(), triggerContext);
                 }
                 when BEFORE_UPDATE {
-                    triggerHandler.onBeforeUpdate(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.handleBeforeUpdate(triggerContext.getRecords(), triggerContext);
                 }
                 when BEFORE_DELETE {
-                    triggerHandler.onBeforeDelete(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.handleBeforeDelete(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_INSERT {
-                    triggerHandler.onAfterInsert(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.handleAfterInsert(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_UPDATE {
-                    triggerHandler.onAfterUpdate(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.handleAfterUpdate(triggerContext.getRecords(), triggerContext);
                     ((TriggerContextImpl) triggerContext).cacheOldMap();
                 }
                 when AFTER_DELETE {
-                    triggerHandler.onAfterDelete(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.handleAfterDelete(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_UNDELETE {
-                    triggerHandler.onAfterUndelete(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.handleAfterUndelete(triggerContext.getRecords(), triggerContext);
                 }
             }
 

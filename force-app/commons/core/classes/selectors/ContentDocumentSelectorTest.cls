@@ -22,7 +22,7 @@
 * SOFTWARE.
 */
 
-@IsTest(IsParallel=true)
+@IsTest
 private class ContentDocumentSelectorTest {
 
     @TestSetup

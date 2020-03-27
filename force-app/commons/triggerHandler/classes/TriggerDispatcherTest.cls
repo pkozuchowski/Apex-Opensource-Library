@@ -100,7 +100,7 @@ private class TriggerDispatcherTest {
     /**
      * Populates Billing Country to USA if it's blank
      */
-    public class TestAccountBillingAddressDefault implements TriggerFieldDefault {
+    public class TestAccountBillingAddressDefault implements TriggerHandler.FieldDefault {
         public void prepare(List<SObject> records, TriggerContext tc) {
         }
 
@@ -117,7 +117,7 @@ private class TriggerDispatcherTest {
      * Checks if Billing Country is filled.
      * ERRORS map is only populated because field.addError() can't be tested without inserting records.
      */
-    public class TestAccountBillingCountryValidation implements TriggerValidationRule {
+    public class TestAccountBillingCountryValidation implements TriggerHandler.ValidationRule {
         public void prepare(List<SObject> records, TriggerContext tc) {
         }
 
@@ -134,7 +134,7 @@ private class TriggerDispatcherTest {
     /**
      * Simulates custom metadata defined class which performs some trigger logic.
      */
-    public class TestTriggerLogic implements TriggerLogic {
+    public class TestTriggerLogic implements TriggerHandler.Logic {
         public void execute(List<SObject> records, TriggerContext ctx) {
             List<Account> accounts = records;
 
@@ -149,7 +149,7 @@ private class TriggerDispatcherTest {
     /**
      * Example of metadata defined Async logic which filters records and does callout
      */
-    public class TestAsyncLogic implements TriggerAsyncLogic {
+    public class TestAsyncLogic implements TriggerHandler.AsyncLogic {
 
         public List<SObject> filter(List<SObject> records, TriggerContext ctx) {
             List<SObject> filtered = new List<SObject>();

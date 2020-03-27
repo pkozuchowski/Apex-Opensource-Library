@@ -47,8 +47,8 @@ public virtual class TriggerHandler  {
     /**
      * Applies given FieldDefaultRules to inserted or updated records.
      */
-    public void apply(List<SObject> records, TriggerContext tc, List<TriggerFieldDefault> triggerFieldDefaults) {
-        for (TriggerFieldDefault fieldDefaultRule : triggerFieldDefaults) {
+    public void apply(List<SObject> records, TriggerContext tc, List<FieldDefault> triggerFieldDefaults) {
+        for (FieldDefault fieldDefaultRule : triggerFieldDefaults) {
             fieldDefaultRule.prepare(records, tc);
 
             for (SObject record : records) {
@@ -60,8 +60,8 @@ public virtual class TriggerHandler  {
     /**
      * Validates triggered records with a set of specified rules (ValidationRule implementations).
      */
-    public void validate(List<SObject> records, TriggerContext tc, List<TriggerValidationRule> validationRules) {
-        for (TriggerValidationRule validationRule : validationRules) {
+    public void validate(List<SObject> records, TriggerContext tc, List<ValidationRule> validationRules) {
+        for (ValidationRule validationRule : validationRules) {
             validationRule.prepare(records, tc);
 
             for (SObject record : records) {
@@ -73,8 +73,8 @@ public virtual class TriggerHandler  {
     /**
      * Executes given trigger logic implementations.
      */
-    public void execute(List<SObject> records, TriggerContext tc, List<TriggerLogic> triggerLogics) {
-        for (TriggerLogic logic : triggerLogics) {
+    public void execute(List<SObject> records, TriggerContext tc, List<Logic> triggerLogics) {
+        for (Logic logic : triggerLogics) {
             logic.execute(records, tc);
         }
     }
@@ -82,8 +82,8 @@ public virtual class TriggerHandler  {
     /**
      * Executes given trigger logic implementations.
      */
-    public void executeAsync(List<SObject> records, TriggerContext tc, List<TriggerAsyncLogic> triggerLogics) {
-        for (TriggerAsyncLogic logic : triggerLogics) {
+    public void executeAsync(List<SObject> records, TriggerContext tc, List<AsyncLogic> triggerLogics) {
+        for (AsyncLogic logic : triggerLogics) {
             List<SObject> filtered = logic.filter(records, tc);
 
             if (!filtered.isEmpty()) {
@@ -96,15 +96,69 @@ public virtual class TriggerHandler  {
         }
     }
 
+    /**
+     * Implementation of this interface should populate field's default value on SObject in "before" trigger.
+     */
+    public interface FieldDefault {
+
+        /**
+         * Prepares prerequisites for validation if needed.
+         * This method should contain queries to required related objects.
+         */
+        void prepare(List<SObject> records, TriggerContext tc);
+
+        /**
+         * Populates field default value on record.
+         */
+        void populate(SObject record, TriggerContext tc);
+    }
+
+    /**
+     * Implementation of this interface should validate records in trigger.
+     * Each implementation should call .addError() on it's own, since depending on requirement,
+     * this could be called either to SObject or one of it's fields.
+     */
+    public interface ValidationRule {
+
+        /**
+         * Prepares prerequisites for validation if needed.
+         * This method should contain queries to required related objects.
+         */
+        void prepare(List<SObject> records, TriggerContext tc);
+
+        /**
+         * Validate SObject and add error to SObject or one of the fields.
+         */
+        void validate(SObject record, TriggerContext tc);
+    }
+
+    /**
+     * This interface marks classes which should execute on trigger event.
+     * Implementing classes are defined in TriggerLogic custom metadata.
+     */
+    public interface Logic {
+        void execute(List<SObject> records, TriggerContext ctx);
+    }
+
+    /**
+     * This interface marks classes which should execute asynchronously (using Queueable) on trigger event.
+     * Implementing classes does not have to implement Queueable interface, but may do that if needed.
+     * Implementing classes are defined in TriggerLogic custom metadata.
+     */
+    public interface AsyncLogic {
+        List<SObject> filter(List<SObject> records, TriggerContext ctx);
+        void execute(List<SObject> records, QueueableContext ctx);
+    }
+
 
     /**
      * Adapter between TriggerAsyncLogic interface and Queueable interface
      */
     private class AsyncLogicQueueableAdapter implements Queueable, Database.AllowsCallouts {
         private List<SObject> records;
-        private TriggerAsyncLogic asyncLogic;
+        private AsyncLogic asyncLogic;
 
-        public AsyncLogicQueueableAdapter(List<SObject> records, TriggerAsyncLogic asyncLogic) {
+        public AsyncLogicQueueableAdapter(List<SObject> records, AsyncLogic asyncLogic) {
             this.records = records;
             this.asyncLogic = asyncLogic;
         }

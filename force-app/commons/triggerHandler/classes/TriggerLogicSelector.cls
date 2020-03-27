@@ -33,32 +33,32 @@ public with sharing class TriggerLogicSelector {
      * @param tc Trigger Context of running trigger
      * @return Trigger Validation Rules for currently executing trigger
      */
-    public List<TriggerValidationRule> getTriggerValidationRules(TriggerContext tc) {
-        return (List<TriggerValidationRule>) getInstances('Validation Rule', tc, new List<TriggerValidationRule>());
+    public List<TriggerHandler.ValidationRule> getTriggerValidationRules(TriggerContext tc) {
+        return (List<TriggerHandler.ValidationRule>) getInstances('Validation Rule', tc, new List<TriggerHandler.ValidationRule>());
     }
 
     /**
      * @param tc Trigger Context of running trigger
      * @return Trigger Field Defaults for currently executing trigger
      */
-    public List<TriggerFieldDefault> getTriggerFieldDefault(TriggerContext tc) {
-        return (List<TriggerFieldDefault>) getInstances('Field Default', tc, new List<TriggerFieldDefault>());
+    public List<TriggerHandler.FieldDefault> getTriggerFieldDefault(TriggerContext tc) {
+        return (List<TriggerHandler.FieldDefault>) getInstances('Field Default', tc, new List<TriggerHandler.FieldDefault>());
     }
 
     /**
      * @param tc Trigger Context of running trigger
      * @return Trigger Logic for currently executing trigger
      */
-    public List<TriggerLogic> getTriggerLogic(TriggerContext tc) {
-        return (List<TriggerLogic>) getInstances('Logic', tc, new List<TriggerLogic>());
+    public List<TriggerHandler.Logic> getTriggerLogic(TriggerContext tc) {
+        return (List<TriggerHandler.Logic>) getInstances('Logic', tc, new List<TriggerHandler.Logic>());
     }
 
     /**
      * @param tc Trigger Context of running trigger
      * @return Trigger Logic for currently executing trigger
      */
-    public List<TriggerAsyncLogic> getTriggerAsyncLogic(TriggerContext tc) {
-        return (List<TriggerAsyncLogic>) getInstances('Async Logic', tc, new List<TriggerAsyncLogic>());
+    public List<TriggerHandler.AsyncLogic> getTriggerAsyncLogic(TriggerContext tc) {
+        return (List<TriggerHandler.AsyncLogic>) getInstances('Async Logic', tc, new List<TriggerHandler.AsyncLogic>());
     }
 
 

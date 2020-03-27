@@ -4,9 +4,9 @@
     <externalId>false</externalId>
     <fieldManageability>DeveloperControlled</fieldManageability>
     <inlineHelpText>Depending on the selected value, Apex class should implement following interface:
-Field Default - TriggerFieldDefault
-Validation Rule - TriggerValidationRule
-Logic - TriggerLogic</inlineHelpText>
+Field Default - TriggerHandler.FieldDefault
+Validation Rule - TriggerHandler.ValidationRule
+Logic - TriggerHandler.Logic</inlineHelpText>
     <label>Type</label>
     <required>true</required>
     <type>Picklist</type>

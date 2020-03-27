@@ -42,9 +42,9 @@ public with sharing class TriggerDispatcher {
     @TestVisible
     private static void run(TriggerHandler triggerHandler, TriggerContext triggerContext) {
         if (shouldRun(triggerContext)) {
-            triggerHandler.apply(triggerContext.getRecords(), triggerContext, logicSelector.getTriggerFieldDefault(triggerContext));
-            triggerHandler.validate(triggerContext.getRecords(), triggerContext, logicSelector.getTriggerValidationRules(triggerContext));
-            triggerHandler.execute(triggerContext.getRecords(), triggerContext, logicSelector.getTriggerLogic(triggerContext));
+            triggerHandler.apply(triggerContext.getRecords(), triggerContext, logicSelector.getFieldDefault(triggerContext));
+            triggerHandler.validate(triggerContext.getRecords(), triggerContext, logicSelector.getValidationRules(triggerContext));
+            triggerHandler.execute(triggerContext.getRecords(), triggerContext, logicSelector.getLogic(triggerContext));
 
             switch on triggerContext.operationType {
                 when BEFORE_INSERT {
@@ -71,7 +71,7 @@ public with sharing class TriggerDispatcher {
                 }
             }
 
-            triggerHandler.executeAsync(triggerContext.getRecords(), triggerContext, logicSelector.getTriggerAsyncLogic(triggerContext));
+            triggerHandler.executeAsync(triggerContext.getRecords(), triggerContext, logicSelector.getAsyncLogic(triggerContext));
         }
     }
 

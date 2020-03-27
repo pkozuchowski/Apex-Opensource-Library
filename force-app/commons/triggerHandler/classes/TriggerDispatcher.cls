@@ -97,7 +97,7 @@ public with sharing class TriggerDispatcher {
     */
     private static Boolean shouldRun(TriggerContext triggerContext) {
         return triggerContext.isExecuting
-                && !Bypass_Settings__c.getInstance().Bypass_Triggers__c
+                && !LogicSwitch__c.getInstance().DisableTriggers__c
                 && !disabledTriggers.contains(triggerContext.sObjectType);
     }
 

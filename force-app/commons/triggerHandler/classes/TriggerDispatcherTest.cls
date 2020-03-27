@@ -490,9 +490,9 @@ private class TriggerDispatcherTest {
      */
     @IsTest
     static void triggerShouldNotExecuteWhenDisabledInCustomSetting() {
-        upsert new Bypass_Settings__c(
+        upsert new LogicSwitch__c(
                 SetupOwnerId = UserInfo.getUserId(),
-                Bypass_Triggers__c = true
+                DisableTriggers__c = true
         );
         List<Account> accounts = new List<Account>{
                 new Account(Id = '001000000000000', Name = 'Test')

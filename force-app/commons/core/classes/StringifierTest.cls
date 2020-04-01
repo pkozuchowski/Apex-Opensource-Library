@@ -46,20 +46,30 @@ private class StringifierTest {
                     stringifier.toString(ex)
             );
         }
+        Exception ex2 = null;
+        System.assertEquals(stringifier.toString(ex2), '');
     }
 
     @IsTest
     static void testStringifyHttpRequest() {
         HttpRequest request = new HttpRequest();
-        request.setMethod('GET');
-        request.setEndpoint('https://www.example.com');
-        request.setBody('{"value":"test"}');
+        request.setMethod('POST');
+        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v20.0/sobjects/Account/');
+        request.setHeader('Authorization', 'Bearer XXX');
+        request.setHeader('Content-Type', 'application/json');
+        request.setBody('{"Name":"Test Account}');
 
         System.assertEquals(
-                'GET https://www.example.com\n'
-                        + '{"value":"test"}',
+                'POST /services/data/v20.0/sobjects/Account/\n'
+                        + 'Host: yourInstance.salesforce.com\n'
+                        + 'Authorization: Bearer XXX\n'
+                        + 'Content-Type: application/json\n'
+                        + '\n'
+                        + '{"Name":"Test Account}',
                 stringifier.toString(request)
         );
+        request = null;
+        System.assertEquals(stringifier.toString(request), '');
     }
 
     @IsTest
@@ -70,29 +80,36 @@ private class StringifierTest {
         response.setBody('success');
 
         System.assertEquals(
-                '200 OK\n' +
+                '200 OK\n\n' +
                         'success',
                 stringifier.toString(response)
         );
+        response = null;
+        System.assertEquals(stringifier.toString(response), '');
     }
 
     @IsTest
     static void testStringifyRESTRequest() {
         RestRequest request = new RestRequest();
-        request.httpMethod = 'GET';
-        request.resourcePath = 'https://www.example.com?param=value';
-        request.addParameter('param', 'value');
-        request.requestBody = Blob.valueOf('request');
+        request.httpMethod = 'POST';
+        request.resourcePath = '/services/data/v20.0/sobjects/Account/';
+        request.addParameter('id', '001000000000000');
+        request.addHeader('Content-Type', 'application/json');
+        request.requestBody = Blob.valueOf('{request}');
 
-        System.assertEquals(
-                'GET https://www.example.com?param=value'
-                        + '\nParams:'
-                        + '\n"param" : "value"'
-                        + '\nBody:\n'
-                        + 'request',
+        System.assertEquals('POST /services/data/v20.0/sobjects/Account/\n' +
+                'Host: ' + Url.getOrgDomainUrl().getHost() + '\n' +
+                'Content-Type: application/json\n' +
+                '\n' +
+                'URL Parameters:\n' +
+                'id: 001000000000000\n' +
+                '\n' +
+                '{request}',
+
                 stringifier.toString(request)
         );
-
+        request = null;
+        System.assertEquals(stringifier.toString(request), '');
     }
 
     @IsTest
@@ -100,14 +117,16 @@ private class StringifierTest {
         RestResponse response = new RestResponse();
         response.statusCode = 200;
         response.responseBody = Blob.valueOf('success');
+        response.headers.put('Content-Type', 'application/json');
 
-        System.assertEquals(
-                'Response:\n' +
-                        '200' +
-                        '\nBody:\n' +
-                        'success',
+        System.assertEquals('200\n'
+                + 'Content-Type: application/json\n'
+                + '\n'
+                + 'success',
                 stringifier.toString(response)
         );
+        response = null;
+        System.assertEquals(stringifier.toString(response), '');
     }
 
     @IsTest
@@ -115,5 +134,7 @@ private class StringifierTest {
         Blob b = Blob.valueOf('test');
 
         System.assertEquals('test', stringifier.toString(b));
+        b = null;
+        System.assertEquals(stringifier.toString(b), '');
     }
 }

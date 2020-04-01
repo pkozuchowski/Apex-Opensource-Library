@@ -219,6 +219,7 @@ private class TriggerDispatcherTest {
         for (TriggerOperation triggerOperation : TriggerOperation.values()) {
             TriggerDispatcher.run(new TestAccountTriggerHandler(), new TestTriggerContextImpl(triggerOperation, new List<SObject>(), new List<SObject>()));
         }
+        TriggerDispatcher.run();
     }
 
 
@@ -269,6 +270,7 @@ private class TriggerDispatcherTest {
         System.assertEquals(false, ctx.isChangedFrom(record, Account.BillingCity, null));
         System.assert(ctx.getRecordsMap().containsKey('001000000000000'));
         System.assert(ctx.getRecordsIds().contains('001000000000000'));
+        System.assert(ctx.getOldMap().containsKey('001000000000000'));
     }
 
 

@@ -108,6 +108,13 @@ public virtual class TriggerContext {
     }
 
     /**
+    * @return Trigger Old Map
+    */
+    public Map<Id, SObject> getOldMap(){
+        return triggerOldMap;
+    }
+
+    /**
      * @return True if record is being inserted.
      */
     public Boolean isNew() {

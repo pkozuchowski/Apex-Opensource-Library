@@ -37,13 +37,13 @@
  */
 public inherited sharing class CollectionImpl extends Collection {
     private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
-    private final static Comparators.ComparisionResult
-            EQUALS = new Comparators.ComparisionEquals(),
-            NOT_EQUALS = new Comparators.ComparisionNotEquals(),
-            GREATER_THAN = new Comparators.ComparisionGreaterThan(),
-            GREATER_EQUAL_THAN = new Comparators.ComparisionGreaterEqualsThan(),
-            LESS_THAN = new Comparators.ComparisionLessThan(),
-            LESS_EQUAL_THAN = new Comparators.ComparisionLessEqualsThan();
+    private final static Comparators.ComparisionOperator
+            EQUALS = new Comparators.Equals(),
+            NOT_EQUALS = new Comparators.NotEquals(),
+            GREATER_THAN = new Comparators.GreaterThan(),
+            GREATER_EQUAL_THAN = new Comparators.GreaterEqualsThan(),
+            LESS_THAN = new Comparators.LessThan(),
+            LESS_EQUAL_THAN = new Comparators.LessEqualsThan();
 
     /*Flyweights for reducers*/
     private final static ArithmeticReducer
@@ -583,9 +583,9 @@ public inherited sharing class CollectionImpl extends Collection {
         private Object value;
         private String field;
         private Comparator comparator;
-        private final Comparators.ComparisionResult expectedResult;
+        private final Comparators.ComparisionOperator expectedResult;
 
-        public FilterByFieldValue(String field, Comparators.ComparisionResult expectedResult, Object value) {
+        public FilterByFieldValue(String field, Comparators.ComparisionOperator expectedResult, Object value) {
             this.field = field;
             this.value = value;
             this.expectedResult = expectedResult;

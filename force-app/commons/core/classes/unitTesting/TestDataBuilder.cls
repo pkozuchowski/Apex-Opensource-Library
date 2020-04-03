@@ -26,6 +26,7 @@
  * This class is responsible for creating records with default fields populated for unit tests.
  * When new required field is added to the sObject, this is the only class which will have to be changed to fix unit tests.
  */
+@IsTest
 public inherited sharing class TestDataBuilder {
 
     /**

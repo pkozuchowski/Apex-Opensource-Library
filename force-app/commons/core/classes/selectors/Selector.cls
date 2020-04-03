@@ -26,11 +26,16 @@
  * Base class for selectors. Contains query builder and common query methods.
  */
 public inherited sharing abstract class Selector {
+    private static SObjectCache cache = new SObjectCache();
     protected transient SelectorQuery query;
+    private Sharing currentSharing;
+    private Map<String, SObjectField> allFields;
 
     protected Selector(List<SObjectField> queryFields, SObjectType sObjectType) {
         this.query = new SelectorQuery(this);
         this.query.selectFields(queryFields).fromObject(sObjectType);
+        this.currentSharing = Sharing.WITH_SHARING;
+        this.allFields = sObjectType.getDescribe().fields.getMap();
     }
 
     /**
@@ -38,6 +43,7 @@ public inherited sharing abstract class Selector {
      * users does not have access to
      */
     public Selector withoutSharing() {
+        this.currentSharing = Sharing.WITHOUT_SHARING;
         this.query.setSharing(Sharing.WITHOUT_SHARING);
         return this;
     }
@@ -89,19 +95,19 @@ public inherited sharing abstract class Selector {
     }
 
     /**
-     * @values List or Set of any type, cast to (Iterable<Object>)
+     * @value Expected value or values (may be Set or List) of the field
      * @return SObjects with field values in given value set.
      */
-    public virtual SObject[] byField(SObjectField field, String operator, Object values) {
-        return byField('' + field, operator, values);
+    public virtual SObject[] byField(SObjectField field, String operator, Object value) {
+        return byField('' + field, operator, value);
     }
 
     /**
-     * @values List or Set of any type, cast to (Iterable<Object>)
+     * @value Expected value or values (may be Set or List) of the field
      * @return SObjects with field values in given value set.
      */
-    public virtual SObject[] byField(String field, String operator, Object values) {
-        query.bindVariable('values', values);
+    public virtual SObject[] byField(String field, String operator, Object value) {
+        query.bindVariable('values', value);
         query.setWhere(field + ' ' + operator + ' :values');
         return query.execute();
     }

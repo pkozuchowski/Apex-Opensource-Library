@@ -78,11 +78,18 @@ public inherited sharing class SObjectCache {
      * @return All cached SOBjects with given SObject field value.
      */
     public List<SObject> retrieve(SObjectField field, Object value) {
-        if (storage.containsKey(field) && storage.get(field).containsKey(value)) {
+        if (containsKey(field, value)) {
             return storage.get(field).get(value);
         } else {
             return new List<SObject>();
         }
+    }
+
+    /**
+    * @return True, if there are any sObjects cached under given key
+    */
+    public Boolean containsKey(SObjectField field, Object key) {
+        return storage.containsKey(field) && storage.get(field).containsKey(key);
     }
 
     /**

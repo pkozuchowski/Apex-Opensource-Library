@@ -63,7 +63,7 @@ public class SelectorTest {
     @IsTest
     static void testSelectByChild() {
         List<LoginHistory> loginHistories = [SELECT Id, UserId FROM LoginHistory LIMIT 100];
-        List<User> users = new TestUserSelector().byChild(LoginHistory.UserId, loginHistories);
+        List<User> users = new TestUserSelector().relatedToChildren(LoginHistory.UserId, loginHistories);
 
         assertEquals(
                 ([SELECT Id FROM User WHERE Id IN (SELECT UserId FROM LoginHistory WHERE Id IN :loginHistories)]),
@@ -74,7 +74,7 @@ public class SelectorTest {
     @IsTest
     static void testSelectByParent() {
         List<Profile> profiles = [SELECT Id FROM Profile WHERE Name = 'System Administrator'];
-        List<User> users = new TestUserSelector().byParent(User.ProfileId, profiles);
+        List<User> users = new TestUserSelector().relatedToParent(User.ProfileId, profiles);
 
         assertEquals(
                 ([SELECT Id FROM User WHERE ProfileId IN :profiles]),

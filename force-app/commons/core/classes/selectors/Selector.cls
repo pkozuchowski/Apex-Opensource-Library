@@ -65,11 +65,16 @@ public inherited sharing abstract class Selector {
     }
 
     /**
-     * @param relationShipField Parent field on records (ex. Contact.AccountId for list of Contacts)
-     * @param childRecords List of child records in relationship
-     * @return List of parent records related to given child records by given field
+     * @example
+     * <pre>
+     * List<Account> accounts = Query.Accounts.relatedToChildren(contacts, Contact.AccountId);
+     * </pre>
+     *
+     * @param childRecords List of children records for which oarent records are queried
+     * @param relationShipField Parent field on records (ex. Contact.AccountId for Contacts children of Accounts)
+     * @return List of parent records related to given child records by given field ex. Accounts related to given contacts
      */
-    public virtual SObject[] byChild(SObjectField relationShipField, List<SObject> childRecords) {
+    public virtual SObject[] relatedToChildren(List<SObject> childRecords, SObjectField relationShipField) {
         Set<Id> parentIds = new Set<Id>();
         for (SObject record : childRecords) {
             parentIds.add((Id) record.get(relationShipField));
@@ -79,11 +84,16 @@ public inherited sharing abstract class Selector {
     }
 
     /**
-     * @param relationShipField Parent field on records (ex. Contact.AccountId for list of Contacts)
+     * @example
+     * <pre>
+     * List<Contact> contacts = Query.Contacts.relatedToParent(accounts, Contact.AccountId);
+     * </pre>
+     *
      * @param parentRecords List of child records in relationship
+     * @param relationShipField Parent field on records (ex. Contact.AccountId for list of Contacts)
      * @return List of child records related to given parent records by given field
      */
-    public virtual SObject[] byParent(SObjectField relationShipField, List<SObject> parentRecords) {
+    public virtual SObject[] relatedToParent(List<SObject> parentRecords, SObjectField relationShipField) {
         return byField(relationShipField, 'IN', parentRecords);
     }
 

@@ -26,16 +26,20 @@
  * Base class for selectors. Contains query builder and common query methods.
  */
 public inherited sharing abstract class Selector {
-    private static SObjectCache cache = new SObjectCache();
-    protected transient SelectorQuery query;
-    private Sharing currentSharing;
+    private final static SelectorCache cache = new SelectorCache();
+    protected final transient SelectorQuery query;
+    private Boolean useCache = true;
     private Map<String, SObjectField> allFields;
+    private List<SObjectField> queryFields;
+    private Set<SObjectField> cacheFields;
 
     protected Selector(List<SObjectField> queryFields, SObjectType sObjectType) {
         this.query = new SelectorQuery(this);
         this.query.selectFields(queryFields).fromObject(sObjectType);
-        this.currentSharing = Sharing.WITH_SHARING;
+
         this.allFields = sObjectType.getDescribe().fields.getMap();
+        this.queryFields = queryFields;
+        this.cacheFields = getCachedFields();
     }
 
     /**
@@ -43,15 +47,27 @@ public inherited sharing abstract class Selector {
      * users does not have access to
      */
     public Selector withoutSharing() {
-        this.currentSharing = Sharing.WITHOUT_SHARING;
         this.query.setSharing(Sharing.WITHOUT_SHARING);
         return this;
     }
 
 
     /**
-     * @return Record by given Salesforce Id or null
-     */
+    * @return Selector will not reuse cached records to limit SOQLs query limit
+    */
+    protected Selector useCache(Boolean useCache) {
+        this.useCache = false;
+        return this;
+    }
+
+    public Selector withAllFields() {
+        this.query.selectFields(allFields.values());
+        return this;
+    }
+
+    /**
+    * @return Record by given Salesforce Id
+    */
     public virtual SObject byId(Id recordId) {
         return firstOrNull(byId(new List<Id>{recordId}));
     }
@@ -76,6 +92,7 @@ public inherited sharing abstract class Selector {
      */
     public virtual SObject[] relatedToChildren(List<SObject> childRecords, SObjectField relationShipField) {
         Set<Id> parentIds = new Set<Id>();
+
         for (SObject record : childRecords) {
             parentIds.add((Id) record.get(relationShipField));
         }
@@ -116,10 +133,48 @@ public inherited sharing abstract class Selector {
      * @value Expected value or values (may be Set or List) of the field
      * @return SObjects with field values in given value set.
      */
-    public virtual SObject[] byField(String field, String operator, Object value) {
-        query.bindVariable('values', value);
-        query.setWhere(field + ' ' + operator + ' :values');
-        return query.execute();
+    public virtual SObject[] byField(String fieldAPIName, String operator, Object value) {
+        SObjectField field = allFields.get(fieldAPIName);
+
+        if (canUseCache(operator, field)) {
+            return getCachedRecords(field, operator, value);
+
+        } else {
+            this.query.setWhere(fieldAPIName + ' ' + operator + ' :value');
+            this.query.bindVariable('value', value);
+            return query();
+        }
+    }
+
+    private List<SObject> getCachedRecords(SObjectField field, String operator, Object value) {
+        Map<Id, SObject> result = new Map<Id, SObject>();
+        Iterable<Object> iterable = getIterable(value);
+
+        String runtimeValueName = Runtime.getRunningTypeName(iterable).substringBetween('<', '>');
+        List<Object> remainingValues = Runtime.newListOfItemType(Type.forName(runtimeValueName));
+
+
+        Iterator<Object> valueIt = iterable.iterator();
+        while (valueIt.hasNext()) {
+            Object val = valueIt.next();
+
+            if (cache.containsKey(field, val)) {
+                SObject record = cache.retrieve(field, val);
+                result.put(record.Id, record);
+
+            } else {
+                remainingValues.add(val);
+            }
+        }
+
+
+        if (!remainingValues.isEmpty()) {
+            this.query.setWhere('' + field + ' ' + operator + ' :value');
+            this.query.bindVariable('value', remainingValues);
+            result.putAll(query());
+        }
+
+        return result.values();
     }
 
     /**
@@ -143,4 +198,62 @@ public inherited sharing abstract class Selector {
     protected SObject firstOrNull(List<SObject> records) {
         return records.isEmpty() ? null : records.get(0);
     }
+
+    /**
+    * @return True, if selector can use cached records:
+    * - Cache is not explicitly forbidden
+    * - Operator is either equals or IN
+    * - Field is explicitly allowed for caching or Field is unique to use it for upsert (isIdLookup)
+    */
+    public Boolean canUseCache(String operator, SObjectField field) {
+        return useCache
+                && (operator == '=' || operator == 'IN')
+                && cacheFields.contains(field);
+    }
+
+    /**
+    * @return Fields which are viable for caching - by default Ids, External Ids and unique fields
+    * For overriding, consider using super() for adding additional fields to this behavior.
+    */
+    protected virtual Set<SObjectField> getCachedFields() {
+        Set<SObjectField> cacheFields = new Set<SObjectField>();
+
+        for (SObjectField sObjectField : this.queryFields) {
+            DescribeFieldResult describe = sObjectField.getDescribe();
+
+            if (describe.isIdLookup() || describe.isUnique()) {
+                cacheFields.add(sObjectField);
+            }
+        }
+
+        return cacheFields;
+    }
+
+    /**
+    * Executes query and caches results
+    */
+    protected List<SObject> query() {
+        List<SObject> records = this.query.execute();
+        cache.store(cacheFields, records);
+
+        return records;
+    }
+
+    private Iterable<Object> getIterable(Object value) {
+        String typeName = Runtime.getRunningTypeName(value);
+
+        if (value instanceof List<SObject>) {
+            return (Iterable<Object>) new Map<Id, SObject>((List<SObject>) value).keySet();
+
+        } else if (typeName.contains('List') || typeName.contains('Set')) {
+            return ((Iterable<Object>) value);
+
+        } else {
+            Type valueType = Runtime.getRunningType(value);
+            List<Object> values = Runtime.newListOfItemType(valueType);
+            values.add(value);
+            return values;
+        }
+    }
+
 }

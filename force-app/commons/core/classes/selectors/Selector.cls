@@ -33,6 +33,7 @@ public inherited sharing abstract class Selector {
     private List<SObjectField> queryFields;
     private Set<SObjectField> cacheFields;
 
+
     protected Selector(List<SObjectField> queryFields, SObjectType sObjectType) {
         this.query = new SelectorQuery(this);
         this.query.selectFields(queryFields).fromObject(sObjectType);
@@ -41,6 +42,9 @@ public inherited sharing abstract class Selector {
         this.queryFields = queryFields;
         this.cacheFields = getCachedFields();
     }
+
+
+    /*Extenders*/
 
     /**
      * Query will be executed in "without sharing" context, returning records
@@ -65,6 +69,25 @@ public inherited sharing abstract class Selector {
         return this;
     }
 
+
+    /*Reductors*/
+
+    /**
+     * @return first record returned by query without any conditions or null.
+     */
+    public virtual SObject one() {
+        query.setLimit(1);
+        return firstOrNull(query.execute());
+    }
+
+    /**
+     * @return All records in database
+     */
+    public virtual SObject[] all() {
+        return query.execute();
+    }
+
+
     /**
     * @return Record by given Salesforce Id
     */
@@ -79,6 +102,7 @@ public inherited sharing abstract class Selector {
     public virtual SObject[] byId(Iterable<Id> recordIds) {
         return byField('Id', 'IN', recordIds);
     }
+
 
     /**
      * @example
@@ -146,6 +170,21 @@ public inherited sharing abstract class Selector {
         }
     }
 
+    /**
+    * @return True, if selector can use cached records:
+    * - Cache is not explicitly forbidden
+    * - Operator is either equals or IN
+    * - Field is explicitly allowed for caching or Field is unique to use it for upsert (isIdLookup)
+    */
+    private Boolean canUseCache(String operator, SObjectField field) {
+        return useCache
+                && (operator == '=' || operator == 'IN')
+                && cacheFields.contains(field);
+    }
+
+    /**
+    * @return All records that are in cache and queries these which are not.
+    */
     private List<SObject> getCachedRecords(SObjectField field, String operator, Object value) {
         Map<Id, SObject> result = new Map<Id, SObject>();
         Iterable<Object> iterable = getIterable(value);
@@ -178,37 +217,26 @@ public inherited sharing abstract class Selector {
     }
 
     /**
-     * @return All records in database
-     */
-    public virtual SObject[] all() {
-        return query.execute();
-    }
-
-    /**
-     * @return first record returned by query without any conditions or null.
-     */
-    public virtual SObject one() {
-        query.setLimit(1);
-        return firstOrNull(query.execute());
-    }
-
-    /**
-     * @return First record in list or null if list is empty
-     */
-    protected SObject firstOrNull(List<SObject> records) {
-        return records.isEmpty() ? null : records.get(0);
-    }
-
-    /**
-    * @return True, if selector can use cached records:
-    * - Cache is not explicitly forbidden
-    * - Operator is either equals or IN
-    * - Field is explicitly allowed for caching or Field is unique to use it for upsert (isIdLookup)
+    * Transforms value into uniform iterable:
+    * - primitive V is transformed into new List<T>{V}
+    * - List or Sets are casted into Iterable<Object>
+    * - List<SObject> is changed into Iterable<Id>
     */
-    public Boolean canUseCache(String operator, SObjectField field) {
-        return useCache
-                && (operator == '=' || operator == 'IN')
-                && cacheFields.contains(field);
+    private Iterable<Object> getIterable(Object value) {
+        String typeName = Runtime.getRunningTypeName(value);
+
+        if (value instanceof List<SObject>) {
+            return (Iterable<Object>) new Map<Id, SObject>((List<SObject>) value).keySet();
+
+        } else if (typeName.contains('List') || typeName.contains('Set')) {
+            return ((Iterable<Object>) value);
+
+        } else {
+            Type valueType = Runtime.getRunningType(value);
+            List<Object> values = Runtime.newListOfItemType(valueType);
+            values.add(value);
+            return values;
+        }
     }
 
     /**
@@ -230,6 +258,14 @@ public inherited sharing abstract class Selector {
     }
 
     /**
+     * @return First record in list or null if list is empty
+     */
+    protected SObject firstOrNull(List<SObject> records) {
+        return records.isEmpty() ? null : records.get(0);
+    }
+
+
+    /**
     * Executes query and caches results
     */
     protected List<SObject> query() {
@@ -237,23 +273,6 @@ public inherited sharing abstract class Selector {
         cache.store(cacheFields, records);
 
         return records;
-    }
-
-    private Iterable<Object> getIterable(Object value) {
-        String typeName = Runtime.getRunningTypeName(value);
-
-        if (value instanceof List<SObject>) {
-            return (Iterable<Object>) new Map<Id, SObject>((List<SObject>) value).keySet();
-
-        } else if (typeName.contains('List') || typeName.contains('Set')) {
-            return ((Iterable<Object>) value);
-
-        } else {
-            Type valueType = Runtime.getRunningType(value);
-            List<Object> values = Runtime.newListOfItemType(valueType);
-            values.add(value);
-            return values;
-        }
     }
 
 }

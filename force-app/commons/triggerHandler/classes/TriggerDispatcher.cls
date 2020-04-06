@@ -24,11 +24,13 @@
 public with sharing class TriggerDispatcher {
     private static Set<SObjectType> disabledTriggers = new Set<SObjectType>();
     private static TriggerLogicSelector logicSelector = new TriggerLogicSelector();
+    private static LogicSwitch__c logicSwitchSetting = LogicSwitch__c.getInstance();
 
     /**
      * Runs trigger field defaults, validations and logic defined in custom metadata
      */
     public static void run() {
+        System.debug(JSON.serializePretty(LogicSwitch__c.getInstance()));
         run(new TriggerHandler());
     }
 
@@ -88,6 +90,35 @@ public with sharing class TriggerDispatcher {
     public static void enableTrigger(SObjectType sObjectType) {
         disabledTriggers.remove(sObjectType);
     }
+
+
+    /**
+    * Disable all logic (Workflow RUles, Triggers, Process Builders, Validation Rules) which handle LogicSwitch__c.
+    * Disablement is done by temporarily upserting LogicSwitch__c record for running user and restoring it later with enableAllAutomations.
+    * This action performs DML.
+    */
+    public static void disableAllLogic() {
+        LogicSwitch__c clone = logicSwitchSetting.clone(true);
+        clone.DisableWorkflowRules__c = true;
+        clone.DisableTriggers__c = true;
+        clone.DisableProcessBuilders__c = true;
+        clone.DisableValidationRules__c = true;
+        upsert clone;
+    }
+
+    /**
+    * Restores previous LogicSwitch values on the user.
+    * This action performs DML.
+    */
+    public static void enableAllLogic() {
+        if (String.isEmpty(logicSwitchSetting.Id)) {
+            delete [SELECT Id FROM LogicSwitch__c WHERE SetupOwnerId = :UserInfo.getUserId()];
+
+        } else {
+            upsert logicSwitchSetting;
+        }
+    }
+
 
     /**
     * Trigger should run:

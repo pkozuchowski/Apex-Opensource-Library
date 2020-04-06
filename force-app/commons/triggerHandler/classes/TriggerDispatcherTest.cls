@@ -520,4 +520,60 @@ private class TriggerDispatcherTest {
             System.assertEquals(false, account.Name.startsWith('(Customer)'));
         }
     }
+
+
+    /**
+     * .disableLogic() should insert LogicSwitch__c setting for current user with all logic disabled
+     * .enableAllLogic() should delete that setting afterwards.
+     */
+    @IsTest
+    static void disableLogicShouldDisableAllOptionsInLogicSwitch() {
+        Test.startTest();
+        TriggerDispatcher.disableAllLogic();
+        LogicSwitch__c setting = LogicSwitch__c.getInstance();
+        System.assertEquals(true, setting.DisableWorkflowRules__c);
+        System.assertEquals(true, setting.DisableValidationRules__c);
+        System.assertEquals(true, setting.DisableProcessBuilders__c);
+        System.assertEquals(true, setting.DisableTriggers__c);
+        TriggerDispatcher.enableAllLogic();
+
+
+        setting = LogicSwitch__c.getInstance();
+        System.assertEquals(false, setting.DisableWorkflowRules__c);
+        System.assertEquals(false, setting.DisableValidationRules__c);
+        System.assertEquals(false, setting.DisableProcessBuilders__c);
+        System.assertEquals(false, setting.DisableTriggers__c);
+        Test.stopTest();
+    }
+
+
+    /**
+     * .disableLogic() should insert LogicSwitch__c setting for current user with all logic disabled
+     * .enableAllLogic() should delete that setting afterwards.
+     */
+    @IsTest
+    static void enableAllLogicShouldRestoresOriginalSettingsIfExisted() {
+        upsert new LogicSwitch__c(
+                SetupOwnerId = UserInfo.getUserId(),
+                DisableTriggers__c = true
+        );
+
+
+        Test.startTest();
+        TriggerDispatcher.disableAllLogic();
+        LogicSwitch__c setting = LogicSwitch__c.getInstance();
+        System.assertEquals(true, setting.DisableWorkflowRules__c);
+        System.assertEquals(true, setting.DisableValidationRules__c);
+        System.assertEquals(true, setting.DisableProcessBuilders__c);
+        System.assertEquals(true, setting.DisableTriggers__c);
+        TriggerDispatcher.enableAllLogic();
+
+
+        setting = LogicSwitch__c.getInstance();
+        System.assertEquals(false, setting.DisableWorkflowRules__c);
+        System.assertEquals(false, setting.DisableValidationRules__c);
+        System.assertEquals(false, setting.DisableProcessBuilders__c);
+        System.assertEquals(true, setting.DisableTriggers__c);
+        Test.stopTest();
+    }
 }

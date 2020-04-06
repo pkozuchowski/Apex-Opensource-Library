@@ -96,6 +96,7 @@ public virtual class TriggerHandler  {
         }
     }
 
+
     /**
      * Implementation of this interface should populate field's default value on SObject in "before" trigger.
      */
@@ -112,6 +113,7 @@ public virtual class TriggerHandler  {
          */
         void populate(SObject record, TriggerContext tc);
     }
+
 
     /**
      * Implementation of this interface should validate records in trigger.
@@ -132,6 +134,7 @@ public virtual class TriggerHandler  {
         void validate(SObject record, TriggerContext tc);
     }
 
+
     /**
      * This interface marks classes which should execute on trigger event.
      * Implementing classes are defined in TriggerLogic custom metadata.
@@ -139,6 +142,7 @@ public virtual class TriggerHandler  {
     public interface Logic {
         void execute(List<SObject> records, TriggerContext ctx);
     }
+
 
     /**
      * This interface marks classes which should execute asynchronously (using Queueable) on trigger event.

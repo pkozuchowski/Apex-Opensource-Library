@@ -75,10 +75,9 @@ public with sharing class ShareSelector extends Selector {
      * @return Share records for given records and users/groups (List or cast Set may be supplied as iterable)
      */
     public SObject[] byParentIdAndUserOrGroupId(Iterable<Id> parentIds, Iterable<Id> userOrGroupIds) {
-        return query
-                .bindVariable('parentIds', parentIds)
+        this.query.bindVariable('parentIds', parentIds)
                 .bindVariable('userOrGroupIds', userOrGroupIds)
-                .setWhere('' + parentField + ' IN :parentIds AND UserOrGroupId IN :userOrGroupIds')
-                .execute();
+                .setWhere('' + parentField + ' IN :parentIds AND UserOrGroupId IN :userOrGroupIds');
+        return executeQuery();
     }
 }

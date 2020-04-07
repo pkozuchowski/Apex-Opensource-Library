@@ -48,18 +48,24 @@ public inherited sharing abstract class Selector {
 
     /**
      * Query will be executed in "without sharing" context, returning records
-     * users does not have access to
+     * users does not usually have access to.
+     *
+     * Since there is no proper way to handle builder pattern with inheritance in Apex,
+     * this method should be implemented where it's needed as public XXXSelector withoutCache();
      */
-    public Selector withoutSharing() {
+    protected Selector withoutSharingImpl() {
         this.query.setSharing(Sharing.WITHOUT_SHARING);
         return this;
     }
 
 
     /**
-    * @return Selector will not reuse cached records to limit SOQLs query limit
+    * Selector will not use cached records to limit SOQLs query limit.
+    *
+    * Since there is no proper way to handle builder pattern with inheritance in Apex,
+    * this method should be implemented where it's needed as public XXXSelector withoutCache();
     */
-    protected Selector useCache(Boolean useCache) {
+    protected Selector withoutCacheImpl() {
         this.useCache = false;
         return this;
     }
@@ -77,14 +83,14 @@ public inherited sharing abstract class Selector {
      */
     public virtual SObject one() {
         query.setLimit(1);
-        return firstOrNull(query.execute());
+        return firstOrNull(query());
     }
 
     /**
      * @return All records in database
      */
     public virtual SObject[] all() {
-        return query.execute();
+        return query();
     }
 
 

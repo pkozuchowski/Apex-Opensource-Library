@@ -84,7 +84,7 @@ public class SelectorTest {
 
     @IsTest
     static void testSelectOne() {
-        User usr = (User) new TestUserSelector().one();
+        User usr = (User) new TestUserSelector().newest();
         System.assertNotEquals(null, usr);
     }
 
@@ -97,7 +97,7 @@ public class SelectorTest {
 
     @IsTest
     static void testMocking() {
-        SelectorQuery.setMock(TestUserSelector.class, new QueryMock());
+        Selector.setMock(User.SObjectType, new QueryMock());
         List<User> result = new TestUserSelector().byField(User.Id, 'IN', new List<Id>{'005000000000000'});
 
         System.assertEquals(1, result.size());

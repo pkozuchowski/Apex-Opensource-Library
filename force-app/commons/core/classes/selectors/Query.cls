@@ -28,17 +28,6 @@
  * Query.EmailTemplates.byDeveloperName('FirmQuote');
  */
 public inherited sharing class Query {
-
-    /**
-     * Mocks query result for given selector type.
-     * @param selectorType Type of selector (ex. AccountSelector.class
-     * @param mock Implementation of SelectorQueryMock
-     */
-    public static void setMock(Type selectorType, SelectorQueryMock mock) {
-        SelectorQuery.setMock(selectorType, mock);
-    }
-
-
     public final static AccountSelector Accounts { get {return new AccountSelector();} }
     public final static AttachmentSelector Attachments { get {return new AttachmentSelector();} }
     public final static BusinessHoursSelector BusinessHours { get {return new BusinessHoursSelector();} }

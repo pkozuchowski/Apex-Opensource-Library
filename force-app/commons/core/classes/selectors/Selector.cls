@@ -26,21 +26,41 @@
  * Base class for selectors. Contains query builder and common query methods.
  */
 public inherited sharing abstract class Selector {
+    private final static Map<SObjectType, SelectorQueryMock> mocks = new Map<SObjectType, SelectorQueryMock>();
     private final static SelectorCache cache = new SelectorCache();
-    protected final transient SelectorQuery query;
+
+    protected final SelectorQuery query;
+    protected final DatabaseService databaseService;
+
     private Boolean useCache = true;
     private Map<String, SObjectField> allFields;
     private List<SObjectField> queryFields;
     private Set<SObjectField> cacheFields;
+    private SObjectType sObjectType;
+
+
+    /**
+     * Mocks query result for given selector type
+     */
+    public static void setMock(SObjectType sObjectType, SelectorQueryMock mock) {
+        if (Test.isRunningTest()) {
+            mocks.put(sObjectType, mock);
+
+        } else {
+            throw new QueryException('.setMock() can only be called from test methods');
+        }
+    }
 
 
     protected Selector(List<SObjectField> queryFields, SObjectType sObjectType) {
-        this.query = new SelectorQuery(this);
+        this.databaseService = new DatabaseService();
+        this.query = new SelectorQuery();
         this.query.selectFields(queryFields).fromObject(sObjectType);
 
         this.allFields = sObjectType.getDescribe().fields.getMap();
         this.queryFields = queryFields;
         this.cacheFields = getCachedFields();
+        this.sObjectType = sObjectType;
     }
 
 
@@ -54,7 +74,7 @@ public inherited sharing abstract class Selector {
      * this method should be implemented where it's needed as public XXXSelector withoutCache();
      */
     protected Selector withoutSharingImpl() {
-        this.query.setSharing(Sharing.WITHOUT_SHARING);
+        databaseService.setSharing(Sharing.WITHOUT_SHARING);
         return this;
     }
 
@@ -70,6 +90,10 @@ public inherited sharing abstract class Selector {
         return this;
     }
 
+
+    /**
+    * Selects all fields on the record
+    */
     public Selector withAllFields() {
         this.query.selectFields(allFields.values());
         return this;
@@ -79,18 +103,19 @@ public inherited sharing abstract class Selector {
     /*Reductors*/
 
     /**
-     * @return first record returned by query without any conditions or null.
+     * @return The most recently created record or null if there isn't any.
      */
-    public virtual SObject one() {
+    public virtual SObject newest() {
+        query.setOrderBy('CreatedDate DESC');
         query.setLimit(1);
-        return firstOrNull(query());
+        return firstOrNull(executeQuery());
     }
 
     /**
      * @return All records in database
      */
     public virtual SObject[] all() {
-        return query();
+        return executeQuery();
     }
 
 
@@ -102,7 +127,7 @@ public inherited sharing abstract class Selector {
     }
 
     /**
-     * @param recordIds List<Id> or (Iterable<Id>) Set<Id> or (Iterable<Id>) List<SObject>
+     * @param recordIds [List<Id>] or [(Iterable<Id>) Set<Id>] or [(Iterable<Id>) List<SObject>]
      * @return Records by given Salesforce Ids
      */
     public virtual SObject[] byId(Iterable<Id> recordIds) {
@@ -120,7 +145,7 @@ public inherited sharing abstract class Selector {
      * @param relationShipField Parent field on records (ex. Contact.AccountId for Contacts children of Accounts)
      * @return List of parent records related to given child records by given field ex. Accounts related to given contacts
      */
-    public virtual SObject[] relatedToChildren(List<SObject> childRecords, SObjectField relationShipField) {
+    public virtual SObject[] relatedToChildren(SObject[] childRecords, SObjectField relationShipField) {
         Set<Id> parentIds = new Set<Id>();
 
         for (SObject record : childRecords) {
@@ -140,7 +165,7 @@ public inherited sharing abstract class Selector {
      * @param relationShipField Parent field on records (ex. Contact.AccountId for list of Contacts)
      * @return List of child records related to given parent records by given field
      */
-    public virtual SObject[] relatedToParent(List<SObject> parentRecords, SObjectField relationShipField) {
+    public virtual SObject[] relatedToParent(SObject[] parentRecords, SObjectField relationShipField) {
         return byField(relationShipField, 'IN', parentRecords);
     }
 
@@ -172,7 +197,7 @@ public inherited sharing abstract class Selector {
         } else {
             this.query.setWhere(fieldAPIName + ' ' + operator + ' :value');
             this.query.bindVariable('value', value);
-            return query();
+            return executeQuery();
         }
     }
 
@@ -191,7 +216,7 @@ public inherited sharing abstract class Selector {
     /**
     * @return All records that are in cache and queries these which are not.
     */
-    private List<SObject> getCachedRecords(SObjectField field, String operator, Object value) {
+    private SObject[] getCachedRecords(SObjectField field, String operator, Object value) {
         Map<Id, SObject> result = new Map<Id, SObject>();
         Iterable<Object> iterable = getIterable(value);
 
@@ -204,7 +229,7 @@ public inherited sharing abstract class Selector {
             Object val = valueIt.next();
 
             if (cache.containsKey(field, val)) {
-                SObject record = cache.retrieve(field, val);
+                SObject record = cache.get(field, val);
                 result.put(record.Id, record);
 
             } else {
@@ -216,7 +241,7 @@ public inherited sharing abstract class Selector {
         if (!remainingValues.isEmpty()) {
             this.query.setWhere('' + field + ' ' + operator + ' :value');
             this.query.bindVariable('value', remainingValues);
-            result.putAll(query());
+            result.putAll(executeQuery());
         }
 
         return result.values();
@@ -226,13 +251,13 @@ public inherited sharing abstract class Selector {
     * Transforms value into uniform iterable:
     * - primitive V is transformed into new List<T>{V}
     * - List or Sets are casted into Iterable<Object>
-    * - List<SObject> is changed into Iterable<Id>
+    * - SObject[] is changed into Iterable<Id>
     */
     private Iterable<Object> getIterable(Object value) {
         String typeName = Runtime.getRunningTypeName(value);
 
-        if (value instanceof List<SObject>) {
-            return (Iterable<Object>) new Map<Id, SObject>((List<SObject>) value).keySet();
+        if (value instanceof SObject[]) {
+            return (Iterable<Object>) new Map<Id, SObject>((SObject[]) value).keySet();
 
         } else if (typeName.contains('List') || typeName.contains('Set')) {
             return ((Iterable<Object>) value);
@@ -266,7 +291,7 @@ public inherited sharing abstract class Selector {
     /**
      * @return First record in list or null if list is empty
      */
-    protected SObject firstOrNull(List<SObject> records) {
+    protected SObject firstOrNull(SObject[] records) {
         return records.isEmpty() ? null : records.get(0);
     }
 
@@ -274,11 +299,45 @@ public inherited sharing abstract class Selector {
     /**
     * Executes query and caches results
     */
-    protected List<SObject> query() {
-        List<SObject> records = this.query.execute();
-        cache.store(cacheFields, records);
+    protected SObject[] executeQuery() {
+        if (mocks.containsKey(this.sObjectType)) {
+            return mockResponse();
 
-        return records;
+        } else {
+            SObject[] records = this.databaseService.query(query.toSOQL(), query.getVariables());
+            cache.put(cacheFields, records);
+
+            return records;
+        }
     }
 
+
+    /**
+    * This method checks context of execution (which class called selector, in which method,
+    * what method on which selector etc.) and mocks the response.
+    */
+    private SObject[] mockResponse() {
+        String selectorName = Runtime.getRunningTypeName(this);
+        String selectorMethod, caller, callerMethod;
+
+        for (Runtime.StackTraceLine line : Runtime.getStackTrace()) {
+            if (line.apexClass == selectorName || line.apexClass == Selector.class.getName()) {
+                selectorMethod = line.method;
+
+            } else if (String.isNotBlank(selectorMethod)) {
+                caller = line.apexClass;
+                callerMethod = line.method;
+            }
+        }
+
+        SelectorQueryMock mock = mocks.get(this.sObjectType);
+        return mock.handleQuery(
+                caller,
+                callerMethod,
+                selectorName,
+                selectorMethod,
+                query.getVariables(),
+                databaseService.query(query.toSOQL(), query.getVariables())
+        );
+    }
 }

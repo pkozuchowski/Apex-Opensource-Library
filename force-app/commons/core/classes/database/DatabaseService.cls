@@ -150,8 +150,7 @@ public class DatabaseService {
 
     private abstract inherited sharing class AbstractDMLIssuer implements DMLIssuer {
         public virtual List<SObject> query(String query, Map<String, Object> boundVars) {
-            Object var0, var1, var2, var3, var4, var5, var6, var7, var8, var9,
-                    var10, var11, var12, var13, var14, var15, var16, var17, var18, var19;
+            Object var0, var1, var2, var3, var4, var5, var6, var7, var8, var9;
             String finalQuery = query;
 
             Integer i = 0;
@@ -168,16 +167,6 @@ public class DatabaseService {
                 if (i == 7) var7 = boundVars.get(var);
                 if (i == 8) var8 = boundVars.get(var);
                 if (i == 9) var9 = boundVars.get(var);
-                if (i == 10) var10 = boundVars.get(var);
-                if (i == 11) var11 = boundVars.get(var);
-                if (i == 12) var12 = boundVars.get(var);
-                if (i == 13) var13 = boundVars.get(var);
-                if (i == 14) var14 = boundVars.get(var);
-                if (i == 15) var15 = boundVars.get(var);
-                if (i == 16) var16 = boundVars.get(var);
-                if (i == 17) var17 = boundVars.get(var);
-                if (i == 18) var18 = boundVars.get(var);
-                if (i == 19) var19 = boundVars.get(var);
                 i++;
             }
 

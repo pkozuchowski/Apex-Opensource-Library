@@ -44,6 +44,13 @@ public virtual class TriggerContext {
     protected List<SObject> triggerNew { get; protected set; }
     protected List<SObject> triggerOld { get; protected set; }
     protected Map<Id, SObject> triggerNewMap { get; protected set; }
+
+    /**
+    * This is different from Trigger.oldMap in subsequent trigger runs:
+    * if trigger is run over the same set of records (WF field update), then this variable will resolve to Trigger.newMap
+    * from previous trigger iteration.
+    * Meaning, if code checks for difference between old and new field value, it will not rerun on WF field update unless WF really updated the field.
+    */
     protected Map<Id, SObject> triggerOldMap {
         get;
         protected set {
@@ -110,7 +117,7 @@ public virtual class TriggerContext {
     /**
     * @return Trigger Old Map
     */
-    public Map<Id, SObject> getOldMap(){
+    public Map<Id, SObject> getOldMap() {
         return triggerOldMap;
     }
 

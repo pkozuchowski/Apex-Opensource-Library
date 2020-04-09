@@ -80,7 +80,7 @@ private class QueryTest {
 
     @IsTest
     static void testMocking() {
-        Selector.setMock(Account.SObjectType, new QueryMock());
+        QueryObject.setMock(Account.SObjectType, new QueryMock());
         List<Account> result = Query.Accounts.byName('Mock Result');
 
         System.assertEquals(1, result.size());
@@ -98,7 +98,7 @@ private class QueryTest {
 
             System.assertEquals(QueryTest.class.getName(), caller);
             System.assertEquals('testMocking', callerMethod);
-            System.assertEquals(AccountSelector.class.getName(), selector);
+            System.assertEquals(AccountQuery.class.getName(), selector);
             System.assertEquals('byName', selectorMethod);
             System.assertEquals(new List<Object>{'Mock Result'}, queryBoundVariables.values());
             System.assertEquals(new List<Account>(), queryResult);

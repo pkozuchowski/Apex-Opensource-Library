@@ -28,36 +28,36 @@
  * Query.EmailTemplates.byDeveloperName('FirmQuote');
  */
 public inherited sharing class Query {
-    public final static AccountSelector Accounts { get {return new AccountSelector();} }
-    public final static AttachmentSelector Attachments { get {return new AttachmentSelector();} }
-    public final static BusinessHoursSelector BusinessHours { get {return new BusinessHoursSelector();} }
-    public final static CaseSelector Cases { get {return new CaseSelector();} }
-    public final static ContactSelector Contacts { get {return new ContactSelector();} }
-    public final static ContentDocumentSelector ContentDocuments { get {return new ContentDocumentSelector();} }
-    public final static EmailMessageSelector EmailMessages { get {return new EmailMessageSelector();} }
-    public final static EmailTemplateSelector EmailTemplates { get {return new EmailTemplateSelector();} }
-    public final static EventSelector Events { get {return new EventSelector();} }
-    public final static LeadSelector Leads { get {return new LeadSelector();} }
-    public final static OpportunitySelector Opportunities { get {return new OpportunitySelector();} }
-    public final static OrgWideEmailAddressSelector OrgWideEmailAddresses { get {return new OrgWideEmailAddressSelector();} }
-    public final static PermissionSetSelector PermissionSets { get {return new PermissionSetSelector();} }
-    public final static PricebookEntrySelector PricebookEntries { get {return new PricebookEntrySelector();} }
-    public final static PricebookSelector Pricebooks { get {return new PricebookSelector();} }
-    public final static ProductSelector Products { get {return new ProductSelector();} }
-    public final static ProfileSelector Profiles { get {return new ProfileSelector();} }
-    public final static QueueSelector Queues { get {return new QueueSelector();} }
-    public final static RecordTypeSelector RecordTypes { get {return new RecordTypeSelector();} }
-    public final static StaticResourceSelector StaticResources { get {return new StaticResourceSelector();} }
-    public final static TaskSelector Tasks { get {return new TaskSelector();} }
-    public final static UserRoleSelector UserRoles { get {return new UserRoleSelector();} }
-    public final static UserSelector Users { get {return new UserSelector();} }
+    public final static AccountQuery Accounts { get {return new AccountQuery();} }
+    public final static AttachmentQuery Attachments { get {return new AttachmentQuery();} }
+    public final static BusinessHoursQuery BusinessHours { get {return new BusinessHoursQuery();} }
+    public final static CaseQuery Cases { get {return new CaseQuery();} }
+    public final static ContactQuery Contacts { get {return new ContactQuery();} }
+    public final static ContentDocumentQuery ContentDocuments { get {return new ContentDocumentQuery();} }
+    public final static EmailMessageQuery EmailMessages { get {return new EmailMessageQuery();} }
+    public final static EmailTemplateQuery EmailTemplates { get {return new EmailTemplateQuery();} }
+    public final static EventQuery Events { get {return new EventQuery();} }
+    public final static LeadQuery Leads { get {return new LeadQuery();} }
+    public final static OpportunityQuery Opportunities { get {return new OpportunityQuery();} }
+    public final static OrgWideEmailAddressQuery OrgWideEmailAddresses { get {return new OrgWideEmailAddressQuery();} }
+    public final static PermissionSetQuery PermissionSets { get {return new PermissionSetQuery();} }
+    public final static PricebookEntryQuery PricebookEntries { get {return new PricebookEntryQuery();} }
+    public final static PricebookQuery Pricebooks { get {return new PricebookQuery();} }
+    public final static ProductQuery Products { get {return new ProductQuery();} }
+    public final static ProfileQuery Profiles { get {return new ProfileQuery();} }
+    public final static QueueQuery Queues { get {return new QueueQuery();} }
+    public final static RecordTypeQuery RecordTypes { get {return new RecordTypeQuery();} }
+    public final static StaticResourceQuery StaticResources { get {return new StaticResourceQuery();} }
+    public final static TaskQuery Tasks { get {return new TaskQuery();} }
+    public final static UserRoleQuery UserRoles { get {return new UserRoleQuery();} }
+    public final static UserQuery Users { get {return new UserQuery();} }
 
-    public static ShareSelector SObjectShares(SObjectType shareSObjectType) {
-        return new ShareSelector(shareSObjectType);
+    public static ShareQuery SObjectShares(SObjectType shareSObjectType) {
+        return new ShareQuery(shareSObjectType);
     }
 
-    public static HistorySelector SObjectHistory(SObjectType shareSObjectType) {
-        return new HistorySelector(shareSObjectType);
+    public static HistoryQuery SObjectHistory(SObjectType shareSObjectType) {
+        return new HistoryQuery(shareSObjectType);
     }
 
     private Query() {

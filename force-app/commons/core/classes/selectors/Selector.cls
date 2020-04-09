@@ -27,13 +27,14 @@
  */
 public inherited sharing abstract class Selector {
     private final static Map<SObjectType, SelectorQueryMock> mocks = new Map<SObjectType, SelectorQueryMock>();
+    private final static Set<SObjectType> firstInitialization = new Set<SObjectType>();
     private final static SelectorCache cache = new SelectorCache();
 
     protected final SelectorQuery query;
     protected final DatabaseService databaseService;
 
+    protected Map<String, SObjectField> allFields;
     private Boolean useCache = true;
-    private Map<String, SObjectField> allFields;
     private List<SObjectField> queryFields;
     private Set<SObjectField> cacheFields;
     private SObjectType sObjectType;
@@ -59,8 +60,14 @@ public inherited sharing abstract class Selector {
 
         this.allFields = sObjectType.getDescribe().fields.getMap();
         this.queryFields = queryFields;
-        this.cacheFields = getCachedFields();
+        this.cacheFields = getFieldsToCacheBy();
         this.sObjectType = sObjectType;
+
+        if (!firstInitialization.contains(sObjectType)) {
+            firstInitialization.add(sObjectType);
+
+            cache.put(getFieldsToCacheBy(), getRecordsToCache());
+        }
     }
 
 
@@ -218,7 +225,7 @@ public inherited sharing abstract class Selector {
     */
     private SObject[] getCachedRecords(SObjectField field, String operator, Object value) {
         Map<Id, SObject> result = new Map<Id, SObject>();
-        Iterable<Object> iterable = getIterable(value);
+        Iterable<Object> iterable = getIterable(field, value);
 
         String runtimeValueName = Runtime.getRunningTypeName(iterable).substringBetween('<', '>');
         List<Object> remainingValues = Runtime.newListOfItemType(Type.forName(runtimeValueName));
@@ -253,40 +260,48 @@ public inherited sharing abstract class Selector {
     * - List or Sets are casted into Iterable<Object>
     * - SObject[] is changed into Iterable<Id>
     */
-    private Iterable<Object> getIterable(Object value) {
-        String typeName = Runtime.getRunningTypeName(value);
-
-        if (value instanceof SObject[]) {
-            return (Iterable<Object>) new Map<Id, SObject>((SObject[]) value).keySet();
-
-        } else if (typeName.contains('List') || typeName.contains('Set')) {
-            return ((Iterable<Object>) value);
-
-        } else {
-            Type valueType = Runtime.getRunningType(value);
-            List<Object> values = Runtime.newListOfItemType(valueType);
+    private Iterable<Object> getIterable(SObjectField field, Object value) {
+        if (value == null) {
+            List<Object> values = Runtime.newListOfFieldType(field);
             values.add(value);
             return values;
+
+        } else {
+            String typeName = Runtime.getRunningTypeName(value);
+
+            if (value instanceof SObject[]) {
+                return (Iterable<Object>) new Map<Id, SObject>((SObject[]) value).keySet();
+
+            } else if (typeName.contains('List') || typeName.contains('Set')) {
+                return ((Iterable<Object>) value);
+
+            } else {
+                List<Object> values = Runtime.newListOfFieldType(field);
+                values.add(value);
+                return values;
+            }
         }
+    }
+
+
+    /**
+    * Fields returned by this method will be used to cache records.
+    * Whenever possible, selector will use cached fields to
+    */
+    protected virtual Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>();
     }
 
     /**
-    * @return Fields which are viable for caching - by default Ids, External Ids and unique fields
-    * For overriding, consider using super() for adding additional fields to this behavior.
+    * These records will be cached at first initialization of the selector:
+    * Example use-cases:
+    * - caching all Profiles / UserRoles / Permission Sets to reduce soql limits against these
+    * setup objects to 1 during whole transaction
     */
-    protected virtual Set<SObjectField> getCachedFields() {
-        Set<SObjectField> cacheFields = new Set<SObjectField>();
-
-        for (SObjectField sObjectField : this.queryFields) {
-            DescribeFieldResult describe = sObjectField.getDescribe();
-
-            if (describe.isIdLookup() || describe.isUnique()) {
-                cacheFields.add(sObjectField);
-            }
-        }
-
-        return cacheFields;
+    protected virtual List<SObject> getRecordsToCache() {
+        return new List<SObject>();
     }
+
 
     /**
      * @return First record in list or null if list is empty
@@ -339,5 +354,12 @@ public inherited sharing abstract class Selector {
                 query.getVariables(),
                 databaseService.query(query.toSOQL(), query.getVariables())
         );
+    }
+
+    /**
+    * @return selector cache for protected records.
+    */
+    protected SelectorCache getCache() {
+        return cache;
     }
 }

@@ -40,9 +40,15 @@ public with sharing class AttachmentSelector extends Selector {
         super(QUERIED_FIELDS, Attachment.SObjectType);
     }
 
+    /**
+     * @return Attachments associated with given record
+     */
+    public Attachment[] byParentIdAndName(Id parentId, String name) {
+        this.query.setWhere('ParentId =:parentId AND Name =:name')
+                .bindVariable('parentId', parentId)
+                .bindVariable('name', name);
 
-    public Attachment[] byName(Iterable<String> names) {
-        return byField(Attachment.Name, 'IN', names);
+        return executeQuery();
     }
 
     /**

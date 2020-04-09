@@ -27,13 +27,13 @@ private class ProfileSelectorTest {
     @IsTest
     static void testProfileSelectorReturnsStandardUser() {
         Profile stdUser = [SELECT Id FROM Profile WHERE Name = 'Standard User'];
-        System.assertEquals(new ProfileSelector().byName('Standard User').Id, stdUser.Id);
+        System.assertEquals(stdUser.Id, new ProfileSelector().byName('Standard User').Id);
     }
 
     @IsTest
     static void testProfileSelectorReturnsStandardUserById() {
         Profile stdUser = [SELECT Id FROM Profile WHERE Name = 'Standard User'];
-        System.assertEquals(new ProfileSelector().byId(stdUser.Id).Id, stdUser.Id);
+        System.assertEquals(stdUser.Id, new ProfileSelector().byId(stdUser.Id).Id);
     }
 
     @IsTest
@@ -60,5 +60,11 @@ private class ProfileSelectorTest {
         );
 
         System.assertEquals(expected.keySet(), actual.keySet());
+    }
+
+    @IsTest
+    static void testSelectOfCurrentUser() {
+        Profile userProfile = [SELECT Id FROM Profile WHERE Id = :UserInfo.getProfileId()];
+        System.assertEquals(userProfile.Id, new ProfileSelector().ofCurrentUser().Id);
     }
 }

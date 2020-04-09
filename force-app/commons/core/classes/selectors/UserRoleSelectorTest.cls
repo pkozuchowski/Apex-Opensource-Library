@@ -67,4 +67,18 @@ private class UserRoleSelectorTest {
 
         System.assertEquals(expected.keySet(), result.keySet());
     }
+
+    @IsTest
+    static void testSelectOfCurrentUser() {
+        UserRole[] roles = [SELECT Id FROM UserRole WHERE Id = :UserInfo.getUserRoleId()];
+
+        if (roles.isEmpty()) {
+            System.assertEquals(null, new UserRoleSelector().ofCurrentUser());
+
+        } else {
+            UserRole role = roles.isEmpty() ? null : roles[0];
+            System.assertEquals(role.Id, new UserRoleSelector().ofCurrentUser().Id);
+        }
+
+    }
 }

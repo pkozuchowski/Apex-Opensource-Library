@@ -46,4 +46,14 @@ public with sharing class AttachmentSelectorTest {
                 new AttachmentSelector().byParentId(new List<Id>{account.Id})
         );
     }
+
+    @IsTest
+    static void testSelectByName() {
+        Account account = [SELECT Id FROM Account];
+
+        SelectorTest.assertEquals(
+                ([SELECT Id FROM Attachment WHERE ParentId = :account.Id AND Name = 'Test']),
+                new AttachmentSelector().byParentIdAndName(account.Id, 'Test')
+        );
+    }
 }

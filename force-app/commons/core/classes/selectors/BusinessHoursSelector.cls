@@ -66,7 +66,7 @@ public inherited sharing class BusinessHoursSelector extends Selector {
      * @return Active Business Hours with given name
      */
     public BusinessHours byName(String name) {
-        return (BusinessHours) oneRecordByField(BusinessHours.Name, '=', name);
+        return (BusinessHours) firstOrNull(byName(new List<String>{name}));
     }
 
     /**

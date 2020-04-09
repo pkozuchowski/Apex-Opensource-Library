@@ -82,6 +82,18 @@ private class RuntimeTest {
 
     /**
      *@description
+     * Apex.newListOfFieldType returns new list of the same type as given sobject field
+     */
+    @IsTest
+    static void testNewListOfFieldType() {
+        System.assert(Runtime.newListOfFieldType(Account.Id) instanceof List<Id>);
+        System.assert(Runtime.newListOfFieldType(Account.Name) instanceof List<String>);
+        System.assert(Runtime.newListOfFieldType(Account.NumberOfEmployees) instanceof List<Integer>);
+    }
+
+
+    /**
+     *@description
      * Apex.newListOfTheSameType returns new list of the same item type as param.
      */
     @IsTest

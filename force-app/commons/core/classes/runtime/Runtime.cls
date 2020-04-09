@@ -74,6 +74,7 @@ public with sharing class Runtime {
     }
 
     private static String getRunningTypeName(Object o, String open, String close) {
+        System.debug('o: ' + o);
         if (o == null) throw new NullPointerException();
 
         try {
@@ -102,6 +103,13 @@ public with sharing class Runtime {
      */
     public static List<Object> newListOfItemType(Type itemType) {
         return newListOfItemType(itemType, new List<Object>());
+    }
+
+    /**
+     * @return New list with item type of SObject field.
+     */
+    public static List<Object> newListOfFieldType(SObjectField field) {
+        return newListOfItemType(getSObjectFieldType(field), new List<Object>());
     }
 
     /**

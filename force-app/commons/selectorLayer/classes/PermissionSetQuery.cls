@@ -109,7 +109,7 @@ public inherited sharing class PermissionSetQuery extends QueryObject {
         };
     }
 
-    protected override List<SObject> getRecordsToCache() {
+    protected override List<SObject> getRecordsToPrecache() {
         return byField(PermissionSet.IsOwnedByProfile, '=', false);
     }
 }

@@ -49,7 +49,7 @@ public inherited sharing abstract class QueryObject {
         if (!firstInitialization.contains(sObjectType)) {
             firstInitialization.add(sObjectType);
 
-            cache.put(getFieldsToCacheBy(), getRecordsToCache());
+            cache.put(getFieldsToCacheBy(), getRecordsToPrecache());
         }
     }
 
@@ -220,7 +220,7 @@ public inherited sharing abstract class QueryObject {
     * - caching all Profiles / UserRoles / Permission Sets to reduce soql limits against these
     * setup objects to 1 during whole transaction
     */
-    protected virtual List<SObject> getRecordsToCache() {
+    protected virtual List<SObject> getRecordsToPrecache() {
         return new List<SObject>();
     }
 

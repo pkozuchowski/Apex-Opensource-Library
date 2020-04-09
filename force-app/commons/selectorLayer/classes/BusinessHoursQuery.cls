@@ -83,7 +83,7 @@ public inherited sharing class BusinessHoursQuery extends QueryObject {
         };
     }
 
-    protected override List<SObject> getRecordsToCache() {
+    protected override List<SObject> getRecordsToPrecache() {
         return byField(BusinessHours.IsActive, '=', true);
     }
 }

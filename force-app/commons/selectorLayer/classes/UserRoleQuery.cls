@@ -68,7 +68,7 @@ public inherited sharing class UserRoleQuery extends QueryObject {
         };
     }
 
-    protected override List<SObject> getRecordsToCache() {
+    protected override List<SObject> getRecordsToPrecache() {
         return all();
     }
 }

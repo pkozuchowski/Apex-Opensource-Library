@@ -68,7 +68,7 @@ public inherited sharing class QueueQuery extends QueryObject {
         return byField(Group.Name, 'IN', names);
     }
 
-    protected override List<SObject> getRecordsToCache() {
+    protected override List<SObject> getRecordsToPrecache() {
         return byField(Group.Type, '=', 'Queue');
     }
 

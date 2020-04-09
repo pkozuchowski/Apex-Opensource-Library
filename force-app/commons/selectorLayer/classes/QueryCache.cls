@@ -68,4 +68,75 @@ public inherited sharing class QueryCache {
 
         return storage.get(field);
     }
+
+
+    /**
+      * @return Pair:
+      * Map<Id, SObject> Cached objects
+      * List<Object> remaining values
+      */
+    public CacheResult getCachedRecords(SObjectField field, Object value) {
+        Map<Id, SObject> cachedRecords = new Map<Id, SObject>();
+        Iterable<Object> iterable = getIterable(field, value);
+
+        String runtimeValueName = Runtime.getRunningTypeName(iterable).substringBetween('<', '>');
+        List<Object> remainingValues = Runtime.newListOfItemType(Type.forName(runtimeValueName));
+
+
+        Iterator<Object> valueIt = iterable.iterator();
+        while (valueIt.hasNext()) {
+            Object val = valueIt.next();
+
+            if (containsKey(field, val)) {
+                SObject record = get(field, val);
+                cachedRecords.put(record.Id, record);
+
+            } else {
+                remainingValues.add(val);
+            }
+        }
+
+
+        return new CacheResult(cachedRecords, remainingValues);
+    }
+
+    /**
+    * Transforms value into uniform iterable:
+    * - primitive V is transformed into new List<T>{V}
+    * - List or Sets are casted into Iterable<Object>
+    * - SObject[] is changed into Iterable<Id>
+    */
+    private Iterable<Object> getIterable(SObjectField field, Object value) {
+        if (value == null) {
+            List<Object> values = Runtime.newListOfFieldType(field);
+            values.add(value);
+            return values;
+
+        } else {
+            String typeName = Runtime.getRunningTypeName(value);
+
+            if (value instanceof SObject[]) {
+                return (Iterable<Object>) new Map<Id, SObject>((SObject[]) value).keySet();
+
+            } else if (typeName.contains('List') || typeName.contains('Set')) {
+                return ((Iterable<Object>) value);
+
+            } else {
+                List<Object> values = Runtime.newListOfFieldType(field);
+                values.add(value);
+                return values;
+            }
+        }
+    }
+
+
+    public class CacheResult {
+        public Map<Id, SObject> cachedRecords;
+        public List<Object> remainingValues;
+
+        private CacheResult(Map<Id, SObject> cachedRecords, List<Object> remainingValues) {
+            this.cachedRecords = cachedRecords;
+            this.remainingValues = remainingValues;
+        }
+    }
 }

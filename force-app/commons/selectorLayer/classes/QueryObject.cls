@@ -256,63 +256,15 @@ public inherited sharing abstract class QueryObject {
     * @return All records that are in cache and queries these which are not.
     */
     private SObject[] getCachedRecords(SObjectField field, String operator, Object value) {
-        Map<Id, SObject> result = new Map<Id, SObject>();
-        Iterable<Object> iterable = getIterable(field, value);
+        QueryCache.CacheResult result = cache.getCachedRecords(field, value);
 
-        String runtimeValueName = Runtime.getRunningTypeName(iterable).substringBetween('<', '>');
-        List<Object> remainingValues = Runtime.newListOfItemType(Type.forName(runtimeValueName));
-
-
-        Iterator<Object> valueIt = iterable.iterator();
-        while (valueIt.hasNext()) {
-            Object val = valueIt.next();
-
-            if (cache.containsKey(field, val)) {
-                SObject record = cache.get(field, val);
-                result.put(record.Id, record);
-
-            } else {
-                remainingValues.add(val);
-            }
-        }
-
-
-        if (!remainingValues.isEmpty()) {
+        if (!result.remainingValues.isEmpty()) {
             this.query.setWhere('' + field + ' ' + operator + ' :value');
-            this.query.bindVariable('value', remainingValues);
-            result.putAll(executeQuery());
+            this.query.bindVariable('value', result.remainingValues);
+            result.cachedRecords.putAll(executeQuery());
         }
 
-        return result.values();
-    }
-
-    /**
-    * Transforms value into uniform iterable:
-    * - primitive V is transformed into new List<T>{V}
-    * - List or Sets are casted into Iterable<Object>
-    * - SObject[] is changed into Iterable<Id>
-    */
-    private Iterable<Object> getIterable(SObjectField field, Object value) {
-        if (value == null) {
-            List<Object> values = Runtime.newListOfFieldType(field);
-            values.add(value);
-            return values;
-
-        } else {
-            String typeName = Runtime.getRunningTypeName(value);
-
-            if (value instanceof SObject[]) {
-                return (Iterable<Object>) new Map<Id, SObject>((SObject[]) value).keySet();
-
-            } else if (typeName.contains('List') || typeName.contains('Set')) {
-                return ((Iterable<Object>) value);
-
-            } else {
-                List<Object> values = Runtime.newListOfFieldType(field);
-                values.add(value);
-                return values;
-            }
-        }
+        return result.cachedRecords.values();
     }
 
 

@@ -47,6 +47,7 @@ public with sharing class TriggerDispatcher {
             triggerHandler.apply(triggerContext.getRecords(), triggerContext, logicSelector.getFieldDefault(triggerContext));
             triggerHandler.validate(triggerContext.getRecords(), triggerContext, logicSelector.getValidationRules(triggerContext));
             triggerHandler.execute(triggerContext.getRecords(), triggerContext, logicSelector.getLogic(triggerContext));
+            triggerHandler.executeAsync(triggerContext.getRecords(), triggerContext, logicSelector.getAsyncLogic(triggerContext));
 
             switch on triggerContext.operationType {
                 when BEFORE_INSERT {
@@ -72,8 +73,6 @@ public with sharing class TriggerDispatcher {
                     triggerHandler.handleAfterUndelete(triggerContext.getRecords(), triggerContext);
                 }
             }
-
-            triggerHandler.executeAsync(triggerContext.getRecords(), triggerContext, logicSelector.getAsyncLogic(triggerContext));
         }
     }
 

@@ -26,23 +26,29 @@
  * Selector Layer class for Profiles. Records are queried only once and cached to minimize SOQL limits usage.
  * @see ProfileSelectorTest
  */
-public inherited sharing class ProfileSelector {
-    private static SObjectCache cache = new SObjectCache([
-            SELECT Id,
-                    Name
-            FROM Profile
+public inherited sharing class ProfileSelector extends Selector {
 
-    ], new List<SObjectField>{
-            Profile.Id,
-            Profile.Name
-    });
+    public ProfileSelector() {
+        super(new List<SObjectField>{
+                Profile.Id,
+                Profile.Name
 
+        }, Profile.SObjectType);
+    }
+
+
+    /**
+    * @return Profile of current user
+    */
+    public Profile ofCurrentUser() {
+        return (Profile) oneRecordByField(Profile.Id, '=', UserInfo.getProfileId());
+    }
 
     /**
      * @return Profile record by given name or null
      */
     public Profile byName(String name) {
-        return (Profile) cache.retrieveFirst(Profile.Name, name);
+        return (Profile) oneRecordByField(Profile.Name, '=', name);
     }
 
 
@@ -50,22 +56,18 @@ public inherited sharing class ProfileSelector {
      * @return Profile records by given names.
      */
     public Profile[] byName(Iterable<String> names) {
-        return cache.retrieveAll(Profile.Name, (Iterable<Object>) names);
+        return byField(Profile.Name, 'IN', names);
     }
 
 
-    /**
-     * @return Profile record with given Id
-     */
-    public Profile byId(Id profileId) {
-        return (Profile) cache.retrieveFirst(Profile.Id, profileId);
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                Profile.Id,
+                Profile.Name
+        };
     }
 
-
-    /**
-     * @return Profile records by given ids
-     */
-    public Profile[] byId(Iterable<Id> profileIds) {
-        return cache.retrieveAll(Profile.Id, (Iterable<Object>) profileIds);
+    protected override List<SObject> getRecordsToCache() {
+        return all();
     }
 }

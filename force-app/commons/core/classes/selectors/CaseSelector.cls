@@ -29,6 +29,7 @@ public with sharing class CaseSelector extends Selector {
     public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
             Case.Id,
             Case.AccountId,
+            Case.CaseNumber,
             Case.Description,
             Case.Origin,
             Case.Priority,
@@ -78,5 +79,11 @@ public with sharing class CaseSelector extends Selector {
      */
     public Contact[] byAccountId(Iterable<Id> accountIds) {
         return byField(Case.AccountId, 'IN', accountIds);
+    }
+
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                Case.Id
+        };
     }
 }

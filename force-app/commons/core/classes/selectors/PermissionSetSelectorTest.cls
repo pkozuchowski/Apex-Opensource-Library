@@ -54,7 +54,7 @@ private class PermissionSetSelectorTest {
 
             System.assertEquals(
                     permissionSet.Id,
-                    permissionSetSelector.byName(permissionSet.Name).Id
+                    ((PermissionSet) permissionSetSelector.byName(permissionSet.Name)).Id
             );
         }
     }
@@ -82,7 +82,7 @@ private class PermissionSetSelectorTest {
                         WHERE AssigneeId = :UserInfo.getUserId()
                 )
         ];
-        PermissionSet[] actual = new PermissionSetSelector().byCurrentUser();
+        PermissionSet[] actual = new PermissionSetSelector().ofCurrentUser();
 
         System.assertEquals(expected, actual);
     }

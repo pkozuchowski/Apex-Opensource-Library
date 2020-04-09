@@ -83,4 +83,10 @@ public inherited sharing class LeadSelector extends Selector {
     public Lead[] byCompany(Iterable<String> companies) {
         return byField(Lead.Company, 'IN', companies);
     }
+
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                Lead.Id
+        };
+    }
 }

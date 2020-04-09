@@ -35,6 +35,7 @@ private class UserRoleSelectorTest {
         System.assertEquals(2, Limits.getQueries());
     }
 
+
     @IsTest
     static void testSelectByDeveloperNames() {
         Map<Id, UserRole> expected = new Map<Id, UserRole>([SELECT Id,DeveloperName FROM UserRole]);
@@ -52,7 +53,8 @@ private class UserRoleSelectorTest {
         List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
 
         for (UserRole userRole : userRoles) {
-            System.assertEquals(userRole.DeveloperName, new UserRoleSelector().byId(userRole.Id).DeveloperName);
+            userRole result = (UserRole) new UserRoleSelector().byId(userRole.Id);
+            System.assertEquals(userRole.DeveloperName, result.DeveloperName);
         }
 
         System.assertEquals(2, Limits.getQueries());
@@ -61,7 +63,7 @@ private class UserRoleSelectorTest {
     @IsTest
     static void testSelectByIds() {
         Map<Id, UserRole> expected = new Map<Id, UserRole>([SELECT Id,DeveloperName FROM UserRole]);
-        Map<Id, UserRole> result = new Map<Id, UserRole>(new UserRoleSelector().byId((Iterable<String>) expected.keySet()));
+        Map<Id, UserRole> result = new Map<Id, UserRole>((UserRole[]) new UserRoleSelector().byId((Iterable<String>) expected.keySet()));
 
         System.assertEquals(expected.keySet(), result.keySet());
     }

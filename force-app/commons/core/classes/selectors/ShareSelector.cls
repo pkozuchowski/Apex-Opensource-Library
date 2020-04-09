@@ -29,30 +29,28 @@ public with sharing class ShareSelector extends Selector {
     private SObjectField parentField;
 
     public ShareSelector(SObjectType shareObjectType) {
-        super(
-                shareObjectType.getDescribe().fields.getMap().values(),
-                shareObjectType
-        );
-
-        initializeParentField(shareObjectType);
+        super(new List<SObjectField>{}, shareObjectType);
+        this.query.selectFields(allFields.values());
+        this.parentField = this.getParentField();
     }
 
     /**
-     * Share fields do not have consistent naming convention.
+     * Share fields do not have consistent naming convention (AccountId, OpportunityId, ParentId)
      * This method checks for ParentId field.
      */
-    private void initializeParentField(SObjectType shareObjectType) {
-        Map<String, SObjectField> fields = shareObjectType.getDescribe().fields.getMap();
+    private SObjectField getParentField() {
+        if (allFields.containsKey('ParentId')) {
+            return allFields.get('ParentId');
 
-        if (fields.containsKey('ParentId')) {
-            parentField = fields.get('ParentId');
         } else {
             Set<String> excluded = new Set<String>{'id', 'lastmodifiedbyid', 'userorgroupid'};
-            for (String field : fields.keySet()) {
+            for (String field : allFields.keySet()) {
                 if (!excluded.contains(field) && field.endsWith('id')) {
-                    parentField = fields.get(field);
+                    return allFields.get(field);
                 }
             }
+
+            return null;
         }
     }
 

@@ -26,24 +26,30 @@
  * Selector Layer class for UserRoles. Records are queried only once and cached to minimize SOQL limits usage.
  * @see UserRoleSelectorTest
  */
-public inherited sharing class UserRoleSelector {
-    private static SObjectCache cache = new SObjectCache([
-            SELECT Id,
-                    Name,
-                    DeveloperName
-            FROM UserRole
+public inherited sharing class UserRoleSelector extends Selector {
 
-    ], new List<SObjectField>{
-            UserRole.Id,
-            UserRole.DeveloperName
-    });
+    public UserRoleSelector() {
+        super(new List<SObjectField>{
+                UserRole.Id,
+                UserRole.Name,
+                UserRole.DeveloperName
 
+        }, UserRole.SObjectType);
+    }
+
+
+    /**
+    * @return UserRole of current user
+    */
+    public UserRole ofCurrentUser() {
+        return (UserRole) oneRecordByField(UserRole.Id, '=', UserInfo.getUserRoleId());
+    }
 
     /**
      * @return UserRole record by given name or null
      */
     public UserRole byDeveloperName(String developerName) {
-        return (UserRole) cache.retrieveFirst(UserRole.DeveloperName, developerName);
+        return (UserRole) firstOrNull(byDeveloperName(new List<String>{developerName}));
     }
 
 
@@ -51,22 +57,18 @@ public inherited sharing class UserRoleSelector {
      * @return UserRoles by given developer names
      */
     public UserRole[] byDeveloperName(Iterable<String> developerNames) {
-        return cache.retrieveAll(UserRole.DeveloperName, developerNames);
+        return byField(UserRole.DeveloperName, 'IN', developerNames);
     }
 
 
-    /**
-     * @return UserRole record by given Id or null
-     */
-    public UserRole byId(Id userRoleId) {
-        return (UserRole) cache.retrieveFirst(UserRole.Id, userRoleId);
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                UserRole.Id,
+                UserRole.DeveloperName
+        };
     }
 
-
-    /**
-     * @return UserRoles by given ids
-     */
-    public UserRole[] byId(Iterable<Id> userRoleIds) {
-        return cache.retrieveAll(UserRole.Id, userRoleIds);
+    protected override List<SObject> getRecordsToCache() {
+        return all();
     }
 }

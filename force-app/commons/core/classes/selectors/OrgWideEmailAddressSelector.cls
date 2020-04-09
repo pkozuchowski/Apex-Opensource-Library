@@ -26,45 +26,30 @@
  * Selector Layer for Org wide email addresses.
  * Cached for limits savings.
  */
-public inherited sharing class OrgWideEmailAddressSelector {
-    private static SObjectCache cache = new SObjectCache([
-            SELECT Id,DisplayName,Address,IsAllowAllProfiles
-            FROM OrgWideEmailAddress
+public inherited sharing class OrgWideEmailAddressSelector extends Selector {
 
-    ], new List<SObjectField>{
-            OrgWideEmailAddress.Id,
-            OrgWideEmailAddress.DisplayName,
-            OrgWideEmailAddress.Address
-    });
-
-
-    /**
-     * @return OrgWideEmailAddress by given Id or null
-     */
-    public OrgWideEmailAddress byId(Id orgWideId) {
-        return (OrgWideEmailAddress) cache.retrieveFirst(OrgWideEmailAddress.Id, orgWideId);
-    }
-
-    /**
-     * @return OrgWideEmailAddress by given ids (List or Set)
-     */
-    public OrgWideEmailAddress[] byId(Iterable<Id> orgWideIds) {
-        return cache.retrieveAll(OrgWideEmailAddress.Id, orgWideIds);
+    public OrgWideEmailAddressSelector() {
+        super(new List<SObjectField>{
+                OrgWideEmailAddress.Id,
+                OrgWideEmailAddress.DisplayName,
+                OrgWideEmailAddress.Address,
+                OrgWideEmailAddress.IsAllowAllProfiles
+        }, OrgWideEmailAddress.SObjectType);
     }
 
 
     /**
      * @return OrgWideEmailAddress by given Display Names or null
      */
-    public OrgWideEmailAddress[] byDisplayName(String name) {
-        return byDisplayName(new List<String>{name});
+    public OrgWideEmailAddress byDisplayName(String name) {
+        return (OrgWideEmailAddress) firstOrNull(byDisplayName(new List<String>{name}));
     }
 
     /**
      * @return OrgWideEmailAddress by given Display Names (List or Set)
      */
     public OrgWideEmailAddress[] byDisplayName(Iterable<String> names) {
-        return cache.retrieveAll(OrgWideEmailAddress.DisplayName, names);
+        return byField(OrgWideEmailAddress.DisplayName, 'IN', names);
     }
 
 
@@ -72,13 +57,26 @@ public inherited sharing class OrgWideEmailAddressSelector {
      * @return OrgWideEmailAddress by given Email Address or null
      */
     public OrgWideEmailAddress byAddress(String address) {
-        return (OrgWideEmailAddress) cache.retrieveFirst(OrgWideEmailAddress.Address, address);
+        return (OrgWideEmailAddress) firstOrNull(byAddress(new List<String>{address}));
     }
 
     /**
      * @return OrgWideEmailAddress by given Email Addresses (List or Set)
      */
     public OrgWideEmailAddress[] byAddress(Iterable<String> names) {
-        return cache.retrieveAll(OrgWideEmailAddress.Address, names);
+        return byField(OrgWideEmailAddress.Address, 'IN', names);
+    }
+
+
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                OrgWideEmailAddress.Id,
+                OrgWideEmailAddress.Address,
+                OrgWideEmailAddress.DisplayName
+        };
+    }
+
+    protected override List<SObject> getRecordsToCache() {
+        return all();
     }
 }

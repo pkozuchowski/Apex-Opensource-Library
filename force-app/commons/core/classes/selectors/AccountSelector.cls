@@ -101,4 +101,18 @@ public virtual inherited sharing class AccountSelector extends Selector {
     public Account[] byName(Iterable<String> names) {
         return byField(Account.Name, 'IN', names);
     }
+
+    /**
+    * @return Selector will not reuse cached records to limit SOQLs query limit
+    */
+    public AccountSelector withoutCached() {
+        return (AccountSelector) withoutCacheImpl();
+    }
+
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                Account.Id
+        };
+    }
+
 }

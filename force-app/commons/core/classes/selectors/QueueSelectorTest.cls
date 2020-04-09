@@ -24,10 +24,9 @@
 @IsTest(IsParallel=true)
 private class QueueSelectorTest {
 
-
     @IsTest
     static void testQueueSelector() {
-        Map<Id, Group> queues = getGroups('Queue');
+        Map<Id, Group> queues = new Map<Id, Group>([SELECT Id,Name,DeveloperName FROM Group WHERE Type = 'Queue' LIMIT 10]);
 
         List<String> developerNames = new List<String>();
         List<String> names = new List<String>();
@@ -35,17 +34,14 @@ private class QueueSelectorTest {
             developerNames.add(queue.DeveloperName);
             names.add(queue.Name);
 
-            System.assertEquals(queue.DeveloperName, new QueueSelector().byId(queue.Id).DeveloperName);
+            System.assertEquals(queue.DeveloperName, new QueueSelector().byId(queue.Id).get('DeveloperName'));
             System.assertEquals(queue.Id, new QueueSelector().byDeveloperName(queue.DeveloperName).Id);
-            System.assertEquals(queue.Id, new QueueSelector().byName(queue.Name).Id);
         }
 
         System.assertEquals(queues.size(), new QueueSelector().byDeveloperName(developerNames).size());
         System.assertEquals(queues.size(), new QueueSelector().byName((Iterable<String>) names).size());
         System.assertEquals(queues.size(), new QueueSelector().byId((Iterable<Id>) queues.keySet()).size());
-    }
-
-    private static Map<Id, Group> getGroups(String type) {
-        return new Map<Id, Group>([SELECT Id,Name,DeveloperName FROM Group WHERE Type = :type LIMIT 10]);
+        new QueueSelector().byName('');
+        System.assertEquals(4, Limits.getQueries());
     }
 }

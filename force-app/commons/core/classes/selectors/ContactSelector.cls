@@ -108,4 +108,11 @@ public with sharing class ContactSelector extends Selector {
     public Contact[] byAccountId(Iterable<Id> accountIds) {
         return byField(Contact.AccountId, 'IN', accountIds);
     }
+
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                Contact.Id,
+                Contact.Email
+        };
+    }
 }

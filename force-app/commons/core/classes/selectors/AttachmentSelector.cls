@@ -41,6 +41,10 @@ public with sharing class AttachmentSelector extends Selector {
     }
 
 
+    public Attachment[] byName(Iterable<String> names) {
+        return byField(Attachment.Name, 'IN', names);
+    }
+
     /**
      * @return Attachments associated with given record
      */

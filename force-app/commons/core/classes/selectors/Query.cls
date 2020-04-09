@@ -23,7 +23,7 @@
 */
 
 /**
- * Facade for verbose selector queries:
+ * Facade for verbose SObject queries:
  * Query.Accounts.byId(...);
  * Query.EmailTemplates.byDeveloperName('FirmQuote');
  */

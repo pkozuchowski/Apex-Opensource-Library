@@ -91,4 +91,11 @@ public with sharing class TaskSelector extends Selector {
     public Task[] byWhoId(Iterable<Id> whoIds) {
         return byField(Task.WhoId, 'IN', whoIds);
     }
+
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                Task.Id
+        };
+    }
+
 }

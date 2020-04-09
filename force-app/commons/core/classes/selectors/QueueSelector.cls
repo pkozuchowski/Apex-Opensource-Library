@@ -27,31 +27,15 @@
 * Queues are cached to save SOQL queries in subsequent calls.
 * @see QueueSelectorTest.cls
 * */
-public inherited sharing class QueueSelector {
-    private static SObjectCache cache = new SObjectCache([
-            SELECT Id,Type,DeveloperName,Name
-            FROM Group
-            WHERE Type = 'Queue'
+public inherited sharing class QueueSelector extends Selector {
 
-    ], new List<SObjectField>{
-            Group.Id,
-            Group.Name,
-            Group.DeveloperName
-    });
-
-
-    /**
-     * @return Group with given Id or null.
-     */
-    public Group byId(Id groupId) {
-        return (Group) cache.retrieveFirst(Group.Id, groupId);
-    }
-
-    /**
-     * @return List of Groups with given ids.
-     */
-    public Group[] byId(Iterable<Id> ids) {
-        return cache.retrieveAll(Group.Id, (Iterable<Object>) ids);
+    public QueueSelector() {
+        super(new List<SObjectField>{
+                Group.Id,
+                Group.Type,
+                Group.DeveloperName,
+                Group.Name
+        }, Group.SObjectType);
     }
 
 
@@ -59,28 +43,39 @@ public inherited sharing class QueueSelector {
      * @return Queue for given Developer Name. If there is no such Queue, null is returned
      */
     public Group byDeveloperName(String developerName) {
-        return (Group) cache.retrieveFirst(Group.DeveloperName, developerName);
+        return (Group) firstOrNull(byDeveloperName(new List<String>{developerName}));
     }
 
     /**
      * @return List of Queues for given Developer Names.
      */
     public Group[] byDeveloperName(Iterable<String> developerNames) {
-        return cache.retrieveAll(Group.DeveloperName, (Iterable<Object>) developerNames);
+        return byField(Group.DeveloperName, 'IN', developerNames);
     }
 
 
     /**
      * @return Queue for given Name (label). If there is no such Queue, null is returned
      */
-    public Group byName(String name) {
-        return (Group) cache.retrieveFirst(Group.Name, name);
+    public Group[] byName(String name) {
+        return byName(new List<String>{name});
     }
 
     /**
      * @return Queues with given names (label).
      */
     public Group[] byName(Iterable<String> names) {
-        return cache.retrieveAll(Group.Name, (Iterable<Object>) names);
+        return byField(Group.Name, 'IN', names);
+    }
+
+    protected override List<SObject> getRecordsToCache() {
+        return byField(Group.Type, '=', 'Queue');
+    }
+
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                Group.Id,
+                Group.DeveloperName
+        };
     }
 }

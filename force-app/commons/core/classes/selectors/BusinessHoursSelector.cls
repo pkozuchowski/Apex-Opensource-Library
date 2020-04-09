@@ -27,41 +27,38 @@
  * Results are cached for better performance and SOQL Limits savings.
  * @see BusinessHoursSelectorTest
  */
-public inherited sharing class BusinessHoursSelector {
-    private static SObjectCache cache = new SObjectCache([
-            SELECT Id,
-                    Name,
-                    IsDefault,
-                    IsActive,
-                    MondayStartTime,
-                    MondayEndTime,
-                    TuesdayStartTime,
-                    TuesdayEndTime,
-                    WednesdayStartTime,
-                    WednesdayEndTime,
-                    ThursdayStartTime,
-                    ThursdayEndTime,
-                    FridayStartTime,
-                    FridayEndTime,
-                    SaturdayStartTime,
-                    SaturdayEndTime,
-                    SundayStartTime,
-                    SundayEndTime
-            FROM BusinessHours
-            WHERE IsActive = TRUE
+public inherited sharing class BusinessHoursSelector extends Selector {
 
-    ], new List<SObjectField>{
-            BusinessHours.Id,
-            BusinessHours.Name,
-            BusinessHours.IsDefault
-    });
+    public BusinessHoursSelector() {
+        super(new List<SObjectField>{
+                BusinessHours.Id,
+                BusinessHours.Name,
+                BusinessHours.IsDefault,
+                BusinessHours.IsActive,
+                BusinessHours.MondayStartTime,
+                BusinessHours.MondayEndTime,
+                BusinessHours.TuesdayStartTime,
+                BusinessHours.TuesdayEndTime,
+                BusinessHours.WednesdayStartTime,
+                BusinessHours.WednesdayEndTime,
+                BusinessHours.ThursdayStartTime,
+                BusinessHours.ThursdayEndTime,
+                BusinessHours.FridayStartTime,
+                BusinessHours.FridayEndTime,
+                BusinessHours.SaturdayStartTime,
+                BusinessHours.SaturdayEndTime,
+                BusinessHours.SundayStartTime,
+                BusinessHours.SundayEndTime
+
+        }, BusinessHours.SObjectType);
+    }
 
 
     /**
      * @return Default Business Hours for running environment.
      */
     public BusinessHours default() {
-        return (BusinessHours) cache.retrieveFirst(BusinessHours.IsDefault, true);
+        return (BusinessHours) oneRecordByField(BusinessHours.IsDefault, '=', true);
     }
 
 
@@ -69,21 +66,24 @@ public inherited sharing class BusinessHoursSelector {
      * @return Active Business Hours with given name
      */
     public BusinessHours byName(String name) {
-        return (BusinessHours) cache.retrieveFirst(BusinessHours.Name, name);
-    }
-
-
-    /**
-     * @return Active Business Hours with given id
-     */
-    public BusinessHours byId(Id businessHoursId) {
-        return (BusinessHours) cache.retrieveFirst(BusinessHours.Id, businessHoursId);
+        return (BusinessHours) oneRecordByField(BusinessHours.Name, '=', name);
     }
 
     /**
-     * @return Active Business Hours with given ids
+     * @return Active Business Hours with given name
      */
-    public BusinessHours[] byId(Iterable<Id> businessHoursIds) {
-        return cache.retrieveAll(BusinessHours.Id, businessHoursIds);
+    public BusinessHours[] byName(Iterable<String> names) {
+        return byField(BusinessHours.Name, 'IN', names);
+    }
+
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                BusinessHours.Id,
+                BusinessHours.Name
+        };
+    }
+
+    protected override List<SObject> getRecordsToCache() {
+        return byField(BusinessHours.IsActive, '=', true);
     }
 }

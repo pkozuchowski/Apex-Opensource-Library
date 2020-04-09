@@ -26,50 +26,42 @@
  * Selector Layer class for Permission Sets. Records are queried only once and cached to minimize SOQL limits usage.
  * @see PermissionSetSelectorTest
  */
-public inherited sharing class PermissionSetSelector {
-    private static SObjectCache cache = new SObjectCache([
-            SELECT Id,Name
-            FROM PermissionSet
-            WHERE IsOwnedByProfile = FALSE
+public inherited sharing class PermissionSetSelector extends Selector {
 
-    ], new List<SObjectField>{
-            PermissionSet.Id,
-            PermissionSet.Name
-    });
-
-
-    /**
-     * @return Permission Set by given Id or null
-     */
-    public PermissionSet byId(Id permissionSetId) {
-        return (PermissionSet) cache.retrieveFirst(PermissionSet.Id, permissionSetId);
-    }
-
-    /**
-     * @return Permission Sets by given ids (List or Set)
-     */
-    public PermissionSet[] byId(Iterable<Id> permissionSetIds) {
-        return cache.retrieveAll(PermissionSet.Id, permissionSetIds);
-    }
-
-    /**
-     * @return Permission Set by given name or null if it does not exist.
-     */
-    public PermissionSet byName(String name) {
-        return (PermissionSet) cache.retrieveFirst(PermissionSet.Name, name);
+    public PermissionSetSelector() {
+        super(new List<SObjectField>{
+                PermissionSet.Id,
+                PermissionSet.Name
+        }, PermissionSet.SObjectType);
     }
 
     /**
      * @return Id of permission set or null.
      */
     public Id idByName(String name) {
-        return (Id) cache.retrieveFirstValue(PermissionSet.Name, name, PermissionSet.Id);
+        PermissionSet permissionSet = byName(name);
+        return permissionSet == null ? null : permissionSet.Id;
     }
+
+    /**
+     * @return Permission Set by given name or null if it does not exist.
+     */
+    public PermissionSet byName(String name) {
+        return (PermissionSet) firstOrNull(byName(new List<String>{name}));
+    }
+
+    /**
+     * @return Permission Set by given name or null if it does not exist.
+     */
+    public PermissionSet[] byName(Iterable<String> names) {
+        return byField(PermissionSet.Name, 'IN', names);
+    }
+
 
     /**
      * @return Permission Sets of given user
      */
-    public PermissionSet[] byCurrentUser() {
+    public PermissionSet[] ofCurrentUser() {
         return byAssigneeId(UserInfo.getUserId());
     }
 
@@ -91,17 +83,33 @@ public inherited sharing class PermissionSetSelector {
             permissionSetsByUser.put(it.next(), new PermissionSet[]{});
         }
 
-        List<PermissionSetAssignment> assignments = Database.query('SELECT AssigneeId,PermissionSetId ' +
-                'FROM PermissionSetAssignment WHERE AssigneeId IN :userIds');
+        for (PermissionSetAssignment assignment : [
+                SELECT AssigneeId,PermissionSetId
+                FROM PermissionSetAssignment
+                WHERE AssigneeId IN :permissionSetsByUser.keySet()
+                AND PermissionSet.IsOwnedByProfile = FALSE
+        ]) {
+            PermissionSet permissionSet = (PermissionSet) getCache().get(PermissionSet.Id, assignment.PermissionSetId);
 
-        for (PermissionSetAssignment assignment : assignments) {
-            PermissionSet permissionSet = (PermissionSet) cache.retrieveFirst(PermissionSet.Id, assignment.PermissionSetId);
-
-            if (permissionSet != null) {
+            if (permissionSetsByUser.containsKey(assignment.AssigneeId)) {
                 permissionSetsByUser.get(assignment.AssigneeId).add(permissionSet);
+            } else {
+                permissionSetsByUser.put(assignment.AssigneeId, new List<PermissionSet>{permissionSet});
             }
         }
 
         return permissionSetsByUser;
+    }
+
+
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                PermissionSet.Id,
+                PermissionSet.Name
+        };
+    }
+
+    protected override List<SObject> getRecordsToCache() {
+        return byField(PermissionSet.IsOwnedByProfile, '=', false);
     }
 }

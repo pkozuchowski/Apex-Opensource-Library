@@ -78,4 +78,10 @@ public with sharing class OpportunitySelector extends Selector {
     public Opportunity[] byAccountId(Iterable<Id> accountIds) {
         return byField(Opportunity.AccountId, 'IN', accountIds);
     }
+
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                Opportunity.Id
+        };
+    }
 }

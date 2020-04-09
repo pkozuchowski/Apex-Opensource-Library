@@ -89,4 +89,13 @@ public inherited sharing class UserSelector extends Selector {
     public User currentUser() {
         return (User) byId(UserInfo.getUserId());
     }
+
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                User.Id,
+                User.Email,
+                User.Username
+        };
+    }
+
 }

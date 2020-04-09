@@ -89,4 +89,10 @@ public with sharing class EventSelector extends Selector {
     public Event[] byWhoId(Iterable<Id> whoIds) {
         return byField(Event.WhoId, 'IN', whoIds);
     }
+
+    protected override Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>{
+                Event.Id
+        };
+    }
 }

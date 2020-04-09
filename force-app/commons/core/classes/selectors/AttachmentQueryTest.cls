@@ -23,7 +23,7 @@
 */
 
 @IsTest(IsParallel=true)
-public with sharing class AttachmentQueryTest {
+public inherited sharing class AttachmentQueryTest {
 
     @TestSetup
     static void testSetup() {

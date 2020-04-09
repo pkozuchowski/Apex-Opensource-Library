@@ -25,7 +25,7 @@
 /**
  * Selector layer for Contact SObjects
  */
-public with sharing class ContactQuery extends QueryObject {
+public inherited sharing class ContactQuery extends QueryObject {
     public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
             Contact.Id,
             Contact.FirstName,

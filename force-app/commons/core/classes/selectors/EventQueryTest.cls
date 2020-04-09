@@ -23,7 +23,7 @@
 */
 
 @IsTest(IsParallel=true)
-public with sharing class EventQueryTest {
+public inherited sharing class EventQueryTest {
 
     @TestSetup
     static void testSetup() {

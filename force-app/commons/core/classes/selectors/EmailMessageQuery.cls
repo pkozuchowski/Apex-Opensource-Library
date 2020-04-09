@@ -25,7 +25,7 @@
 /**
  * Selector layer for Email Message SObjects
  */
-public with sharing class EmailMessageQuery extends QueryObject {
+public inherited sharing class EmailMessageQuery extends QueryObject {
     public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
             EmailMessage.Id,
             EmailMessage.ActivityId,

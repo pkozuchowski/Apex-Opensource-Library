@@ -25,7 +25,7 @@
 /**
  * Selector layer for Attachment SObjects
  */
-public with sharing class AttachmentQuery extends QueryObject {
+public inherited sharing class AttachmentQuery extends QueryObject {
     public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
             Attachment.Id,
             Attachment.Body,

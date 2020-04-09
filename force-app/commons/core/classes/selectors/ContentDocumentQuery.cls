@@ -25,7 +25,7 @@
 /**
  * Selector layer for Content Document (Files)
  */
-public with sharing class ContentDocumentQuery extends QueryObject {
+public inherited sharing class ContentDocumentQuery extends QueryObject {
 
     public ContentDocumentQuery() {
         super(new List<SObjectField>{

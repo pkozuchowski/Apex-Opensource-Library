@@ -25,7 +25,7 @@
 /**
  * Very simple query builder used in Selector layer
  */
-public with sharing class QueryBuilder {
+public inherited sharing class QueryBuilder {
     public Map<String, Object> boundVars = new Map<String, Object>();
     private Set<String> fields = new Set<String>();
     private String fromObject = '';

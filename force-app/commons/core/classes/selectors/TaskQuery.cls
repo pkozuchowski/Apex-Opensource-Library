@@ -25,7 +25,7 @@
 /**
  * Selector layer for Task SObjects
  */
-public with sharing class TaskQuery extends QueryObject {
+public inherited sharing class TaskQuery extends QueryObject {
     public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
             Task.Id,
             Task.AccountId,

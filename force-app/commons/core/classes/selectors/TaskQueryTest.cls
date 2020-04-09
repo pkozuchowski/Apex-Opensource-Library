@@ -23,7 +23,7 @@
 */
 
 @IsTest(IsParallel=true)
-public with sharing class TaskQueryTest {
+public inherited sharing class TaskQueryTest {
 
     @TestSetup
     static void testSetup() {

@@ -25,7 +25,7 @@
 /**
  * Selector layer for Document SObjects
  */
-public with sharing class DocumentQuery extends QueryObject {
+public inherited sharing class DocumentQuery extends QueryObject {
     public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
             Document.Id,
             Document.AuthorId,

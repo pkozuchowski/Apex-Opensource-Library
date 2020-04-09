@@ -25,7 +25,7 @@
 /**
  * Selector layer for Opportunity SObjects
  */
-public with sharing class OpportunityQuery extends QueryObject {
+public inherited sharing class OpportunityQuery extends QueryObject {
     public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
             Opportunity.Id,
             Opportunity.Name,

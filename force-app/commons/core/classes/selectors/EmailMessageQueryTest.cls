@@ -23,7 +23,7 @@
 */
 
 @IsTest(IsParallel=true)
-public with sharing class EmailMessageQueryTest {
+public inherited sharing class EmailMessageQueryTest {
 
     @TestSetup
     static void testSetup() {

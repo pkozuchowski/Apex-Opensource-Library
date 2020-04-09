@@ -23,7 +23,7 @@
 */
 
 @IsTest(IsParallel=true)
-public with sharing class DocumentQueryTest {
+public inherited sharing class DocumentQueryTest {
 
     @TestSetup
     static void testSetup() {

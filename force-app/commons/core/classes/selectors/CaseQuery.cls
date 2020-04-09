@@ -25,7 +25,7 @@
 /**
  * Selector layer for Case SObjects
  */
-public with sharing class CaseQuery extends QueryObject {
+public inherited sharing class CaseQuery extends QueryObject {
     public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
             Case.Id,
             Case.AccountId,

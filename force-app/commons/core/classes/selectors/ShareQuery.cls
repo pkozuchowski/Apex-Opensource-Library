@@ -25,7 +25,7 @@
 /**
  * General selector for Share records (AccountShare, Share__History etc).
  */
-public with sharing class ShareQuery extends QueryObject {
+public inherited sharing class ShareQuery extends QueryObject {
     private SObjectField parentField;
 
     public ShareQuery(SObjectType shareObjectType) {

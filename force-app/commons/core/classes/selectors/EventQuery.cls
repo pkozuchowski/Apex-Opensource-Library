@@ -25,7 +25,7 @@
 /**
  * Selector layer for Event SObjects
  */
-public with sharing class EventQuery extends QueryObject {
+public inherited sharing class EventQuery extends QueryObject {
     public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
             Event.Id,
             Event.AccountId,

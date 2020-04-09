@@ -26,31 +26,16 @@
  * Base class for selectors. Contains query builder and common query methods.
  */
 public inherited sharing abstract class QueryObject {
-    private final static Map<SObjectType, SelectorQueryMock> mocks = new Map<SObjectType, SelectorQueryMock>();
+    private final static QueryMocker queryMocker = new QueryMocker();
     private final static Set<SObjectType> firstInitialization = new Set<SObjectType>();
     private final static QueryCache cache = new QueryCache();
 
     protected final QueryBuilder query;
     protected final DatabaseService databaseService;
+    protected final Map<String, SObjectField> allFields;
 
-    protected Map<String, SObjectField> allFields;
     private Boolean useCache = true;
-    private List<SObjectField> queryFields;
-    private Set<SObjectField> cacheFields;
     private SObjectType sObjectType;
-
-
-    /**
-     * Mocks query result for given selector type
-     */
-    public static void setMock(SObjectType sObjectType, SelectorQueryMock mock) {
-        if (Test.isRunningTest()) {
-            mocks.put(sObjectType, mock);
-
-        } else {
-            throw new QueryException('.setMock() can only be called from test methods');
-        }
-    }
 
 
     protected QueryObject(List<SObjectField> queryFields, SObjectType sObjectType) {
@@ -59,8 +44,6 @@ public inherited sharing abstract class QueryObject {
         this.query.selectFields(queryFields).fromObject(sObjectType);
 
         this.allFields = sObjectType.getDescribe().fields.getMap();
-        this.queryFields = queryFields;
-        this.cacheFields = getFieldsToCacheBy();
         this.sObjectType = sObjectType;
 
         if (!firstInitialization.contains(sObjectType)) {
@@ -71,16 +54,18 @@ public inherited sharing abstract class QueryObject {
     }
 
 
-    /*Extenders*/
+    /**
+    * Extenders
+    * */
 
     /**
      * Query will be executed in "without sharing" context, returning records
      * users does not usually have access to.
      *
-     * Since there is no proper way to handle builder pattern with inheritance in Apex,
-     * this method should be implemented where it's needed as public XXXSelector withoutCache();
+     * Since there is no proper way to handle method chaining of builder pattern with inheritance in Apex,
+     * this method should be reimplemented where it's needed as public XXXSelector withoutSharing();
      */
-    protected QueryObject withoutSharingImpl() {
+    public QueryObject withoutSharing() {
         databaseService.setSharing(Sharing.WITHOUT_SHARING);
         return this;
     }
@@ -89,10 +74,10 @@ public inherited sharing abstract class QueryObject {
     /**
     * Selector will not use cached records to limit SOQLs query limit.
     *
-    * Since there is no proper way to handle builder pattern with inheritance in Apex,
-    * this method should be implemented where it's needed as public XXXSelector withoutCache();
+    * Since there is no proper way to handle method chaining of builder pattern with inheritance in Apex,
+    * this method should be reimplemented where it's needed as public XXXSelector withoutCache();
     */
-    protected QueryObject withoutCacheImpl() {
+    public QueryObject withoutCache() {
         this.useCache = false;
         return this;
     }
@@ -100,6 +85,9 @@ public inherited sharing abstract class QueryObject {
 
     /**
     * Selects all fields on the record
+    *
+    * Since there is no proper way to handle method chaining of builder pattern with inheritance in Apex,
+    * this method should be reimplemented where it's needed as public XXXSelector withAllFields();
     */
     public QueryObject withAllFields() {
         this.query.selectFields(allFields.values());
@@ -107,7 +95,9 @@ public inherited sharing abstract class QueryObject {
     }
 
 
-    /*Reductors*/
+    /**
+    * Reductors
+    * */
 
     /**
      * @return The most recently created record or null if there isn't any.
@@ -208,6 +198,48 @@ public inherited sharing abstract class QueryObject {
         }
     }
 
+
+    /**
+     * @return First record in list or null if list is empty
+     */
+    protected SObject firstOrNull(SObject[] records) {
+        return records.isEmpty() ? null : records.get(0);
+    }
+
+    /**
+    * Fields returned by this method will be used to cache records.
+    * Whenever possible, selector will use cached fields to
+    */
+    protected virtual Set<SObjectField> getFieldsToCacheBy() {
+        return new Set<SObjectField>();
+    }
+
+    /**
+    * These records will be cached at first initialization of the selector:
+    * Example use-cases:
+    * - caching all Profiles / UserRoles / Permission Sets to reduce soql limits against these
+    * setup objects to 1 during whole transaction
+    */
+    protected virtual List<SObject> getRecordsToCache() {
+        return new List<SObject>();
+    }
+
+    /**
+    * Executes query and caches results
+    */
+    protected SObject[] executeQuery() {
+        if (queryMocker.isMocked(this.sObjectType)) {
+            return queryMocker.mockResponse(this, sObjectType);
+
+        } else {
+            SObject[] records = this.databaseService.query(query.toSOQL(), query.getVariables());
+            cache.put(getFieldsToCacheBy(), records);
+
+            return records;
+        }
+    }
+
+
     /**
     * @return True, if selector can use cached records:
     * - Cache is not explicitly forbidden
@@ -217,7 +249,7 @@ public inherited sharing abstract class QueryObject {
     private Boolean canUseCache(String operator, SObjectField field) {
         return useCache
                 && (operator == '=' || operator == 'IN')
-                && cacheFields.contains(field);
+                && getFieldsToCacheBy().contains(field);
     }
 
     /**
@@ -283,78 +315,6 @@ public inherited sharing abstract class QueryObject {
         }
     }
 
-
-    /**
-    * Fields returned by this method will be used to cache records.
-    * Whenever possible, selector will use cached fields to
-    */
-    protected virtual Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>();
-    }
-
-    /**
-    * These records will be cached at first initialization of the selector:
-    * Example use-cases:
-    * - caching all Profiles / UserRoles / Permission Sets to reduce soql limits against these
-    * setup objects to 1 during whole transaction
-    */
-    protected virtual List<SObject> getRecordsToCache() {
-        return new List<SObject>();
-    }
-
-
-    /**
-     * @return First record in list or null if list is empty
-     */
-    protected SObject firstOrNull(SObject[] records) {
-        return records.isEmpty() ? null : records.get(0);
-    }
-
-
-    /**
-    * Executes query and caches results
-    */
-    protected SObject[] executeQuery() {
-        if (mocks.containsKey(this.sObjectType)) {
-            return mockResponse();
-
-        } else {
-            SObject[] records = this.databaseService.query(query.toSOQL(), query.getVariables());
-            cache.put(cacheFields, records);
-
-            return records;
-        }
-    }
-
-
-    /**
-    * This method checks context of execution (which class called selector, in which method,
-    * what method on which selector etc.) and mocks the response.
-    */
-    private SObject[] mockResponse() {
-        String selectorName = Runtime.getRunningTypeName(this);
-        String selectorMethod, caller, callerMethod;
-
-        for (Runtime.StackTraceLine line : Runtime.getStackTrace()) {
-            if (line.apexClass == selectorName || line.apexClass == QueryObject.class.getName()) {
-                selectorMethod = line.method;
-
-            } else if (String.isNotBlank(selectorMethod)) {
-                caller = line.apexClass;
-                callerMethod = line.method;
-            }
-        }
-
-        SelectorQueryMock mock = mocks.get(this.sObjectType);
-        return mock.handleQuery(
-                caller,
-                callerMethod,
-                selectorName,
-                selectorMethod,
-                query.getVariables(),
-                databaseService.query(query.toSOQL(), query.getVariables())
-        );
-    }
 
     /**
     * @return selector cache for protected records.

@@ -97,7 +97,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testMocking() {
-        QueryObject.setMock(User.SObjectType, new QueryMock());
+        QueryMocker.setMock(User.SObjectType, new QueryMock());
         List<User> result = new TestUserSelector().byField(User.Id, 'IN', new List<Id>{'005000000000000'});
 
         System.assertEquals(1, result.size());
@@ -109,18 +109,12 @@ public class QueryObjectTest {
                 String caller,
                 String callerMethod,
                 String selector,
-                String selectorMethod,
-                Map<String, Object> queryBoundVariables,
-                SObject[] queryResult) {
+                String selectorMethod) {
 
             System.assertEquals(QueryObjectTest.class.getName(), caller);
             System.assertEquals('testMocking', callerMethod);
             System.assertEquals(TestUserSelector.class.getName(), selector);
             System.assertEquals('byField', selectorMethod);
-            System.assertEquals(new List<Object>{
-                    new List<Id>{Id.valueOf('005000000000000')}
-            }, queryBoundVariables.values());
-            System.assertEquals(new List<User>(), queryResult);
 
 
             return new List<User>{

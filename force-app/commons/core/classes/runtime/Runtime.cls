@@ -74,7 +74,6 @@ public with sharing class Runtime {
     }
 
     private static String getRunningTypeName(Object o, String open, String close) {
-        System.debug('o: ' + o);
         if (o == null) throw new NullPointerException();
 
         try {

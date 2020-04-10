@@ -30,7 +30,6 @@ public with sharing class TriggerDispatcher {
      * Runs trigger field defaults, validations and logic defined in custom metadata
      */
     public static void run() {
-        System.debug(JSON.serializePretty(LogicSwitch__c.getInstance()));
         run(new TriggerHandler());
     }
 

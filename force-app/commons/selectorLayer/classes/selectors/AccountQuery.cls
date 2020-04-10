@@ -121,7 +121,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
     * @see QueryObject.withAllFieldsImpl
     */
     public AccountQuery withAllFields() {
-        return withAllFieldsImpl();
+        return (AccountQuery) withAllFieldsImpl();
     }
 
 

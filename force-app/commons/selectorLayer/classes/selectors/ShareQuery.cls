@@ -30,7 +30,7 @@ public inherited sharing class ShareQuery extends QueryObject {
 
     public ShareQuery(SObjectType shareObjectType) {
         super(new List<SObjectField>{}, shareObjectType);
-        this.query.selectFields(allFields.values());
+        this.query.addFields(allFields.values());
         this.parentField = this.getParentField();
     }
 

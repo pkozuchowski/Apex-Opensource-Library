@@ -41,7 +41,7 @@ public inherited sharing class PricebookQuery extends QueryObject {
      */
     public PricebookQuery withEntries() {
         this.query.addSubquery(new QueryBuilder()
-                .selectFields(PricebookEntryQuery.QUERIED_FIELDS)
+                .addFields(PricebookEntryQuery.QUERIED_FIELDS)
                 .addParentFields(ProductQuery.QUERIED_FIELDS, PricebookEntry.Product2Id)
                 .fromObject('PricebookEntries')
         );

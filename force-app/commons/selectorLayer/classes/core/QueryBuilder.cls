@@ -71,25 +71,30 @@ public inherited sharing class QueryBuilder {
         return this.boundVars;
     }
 
-    public QueryBuilder selectField(SObjectField field) {
+    public QueryBuilder addField(SObjectField field) {
         this.fields.add('' + field);
         return this;
     }
 
-    public QueryBuilder selectField(String field) {
+    public QueryBuilder addField(String field) {
         this.fields.add(field);
         return this;
     }
 
-    public QueryBuilder selectFields(SObjectField[] fields) {
+    public QueryBuilder addFields(SObjectField[] fields) {
         for (SObjectField sObjectField : fields) {
             this.fields.add('' + sObjectField);
         }
         return this;
     }
 
-    public QueryBuilder selectFields(String[] fields) {
+    public QueryBuilder addFields(String[] fields) {
         this.fields.addAll(fields);
+        return this;
+    }
+
+    public QueryBuilder setFields(String[] fields) {
+        this.fields = new Set<String>(fields);
         return this;
     }
 
@@ -106,7 +111,7 @@ public inherited sharing class QueryBuilder {
 
     public QueryBuilder addChildFields(List<SObjectField> fields, String relationshipField) {
         return addSubquery(new QueryBuilder()
-                .selectFields(fields)
+                .addFields(fields)
                 .fromObject(relationshipField)
         );
     }
@@ -115,7 +120,7 @@ public inherited sharing class QueryBuilder {
         String relation = relationshipField.getDescribe().getRelationshipName() + '.';
 
         for (SObjectField field : fields) {
-            selectField(relation + field);
+            addField(relation + field);
         }
 
         return this;

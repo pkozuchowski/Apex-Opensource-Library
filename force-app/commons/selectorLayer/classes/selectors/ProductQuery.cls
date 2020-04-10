@@ -62,7 +62,7 @@ public virtual inherited sharing class ProductQuery extends QueryObject {
     public ProductQuery withPricebookEntries(Iterable<Id> pricebookIds) {
         this.query.bindVariable('pricebookIds', pricebookIds);
         this.query.addSubquery(new QueryBuilder()
-                .selectFields(PricebookEntryQuery.QUERIED_FIELDS)
+                .addFields(PricebookEntryQuery.QUERIED_FIELDS)
                 .fromObject('PricebookEntries')
                 .setWhere('Pricebook2Id IN :pricebookIds')
         );

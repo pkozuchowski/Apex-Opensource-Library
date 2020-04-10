@@ -44,7 +44,7 @@ public inherited sharing class EmailTemplateQuery extends QueryObject {
      * By default, this field is omitted for Heap saving.
      */
     public EmailTemplateQuery withHtmlBody() {
-        this.query.selectField(EmailTemplate.HtmlValue);
+        this.query.addField(EmailTemplate.HtmlValue);
         return this;
     }
 
@@ -53,7 +53,7 @@ public inherited sharing class EmailTemplateQuery extends QueryObject {
      * By default, this field is omitted for Heap saving.
      */
     public EmailTemplateQuery withTextBody() {
-        this.query.selectField(EmailTemplate.Body);
+        this.query.addField(EmailTemplate.Body);
         return this;
     }
 

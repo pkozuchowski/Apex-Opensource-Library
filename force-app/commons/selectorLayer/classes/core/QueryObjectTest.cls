@@ -132,10 +132,10 @@ public class QueryObjectTest {
     @IsTest
     static void queryBuilderCoverage() {
         new QueryBuilder()
-                .selectField(Account.Id)
-                .selectField('Name')
-                .selectFields(new List<SObjectField>{Account.Id})
-                .selectFields(new List<String>{'Id'})
+                .addField(Account.Id)
+                .addField('Name')
+                .addFields(new List<SObjectField>{Account.Id})
+                .addFields(new List<String>{'Id'})
                 .addChildFields(new List<SObjectField>{Contact.Id}, 'Contacts')
                 .fromObject(Account.SObjectType)
                 .setWhere('Name != NULL')

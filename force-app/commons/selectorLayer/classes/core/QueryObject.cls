@@ -41,7 +41,7 @@ public inherited sharing abstract class QueryObject {
     protected QueryObject(List<SObjectField> queryFields, SObjectType sObjectType) {
         this.databaseService = new DatabaseService();
         this.query = new QueryBuilder();
-        this.query.selectFields(queryFields).fromObject(sObjectType);
+        this.query.addFields(queryFields).fromObject(sObjectType);
 
         this.allFields = sObjectType.getDescribe().fields.getMap();
         this.sObjectType = sObjectType;
@@ -90,7 +90,7 @@ public inherited sharing abstract class QueryObject {
     * this method should be reimplemented where it's needed as public XXXSelector withAllFields();
     */
     protected QueryObject withAllFieldsImpl() {
-        this.query.selectFields(allFields.values());
+        this.query.addFields(allFields.values());
         return this;
     }
 

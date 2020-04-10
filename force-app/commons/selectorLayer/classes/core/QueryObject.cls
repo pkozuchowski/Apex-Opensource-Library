@@ -200,6 +200,31 @@ public inherited sharing abstract class QueryObject {
 
 
     /**
+    * @return SObjects which satisfy given query condition
+    */
+    public SObject[] byCondition(QueryCondition condition) {
+        this.query.setWhere(condition.toString());
+        this.query.bindVariable('value', condition.value);
+        return executeQuery();
+    }
+
+    /**
+    * @return SObjects which satisfy all of given query condition
+    */
+    public SObject[] byConditions(QueryCondition[] conditions) {
+        List<String> conditionStrings = new List<String>();
+
+        for (Integer i = 0; i < conditions.size(); i++) {
+            conditionStrings.add(conditions[i].toString() + i);
+            this.query.bindVariable('value' + i, conditions[i].value);
+        }
+
+        this.query.setWhere(String.join(conditionStrings, ' AND '));
+        return executeQuery();
+    }
+
+
+    /**
      * @return First record in list or null if list is empty
      */
     protected SObject firstOrNull(SObject[] records) {
@@ -234,7 +259,9 @@ public inherited sharing abstract class QueryObject {
             return queryMocker.mockResponse(this, sObjectType, query.getVariables(), records);
 
         } else {
-            cache.put(getFieldsToCacheBy(), records);
+            if (!(records instanceof AggregateResult[])) {
+                cache.put(getFieldsToCacheBy(), records);
+            }
             return records;
         }
     }

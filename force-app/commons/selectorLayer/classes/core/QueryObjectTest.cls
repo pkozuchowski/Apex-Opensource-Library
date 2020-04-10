@@ -96,6 +96,21 @@ public class QueryObjectTest {
     }
 
     @IsTest
+    static void testSelectByCondition() {
+        assertEquals(
+                ([SELECT Id FROM User WHERE Name = :UserInfo.getUserName()]),
+                new TestUserQuery().byCondition(new QueryCondition(User.Name, '=', UserInfo.getUserName()))
+        );
+        assertEquals(
+                ([SELECT Id FROM User WHERE Name = :UserInfo.getUserName() AND ProfileId = :UserInfo.getProfileId()]),
+                new TestUserQuery().byConditions(new List<QueryCondition>{
+                        new QueryCondition(User.Name, '=', UserInfo.getUserName()),
+                        new QueryCondition(User.ProfileId, '=', UserInfo.getProfileId())
+                })
+        );
+    }
+
+    @IsTest
     static void testMocking() {
         QueryMocker.setMock(User.SObjectType, new AccountQueryMock());
         List<User> result = new TestUserQuery().byField(User.Id, 'IN', new List<Id>{'005000000000000'});

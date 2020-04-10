@@ -225,6 +225,26 @@ public inherited sharing abstract class QueryObject {
 
 
     /**
+    * @return Records counted by given SObject field
+    */
+    public AggregateResult[] countBy(SObjectField field) {
+        return countBy('' + field);
+    }
+
+    /**
+    * @return Records counted by given SObject field
+    */
+    public AggregateResult[] countBy(String field) {
+        this.query.setFields(new List<String>{
+                'COUNT(Id) cnt',
+                field
+        });
+        this.query.setGroupBy(field);
+        return executeQuery();
+    }
+
+
+    /**
      * @return First record in list or null if list is empty
      */
     protected SObject firstOrNull(SObject[] records) {

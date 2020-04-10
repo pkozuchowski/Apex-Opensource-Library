@@ -111,6 +111,18 @@ public class QueryObjectTest {
     }
 
     @IsTest
+    static void testCountBy() {
+        System.assertEquals(
+                ([
+                        SELECT COUNT(Id) cnt, ProfileId
+                        FROM User
+                        GROUP BY ProfileId
+                ]),
+                new TestUserQuery().countBy(User.ProfileId)
+        );
+    }
+
+    @IsTest
     static void testMocking() {
         QueryMocker.setMock(User.SObjectType, new AccountQueryMock());
         List<User> result = new TestUserQuery().byField(User.Id, 'IN', new List<Id>{'005000000000000'});

@@ -26,12 +26,12 @@
 * This class is responsible for mocking Query response
 */
 public with sharing class QueryMocker {
-    private final static Map<SObjectType, SelectorQueryMock> mocks = new Map<SObjectType, SelectorQueryMock>();
+    private final static Map<SObjectType, QueryMock> mocks = new Map<SObjectType, QueryMock>();
 
     /**
      * Mocks query result for given selector type
      */
-    public static void setMock(SObjectType sObjectType, SelectorQueryMock mock) {
+    public static void setMock(SObjectType sObjectType, QueryMock mock) {
         if (Test.isRunningTest()) {
             mocks.put(sObjectType, mock);
 
@@ -53,7 +53,7 @@ public with sharing class QueryMocker {
     * This method checks context of execution (which class called selector, in which method,
     * what method on which selector etc.) and mocks the response.
     */
-    public SObject[] mockResponse(QueryObject queryObject, SObjectType sObjectType) {
+    public SObject[] mockResponse(QueryObject queryObject, SObjectType sObjectType, Map<String, Object> queryVariables, SObject[] result) {
         String selectorName = Runtime.getRunningTypeName(queryObject);
         String selectorMethod, caller, callerMethod;
 
@@ -67,12 +67,14 @@ public with sharing class QueryMocker {
             }
         }
 
-        SelectorQueryMock mock = mocks.get(sObjectType);
+        QueryMock mock = mocks.get(sObjectType);
         return mock.handleQuery(
                 caller,
                 callerMethod,
                 selectorName,
-                selectorMethod
+                selectorMethod,
+                queryVariables,
+                result
         );
     }
 }

@@ -228,13 +228,13 @@ public inherited sharing abstract class QueryObject {
     * Executes query and caches results
     */
     protected SObject[] executeQuery() {
-        if (queryMocker.isMocked(this.sObjectType)) {
-            return queryMocker.mockResponse(this, sObjectType);
+        SObject[] records = this.databaseService.query(query.toSOQL(), query.getVariables());
+
+        if (queryMocker.isMocked(sObjectType)) {
+            return queryMocker.mockResponse(this, sObjectType, query.getVariables(), records);
 
         } else {
-            SObject[] records = this.databaseService.query(query.toSOQL(), query.getVariables());
             cache.put(getFieldsToCacheBy(), records);
-
             return records;
         }
     }

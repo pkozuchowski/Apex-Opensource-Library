@@ -25,17 +25,19 @@
 /**
  * Implement this interface to mock selector query results in unit tests
  */
-public interface SelectorQueryMock {
+public interface QueryMock {
 
 
     /**
      * When mock is set for selector, this method will be called to determine the query result.
-     * Mock is supplied with information about caller class of selector, called selector and method.
+     * Mock is supplied with information about caller class of selector, called selector and method, query bound variables and original result.
      *
      * @param caller    Name of class which called the selector (ex. 'AccountLogic')
      * @param callerMethod  Caller's method in which selector was called
      * @param selector  Name of selector class (ex. 'AccountSelector')
      * @param selectorMethod Name of called method of selector (ex. 'byName')
+     * @param queryBoundVariables Variables bound to the query
+     * @param queryResult Real result of the executed query
      *
      * @return Mocked query result
      */
@@ -43,6 +45,8 @@ public interface SelectorQueryMock {
             String caller,
             String callerMethod,
             String selector,
-            String selectorMethod
+            String selectorMethod,
+            Map<String, Object> queryBoundVariables,
+            SObject[] queryResult
     );
 }

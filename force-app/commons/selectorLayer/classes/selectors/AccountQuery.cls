@@ -24,7 +24,7 @@
 
 /**
  * Selector layer for Account SObjects
- * User through Query facade:
+ * Use through Query facade:
  * Query.Accounts.byName(...);
  */
 public virtual inherited sharing class AccountQuery extends QueryObject {

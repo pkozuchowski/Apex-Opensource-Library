@@ -45,11 +45,18 @@ public with sharing class Runtime {
         return FIELD_TYPE_MAP.get(field.getDescribe().getSoapType());
     }
 
-    /*
+    /**
      * @return returns Type of given list single element
      * */
     public static Type getListItemType(List<Object> o) {
-        return getType(o, 'Invalid conversion from runtime type List<', '> to Date');
+        return getType(o, 'List<', '>');
+    }
+
+    /**
+     * @return returns Type of given iterable (list or set) single element
+     * */
+    public static Type getIterableItemType(Iterable<Object> o) {
+        return getType(o, '<', '>');
     }
 
     /**

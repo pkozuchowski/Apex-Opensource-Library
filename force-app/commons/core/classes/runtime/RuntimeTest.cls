@@ -77,6 +77,9 @@ private class RuntimeTest {
 
         List<SObject> records = new List<Opportunity>();
         System.assertEquals(Opportunity.class, Runtime.getListItemType(records));
+        System.assertEquals(Id.class, Runtime.getIterableItemType((Iterable<Object>) new Set<Id>()));
+        System.assertEquals(String.class, Runtime.getIterableItemType((Iterable<Object>) new List<String>()));
+        System.assertEquals(Integer.class, Runtime.getIterableItemType((Iterable<Object>) new Set<Integer>()));
     }
 
 

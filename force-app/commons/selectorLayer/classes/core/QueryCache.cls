@@ -79,8 +79,8 @@ public inherited sharing class QueryCache {
         Map<Id, SObject> cachedRecords = new Map<Id, SObject>();
         Iterable<Object> iterable = getIterable(field, value);
 
-        String runtimeValueName = Runtime.getTypeName(iterable).substringBetween('<', '>');
-        List<Object> remainingValues = Runtime.newListOfItemType(Type.forName(runtimeValueName));
+        Type itemType = Runtime.getIterableItemType(iterable);
+        List<Object> remainingValues = Runtime.newListOfItemType(itemType);
 
 
         Iterator<Object> valueIt = iterable.iterator();

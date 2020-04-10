@@ -77,4 +77,13 @@ private without sharing class AccountQueryTest {
         System.assertEquals(expected.Cases.size(), actual.Cases.size());
         System.assertEquals(expected.Opportunities.size(), actual.Opportunities.size());
     }
+
+    @IsTest
+    static void testCacheSharingAndAllFieldsCoverage() {
+        Account[] accounts = new AccountQuery()
+                .withAllFields()
+                .withoutSharing()
+                .withoutCache()
+                .byName('Name 0');
+    }
 }

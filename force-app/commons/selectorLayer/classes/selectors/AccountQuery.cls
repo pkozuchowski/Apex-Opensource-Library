@@ -102,12 +102,28 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
         return byField(Account.Name, 'IN', names);
     }
 
+
     /**
-    * @return Selector will not reuse cached records to limit SOQLs query limit
+    * @see QueryObject.withoutSharingImpl
     */
-    public AccountQuery withoutCached() {
-        return (AccountQuery) withoutCache();
+    public AccountQuery withoutSharing() {
+        return (AccountQuery) withoutCacheImpl();
     }
+
+    /**
+    * @see QueryObject.withoutCacheImpl
+    */
+    public AccountQuery withoutCache() {
+        return (AccountQuery) withoutCacheImpl();
+    }
+
+    /**
+    * @see QueryObject.withAllFieldsImpl
+    */
+    public AccountQuery withAllFields() {
+        return (AccountQuery) withAllFieldsImpl();
+    }
+
 
     protected override Set<SObjectField> getFieldsToCacheBy() {
         return new Set<SObjectField>{

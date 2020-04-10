@@ -107,7 +107,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
     * @see QueryObject.withoutSharingImpl
     */
     public AccountQuery withoutSharing() {
-        return (AccountQuery) withoutCacheImpl();
+        return (AccountQuery) withoutSharingImpl();
     }
 
     /**
@@ -121,7 +121,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
     * @see QueryObject.withAllFieldsImpl
     */
     public AccountQuery withAllFields() {
-        return (AccountQuery) withAllFieldsImpl();
+        return withAllFieldsImpl();
     }
 
 

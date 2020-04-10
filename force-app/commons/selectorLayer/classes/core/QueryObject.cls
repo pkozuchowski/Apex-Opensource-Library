@@ -27,8 +27,8 @@
  */
 public inherited sharing abstract class QueryObject {
     private final static QueryMocker queryMocker = new QueryMocker();
-    private final static Set<SObjectType> firstInitialization = new Set<SObjectType>();
     private final static QueryCache cache = new QueryCache();
+    private final static Set<SObjectType> firstInitialization = new Set<SObjectType>();
 
     protected final QueryBuilder query;
     protected final DatabaseService databaseService;

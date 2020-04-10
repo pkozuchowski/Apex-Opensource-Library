@@ -65,7 +65,7 @@ public inherited sharing abstract class QueryObject {
      * Since there is no proper way to handle method chaining of builder pattern with inheritance in Apex,
      * this method should be reimplemented where it's needed as public XXXSelector withoutSharing();
      */
-    public QueryObject withoutSharing() {
+    protected QueryObject withoutSharingImpl() {
         databaseService.setSharing(Sharing.WITHOUT_SHARING);
         return this;
     }
@@ -77,7 +77,7 @@ public inherited sharing abstract class QueryObject {
     * Since there is no proper way to handle method chaining of builder pattern with inheritance in Apex,
     * this method should be reimplemented where it's needed as public XXXSelector withoutCache();
     */
-    public QueryObject withoutCache() {
+    protected QueryObject withoutCacheImpl() {
         this.useCache = false;
         return this;
     }
@@ -89,7 +89,7 @@ public inherited sharing abstract class QueryObject {
     * Since there is no proper way to handle method chaining of builder pattern with inheritance in Apex,
     * this method should be reimplemented where it's needed as public XXXSelector withAllFields();
     */
-    public QueryObject withAllFields() {
+    protected QueryObject withAllFieldsImpl() {
         this.query.selectFields(allFields.values());
         return this;
     }

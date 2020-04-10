@@ -29,10 +29,13 @@ private class CaseQueryTest {
         Account account = new Account(Name = 'Parent Account');
         insert account;
 
+        Contact contact = new Contact(AccountId = account.Id, LastName = 'Doe');
+        insert contact;
+
         insert new List<Case>{
                 new Case(AccountId = account.Id, Subject = 'Subject 1', Status = 'New', Origin = 'Web'),
                 new Case(AccountId = account.Id, Subject = 'Subject 2', Status = 'New', Origin = 'Web'),
-                new Case(AccountId = account.Id, Subject = 'Subject 3', Status = 'New', Origin = 'Web')
+                new Case(AccountId = account.Id, Subject = 'Subject 3', Status = 'New', Origin = 'Web', ContactId = contact.Id)
         };
     }
 
@@ -68,5 +71,18 @@ private class CaseQueryTest {
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Case WHERE AccountId IN (:account.Id)]),
                 new CaseQuery().byAccountId(new List<Id>{account.Id}));
+    }
+
+    @IsTest
+    static void testSelectByContactId() {
+        Contact contact = [SELECT Id FROM Contact];
+
+        QueryObjectTest.assertEquals(
+                ([SELECT Id FROM Case WHERE ContactId = :contact.Id]),
+                new CaseQuery().byContactId(contact.Id));
+
+        QueryObjectTest.assertEquals(
+                ([SELECT Id FROM Case WHERE ContactId IN (:contact.Id)]),
+                new CaseQuery().byContactId(new List<Id>{contact.Id}));
     }
 }

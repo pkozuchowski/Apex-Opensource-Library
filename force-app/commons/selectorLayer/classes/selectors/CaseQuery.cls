@@ -81,6 +81,21 @@ public inherited sharing class CaseQuery extends QueryObject {
         return byField(Case.AccountId, 'IN', accountIds);
     }
 
+
+    /**
+     * @return Cases related to given contact Ids (List or Set)
+     */
+    public Contact[] byContactId(Id contactId) {
+        return byField(Case.ContactId, '=', contactId);
+    }
+
+    /**
+     * @return Cases related to given contact Ids (List or Set)
+     */
+    public Contact[] byContactId(Iterable<Id> contactIds) {
+        return byField(Case.ContactId, 'IN', contactIds);
+    }
+
     protected override Set<SObjectField> getFieldsToCacheBy() {
         return new Set<SObjectField>{
                 Case.Id

@@ -34,7 +34,7 @@ public inherited sharing class TestDataBuilder {
      * For example if there are record types that require completely different defaults or when you want to prepopulate RecordTypeId
      * at builder stage.
      * This mechanism is not restricted to Record Types though.
-     *
+     * <p/>
      * One flavour can be reused between many different SObjects.
      * Example flavours for some companies could be as follows: VANILLA, ENTERPRISE, SME (Small Medium Enterprise), Domestic
      * VANILLA flavour is the default, when flavour is not specified, builder falls back to vanilla.
@@ -61,12 +61,14 @@ public inherited sharing class TestDataBuilder {
     private List<SObject> records = new List<SObject>();
     private SObject previousPrototype;
 
+
     /**
      * Creates test record with vanilla default field values, overridden by given prototype field values.
      *
-     *  @param prototype Example of record to create - fields specified in the constructor will override defaults
-     *  @throws TestDataBuilder.TestDataBuilderException when default is not defined
-     *  @return Copy of the test-default record with fields overridden
+     * @param prototype Example of record to create - fields specified in the constructor will override defaults
+     * @throws TestDataBuilder.TestDataBuilderException when default is not defined
+     *
+     * @return Copy of the test-default record with fields overridden
      */
     public TestDataBuilder create(SObject prototype) {
         return create(Flavour.VANILLA, prototype);
@@ -75,10 +77,11 @@ public inherited sharing class TestDataBuilder {
     /**
      * Creates test record with unit test default field values, overridden by given prototype field values.
      *
-     *  @param flavour Flavour of the default - defines which default field values will be used for SObject
-     *  @param prototype Example of record to create - fields specified in the constructor will override defaults
-     *  @throws TestDataBuilder.TestDataBuilderException when flavour is not defined
-     *  @return Copy of the test-default record with fields overridden
+     * @param flavour Flavour of the default - defines which default field values will be used for SObject
+     * @param prototype Example of record to create - fields specified in the constructor will override defaults
+     * @throws TestDataBuilder.TestDataBuilderException when flavour is not defined
+     *
+     * @return Copy of the test-default record with fields overridden
      */
     public TestDataBuilder create(Flavour flavour, SObject prototype) {
         return create(1, flavour, prototype);
@@ -87,10 +90,11 @@ public inherited sharing class TestDataBuilder {
     /**
      * Creates N test records with vanilla unit test default field values, overridden by given prototype field values.
      *
-     *  @param count How many copies should be created.
-     *  @param prototype Example of record to create - fields specified in the constructor will override defaults
-     *  @throws TestDataBuilder.TestDataBuilderException when flavour is not defined
-     *  @return Copy of the test-default record with fields overridden
+     * @param count How many copies should be created.
+     * @param prototype Example of record to create - fields specified in the constructor will override defaults
+     * @throws TestDataBuilder.TestDataBuilderException when flavour is not defined
+     *
+     * @return Copy of the test-default record with fields overridden
      */
     public TestDataBuilder create(Integer count, SObject prototype) {
         return create(count, Flavour.VANILLA, prototype);
@@ -99,11 +103,12 @@ public inherited sharing class TestDataBuilder {
     /**
      * Creates N test record with vanilla unit test default field values, overridden by given prototype field values.
      *
-     *  @param count How many copies should be created.
-     *  @param flavour Flavour of the default - defines which default field values will be used for SObject
-     *  @param prototype Example of record to create - fields specified in the constructor will override defaults
-     *  @throws TestDataBuilder.TestDataBuilderException when flavour is not defined
-     *  @return List of copies of the test-defaulted record with fields overridden
+     * @param count How many copies should be created.
+     * @param flavour Flavour of the default - defines which default field values will be used for SObject
+     * @param prototype Example of record to create - fields specified in the constructor will override defaults
+     * @throws TestDataBuilder.TestDataBuilderException when flavour is not defined
+     *
+     * @return List of copies of the test-defaulted record with fields overridden
      */
     public TestDataBuilder create(Integer count, Flavour flavour, SObject prototype) {
         for (Integer i = 0; i < count; i++) {
@@ -122,7 +127,7 @@ public inherited sharing class TestDataBuilder {
      * Creates a copy of record from previous create() or similarly() call and adjust it's values by given prototype field values.
      * This method cannot be called prior to create() or for different SObject type than prior create/similarly call.
      * Records are created with the same flavour as previous prototype.
-     *
+     * <p/>
      * Usage:
      *  List<Account> accounts = TestDataBuilder.builder()
      *       .create(new Account(Name = 'Test'))
@@ -132,6 +137,7 @@ public inherited sharing class TestDataBuilder {
      *  This example creates 11 accounts in total, all of them with "Test" Name and 10 with additional Billing country
      *
      * @param prototype Example of record to create - fields specified in the constructor will override defaults
+     *
      * @return instance of DataBuilder for subsequent calls.
      */
     public TestDataBuilder similarly(SObject prototype) {
@@ -143,7 +149,9 @@ public inherited sharing class TestDataBuilder {
      * This method cannot be called prior to create() or for different SObject type than prior create/similarly call.
      * Records are created with the same flavour as previous prototype.
      *
+     * @param count How many copies should be created.
      * @param prototype Example of record to create - fields specified in the constructor will override defaults
+     *
      * @return instance of TestDataBuilder for subsequent calls.
      */
     public TestDataBuilder similarly(Integer count, SObject prototype) {
@@ -156,8 +164,10 @@ public inherited sharing class TestDataBuilder {
         return this;
     }
 
+
     /**
      * Inserts records stored in builder's internal storage, clears buffer and returns records.
+     *
      * @return inserted records
      */
     public SObject[] insertRecords() {
@@ -173,7 +183,7 @@ public inherited sharing class TestDataBuilder {
     }
 
     /**
-     * @return Records from Builder's internal storage.
+     * @return i'th record from Builder's internal storage.
      */
     public SObject get(Integer i) {
         return records.deepClone(true).get(i);

@@ -23,7 +23,15 @@
 */
 
 /**
-* This class provides easy access to picklist field values, labels or controlling values.
+ * This class provides easy access to picklist field values, labels or controlling values.
+ * <p/>
+ * <pre>
+ *     Picklist p = new Picklist();
+ *     String default = p.getDefaultValue();
+ *     String[] values = p.getValues();
+ *     SelectOption[] options = p.getSelectOptions();//(VisualForce)
+ *     Picklist.Entry[] entries = p.getEntries();//(Aura Enabled)
+ * </pre>
  */
 public with sharing class Picklist {
     private List<Entry> entries;
@@ -37,6 +45,8 @@ public with sharing class Picklist {
 
     /**
      * Constructs Picklist instance from SObjectField of picklist type.
+     *
+     * @param field Picklist sObject field - for example Opportunity.StageName
      */
     public Picklist(SObjectField field) {
         this.picklistDescribe = field.getDescribe();
@@ -77,6 +87,8 @@ public with sharing class Picklist {
     }
 
     /**
+     * @param value Picklist option's API name / value
+     *
      * @return True, if picklist contains given value (case insensitive).
      */
     public Boolean containsValue(String value) {
@@ -105,6 +117,8 @@ public with sharing class Picklist {
     }
 
     /**
+     * @param value Picklist option's API name / value
+     *
      * @return Label corresponding to the given picklist value.
      */
     public String getLabel(String value) {

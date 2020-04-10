@@ -79,7 +79,7 @@ public inherited sharing class QueryCache {
         Map<Id, SObject> cachedRecords = new Map<Id, SObject>();
         Iterable<Object> iterable = getIterable(field, value);
 
-        String runtimeValueName = Runtime.getRunningTypeName(iterable).substringBetween('<', '>');
+        String runtimeValueName = Runtime.getTypeName(iterable).substringBetween('<', '>');
         List<Object> remainingValues = Runtime.newListOfItemType(Type.forName(runtimeValueName));
 
 
@@ -113,7 +113,7 @@ public inherited sharing class QueryCache {
             return values;
 
         } else {
-            String typeName = Runtime.getRunningTypeName(value);
+            String typeName = Runtime.getTypeName(value);
 
             if (value instanceof SObject[]) {
                 return (Iterable<Object>) new Map<Id, SObject>((SObject[]) value).keySet();

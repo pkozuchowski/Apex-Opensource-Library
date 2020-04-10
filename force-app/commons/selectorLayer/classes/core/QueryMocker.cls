@@ -54,7 +54,7 @@ public with sharing class QueryMocker {
     * what method on which selector etc.) and mocks the response.
     */
     public SObject[] mockResponse(QueryObject queryObject, SObjectType sObjectType, Map<String, Object> queryVariables, SObject[] result) {
-        String selectorName = Runtime.getRunningTypeName(queryObject);
+        String selectorName = Runtime.getTypeName(queryObject);
         String selectorMethod, caller, callerMethod;
 
         for (Runtime.StackTraceLine line : Runtime.getStackTrace()) {

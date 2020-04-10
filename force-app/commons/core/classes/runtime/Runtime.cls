@@ -24,7 +24,7 @@
 
 /**
  * Utility class with methods related to dynamic/reflection aspect of Apex language
- * @see ApexServiceTest
+ * @see RuntimeTest
  */
 public with sharing class Runtime {
     private final static Map<Schema.SoapType, Type> FIELD_TYPE_MAP = new Map<SoapType, Type>{
@@ -49,7 +49,7 @@ public with sharing class Runtime {
      * @return returns Type of given list single element
      * */
     public static Type getListItemType(List<Object> o) {
-        return getRunningType(o, 'Invalid conversion from runtime type List<', '> to Date');
+        return getType(o, 'Invalid conversion from runtime type List<', '> to Date');
     }
 
     /**
@@ -57,23 +57,23 @@ public with sharing class Runtime {
      * This method returns null if type is not accessible - when class is private
      * or when it's part of anonymous script. In that case, getRunningTypeName() should be used instead.
      */
-    public static Type getRunningType(Object o) {
-        return getRunningType(o, 'Invalid conversion from runtime type ', ' to Date');
+    public static Type getType(Object o) {
+        return getType(o, 'Invalid conversion from runtime type ', ' to Date');
     }
 
     /**
      * @return Name of running type of object passed in parameter.
      */
-    public static String getRunningTypeName(Object o) {
-        return getRunningTypeName(o, 'Invalid conversion from runtime type ', ' to Date');
+    public static String getTypeName(Object o) {
+        return getTypeName(o, 'Invalid conversion from runtime type ', ' to Date');
     }
 
 
-    private static Type getRunningType(Object o, String open, String close) {
-        return Type.forName(getRunningTypeName(o, open, close));
+    private static Type getType(Object o, String open, String close) {
+        return Type.forName(getTypeName(o, open, close));
     }
 
-    private static String getRunningTypeName(Object o, String open, String close) {
+    private static String getTypeName(Object o, String open, String close) {
         if (o == null) throw new NullPointerException();
 
         try {
@@ -113,7 +113,7 @@ public with sharing class Runtime {
 
     /**
      * @param itemType Type of single list element
-     * @param fallbackItemType Fallback type, in case primary type is not constructible (ex. because the type is private).
+     * @param fallback Fallback type, in case primary type is not constructible (ex. because the type is private).
      * @return New list of given item type.
      */
     public static List<Object> newListOfItemType(Type itemType, List<Object> fallback) {

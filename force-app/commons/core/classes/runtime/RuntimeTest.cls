@@ -47,13 +47,13 @@ private class RuntimeTest {
     @IsTest
     static void testGetRunningType() {
         ExampleClass instance = new ExampleClass();
-        System.assertEquals(ExampleClass.class, Runtime.getRunningType(instance));
+        System.assertEquals(ExampleClass.class, Runtime.getType(instance));
     }
 
     @IsTest
     static void testGetDatesRunningType() {
         Date instance = Date.today();
-        System.assertEquals(Date.class, Runtime.getRunningType(instance));
+        System.assertEquals(Date.class, Runtime.getType(instance));
     }
 
 
@@ -64,7 +64,7 @@ private class RuntimeTest {
     @IsTest
     static void testGetRunningTypeName() {
         ExampleClass instance = new ExampleClass();
-        System.assertEquals('RuntimeTest.ExampleClass', Runtime.getRunningTypeName(instance));
+        System.assertEquals('RuntimeTest.ExampleClass', Runtime.getTypeName(instance));
     }
 
     /**

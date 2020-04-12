@@ -201,6 +201,6 @@ private class LoggerTest {
         System.assert(log.Message__c.contains('200'));
         System.assert(log.Message__c.contains('success'));
         System.assert(log.Message__c.contains('request'));
-        System.assert(log.Message__c.contains('"param" : "value"'));
+        System.assert(log.Message__c.contains('param: value'));
     }
 }

@@ -43,14 +43,9 @@ public with sharing class Logger {
     }
 
     public Logger(Boolean immediate) {
-        this.immediate = true;
+        this.immediate = immediate;
     }
 
-    public enum MODE {
-        INSTANT,
-        BUFFERED,
-        REST
-    }
 
     /**
      * Logs message with INFO logging level

@@ -1,0 +1,16 @@
+<apex:page contentType="application/json" controller="Localization" language="{!$CurrentPage.parameters.locale}">
+    {
+    <apex:outputPanel layout="none" rendered="{!NOT(ISNULL(labels))}">
+        <apex:repeat var="val" value="{!labels}">
+            "{!val}":"{!$Label[val]}",
+        </apex:repeat>
+    </apex:outputPanel>
+
+    <apex:outputPanel layout="none" rendered="{!NOT(ISNULL(fields))}">
+        <apex:repeat var="sobjectField" value="{!fields}">
+            "{!sobjectField[0] + '.' +sobjectField[1]}":"{!$ObjectType[sobjectField[0]].fields[sobjectField[1]].label}",
+        </apex:repeat>
+
+    </apex:outputPanel>
+    }
+</apex:page>

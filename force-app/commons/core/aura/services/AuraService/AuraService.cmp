@@ -23,36 +23,40 @@
 -->
 <aura:component>
 
-    <!--Test-->
     <aura:method name="showElement" action="{!c.handleShowElement}" description="Removes slds-hide css class from element">
-        <aura:attribute name="component" type="Object" required="true"/>
-        <aura:attribute name="auraId" type="String" required="true"/>
+        <aura:attribute type="Object" name="component" required="true"/>
+        <aura:attribute type="String" name="auraId" required="true"/>
     </aura:method>
 
     <aura:method name="hideElement" action="{!c.handleHideElement}" description="Hides element using slds-hide class">
-        <aura:attribute name="component" type="Object" required="true"/>
-        <aura:attribute name="auraId" type="String" required="true"/>
+        <aura:attribute type="Object" name="component" required="true"/>
+        <aura:attribute type="String" name="auraId" required="true"/>
     </aura:method>
 
     <aura:method name="toggleElement" action="{!c.handleToggleElement}" description="Toggles slds-hide class on element">
-        <aura:attribute name="component" type="Object" required="true"/>
-        <aura:attribute name="auraId" type="String" required="true"/>
+        <aura:attribute type="Object" name="component" required="true"/>
+        <aura:attribute type="String" name="auraId" required="true"/>
     </aura:method>
 
     <aura:method name="setTimeout" action="{!c.handleSetTimeout}" description="Timeout wrapped in $A.getCallback()">
-        <aura:attribute name="callback" type="Object" required="true"/>
-        <aura:attribute name="timeout" type="Integer"/>
+        <aura:attribute type="Object" name="callback" required="true"/>
+        <aura:attribute type="Integer" name="timeout"/>
     </aura:method>
 
-    <aura:method name="apex" action="{!c.handleApex}">
-        <aura:attribute name="config" type="Map" description="Configuration map of apex call {component, method, params, background, scope}" required="true"/>
+    <aura:method name="setInterval" action="{!c.handleSetInterval}" description="Interval wrapped in $A.getCallback()">
+        <aura:attribute type="Object" name="callback" required="true"/>
+        <aura:attribute type="Integer" name="interval"/>
+    </aura:method>
+
+    <aura:method name="apex" action="{!c.handleApex}" description="Calls apex method, returns promise.">
+        <aura:attribute type="Object" name="component" required="true"/>
+        <aura:attribute type="String" name="method" required="true"/>
+        <aura:attribute type="Map" name="params" required="false"/>
+        <aura:attribute type="Boolean" name="background" required="false"/>
     </aura:method>
 
     <aura:method name="copy" action="{!c.handleCopy}" description="Deep copies javascript object using JSON.stringify/parse">
-        <aura:attribute name="object" type="Object" required="true"/>
+        <aura:attribute type="Object" name="object" required="true"/>
     </aura:method>
 
-    <aura:method name="download" action="{!c.handleDownload}" description="">
-        <aura:attribute name="config" type="Object" description="Configuration map {fileName, type (file extension), data}"/>
-    </aura:method>
 </aura:component>

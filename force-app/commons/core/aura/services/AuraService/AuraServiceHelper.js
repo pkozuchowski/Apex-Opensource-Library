@@ -1,18 +1,12 @@
 ({
-    setTimeout: function (callback, timeout) {
-        window.setTimeout($A.getCallback(callback), timeout);
-    },
-
-    callApex: function (config) {
+    callApex: function (component, method, params, background) {
         return new Promise($A.getCallback(function (resolve, reject) {
-            const component = config.component;
-            const action = component.get(config.method);
-            action.setParams(config.params || {});
+            const action = component.get(method);
+            action.setParams(params || {});
 
-            if (config.background) {
-                action.setBackground();
-            }
-            action.setCallback(config.scope || {}, function (response) {
+            if (background) action.setBackground();
+
+            action.setCallback({}, function (response) {
                 const state = response.getState();
 
                 if (state === "SUCCESS") {
@@ -30,22 +24,7 @@
         if (obj) {
             return JSON.parse(JSON.stringify(obj));
         } else {
-            return obj;
+            throw new Error('Object to copy is not defined.');
         }
-    },
-
-    download: function (config) {
-        const blob = new Blob([config.data], {type: config.type});
-        const fileReader = new FileReader();
-
-        fileReader.onload = function (e) {
-            const link = document.createElement("a");
-            link.href = e.target.result;
-            link.download = config.fileName;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        };
-        fileReader.readAsDataURL(blob);
     }
 })

@@ -38,26 +38,6 @@ public with sharing class Runtime {
             Schema.SoapType.TIME => Time.class
     };
 
-    /**
-     * @return Value type of SObject field
-     */
-    public static Type getSObjectFieldType(SObjectField field) {
-        return FIELD_TYPE_MAP.get(field.getDescribe().getSoapType());
-    }
-
-    /**
-     * @return returns Type of given list single element
-     * */
-    public static Type getListItemType(List<Object> o) {
-        return getType(o, 'List<', '>');
-    }
-
-    /**
-     * @return returns Type of given iterable (list or set) single element
-     * */
-    public static Type getIterableItemType(Iterable<Object> o) {
-        return getType(o, '<', '>');
-    }
 
     /**
      * @return Running type of object passed in parameter.
@@ -93,6 +73,28 @@ public with sharing class Runtime {
 
 
     /**
+     * @return Value type of SObject field
+     */
+    public static Type getSObjectFieldType(SObjectField field) {
+        return FIELD_TYPE_MAP.get(field.getDescribe().getSoapType());
+    }
+
+    /**
+     * @return returns Type of given list single element
+     * */
+    public static Type getListItemType(List<Object> o) {
+        return getType(o, 'List<', '>');
+    }
+
+    /**
+     * @return returns Type of given iterable (list or set) single element
+     * */
+    public static Type getIterableItemType(Iterable<Object> o) {
+        return getType(o, '<', '>');
+    }
+
+
+    /**
      * @return New empty list of the same SObject type as original.
      */
     public static List<Object> newListOfTheSameType(List<Object> original) {
@@ -101,7 +103,6 @@ public with sharing class Runtime {
 
         return clone;
     }
-
 
     /**
      * @param itemType Type of single list element

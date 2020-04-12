@@ -1,7 +1,7 @@
 <aura:component description="STD_PageHeader">
-    <aura:attribute name="title" type="String" access="public"/>
-    <aura:attribute name="headerActions" access="public" type="Aura.Component[]"/>
-    <aura:attribute name="headerFields" access="public" type="Aura.Component[]"/>
+    <aura:attribute access="public" type="String" name="title"/>
+    <aura:attribute access="public" type="Aura.Component[]" name="headerActions"/>
+    <aura:attribute access="public" type="Aura.Component[]" name="headerFields"/>
 
     <div class="slds-page-header slds-m-bottom_small">
         <div class="slds-page-header__row">

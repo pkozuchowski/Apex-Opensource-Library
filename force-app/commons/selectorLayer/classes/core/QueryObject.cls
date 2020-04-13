@@ -214,7 +214,7 @@ public inherited sharing abstract class QueryObject {
     public SObject[] byConditions(QueryCondition[] conditions) {
         List<String> conditionStrings = new List<String>();
 
-        for (Integer i = 0; i < conditions.size(); i++) {
+        for (Integer i = 0, size = conditions.size(); i < size; i++) {
             conditionStrings.add(conditions[i].toString() + i);
             this.query.bindVariable('value' + i, conditions[i].value);
         }

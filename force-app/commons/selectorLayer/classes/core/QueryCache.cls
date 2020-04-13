@@ -51,9 +51,10 @@ public inherited sharing class QueryCache {
         for (SObjectField sObjectField : fields) {
             Map<Object, SObject> valueMap = getFieldMap(sObjectField);
 
-            for (SObject sobj : records) {
-                Object fieldValue = sobj.get(sObjectField);
-                valueMap.put(fieldValue, sobj);
+            for (Integer i = 0, size = records.size(); i < size; i++) {
+                SObject record = records[i];
+                Object fieldValue = record.get(sObjectField);
+                valueMap.put(fieldValue, record);
             }
         }
     }

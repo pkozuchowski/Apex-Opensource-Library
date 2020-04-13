@@ -51,8 +51,8 @@ public virtual class TriggerHandler  {
         for (FieldDefault fieldDefaultRule : triggerFieldDefaults) {
             fieldDefaultRule.prepare(records, tc);
 
-            for (SObject record : records) {
-                fieldDefaultRule.populate(record, tc);
+            for (Integer i = 0, size = records.size(); i < size; i++) {
+                fieldDefaultRule.populate(records[i], tc);
             }
         }
     }
@@ -64,8 +64,8 @@ public virtual class TriggerHandler  {
         for (ValidationRule validationRule : validationRules) {
             validationRule.prepare(records, tc);
 
-            for (SObject record : records) {
-                validationRule.validate(record, tc);
+            for (Integer i = 0, size = records.size(); i < size; i++) {
+                validationRule.validate(records[i], tc);
             }
         }
     }

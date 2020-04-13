@@ -80,7 +80,7 @@ public virtual class TriggerHandler  {
     }
 
     /**
-     * Executes given trigger logic implementations.
+     * Executes given trigger logic implementations asynchronously, each logic in separate Queueable.
      */
     public void executeAsync(List<SObject> records, TriggerContext tc, List<AsyncLogic> triggerLogics) {
         for (AsyncLogic logic : triggerLogics) {

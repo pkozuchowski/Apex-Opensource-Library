@@ -26,12 +26,14 @@
  * This class provides easy access to picklist field values, labels or controlling values.
  * <p/>
  * <pre>
- *     Picklist p = new Picklist();
+ *     Picklist p = new Picklist(Account.Type);
  *     String default = p.getDefaultValue();
  *     String[] values = p.getValues();
  *     SelectOption[] options = p.getSelectOptions();//(VisualForce)
  *     Picklist.Entry[] entries = p.getEntries();//(Aura Enabled)
  * </pre>
+ *
+ * @see BitSet dependency
  */
 public with sharing class Picklist {
     private List<Entry> entries;

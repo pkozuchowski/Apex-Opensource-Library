@@ -30,32 +30,6 @@
 public with sharing class Localization {
     @TestVisible private static Map<String, String> mockResponse = new Map<String, String>();
 
-    public List<String> getLabels() {
-        return getParams('labels');
-    }
-
-    public List<List<String>> getFields() {
-        List<String> fields = getParams('fields');
-
-        if (fields != null) {
-            List<List<String>> pairs = new List<List<String>>();
-
-            for (String field : fields) {
-                pairs.add(field.split('\\.'));
-            }
-
-            return pairs;
-
-        } else {
-            return null;
-        }
-    }
-
-    private List<String> getParams(String name) {
-        String param = ApexPages.currentPage().getParameters().get(name);
-        return String.isEmpty(param) ? null : param.split(',');
-    }
-
 
     /**
      * @param labelName API name of the label
@@ -165,6 +139,32 @@ public with sharing class Localization {
         } catch (Exception e) {
             throw new LocalizationException(e.getMessage().replace('Field $Label.', 'Label '));
         }
+    }
+
+    public List<String> getLabels() {
+        return getParams('labels');
+    }
+
+    public List<List<String>> getFields() {
+        List<String> fields = getParams('fields');
+
+        if (fields != null) {
+            List<List<String>> pairs = new List<List<String>>();
+
+            for (String field : fields) {
+                pairs.add(field.split('\\.'));
+            }
+
+            return pairs;
+
+        } else {
+            return null;
+        }
+    }
+
+    private List<String> getParams(String name) {
+        String param = ApexPages.currentPage().getParameters().get(name);
+        return String.isEmpty(param) ? null : param.split(',');
     }
 
     public class LocalizationException extends Exception {

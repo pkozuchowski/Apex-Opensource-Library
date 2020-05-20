@@ -40,6 +40,15 @@ public inherited sharing class HistoryQuery extends QueryObject {
         initializeParentField(shareObjectType);
     }
 
+
+    /**
+     * @return Share records for given records (List or Set of parent ids)
+     */
+    public SObject[] byParentId(Iterable<Id> parentIds) {
+        return byField(parentField, 'IN', parentIds);
+    }
+
+
     /**
      * History fields do not have consistent naming convention.
      * This method checks for ParentId field.
@@ -58,13 +67,5 @@ public inherited sharing class HistoryQuery extends QueryObject {
                 }
             }
         }
-    }
-
-
-    /**
-     * @return Share records for given records (List or Set of parent ids)
-     */
-    public SObject[] byParentId(Iterable<Id> parentIds) {
-        return byField(parentField, 'IN', parentIds);
     }
 }

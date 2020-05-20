@@ -70,14 +70,14 @@ public inherited sharing class CaseQuery extends QueryObject {
     /**
      * @return Cases related to given account Ids (List or Set)
      */
-    public Contact[] byAccountId(Id accountId) {
+    public Case[] byAccountId(Id accountId) {
         return byField(Case.AccountId, '=', accountId);
     }
 
     /**
      * @return Cases related to given account Ids (List or Set)
      */
-    public Contact[] byAccountId(Iterable<Id> accountIds) {
+    public Case[] byAccountId(Iterable<Id> accountIds) {
         return byField(Case.AccountId, 'IN', accountIds);
     }
 
@@ -85,14 +85,14 @@ public inherited sharing class CaseQuery extends QueryObject {
     /**
      * @return Cases related to given contact Ids (List or Set)
      */
-    public Contact[] byContactId(Id contactId) {
+    public Case[] byContactId(Id contactId) {
         return byField(Case.ContactId, '=', contactId);
     }
 
     /**
      * @return Cases related to given contact Ids (List or Set)
      */
-    public Contact[] byContactId(Iterable<Id> contactIds) {
+    public Case[] byContactId(Iterable<Id> contactIds) {
         return byField(Case.ContactId, 'IN', contactIds);
     }
 

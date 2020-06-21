@@ -152,6 +152,7 @@ public abstract inherited sharing class Collection {
     public abstract Object mapBy(Mapper keyMapper, Mapper valueMapper);
 
     /**
+     * Group records by field value.
      * @return Map<K, List<V>>, K - value type, V - collection item type
      */
     public abstract Object groupBy(SObjectField field);
@@ -250,6 +251,19 @@ public abstract inherited sharing class Collection {
 
     public interface FilterBuilder extends Filter {
         FilterBuilder byUsing(Filter filter);
+
+        /**
+        * Filters records that have field values matching all fields on given prototype.
+        * <p/>
+        *
+        * Example which returns Prospect Customer Accounts:
+        * <pre>
+        * Collection.of(accounts).filterAlike(new Account(
+        *   RecordTypeId = Constant.CUSTOMER_RT_ID,
+        *   Type = 'Prospect'
+        * ));
+        * </pre>
+        */
         FilterBuilder alike(SObject prototype);
         FilterBuilderFieldFilter byField(SObjectField field);
 

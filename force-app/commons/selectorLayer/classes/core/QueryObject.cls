@@ -26,8 +26,8 @@
  * Base class for selectors. Contains query builder and common query methods.
  */
 public inherited sharing abstract class QueryObject {
-    private final static QueryMocker queryMocker = new QueryMocker();
-    private final static QueryCache cache = new QueryCache();
+    private final static QueryMocker mocker = QueryMocker.getInstance();
+    private final static QueryCache cache = QueryCache.getInstance();
     private final static Set<SObjectType> firstInitialization = new Set<SObjectType>();
 
     protected final QueryBuilder query;
@@ -275,8 +275,8 @@ public inherited sharing abstract class QueryObject {
     protected SObject[] executeQuery() {
         SObject[] records = this.databaseService.query(query.toSOQL(), query.getVariables());
 
-        if (queryMocker.isMocked(sObjectType)) {
-            return queryMocker.mockResponse(this, sObjectType, query.getVariables(), records);
+        if (mocker.isMocked(sObjectType)) {
+            return mocker.mockResponse(this, sObjectType, query.getVariables(), records);
 
         } else {
             if (!(records instanceof AggregateResult[])) {

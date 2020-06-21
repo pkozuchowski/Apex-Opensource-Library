@@ -26,7 +26,15 @@
 * This class is responsible for mocking Query response
 */
 public with sharing class QueryMocker {
-    private final static Map<SObjectType, QueryMock> mocks = new Map<SObjectType, QueryMock>();
+    private final static QueryMocker instance = new QueryMocker();
+    private final Map<SObjectType, QueryMock> mocks = new Map<SObjectType, QueryMock>();
+
+    public static QueryMocker getInstance(){
+        return instance;
+    }
+
+    private QueryMocker(){
+    }
 
     /**
      * Mocks query result for given selector type

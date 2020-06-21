@@ -27,7 +27,16 @@
  * @see SObjectCacheTest
  */
 public inherited sharing class QueryCache {
+    private final static QueryCache instance = new QueryCache();
     private Map<SObjectField, Map<Object, SObject>> storage = new Map<SObjectField, Map<Object, SObject>>();
+
+
+    public static QueryCache getInstance(){
+        return instance;
+    }
+
+    private QueryCache(){
+    }
 
 
     /**

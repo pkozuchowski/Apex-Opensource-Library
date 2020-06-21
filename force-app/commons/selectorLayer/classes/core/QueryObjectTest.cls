@@ -23,6 +23,7 @@
 */
 @IsTest(IsParallel=true)
 public class QueryObjectTest {
+
     private class TestUserQuery extends QueryObject {
         private TestUserQuery() {
             super(new List<SObjectField>{
@@ -122,39 +123,6 @@ public class QueryObjectTest {
         );
     }
 
-    @IsTest
-    static void testMocking() {
-        QueryMocker.setMock(User.SObjectType, new AccountQueryMock());
-        List<User> result = new TestUserQuery().byField(User.Id, 'IN', new List<Id>{'005000000000000'});
-
-        System.assertEquals(1, result.size());
-        System.assertEquals('Mock Result', result[0].Username);
-    }
-
-    private class AccountQueryMock implements QueryMock {
-        public SObject[] handleQuery(
-                String caller,
-                String callerMethod,
-                String selector,
-                String selectorMethod,
-                Map<String, Object> queryBoundVariables,
-                SObject[] queryResult) {
-
-            System.assertEquals(QueryObjectTest.class.getName(), caller, 'Should return name of class where query was called');
-            System.assertEquals('testMocking', callerMethod, 'Should return name of method where query was called');
-            System.assertEquals(TestUserQuery.class.getName(), selector, 'Should return name of the Query/Selector class');
-            System.assertEquals('byField', selectorMethod, 'Should return name of the method on Query');
-            System.assertEquals(new List<Object>{
-                    new List<Id>{Id.valueOf('005000000000000')}
-            }, queryBoundVariables.values(), 'Should return list of parameters bound to the query');
-            System.assertEquals(new List<User>(), queryResult, 'Should return result of the query before mocking');
-
-
-            return new List<User>{
-                    new User(Username = 'Mock Result')
-            };
-        }
-    }
 
     @IsTest
     static void queryBuilderCoverage() {

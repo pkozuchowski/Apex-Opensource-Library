@@ -29,23 +29,27 @@ public with sharing class QueryMocker {
     private final static QueryMocker instance = new QueryMocker();
     private final Map<SObjectType, QueryMock> mocks = new Map<SObjectType, QueryMock>();
 
-    public static QueryMocker getInstance(){
+    public static QueryMocker getInstance() {
         return instance;
     }
 
-    private QueryMocker(){
+    private QueryMocker() {
     }
 
     /**
      * Mocks query result for given selector type
      */
-    public static void setMock(SObjectType sObjectType, QueryMock mock) {
+    public void setMock(SObjectType sObjectType, QueryMock mock) {
         if (Test.isRunningTest()) {
-            mocks.put(sObjectType, mock);
+            getInstance().mocks.put(sObjectType, mock);
 
         } else {
             throw new QueryException('.setMock() can only be called from test methods');
         }
+    }
+
+    public void removeMock(SObjectType sObjectType) {
+        getInstance().mocks.remove(sObjectType);
     }
 
 

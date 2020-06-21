@@ -40,13 +40,14 @@ private class QueryMockerTest {
 
     @IsTest
     static void testMocking() {
+        QueryMocker queryMocker = QueryMocker.getInstance();
 
         Test.startTest();
-        List<Account> resultBeforeMock = new TestAccountQuery().byName('Mock Result');
-
-        QueryMocker.setMock(Account.SObjectType, new AccountQueryMock());
-
+        queryMocker.setMock(Account.SObjectType, new AccountQueryMock());
         List<Account> resultAfterMock = new TestAccountQuery().byName('Mock Result');
+
+        queryMocker.removeMock(Account.SObjectType);
+        List<Account> resultBeforeMock = new TestAccountQuery().byName('Mock Result');
         Test.stopTest();
 
 

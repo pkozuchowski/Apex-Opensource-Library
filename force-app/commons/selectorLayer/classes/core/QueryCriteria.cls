@@ -26,16 +26,16 @@
  * Encapsulation for SOQL condition - field, operator and value
  * ex. Account.Name IN (values)
  */
-public with sharing class QueryCondition {
+public with sharing class QueryCriteria {
     public String field { get; private set; }
     public String operator { get; private set; }
     public Object value { get; private set; }
 
-    public QueryCondition(SObjectField field, String operator, Object value) {
+    public QueryCriteria(SObjectField field, String operator, Object value) {
         this('' + field, operator, value);
     }
 
-    public QueryCondition(String field, String operator, Object value) {
+    public QueryCriteria(String field, String operator, Object value) {
         this.field = field;
         this.operator = operator;
         this.value = value;

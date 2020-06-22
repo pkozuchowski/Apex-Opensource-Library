@@ -100,13 +100,13 @@ public class QueryObjectTest {
     static void testSelectByCondition() {
         assertEquals(
                 ([SELECT Id FROM User WHERE Name = :UserInfo.getUserName()]),
-                new TestUserQuery().byCondition(new QueryCondition(User.Name, '=', UserInfo.getUserName()))
+                new TestUserQuery().byCriterion(new QueryCriteria(User.Name, '=', UserInfo.getUserName()))
         );
         assertEquals(
                 ([SELECT Id FROM User WHERE Name = :UserInfo.getUserName() AND ProfileId = :UserInfo.getProfileId()]),
-                new TestUserQuery().byConditions(new List<QueryCondition>{
-                        new QueryCondition(User.Name, '=', UserInfo.getUserName()),
-                        new QueryCondition(User.ProfileId, '=', UserInfo.getProfileId())
+                new TestUserQuery().byCriteria(new List<QueryCriteria>{
+                        new QueryCriteria(User.Name, '=', UserInfo.getUserName()),
+                        new QueryCriteria(User.ProfileId, '=', UserInfo.getProfileId())
                 })
         );
     }

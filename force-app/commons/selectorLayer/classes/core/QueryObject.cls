@@ -202,21 +202,21 @@ public inherited sharing abstract class QueryObject {
     /**
     * @return SObjects which satisfy given query condition
     */
-    public SObject[] byCondition(QueryCondition condition) {
-        this.query.setWhere(condition.toString());
-        this.query.bindVariable('value', condition.value);
+    public SObject[] byCriterion(QueryCriteria criteria) {
+        this.query.setWhere(criteria.toString());
+        this.query.bindVariable('value', criteria.value);
         return executeQuery();
     }
 
     /**
     * @return SObjects which satisfy all of given query condition
     */
-    public SObject[] byConditions(QueryCondition[] conditions) {
+    public SObject[] byCriteria(QueryCriteria[] criteria) {
         List<String> conditionStrings = new List<String>();
 
-        for (Integer i = 0, size = conditions.size(); i < size; i++) {
-            conditionStrings.add(conditions[i].toString() + i);
-            this.query.bindVariable('value' + i, conditions[i].value);
+        for (Integer i = 0, size = criteria.size(); i < size; i++) {
+            conditionStrings.add(criteria[i].toString() + i);
+            this.query.bindVariable('value' + i, criteria[i].value);
         }
 
         this.query.setWhere(String.join(conditionStrings, ' AND '));

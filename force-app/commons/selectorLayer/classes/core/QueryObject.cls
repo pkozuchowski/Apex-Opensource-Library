@@ -259,16 +259,16 @@ public inherited sharing abstract class QueryObject {
     /**
     * @return Records counted by given SObject field
     */
-    public AggregateResult[] getCount() {
-        this.query.setFields(new List<String>{'COUNT(Id)'});
-        List<String> fields = new List<String>();
+    public AggregateResult[] getCount(List<String> fields) {
+        String fieldsCSV = fields == null ? '' : String.join(fields, ',');
 
-        for (QueryCriteria queryCriteria : criteria) {
-            fields.add(queryCriteria.field);
+        this.query.setFields(new List<String>{'COUNT(Id)'});
+
+        if (String.isNotBlank(fieldsCSV)) {
+            this.query.addFields(fields);
+            this.query.setGroupBy(fieldsCSV);
         }
 
-        this.query.addFields(fields);
-        this.query.setGroupBy(String.join(fields, ','));
         return executeQuery();
     }
 
@@ -380,12 +380,5 @@ public inherited sharing abstract class QueryObject {
         if (!conditionStrings.isEmpty()) {
             this.query.setWhere(String.join(conditionStrings, ' AND '));
         }
-    }
-
-    /**
-    * @return selector cache for protected records.
-    */
-    protected QueryCache getCache() {
-        return cache;
     }
 }

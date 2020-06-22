@@ -36,12 +36,14 @@ public inherited sharing abstract class QueryObject {
 
     private Boolean useCache = true;
     private SObjectType sObjectType;
+    private QueryCriteria[] criteria;
 
 
     protected QueryObject(List<SObjectField> queryFields, SObjectType sObjectType) {
         this.databaseService = new DatabaseService();
         this.query = new QueryBuilder();
         this.query.addFields(queryFields).fromObject(sObjectType);
+        this.criteria = new List<QueryCriteria>();
 
         this.allFields = sObjectType.getDescribe().fields.getMap();
         this.sObjectType = sObjectType;
@@ -112,7 +114,7 @@ public inherited sharing abstract class QueryObject {
      * @return All records in database
      */
     public virtual SObject[] all() {
-        return executeQuery();
+        return getList();
     }
 
 
@@ -129,6 +131,42 @@ public inherited sharing abstract class QueryObject {
      */
     public virtual SObject[] byId(Iterable<Id> recordIds) {
         return byField('Id', 'IN', recordIds);
+    }
+
+
+    /**
+     * @return First record or null if list has no results
+     */
+    public SObject getFirst() {
+        return firstOrNull(executeQuery());
+    }
+
+    /**
+     * @return List of SObjects for given conditions
+     */
+    public SObject[] getList() {
+        return executeQuery();
+    }
+
+    /**
+     * @return Ids for SObjects
+     */
+    public Set<Id> getIds() {
+        return getMapById().keySet();
+    }
+
+    /**
+     * @return SObject map by Ids
+     */
+    public Map<Id, SObject> getMapById() {
+        return new Map<Id, SObject>(getList());
+    }
+
+    /**
+     * @return Query Locator for current query
+     */
+    public Database.QueryLocator getQueryLocator() {
+        return this.databaseService.getQueryLocator(query.toSOQL(), query.getVariables());
     }
 
 
@@ -186,25 +224,16 @@ public inherited sharing abstract class QueryObject {
      * @return SObjects with field values in given value set.
      */
     public virtual SObject[] byField(String fieldAPIName, String operator, Object value) {
-        SObjectField field = allFields.get(fieldAPIName);
-
-        if (canUseCache(operator, field)) {
-            return getCachedRecords(field, operator, value);
-
-        } else {
-            this.query.setWhere(fieldAPIName + ' ' + operator + ' :value');
-            this.query.bindVariable('value', value);
-            return executeQuery();
-        }
+        this.criteria.add(new QueryCriteria(fieldAPIName, operator, value));
+        return executeQuery();
     }
 
 
     /**
     * @return SObjects which satisfy given query condition
     */
-    public SObject[] byCriterion(QueryCriteria criteria) {
-        this.query.setWhere(criteria.toString());
-        this.query.bindVariable('value', criteria.value);
+    public SObject[] byCriterion(QueryCriteria criterion) {
+        this.criteria.add(criterion);
         return executeQuery();
     }
 
@@ -212,14 +241,7 @@ public inherited sharing abstract class QueryObject {
     * @return SObjects which satisfy all of given query condition
     */
     public SObject[] byCriteria(QueryCriteria[] criteria) {
-        List<String> conditionStrings = new List<String>();
-
-        for (Integer i = 0, size = criteria.size(); i < size; i++) {
-            conditionStrings.add(criteria[i].toString() + i);
-            this.query.bindVariable('value' + i, criteria[i].value);
-        }
-
-        this.query.setWhere(String.join(conditionStrings, ' AND '));
+        this.criteria.addAll(criteria);
         return executeQuery();
     }
 
@@ -273,47 +295,88 @@ public inherited sharing abstract class QueryObject {
     * Executes query and caches results
     */
     protected SObject[] executeQuery() {
-        SObject[] records = this.databaseService.query(query.toSOQL(), query.getVariables());
+        List<SObject> result = new List<SObject>();
+        Boolean doQuery = true;
 
-        if (mocker.isMocked(sObjectType)) {
-            return mocker.mockResponse(this, sObjectType, query.getVariables(), records);
+        if (canUseCache()) {
+            doQuery = getCachedRecords(result);
 
         } else {
+            resolveQueryCriteria();
+        }
+
+        if (doQuery) {
+            SObject[] records = this.databaseService.query(query.toSOQL(), query.getVariables());
+            result.addAll(records);
+
             if (!(records instanceof AggregateResult[])) {
                 cache.put(getFieldsToCacheBy(), records);
             }
-            return records;
+        }
+
+        if (mocker.isMocked(sObjectType)) {
+            return mocker.mockResponse(this, sObjectType, query.getVariables(), result);
+
+        } else {
+            return result;
         }
     }
-
 
     /**
     * @return True, if selector can use cached records:
     * - Cache is not explicitly forbidden
+    * - There is only 1 query criteria
     * - Operator is either equals or IN
     * - Field is explicitly allowed for caching or Field is unique to use it for upsert (isIdLookup)
     */
-    private Boolean canUseCache(String operator, SObjectField field) {
+    private Boolean canUseCache() {
+//        System.debug('useCache: ' + useCache);
+//        System.debug('criteria: ' + criteria);
+//        System.debug('operator: ' + (criteria[0].operator == '=' || criteria[0].operator == 'IN'));
+//        System.debug('getFieldsToCacheBy(): ' + getFieldsToCacheBy());
+
         return useCache
-                && (operator == '=' || operator == 'IN')
-                && getFieldsToCacheBy().contains(field);
+                && criteria.size() == 1
+                && (criteria[0].operator == '=' || criteria[0].operator == 'IN')
+                && getFieldsToCacheBy().contains(allFields.get((criteria[0].field)));
     }
 
     /**
-    * @return All records that are in cache and queries these which are not.
-    */
-    private SObject[] getCachedRecords(SObjectField field, String operator, Object value) {
-        QueryCache.CacheResult result = cache.getCachedRecords(field, value);
+     * @param result Query result to append cached records to
+     * @return True if there's remainder with non-cached values and there has to be query on that.
+     */
+    private Boolean getCachedRecords(List<SObject> result) {
+        QueryCriteria criteria = criteria.get(0);
+        SObjectField field = allFields.get(criteria.field);
+        QueryCache.CacheResult cacheResult = cache.getCachedRecords(field, criteria.value);
 
-        if (!result.remainingValues.isEmpty()) {
-            this.query.setWhere('' + field + ' ' + operator + ' :value');
-            this.query.bindVariable('value', result.remainingValues);
-            result.cachedRecords.putAll(executeQuery());
+        result.addAll(cacheResult.cachedRecords.values());
+
+        if (!cacheResult.remainingValues.isEmpty()) {
+            this.query.setWhere(criteria.toString());
+            this.query.bindVariable('value', cacheResult.remainingValues);
+            return true;
+
+        } else {
+            return false;
         }
-
-        return result.cachedRecords.values();
     }
 
+    /**
+     * Adds query criteria to query builder and binds variable
+     */
+    private void resolveQueryCriteria() {
+        List<String> conditionStrings = new List<String>();
+
+        for (Integer i = 0, size = criteria.size(); i < size; i++) {
+            conditionStrings.add(criteria[i].toString() + i);
+            this.query.bindVariable('value' + i, criteria[i].value);
+        }
+
+        if (!conditionStrings.isEmpty()) {
+            this.query.setWhere(String.join(conditionStrings, ' AND '));
+        }
+    }
 
     /**
     * @return selector cache for protected records.

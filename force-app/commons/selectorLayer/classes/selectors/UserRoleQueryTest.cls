@@ -29,7 +29,8 @@ private class UserRoleQueryTest {
         List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
 
         for (UserRole userRole : userRoles) {
-            System.assertEquals(userRole.DeveloperName, new UserRoleQuery().byDeveloperName(userRole.DeveloperName).DeveloperName);
+            UserRole role = (UserRole) new UserRoleQuery().byDeveloperName(userRole.DeveloperName).getFirstOrEmpty();
+            System.assertEquals(userRole.DeveloperName, role.DeveloperName);
         }
 
         System.assertEquals(2, Limits.getQueries());
@@ -44,7 +45,7 @@ private class UserRoleQueryTest {
             devNames.add(userRole.DeveloperName);
         }
 
-        Map<Id, UserRole> result = new Map<Id, UserRole>(new UserRoleQuery().byDeveloperName((Iterable<String>) devNames));
+        Map<Id, UserRole> result = (Map<Id, UserRole>) new UserRoleQuery().byDeveloperName((Iterable<String>) devNames).getMapById();
         System.assertEquals(expected.keySet(), result.keySet());
     }
 
@@ -53,7 +54,7 @@ private class UserRoleQueryTest {
         List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
 
         for (UserRole userRole : userRoles) {
-            userRole result = (UserRole) new UserRoleQuery().byId(userRole.Id);
+            UserRole result = (UserRole) new UserRoleQuery().byId(userRole.Id).getFirstOrNull();
             System.assertEquals(userRole.DeveloperName, result.DeveloperName);
         }
 
@@ -63,7 +64,7 @@ private class UserRoleQueryTest {
     @IsTest
     static void testSelectByIds() {
         Map<Id, UserRole> expected = new Map<Id, UserRole>([SELECT Id,DeveloperName FROM UserRole]);
-        Map<Id, UserRole> result = new Map<Id, UserRole>((UserRole[]) new UserRoleQuery().byId((Iterable<String>) expected.keySet()));
+        Map<Id, UserRole> result = (Map<Id, UserRole>) new UserRoleQuery().byId((Iterable<String>) expected.keySet()).getMapById();
 
         System.assertEquals(expected.keySet(), result.keySet());
     }
@@ -73,12 +74,11 @@ private class UserRoleQueryTest {
         UserRole[] roles = [SELECT Id FROM UserRole WHERE Id = :UserInfo.getUserRoleId()];
 
         if (roles.isEmpty()) {
-            System.assertEquals(null, new UserRoleQuery().ofCurrentUser());
+            System.assertEquals(true, new UserRoleQuery().byCurrentUser().getList().isEmpty());
 
         } else {
             UserRole role = roles.isEmpty() ? null : roles[0];
-            System.assertEquals(role.Id, new UserRoleQuery().ofCurrentUser().Id);
+            System.assertEquals(role.Id, new UserRoleQuery().byCurrentUser().getFirstOrNull().Id);
         }
-
     }
 }

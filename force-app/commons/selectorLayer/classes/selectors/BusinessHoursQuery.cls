@@ -25,56 +25,58 @@
 /**
  * Selector Layer for Business Hours.
  * Results are cached for better performance and SOQL Limits savings.
- * @see BusinessHoursSelectorTest
+ * @see BusinessHoursQueryTest
  */
 public inherited sharing class BusinessHoursQuery extends QueryObject {
+    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
+            BusinessHours.Id,
+            BusinessHours.Name,
+            BusinessHours.IsDefault,
+            BusinessHours.IsActive,
+            BusinessHours.MondayStartTime,
+            BusinessHours.MondayEndTime,
+            BusinessHours.TuesdayStartTime,
+            BusinessHours.TuesdayEndTime,
+            BusinessHours.WednesdayStartTime,
+            BusinessHours.WednesdayEndTime,
+            BusinessHours.ThursdayStartTime,
+            BusinessHours.ThursdayEndTime,
+            BusinessHours.FridayStartTime,
+            BusinessHours.FridayEndTime,
+            BusinessHours.SaturdayStartTime,
+            BusinessHours.SaturdayEndTime,
+            BusinessHours.SundayStartTime,
+            BusinessHours.SundayEndTime
+
+    };
 
     public BusinessHoursQuery() {
-        super(new List<SObjectField>{
-                BusinessHours.Id,
-                BusinessHours.Name,
-                BusinessHours.IsDefault,
-                BusinessHours.IsActive,
-                BusinessHours.MondayStartTime,
-                BusinessHours.MondayEndTime,
-                BusinessHours.TuesdayStartTime,
-                BusinessHours.TuesdayEndTime,
-                BusinessHours.WednesdayStartTime,
-                BusinessHours.WednesdayEndTime,
-                BusinessHours.ThursdayStartTime,
-                BusinessHours.ThursdayEndTime,
-                BusinessHours.FridayStartTime,
-                BusinessHours.FridayEndTime,
-                BusinessHours.SaturdayStartTime,
-                BusinessHours.SaturdayEndTime,
-                BusinessHours.SundayStartTime,
-                BusinessHours.SundayEndTime
-
-        }, BusinessHours.SObjectType);
-    }
-
-
-    /**
-     * @return Default Business Hours for running environment.
-     */
-    public BusinessHours default() {
-        return (BusinessHours) oneRecordByField(BusinessHours.IsDefault, '=', true);
+        super(QUERIED_FIELDS, BusinessHours.SObjectType);
     }
 
 
     /**
      * @return Active Business Hours with given name
      */
-    public BusinessHours byName(String name) {
-        return (BusinessHours) firstOrNull(byName(new List<String>{name}));
+    public QueryObject byDefault(Boolean isDefault) {
+        return byField(BusinessHours.IsDefault, '=', isDefault);
+    }
+
+
+    /**
+     * @return Active Business Hours with given name
+     */
+    public QueryObject byName(String name) {
+        return byName(new List<String>{name});
     }
 
     /**
      * @return Active Business Hours with given name
      */
-    public BusinessHours[] byName(Iterable<String> names) {
-        return byField(BusinessHours.Name, 'IN', names);
+    public QueryObject byName(Iterable<String> names) {
+        return (QueryObject) byField(BusinessHours.Name, 'IN', names);
     }
+
 
     protected override Set<SObjectField> getFieldsToCacheBy() {
         return new Set<SObjectField>{
@@ -84,6 +86,6 @@ public inherited sharing class BusinessHoursQuery extends QueryObject {
     }
 
     protected override List<SObject> getRecordsToPrecache() {
-        return byField(BusinessHours.IsActive, '=', true);
+        return byField(BusinessHours.IsActive, '=', true).getList();
     }
 }

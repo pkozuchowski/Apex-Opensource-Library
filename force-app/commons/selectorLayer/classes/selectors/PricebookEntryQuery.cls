@@ -43,31 +43,31 @@ public inherited sharing class PricebookEntryQuery extends QueryObject {
 
 
     /**
-     * @return PricebookEntry record with given name or null.
+     * Filters PricebookEntry record with given name or null.
      */
-    public PricebookEntry[] byProductId(Id productId) {
-        return byField(PricebookEntry.Product2Id, '=', productId);
+    public PricebookEntryQuery byProductId(Id productId) {
+        return byProductId(new List<Id>{productId});
     }
 
     /**
-     * @return PricebookEntry records with given productIds.
+     * Filters PricebookEntry records with given productIds.
      */
-    public PricebookEntry[] byProductId(Iterable<Id> productIds) {
-        return byField(PricebookEntry.Product2Id, 'IN', productIds);
+    public PricebookEntryQuery byProductId(Iterable<Id> productIds) {
+        return (PricebookEntryQuery) byField(PricebookEntry.Product2Id, 'IN', productIds);
     }
 
 
     /**
-     * @return PricebookEntry record with given name or null.
+     * Filters PricebookEntry record with given name or null.
      */
-    public PricebookEntry[] byPricebookId(Id pricebookId) {
-        return byField(PricebookEntry.Pricebook2Id, '=', pricebookId);
+    public PricebookEntryQuery byPricebookId(Id pricebookId) {
+        return byPricebookId(new List<Id>{pricebookId});
     }
 
     /**
-     * @return PricebookEntry records with given pricebookIds.
+     * Filters PricebookEntry records with given pricebookIds.
      */
-    public PricebookEntry[] byPricebookId(Iterable<Id> pricebookIds) {
-        return byField(PricebookEntry.Pricebook2Id, 'IN', pricebookIds);
+    public PricebookEntryQuery byPricebookId(Iterable<Id> pricebookIds) {
+        return (PricebookEntryQuery) byField(PricebookEntry.Pricebook2Id, 'IN', pricebookIds);
     }
 }

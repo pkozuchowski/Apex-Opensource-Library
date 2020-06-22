@@ -42,47 +42,49 @@ public inherited sharing class LeadQuery extends QueryObject {
         }, Lead.SObjectType);
     }
 
+
     /**
-     * @return Leads by given name
+     * Filters Leads by given name
      */
-    public Lead[] byName(String name) {
-        return byField(Lead.Name, '=', name);
+    public LeadQuery byName(String name) {
+        return byName(new List<String>{name});
     }
 
     /**
-     * @return Leads by given names (List or Set)
+     * Filters Leads by given names (List or Set)
      */
-    public Lead[] byName(Iterable<String> names) {
-        return byField(Lead.Name, 'IN', names);
+    public LeadQuery byName(Iterable<String> names) {
+        return (LeadQuery) byField(Lead.Name, 'IN', names);
     }
 
     /**
-     * @return Leads by given email
+     * Filters Leads by given email
      */
-    public Lead[] byEmail(String email) {
-        return byField(Lead.Email, '=', email);
+    public LeadQuery byEmail(String email) {
+        return byEmail(new List<String>{email});
     }
 
     /**
-     * @return Leads by given emails (List or Set)
+     * Filters Leads by given emails (List or Set)
      */
-    public Lead[] byEmail(Iterable<String> emails) {
-        return byField(Lead.Email, 'IN', emails);
+    public LeadQuery byEmail(Iterable<String> emails) {
+        return (LeadQuery) byField(Lead.Email, 'IN', emails);
     }
 
     /**
-     * @return Leads by given company
+     * Filters Leads by given company
      */
-    public Lead[] byCompany(String company) {
-        return byField(Lead.Company, '=', company);
+    public LeadQuery byCompany(String company) {
+        return byCompany(new List<String>{company});
     }
 
     /**
-     * @return Leads by given companies (List or Set)
+     * Filters Leads by given companies (List or Set)
      */
-    public Lead[] byCompany(Iterable<String> companies) {
-        return byField(Lead.Company, 'IN', companies);
+    public LeadQuery byCompany(Iterable<String> companies) {
+        return (LeadQuery) byField(Lead.Company, 'IN', companies);
     }
+
 
     protected override Set<SObjectField> getFieldsToCacheBy() {
         return new Set<SObjectField>{

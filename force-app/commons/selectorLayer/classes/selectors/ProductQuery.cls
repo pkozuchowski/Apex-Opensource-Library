@@ -71,44 +71,44 @@ public virtual inherited sharing class ProductQuery extends QueryObject {
 
 
     /**
-     * @return Product2s with given name
+     * Filters Product2s with given name
      */
-    public Product2[] byName(String name) {
-        return byField(Product2.Name, '=', name);
+    public ProductQuery byName(String name) {
+        return byName(new List<String>{name});
     }
 
     /**
-     * @return Product2s with given names (List or Set)
+     * Filters Product2s with given names (List or Set)
      */
-    public Product2[] byName(Iterable<String> names) {
-        return byField(Product2.Name, 'IN', names);
+    public ProductQuery byName(Iterable<String> names) {
+        return (ProductQuery) byField(Product2.Name, 'IN', names);
     }
 
     /**
-     * @return Product2s with given name
+     * Filters Product2s with given name
      */
-    public Product2[] byProductCode(String productCode) {
-        return byField(Product2.ProductCode, '=', productCode);
+    public ProductQuery byProductCode(String productCode) {
+        return byProductCode(new List<String>{productCode});
     }
 
     /**
-     * @return Product2s with given names (List or Set)
+     * Filters Product2s with given names (List or Set)
      */
-    public Product2[] byProductCode(Iterable<String> productCodes) {
-        return byField(Product2.ProductCode, 'IN', productCodes);
+    public ProductQuery byProductCode(Iterable<String> productCodes) {
+        return (ProductQuery) byField(Product2.ProductCode, 'IN', productCodes);
     }
 
     /**
-     * @return Product2s with given name
+     * Filters Product2s with given name
      */
-    public Product2[] byExternalId(String externalId) {
-        return byField(Product2.ExternalId, '=', externalId);
+    public ProductQuery byExternalId(String externalId) {
+        return byExternalId(new List<String>{externalId});
     }
 
     /**
-     * @return Product2s with given names (List or Set)
+     * Filters Product2s with given names (List or Set)
      */
-    public Product2[] byExternalId(Iterable<String> externalIds) {
-        return byField(Product2.ExternalId, 'IN', externalIds);
+    public ProductQuery byExternalId(Iterable<String> externalIds) {
+        return (ProductQuery) byField(Product2.ExternalId, 'IN', externalIds);
     }
 }

@@ -34,22 +34,22 @@ private class QueueQueryTest {
             developerNames.add(queue.DeveloperName);
             names.add(queue.Name);
 
-            System.assertEquals(queue.DeveloperName, new QueueQuery().byId(queue.Id).get('DeveloperName'));
-            System.assertEquals(queue.Id, new QueueQuery().byDeveloperName(queue.DeveloperName).Id);
+            System.assertEquals(queue.DeveloperName, new QueueQuery().byId(queue.Id).getFirstOrNull().get('DeveloperName'));
+            System.assertEquals(queue.Id, new QueueQuery().byDeveloperName(queue.DeveloperName).getFirstOrNull().Id);
         }
 
         /*Dev names are cached*/
-        System.assertEquals(queues.size(), new QueueQuery().byDeveloperName(developerNames).size());
-        System.assertEquals(queues.size(), new QueueQuery().byDeveloperName(developerNames).size());
+        System.assertEquals(queues.size(), new QueueQuery().byDeveloperName(developerNames).getList().size());
+        System.assertEquals(queues.size(), new QueueQuery().byDeveloperName(developerNames).getList().size());
 
         /*+ 2 SOQL queries*/
-        System.assertEquals(queues.size(), new QueueQuery().byName((Iterable<String>) names).size());
-        System.assertEquals(queues.size(), new QueueQuery().byName((Iterable<String>) names).size());
+        System.assertEquals(queues.size(), new QueueQuery().byName((Iterable<String>) names).getList().size());
+        System.assertEquals(queues.size(), new QueueQuery().byName((Iterable<String>) names).getList().size());
 
         /*Ids are cached*/
-        System.assertEquals(queues.size(), new QueueQuery().byId((Iterable<Id>) queues.keySet()).size());
-        System.assertEquals(queues.size(), new QueueQuery().byId((Iterable<Id>) queues.keySet()).size());
+        System.assertEquals(queues.size(), new QueueQuery().byId((Iterable<Id>) queues.keySet()).getList().size());
+        System.assertEquals(queues.size(), new QueueQuery().byId((Iterable<Id>) queues.keySet()).getList().size());
 
-        System.assertEquals(5, Limits.getQueries());
+        System.assertEquals(4, Limits.getQueries());
     }
 }

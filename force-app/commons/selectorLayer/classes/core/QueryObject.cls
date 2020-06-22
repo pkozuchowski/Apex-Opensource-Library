@@ -35,9 +35,8 @@ public inherited sharing abstract class QueryObject {
     protected final Map<String, SObjectField> allFields;
 
     private Boolean useCache = true;
-    private SObjectType sObjectType;
-    private QueryCriteria[] criteria;
-
+    private final QueryCriteria[] criteria;
+    private final SObjectType sObjectType;
 
     protected QueryObject(List<SObjectField> queryFields, SObjectType sObjectType) {
         this.databaseService = new DatabaseService();
@@ -67,7 +66,7 @@ public inherited sharing abstract class QueryObject {
      * Since there is no proper way to handle method chaining of builder pattern with inheritance in Apex,
      * this method should be reimplemented where it's needed as public XXXSelector withoutSharing();
      */
-    protected QueryObject withoutSharingImpl() {
+    public QueryObject withoutSharing() {
         databaseService.setSharing(Sharing.WITHOUT_SHARING);
         return this;
     }
@@ -79,7 +78,7 @@ public inherited sharing abstract class QueryObject {
     * Since there is no proper way to handle method chaining of builder pattern with inheritance in Apex,
     * this method should be reimplemented where it's needed as public XXXSelector withoutCache();
     */
-    protected QueryObject withoutCacheImpl() {
+    public QueryObject withoutCache() {
         this.useCache = false;
         return this;
     }
@@ -91,54 +90,139 @@ public inherited sharing abstract class QueryObject {
     * Since there is no proper way to handle method chaining of builder pattern with inheritance in Apex,
     * this method should be reimplemented where it's needed as public XXXSelector withAllFields();
     */
-    protected QueryObject withAllFieldsImpl() {
+    public QueryObject withAllFields() {
         this.query.addFields(allFields.values());
         return this;
     }
 
 
     /**
-    * Reductors
-    * */
-
-    /**
-     * @return The most recently created record or null if there isn't any.
+     *
+     * Common criteria methods
+     *
      */
-    public virtual SObject newest() {
-        query.setOrderBy('CreatedDate DESC');
-        query.setLimit(1);
-        return firstOrNull(executeQuery());
-    }
-
-    /**
-     * @return All records in database
-     */
-    public virtual SObject[] all() {
-        return getList();
-    }
-
 
     /**
     * @return Record by given Salesforce Id
     */
-    public virtual SObject byId(Id recordId) {
-        return firstOrNull(byId(new List<Id>{recordId}));
+    public virtual QueryObject byId(Id recordId) {
+        return byId(new List<Id>{recordId});
     }
 
     /**
      * @param recordIds [List<Id>] or [(Iterable<Id>) Set<Id>] or [(Iterable<Id>) List<SObject>]
      * @return Records by given Salesforce Ids
      */
-    public virtual SObject[] byId(Iterable<Id> recordIds) {
+    public virtual QueryObject byId(Iterable<Id> recordIds) {
         return byField('Id', 'IN', recordIds);
+    }
+
+    /**
+     * @example
+     * <pre>
+     * List<Account> accounts = Query.Accounts.relatedToChildren(contacts, Contact.AccountId);
+     * </pre>
+     *
+     * @param childRecords List of children records for which oarent records are queried
+     * @param relationShipField Parent field on records (ex. Contact.AccountId for Contacts children of Accounts)
+     * @return List of parent records related to given child records by given field ex. Accounts related to given contacts
+     */
+    public virtual QueryObject relatedToChildren(SObject[] childRecords, SObjectField relationShipField) {
+        Set<Id> parentIds = new Set<Id>();
+
+        for (SObject record : childRecords) {
+            parentIds.add((Id) record.get(relationShipField));
+        }
+
+        byId((Iterable<Id>) parentIds);
+        return this;
+    }
+
+    /**
+     * @example
+     * <pre>
+     * List<Contact> contacts = Query.Contacts.relatedToParent(accounts, Contact.AccountId);
+     * </pre>
+     *
+     * @param parentRecords List of child records in relationship
+     * @param relationShipField Parent field on records (ex. Contact.AccountId for list of Contacts)
+     * @return List of child records related to given parent records by given field
+     */
+    public virtual QueryObject relatedToParent(SObject[] parentRecords, SObjectField relationShipField) {
+        return byField(relationShipField, 'IN', parentRecords);
     }
 
 
     /**
+     * @value Expected value or values (may be Set or List) of the field
+     * @return SObjects with field values in given value set.
+     */
+    public virtual QueryObject byField(SObjectField field, String operator, Object value) {
+        return byField('' + field, operator, value);
+    }
+
+    /**
+     * @value Expected value or values (may be Set or List) of the field
+     * @return SObjects with field values in given value set.
+     */
+    public virtual QueryObject byField(String fieldAPIName, String operator, Object value) {
+        this.criteria.add(new QueryCriteria(fieldAPIName, operator, value));
+        return this;
+    }
+
+
+    /**
+    * @return SObjects which satisfy given query condition
+    */
+    public QueryObject byCriterion(QueryCriteria criterion) {
+        this.criteria.add(criterion);
+        return this;
+    }
+
+    /**
+    * @return SObjects which satisfy all of given query condition
+    */
+    public QueryObject byCriteria(QueryCriteria[] criteria) {
+        this.criteria.addAll(criteria);
+        return this;
+    }
+
+
+    /**
+     *
+     * Query reducing methods
+     *
+     */
+
+
+    /**
+     * @return Id of first record or null if list has no results
+     */
+    public Id getFirstIdOrNull() {
+        return getFirstOrEmpty().Id;
+    }
+
+    /**
+     * @return Field of first record or null if list has no results
+     */
+    public Object getFirstFieldOrNull(SObjectField field) {
+        return getFirstOrEmpty().get(field);
+    }
+
+    /**
      * @return First record or null if list has no results
      */
-    public SObject getFirst() {
-        return firstOrNull(executeQuery());
+    public SObject getFirstOrNull() {
+        List<SObject> result = executeQuery();
+        return result.isEmpty() ? null : result.get(0);
+    }
+
+    /**
+     * @return First record or empty record instance if list has no results
+     */
+    public SObject getFirstOrEmpty() {
+        List<SObject> result = executeQuery();
+        return result.isEmpty() ? sObjectType.newSObject(null, true) : result.get(0);
     }
 
     /**
@@ -159,7 +243,10 @@ public inherited sharing abstract class QueryObject {
      * @return SObject map by Ids
      */
     public Map<Id, SObject> getMapById() {
-        return new Map<Id, SObject>(getList());
+        Map<Id, SObject> resultMap = (Map<Id, SObject>) Type.forName('Map<Id,' + sObjectType + '>').newInstance();
+        resultMap.putAll(getList());
+
+        return resultMap;
     }
 
     /**
@@ -169,109 +256,22 @@ public inherited sharing abstract class QueryObject {
         return this.databaseService.getQueryLocator(query.toSOQL(), query.getVariables());
     }
 
-
     /**
-     * @example
-     * <pre>
-     * List<Account> accounts = Query.Accounts.relatedToChildren(contacts, Contact.AccountId);
-     * </pre>
-     *
-     * @param childRecords List of children records for which oarent records are queried
-     * @param relationShipField Parent field on records (ex. Contact.AccountId for Contacts children of Accounts)
-     * @return List of parent records related to given child records by given field ex. Accounts related to given contacts
-     */
-    public virtual SObject[] relatedToChildren(SObject[] childRecords, SObjectField relationShipField) {
-        Set<Id> parentIds = new Set<Id>();
+    * @return Records counted by given SObject field
+    */
+    public AggregateResult[] getCount() {
+        this.query.setFields(new List<String>{'COUNT(Id)'});
+        List<String> fields = new List<String>();
 
-        for (SObject record : childRecords) {
-            parentIds.add((Id) record.get(relationShipField));
+        for (QueryCriteria queryCriteria : criteria) {
+            fields.add(queryCriteria.field);
         }
 
-        return byId((Iterable<Id>) parentIds);
-    }
-
-    /**
-     * @example
-     * <pre>
-     * List<Contact> contacts = Query.Contacts.relatedToParent(accounts, Contact.AccountId);
-     * </pre>
-     *
-     * @param parentRecords List of child records in relationship
-     * @param relationShipField Parent field on records (ex. Contact.AccountId for list of Contacts)
-     * @return List of child records related to given parent records by given field
-     */
-    public virtual SObject[] relatedToParent(SObject[] parentRecords, SObjectField relationShipField) {
-        return byField(relationShipField, 'IN', parentRecords);
-    }
-
-    /**
-     * @return SObject with field equals given value or null
-     */
-    public virtual SObject oneRecordByField(SObjectField field, String operator, Object value) {
-        return firstOrNull(byField(field, operator, value));
-    }
-
-    /**
-     * @value Expected value or values (may be Set or List) of the field
-     * @return SObjects with field values in given value set.
-     */
-    public virtual SObject[] byField(SObjectField field, String operator, Object value) {
-        return byField('' + field, operator, value);
-    }
-
-    /**
-     * @value Expected value or values (may be Set or List) of the field
-     * @return SObjects with field values in given value set.
-     */
-    public virtual SObject[] byField(String fieldAPIName, String operator, Object value) {
-        this.criteria.add(new QueryCriteria(fieldAPIName, operator, value));
+        this.query.addFields(fields);
+        this.query.setGroupBy(String.join(fields, ','));
         return executeQuery();
     }
 
-
-    /**
-    * @return SObjects which satisfy given query condition
-    */
-    public SObject[] byCriterion(QueryCriteria criterion) {
-        this.criteria.add(criterion);
-        return executeQuery();
-    }
-
-    /**
-    * @return SObjects which satisfy all of given query condition
-    */
-    public SObject[] byCriteria(QueryCriteria[] criteria) {
-        this.criteria.addAll(criteria);
-        return executeQuery();
-    }
-
-
-    /**
-    * @return Records counted by given SObject field
-    */
-    public AggregateResult[] countBy(SObjectField field) {
-        return countBy('' + field);
-    }
-
-    /**
-    * @return Records counted by given SObject field
-    */
-    public AggregateResult[] countBy(String field) {
-        this.query.setFields(new List<String>{
-                'COUNT(Id) cnt',
-                field
-        });
-        this.query.setGroupBy(field);
-        return executeQuery();
-    }
-
-
-    /**
-     * @return First record in list or null if list is empty
-     */
-    protected SObject firstOrNull(SObject[] records) {
-        return records.isEmpty() ? null : records.get(0);
-    }
 
     /**
     * Fields returned by this method will be used to cache records.
@@ -290,6 +290,14 @@ public inherited sharing abstract class QueryObject {
     protected virtual List<SObject> getRecordsToPrecache() {
         return new List<SObject>();
     }
+
+    protected List<SObject> getListForCache() {
+        List<SObject> result = getList();
+        this.criteria.clear();
+        this.query.boundVars.clear();
+        return result;
+    }
+
 
     /**
     * Executes query and caches results
@@ -322,6 +330,7 @@ public inherited sharing abstract class QueryObject {
         }
     }
 
+
     /**
     * @return True, if selector can use cached records:
     * - Cache is not explicitly forbidden
@@ -330,11 +339,6 @@ public inherited sharing abstract class QueryObject {
     * - Field is explicitly allowed for caching or Field is unique to use it for upsert (isIdLookup)
     */
     private Boolean canUseCache() {
-//        System.debug('useCache: ' + useCache);
-//        System.debug('criteria: ' + criteria);
-//        System.debug('operator: ' + (criteria[0].operator == '=' || criteria[0].operator == 'IN'));
-//        System.debug('getFieldsToCacheBy(): ' + getFieldsToCacheBy());
-
         return useCache
                 && criteria.size() == 1
                 && (criteria[0].operator == '=' || criteria[0].operator == 'IN')

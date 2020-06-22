@@ -29,6 +29,6 @@ private class HistoryQueryTest {
      */
     @IsTest
     static void coverage() {
-        SObject[] historyRecords = new HistoryQuery(MacroHistory.SObjectType).byParentId(new List<Id>());
+        SObject[] historyRecords = new HistoryQuery(MacroHistory.SObjectType).byParentId(new List<Id>()).getList();
     }
 }

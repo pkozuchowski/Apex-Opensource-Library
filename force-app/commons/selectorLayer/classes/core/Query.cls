@@ -41,6 +41,7 @@ public inherited sharing class Query {
     public final static OpportunityQuery Opportunities { get {return new OpportunityQuery();} }
     public final static OrgWideEmailAddressQuery OrgWideEmailAddresses { get {return new OrgWideEmailAddressQuery();} }
     public final static PermissionSetQuery PermissionSets { get {return new PermissionSetQuery();} }
+    public final static PermissionSetAssignmentQuery PermissionSetAssignments { get {return new PermissionSetAssignmentQuery();} }
     public final static PricebookEntryQuery PricebookEntries { get {return new PricebookEntryQuery();} }
     public final static PricebookQuery Pricebooks { get {return new PricebookQuery();} }
     public final static ProductQuery Products { get {return new ProductQuery();} }

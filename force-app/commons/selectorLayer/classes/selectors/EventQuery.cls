@@ -47,48 +47,49 @@ public inherited sharing class EventQuery extends QueryObject {
 
 
     /**
-     * @return Events associated with given Account
+     * Filters Events associated with given Account
      */
-    public Event[] byAccountId(Id accountId) {
-        return byField(Event.AccountId, '=', accountId);
+    public EventQuery byAccountId(Id accountId) {
+        return byAccountId(new List<Id>{accountId});
     }
 
     /**
-     * @return Events associated with given Accounts (List or Set)
+     * Filters Events associated with given Accounts (List or Set)
      */
-    public Event[] byAccountId(Iterable<Id> accountIds) {
-        return byField(Event.AccountId, 'IN', accountIds);
-    }
-
-
-    /**
-     * @return Events associated with given Account
-     */
-    public Event[] byWhatId(Id whatId) {
-        return byField(Event.WhatId, '=', whatId);
-    }
-
-    /**
-     * @return Events associated with given Accounts (List or Set)
-     */
-    public Event[] byWhatId(Iterable<Id> whatIds) {
-        return byField(Event.WhatId, 'IN', whatIds);
+    public EventQuery byAccountId(Iterable<Id> accountIds) {
+        return (EventQuery) byField(Event.AccountId, 'IN', accountIds);
     }
 
 
     /**
-     * @return Events associated with given Account
+     * Filters Events associated with given Account
      */
-    public Event[] byWhoId(Id whoId) {
-        return byField(Event.WhoId, '=', whoId);
+    public EventQuery byWhatId(Id whatId) {
+        return byWhatId(new List<Id>{whatId});
     }
 
     /**
-     * @return Events associated with given Accounts (List or Set)
+     * Filters Events associated with given Accounts (List or Set)
      */
-    public Event[] byWhoId(Iterable<Id> whoIds) {
-        return byField(Event.WhoId, 'IN', whoIds);
+    public EventQuery byWhatId(Iterable<Id> whatIds) {
+        return (EventQuery) byField(Event.WhatId, 'IN', whatIds);
     }
+
+
+    /**
+     * Filters Events associated with given Account
+     */
+    public EventQuery byWhoId(Id whoId) {
+        return byWhoId(new List<Id>{whoId});
+    }
+
+    /**
+     * Filters Events associated with given Accounts (List or Set)
+     */
+    public EventQuery byWhoId(Iterable<Id> whoIds) {
+        return (EventQuery) byField(Event.WhoId, 'IN', whoIds);
+    }
+
 
     protected override Set<SObjectField> getFieldsToCacheBy() {
         return new Set<SObjectField>{

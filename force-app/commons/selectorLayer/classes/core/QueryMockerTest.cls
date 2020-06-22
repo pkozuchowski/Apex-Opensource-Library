@@ -33,8 +33,8 @@ private class QueryMockerTest {
             }, Account.SObjectType);
         }
 
-        public Account[] byName(String name) {
-            return this.byField(Account.Name, '=', name);
+        public TestAccountQuery byName(String name) {
+            return (TestAccountQuery) this.byField(Account.Name, '=', name);
         }
     }
 
@@ -44,10 +44,10 @@ private class QueryMockerTest {
 
         Test.startTest();
         queryMocker.setMock(Account.SObjectType, new AccountQueryMock());
-        List<Account> resultAfterMock = new TestAccountQuery().byName('Mock Result');
+        List<Account> resultAfterMock = new TestAccountQuery().byName('Mock Result').getList();
 
         queryMocker.removeMock(Account.SObjectType);
-        List<Account> resultBeforeMock = new TestAccountQuery().byName('Mock Result');
+        List<Account> resultBeforeMock = new TestAccountQuery().byName('Mock Result').getList();
         Test.stopTest();
 
 
@@ -65,7 +65,6 @@ private class QueryMockerTest {
                 Map<String, Object> queryBoundVariables,
                 SObject[] queryResult) {
 
-            System.debug('queryBoundVariables: ' + JSON.serializePretty(queryBoundVariables));
             System.assertEquals(QueryMockerTest.class.getName(), caller, 'Should return name of class where query was called');
             System.assertEquals('testMocking', callerMethod, 'Should return name of method where query was called');
             System.assertEquals(TestAccountQuery.class.getName(), selector, 'Should return name of the Query/Selector class');

@@ -53,48 +53,49 @@ public inherited sharing class CaseQuery extends QueryObject {
 
 
     /**
-     * @return Cases by given name
+     * Filters Cases by given name
      */
-    public Case[] bySubject(String name) {
-        return byField(Case.Subject, '=', name);
+    public CaseQuery bySubject(String name) {
+        return bySubject(new List<String>{name});
     }
 
     /**
-     * @return Cases by given names (List or Set)
+     * Filters Cases by given names (List or Set)
      */
-    public Case[] bySubject(Iterable<String> names) {
-        return byField(Case.Subject, 'IN', names);
-    }
-
-
-    /**
-     * @return Cases related to given account Ids (List or Set)
-     */
-    public Case[] byAccountId(Id accountId) {
-        return byField(Case.AccountId, '=', accountId);
-    }
-
-    /**
-     * @return Cases related to given account Ids (List or Set)
-     */
-    public Case[] byAccountId(Iterable<Id> accountIds) {
-        return byField(Case.AccountId, 'IN', accountIds);
+    public CaseQuery bySubject(Iterable<String> names) {
+        return (CaseQuery) byField(Case.Subject, 'IN', names);
     }
 
 
     /**
-     * @return Cases related to given contact Ids (List or Set)
+     * Filters Cases related to given account Ids (List or Set)
      */
-    public Case[] byContactId(Id contactId) {
-        return byField(Case.ContactId, '=', contactId);
+    public CaseQuery byAccountId(Id accountId) {
+        return byAccountId(new List<Id>{accountId});
     }
 
     /**
-     * @return Cases related to given contact Ids (List or Set)
+     * Filters Cases related to given account Ids (List or Set)
      */
-    public Case[] byContactId(Iterable<Id> contactIds) {
-        return byField(Case.ContactId, 'IN', contactIds);
+    public CaseQuery byAccountId(Iterable<Id> accountIds) {
+        return (CaseQuery) byField(Case.AccountId, 'IN', accountIds);
     }
+
+
+    /**
+     * Filters Cases related to given contact Ids (List or Set)
+     */
+    public CaseQuery byContactId(Id contactId) {
+        return byContactId(new List<Id>{contactId});
+    }
+
+    /**
+     * Filters Cases related to given contact Ids (List or Set)
+     */
+    public CaseQuery byContactId(Iterable<Id> contactIds) {
+        return (CaseQuery) byField(Case.ContactId, 'IN', contactIds);
+    }
+
 
     protected override Set<SObjectField> getFieldsToCacheBy() {
         return new Set<SObjectField>{

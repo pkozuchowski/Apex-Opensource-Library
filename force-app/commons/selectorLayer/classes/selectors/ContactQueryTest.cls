@@ -38,34 +38,26 @@ private class ContactQueryTest {
 
     @IsTest
     static void testSelectWithParentAccount() {
-        System.assertEquals('Parent Account',
-                new ContactQuery()
-                        .withParentAccount()
-                        .byName(new List<String>{'Name 1'})[0]
-                        .Account.Name
-        );
+        Contact c = (Contact) new ContactQuery()
+                .withParentAccount()
+                .byName(new List<String>{'Name 1'})
+                .getFirstOrNull();
+
+        System.assertEquals('Parent Account', c.Account.Name);
     }
 
     @IsTest
     static void testSelectByName() {
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Contact WHERE Name = 'Name 1']),
-                new ContactQuery().byName('Name 1'));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Contact WHERE Name IN ('Name 1', 'Name 2')]),
-                new ContactQuery().byName(new List<String>{'Name 1', 'Name 2'}));
+                new ContactQuery().byName('Name 1').getList());
     }
 
     @IsTest
     static void testSelectByEmail() {
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Contact WHERE Email = '1@example.com']),
-                new ContactQuery().byEmail('1@example.com'));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Contact WHERE Email IN ('1@example.com', '2@example.com')]),
-                new ContactQuery().byEmail(new List<String>{'1@example.com', '2@example.com'}));
+                new ContactQuery().byEmail('1@example.com').getList());
     }
 
     @IsTest
@@ -74,10 +66,6 @@ private class ContactQueryTest {
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Contact WHERE AccountId = :account.Id]),
-                new ContactQuery().byAccountId(account.Id));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Contact WHERE AccountId IN (:account.Id)]),
-                new ContactQuery().byAccountId(new List<Id>{account.Id}));
+                new ContactQuery().byAccountId(account.Id).getList());
     }
 }

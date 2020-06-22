@@ -25,7 +25,7 @@
 /**
 * Selector Layer for Queues.
 * Queues are cached to save SOQL queries in subsequent calls.
-* @see QueueSelectorTest.cls
+* @see QueueQueryTest.cls
 * */
 public inherited sharing class QueueQuery extends QueryObject {
 
@@ -40,36 +40,37 @@ public inherited sharing class QueueQuery extends QueryObject {
 
 
     /**
-     * @return Queue for given Developer Name. If there is no such Queue, null is returned
+     * Filters Queue for given Developer Name. If there is no such Queue, null is returned
      */
-    public Group byDeveloperName(String developerName) {
-        return (Group) firstOrNull(byDeveloperName(new List<String>{developerName}));
+    public QueueQuery byDeveloperName(String developerName) {
+        return byDeveloperName(new List<String>{developerName});
     }
 
     /**
-     * @return List of Queues for given Developer Names.
+     * Filters List of Queues for given Developer Names.
      */
-    public Group[] byDeveloperName(Iterable<String> developerNames) {
-        return byField(Group.DeveloperName, 'IN', developerNames);
+    public QueueQuery byDeveloperName(Iterable<String> developerNames) {
+        return (QueueQuery) byField(Group.DeveloperName, 'IN', developerNames);
     }
 
 
     /**
-     * @return Queue for given Name (label). If there is no such Queue, null is returned
+     * Filters Queue for given Name (label). If there is no such Queue, null is returned
      */
-    public Group[] byName(String name) {
+    public QueueQuery byName(String name) {
         return byName(new List<String>{name});
     }
 
     /**
-     * @return Queues with given names (label).
+     * Filters Queues with given names (label).
      */
-    public Group[] byName(Iterable<String> names) {
-        return byField(Group.Name, 'IN', names);
+    public QueueQuery byName(Iterable<String> names) {
+        return (QueueQuery) byField(Group.Name, 'IN', names);
     }
 
+
     protected override List<SObject> getRecordsToPrecache() {
-        return byField(Group.Type, '=', 'Queue');
+        return byField(Group.Type, '=', 'Queue').getListForCache();
     }
 
     protected override Set<SObjectField> getFieldsToCacheBy() {

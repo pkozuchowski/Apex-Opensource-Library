@@ -50,7 +50,7 @@ private class ContentDocumentQueryTest {
     @IsTest
     static void testSelectByLinkedEntityId() {
         Account account = [SELECT Id FROM Account];
-        ContentDocument[] documents = new ContentDocumentQuery().byLinkedEntityId(account.Id);
+        ContentDocument[] documents = new ContentDocumentQuery().byLinkedEntityId(account.Id).getList();
 
         System.assertEquals(1, documents.size());
         System.assertEquals('Test', documents[0].LatestPublishedVersion.Title);

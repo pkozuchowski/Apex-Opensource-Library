@@ -27,7 +27,7 @@ private class UserQueryTest {
 
     @IsTest
     static void testSelectCurrentUser() {
-        User currentUser = new UserQuery().currentUser();
+        User currentUser = new UserQuery().getCurrentUser();
         System.assertEquals(currentUser.Id, UserInfo.getUserId());
     }
 
@@ -35,13 +35,13 @@ private class UserQueryTest {
     static void testSelectByName() {
         System.assertEquals(
                 [SELECT Id FROM User WHERE Name = :UserInfo.getName()].Id,
-                new UserQuery().byName(UserInfo.getName()).Id
+                new UserQuery().byName(UserInfo.getName()).getFirstOrEmpty().Id
         );
 
         List<String> names = new List<String>{UserInfo.getName()};
         System.assertEquals(
         [SELECT COUNT() FROM User WHERE Name IN :names],
-                new UserQuery().byName(names).size()
+                new UserQuery().byName(names).getList().size()
         );
     }
 
@@ -49,13 +49,13 @@ private class UserQueryTest {
     static void testSelectByEmail() {
         System.assertEquals(
                 [SELECT Id FROM User WHERE Email = :UserInfo.getUserEmail()].Id,
-                new UserQuery().byEmail(UserInfo.getUserEmail()).Id
+                new UserQuery().byEmail(UserInfo.getUserEmail()).getFirstOrEmpty().Id
         );
 
         List<String> emails = new List<String>{UserInfo.getUserEmail()};
         System.assertEquals(
         [SELECT COUNT() FROM User WHERE Email IN :emails],
-                new UserQuery().byEmail(emails).size()
+                new UserQuery().byEmail(emails).getList().size()
         );
     }
 
@@ -63,13 +63,13 @@ private class UserQueryTest {
     static void testSelectByUsername() {
         System.assertEquals(
                 [SELECT Id FROM User WHERE Username = :UserInfo.getUserName()].Id,
-                new UserQuery().byUsername(UserInfo.getUserName()).Id
+                new UserQuery().byUsername(UserInfo.getUserName()).getFirstOrEmpty().Id
         );
 
         List<String> usernames = new List<String>{UserInfo.getUserName()};
         System.assertEquals(
         [SELECT COUNT() FROM User WHERE Username IN :usernames],
-                new UserQuery().byUsername(usernames).size()
+                new UserQuery().byUsername(usernames).getList().size()
         );
     }
 }

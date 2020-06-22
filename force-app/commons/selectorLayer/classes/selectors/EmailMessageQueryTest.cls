@@ -42,11 +42,7 @@ public inherited sharing class EmailMessageQueryTest {
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM EmailMessage WHERE ParentId = :caase.Id]),
-                new EmailMessageQuery().byParentId(caase.Id)
-        );
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM EmailMessage WHERE ParentId = :caase.Id]),
-                new EmailMessageQuery().byParentId(new List<Id>{caase.Id})
+                new EmailMessageQuery().byParentId(caase.Id).getList()
         );
     }
 }

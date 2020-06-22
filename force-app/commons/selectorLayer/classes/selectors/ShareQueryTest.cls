@@ -33,7 +33,7 @@ private class ShareQueryTest {
     static void testSelectByUserOrGroup() {
         List<Id> userIds = new List<Id>{UserInfo.getUserId()};
         List<MacroShare> expected = [SELECT Id FROM MacroShare WHERE UserOrGroupId IN :userIds];
-        List<MacroShare> actual = new ShareQuery(MacroShare.SObjectType).byUserOrGroupId(userIds);
+        List<MacroShare> actual = new ShareQuery(MacroShare.SObjectType).byUserOrGroupId(userIds).getList();
 
         System.assertEquals(
                 new Map<Id, MacroShare>(expected).keySet(),
@@ -45,7 +45,7 @@ private class ShareQueryTest {
     static void testSelectByParentId() {
         List<Id> parentIds = new List<Id>{[SELECT Id FROM Macro LIMIT 1][0].Id};
         List<MacroShare> expected = [SELECT Id FROM MacroShare WHERE ParentId IN :parentIds];
-        List<MacroShare> actual = new ShareQuery(MacroShare.SObjectType).byParentId(parentIds);
+        List<MacroShare> actual = new ShareQuery(MacroShare.SObjectType).byParentId(parentIds).getList();
 
         System.assertEquals(
                 new Map<Id, MacroShare>(expected).keySet(),
@@ -59,7 +59,7 @@ private class ShareQueryTest {
         List<Id> userIds = new List<Id>{UserInfo.getUserId()};
 
         List<MacroShare> expected = [SELECT Id FROM MacroShare WHERE ParentId IN :parentIds AND UserOrGroupId IN :userIds];
-        List<MacroShare> actual = new ShareQuery(MacroShare.SObjectType).byParentIdAndUserOrGroupId(parentIds, userIds);
+        List<MacroShare> actual = new ShareQuery(MacroShare.SObjectType).byParentIdAndUserOrGroupId(parentIds, userIds).getList();
 
         System.assertEquals(
                 new Map<Id, MacroShare>(expected).keySet(),

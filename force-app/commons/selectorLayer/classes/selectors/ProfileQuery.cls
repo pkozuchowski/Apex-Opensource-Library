@@ -24,7 +24,7 @@
 
 /**
  * Selector Layer class for Profiles. Records are queried only once and cached to minimize SOQL limits usage.
- * @see ProfileSelectorTest
+ * @see ProfileQueryTest
  */
 public inherited sharing class ProfileQuery extends QueryObject {
 
@@ -38,25 +38,25 @@ public inherited sharing class ProfileQuery extends QueryObject {
 
 
     /**
-    * @return Profile of current user
+    * Filters Profile of current user
     */
-    public Profile ofCurrentUser() {
-        return (Profile) oneRecordByField(Profile.Id, '=', UserInfo.getProfileId());
+    public ProfileQuery byCurrentUser() {
+        return (ProfileQuery) byField(Profile.Id, '=', UserInfo.getProfileId());
     }
 
     /**
-     * @return Profile record by given name or null
+     * Filters Profile record by given name or null
      */
-    public Profile byName(String name) {
-        return (Profile) oneRecordByField(Profile.Name, '=', name);
+    public ProfileQuery byName(String name) {
+        return byName(new List<String>{name});
     }
 
 
     /**
-     * @return Profile records by given names.
+     * Filters Profile records by given names.
      */
-    public Profile[] byName(Iterable<String> names) {
-        return byField(Profile.Name, 'IN', names);
+    public ProfileQuery byName(Iterable<String> names) {
+        return (ProfileQuery) byField(Profile.Name, 'IN', names);
     }
 
 
@@ -68,6 +68,6 @@ public inherited sharing class ProfileQuery extends QueryObject {
     }
 
     protected override List<SObject> getRecordsToPrecache() {
-        return all();
+        return getList();
     }
 }

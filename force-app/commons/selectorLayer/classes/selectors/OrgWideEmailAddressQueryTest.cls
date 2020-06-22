@@ -26,11 +26,11 @@ private class OrgWideEmailAddressQueryTest {
 
     @IsTest
     static void testCoverage() {
-        new OrgWideEmailAddressQuery().byId('0D2000000000000');
-        new OrgWideEmailAddressQuery().byId(new List<Id>{'0D2000000000000'});
-        new OrgWideEmailAddressQuery().byDisplayName('test@example.com');
-        new OrgWideEmailAddressQuery().byDisplayName(new List<String>{'test@example.com'});
-        new OrgWideEmailAddressQuery().byAddress('test@example.com');
-        new OrgWideEmailAddressQuery().byAddress(new List<String>{'test@example.com'});
+        new OrgWideEmailAddressQuery().byId('0D2000000000000').getList();
+        new OrgWideEmailAddressQuery().byId(new List<Id>{'0D2000000000000'}).getList();
+        new OrgWideEmailAddressQuery().byDisplayName('test@example.com').getList();
+        new OrgWideEmailAddressQuery().byDisplayName(new List<String>{'test@example.com'}).getList();
+        new OrgWideEmailAddressQuery().byAddress('test@example.com').getList();
+        new OrgWideEmailAddressQuery().byAddress(new List<String>{'test@example.com'}).getList();
     }
 }

@@ -24,7 +24,7 @@
 
 /**
  * Selector Layer class for Permission Sets. Records are queried only once and cached to minimize SOQL limits usage.
- * @see PermissionSetSelectorTest
+ * @see PermissionSetQueryTest
  */
 public inherited sharing class PermissionSetQuery extends QueryObject {
 
@@ -35,70 +35,19 @@ public inherited sharing class PermissionSetQuery extends QueryObject {
         }, PermissionSet.SObjectType);
     }
 
+
     /**
-     * @return Id of permission set or null.
+     * Filter Permission Set by given name or null if it does not exist.
      */
-    public Id idByName(String name) {
-        PermissionSet permissionSet = byName(name);
-        return permissionSet == null ? null : permissionSet.Id;
+    public PermissionSetQuery byName(String name) {
+        return byName(new List<String>{name});
     }
 
     /**
-     * @return Permission Set by given name or null if it does not exist.
+     * Filter Permission Set by given name or null if it does not exist.
      */
-    public PermissionSet byName(String name) {
-        return (PermissionSet) firstOrNull(byName(new List<String>{name}));
-    }
-
-    /**
-     * @return Permission Set by given name or null if it does not exist.
-     */
-    public PermissionSet[] byName(Iterable<String> names) {
-        return byField(PermissionSet.Name, 'IN', names);
-    }
-
-
-    /**
-     * @return Permission Sets of given user
-     */
-    public PermissionSet[] ofCurrentUser() {
-        return byAssigneeId(UserInfo.getUserId());
-    }
-
-    /**
-     * @return Permission Sets of given user
-     */
-    public PermissionSet[] byAssigneeId(Id userId) {
-        return byAssigneeId(new List<Id>{userId}).get(userId);
-    }
-
-    /**
-     * @return Permission Sets of given user
-     */
-    public Map<Id, PermissionSet[]> byAssigneeId(Iterable<Id> userIds) {
-        Map<Id, PermissionSet[]> permissionSetsByUser = new Map<Id, PermissionSet[]>();
-
-        Iterator<Id> it = userIds.iterator();
-        while (it.hasNext()) {
-            permissionSetsByUser.put(it.next(), new PermissionSet[]{});
-        }
-
-        for (PermissionSetAssignment assignment : [
-                SELECT AssigneeId,PermissionSetId
-                FROM PermissionSetAssignment
-                WHERE AssigneeId IN :permissionSetsByUser.keySet()
-                AND PermissionSet.IsOwnedByProfile = FALSE
-        ]) {
-            PermissionSet permissionSet = (PermissionSet) getCache().get(PermissionSet.Id, assignment.PermissionSetId);
-
-            if (permissionSetsByUser.containsKey(assignment.AssigneeId)) {
-                permissionSetsByUser.get(assignment.AssigneeId).add(permissionSet);
-            } else {
-                permissionSetsByUser.put(assignment.AssigneeId, new List<PermissionSet>{permissionSet});
-            }
-        }
-
-        return permissionSetsByUser;
+    public PermissionSetQuery byName(Iterable<String> names) {
+        return (PermissionSetQuery) byField(PermissionSet.Name, 'IN', names);
     }
 
 
@@ -110,6 +59,6 @@ public inherited sharing class PermissionSetQuery extends QueryObject {
     }
 
     protected override List<SObject> getRecordsToPrecache() {
-        return byField(PermissionSet.IsOwnedByProfile, '=', false);
+        return byField(PermissionSet.IsOwnedByProfile, '=', false).getListForCache();
     }
 }

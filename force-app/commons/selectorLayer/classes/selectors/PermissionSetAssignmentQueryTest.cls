@@ -21,13 +21,26 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest(IsParallel=true)
-private class StaticResourceQueryTest {
+
+@IsTest
+private class PermissionSetAssignmentQueryTest {
 
     @IsTest
-    static void coverage() {
-        new StaticResourceQuery().byName('Test').getList();
-        new StaticResourceQuery().byName(new List<String>{'Test'}).getList();
-        new StaticResourceQuery().byName((Iterable<String>) new Set<String>{'Test'}).getList();
+    static void testSelectByCurrentUser() {
+        System.assertEquals(
+                new Map<Id, PermissionSetAssignment>([SELECT Id FROM PermissionSetAssignment WHERE AssigneeId = :UserInfo.getUserId()]).keySet(),
+                new PermissionSetAssignmentQuery().byCurrentUser().getIds()
+        );
+    }
+
+    @IsTest
+    static void testSelectByPermissionSetId() {
+        PermissionSet[] permissionSets = [SELECT Id FROM PermissionSet];
+        Id permissionSetId = permissionSets.isEmpty() ? null : permissionSets.get(0).Id;
+
+        System.assertEquals(
+                new Map<Id, PermissionSetAssignment>([SELECT Id FROM PermissionSetAssignment WHERE PermissionSetId = :permissionSetId]).keySet(),
+                new PermissionSetAssignmentQuery().byPermissionSetId(permissionSetId).getIds()
+        );
     }
 }

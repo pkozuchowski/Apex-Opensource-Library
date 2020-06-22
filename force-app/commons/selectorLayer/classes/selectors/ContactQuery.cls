@@ -66,48 +66,49 @@ public inherited sharing class ContactQuery extends QueryObject {
 
 
     /**
-     * @return Contacts with given names (List or Set)
+     * Filters Contacts with given names (List or Set)
      */
-    public Contact[] byName(String name) {
-        return byField(Contact.Name, '=', name);
+    public ContactQuery byName(String name) {
+        return byName(new List<String>{name});
     }
 
     /**
-     * @return Contacts with given names (List or Set)
+     * Filters Contacts with given names (List or Set)
      */
-    public Contact[] byName(Iterable<String> names) {
-        return byField(Contact.Name, 'IN', names);
-    }
-
-
-    /**
-     * @return Contacts with given emails (List or Set)
-     */
-    public Contact[] byEmail(String email) {
-        return byField(Contact.Email, '=', email);
-    }
-
-    /**
-     * @return Contacts with given emails (List or Set)
-     */
-    public Contact[] byEmail(Iterable<String> emails) {
-        return byField(Contact.Email, 'IN', emails);
+    public ContactQuery byName(Iterable<String> names) {
+        return (ContactQuery) byField(Contact.Name, 'IN', names);
     }
 
 
     /**
-     * @return Contacts related to given account Ids (List or Set)
+     * Filters Contacts with given emails (List or Set)
      */
-    public Contact[] byAccountId(Id accountId) {
-        return byField(Contact.AccountId, '=', accountId);
+    public ContactQuery byEmail(String email) {
+        return byEmail(new List<String>{email});
     }
 
     /**
-     * @return Contacts related to given account Ids (List or Set)
+     * Filters Contacts with given emails (List or Set)
      */
-    public Contact[] byAccountId(Iterable<Id> accountIds) {
-        return byField(Contact.AccountId, 'IN', accountIds);
+    public ContactQuery byEmail(Iterable<String> emails) {
+        return (ContactQuery) byField(Contact.Email, 'IN', emails);
     }
+
+
+    /**
+     * Filters Contacts related to given account Ids (List or Set)
+     */
+    public ContactQuery byAccountId(Id accountId) {
+        return byAccountId(new List<Id>{accountId});
+    }
+
+    /**
+     * Filters Contacts related to given account Ids (List or Set)
+     */
+    public ContactQuery byAccountId(Iterable<Id> accountIds) {
+        return (ContactQuery) byField(Contact.AccountId, 'IN', accountIds);
+    }
+
 
     protected override Set<SObjectField> getFieldsToCacheBy() {
         return new Set<SObjectField>{

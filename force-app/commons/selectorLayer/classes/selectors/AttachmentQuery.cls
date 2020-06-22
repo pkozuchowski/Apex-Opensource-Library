@@ -41,27 +41,24 @@ public inherited sharing class AttachmentQuery extends QueryObject {
     }
 
     /**
-     * @return Attachments associated with given record
+     * Filters Attachments associated with given record
      */
-    public Attachment[] byParentIdAndName(Id parentId, String name) {
-        this.query.setWhere('ParentId =:parentId AND Name =:name')
-                .bindVariable('parentId', parentId)
-                .bindVariable('name', name);
-
-        return executeQuery();
+    public AttachmentQuery byParentIdAndName(Id parentId, String name) {
+        return (AttachmentQuery) byParentId(parentId)
+                .byField(Attachment.Name, '=', name);
     }
 
     /**
-     * @return Attachments associated with given record
+     * Filters Attachments associated with given record
      */
-    public Attachment[] byParentId(Id parentId) {
-        return byField(Attachment.ParentId, '=', parentId);
+    public AttachmentQuery byParentId(Id parentId) {
+        return byParentId(new List<Id>{parentId});
     }
 
     /**
-     * @return Attachments associated with given records (List or Set)
+     * Filters Attachments associated with given records (List or Set)
      */
-    public Attachment[] byParentId(Iterable<Id> parentIds) {
-        return byField(Attachment.ParentId, 'IN', parentIds);
+    public AttachmentQuery byParentId(Iterable<Id> parentIds) {
+        return (AttachmentQuery) byField(Attachment.ParentId, 'IN', parentIds);
     }
 }

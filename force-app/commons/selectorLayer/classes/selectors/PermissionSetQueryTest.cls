@@ -23,14 +23,12 @@
 */
 @IsTest(IsParallel=true)
 private class PermissionSetQueryTest {
-    private final static PermissionSetQuery permissionSetSelector = new PermissionSetQuery();
     private final static PermissionSet[] permissionSets = [SELECT Id, Name FROM PermissionSet WHERE IsOwnedByProfile = FALSE];
 
     @IsTest
     static void testSelectNull() {
-        System.assertEquals(null, permissionSetSelector.byName('PermissionSetQueryTest'));
-        System.assertEquals(null, permissionSetSelector.idByName('PermissionSetQueryTest'));
-        System.assertEquals(null, permissionSetSelector.byId('001000000000000'));
+        System.assertEquals(null, new PermissionSetQuery().byName('PermissionSetQueryTest').getFirstOrNull());
+        System.assertEquals(null, new PermissionSetQuery().byId('001000000000000').getFirstOrNull());
     }
 
     @IsTest
@@ -40,10 +38,10 @@ private class PermissionSetQueryTest {
 
             System.assertEquals(
                     permissionSet.Id,
-                    permissionSetSelector.byId(permissionSet.Id).Id
+                    new PermissionSetQuery().byId(permissionSet.Id).getFirstOrEmpty().Id
             );
 
-            System.assertEquals(1, permissionSetSelector.byId(new List<Id>{permissionSet.Id}).size());
+            System.assertEquals(1, new PermissionSetQuery().byId(new List<Id>{permissionSet.Id}).getList().size());
         }
     }
 
@@ -54,7 +52,7 @@ private class PermissionSetQueryTest {
 
             System.assertEquals(
                     permissionSet.Id,
-                    ((PermissionSet) permissionSetSelector.byName(permissionSet.Name)).Id
+                    new PermissionSetQuery().byName(permissionSet.Name).getFirstIdOrNull()
             );
         }
     }
@@ -66,24 +64,8 @@ private class PermissionSetQueryTest {
 
             System.assertEquals(
                     permissionSet.Id,
-                    permissionSetSelector.idByName(permissionSet.Name)
+                    new PermissionSetQuery().byName(permissionSet.Name).getFirstIdOrNull()
             );
         }
-    }
-
-    @IsTest
-    static void testSelectByCurrentUser() {
-        PermissionSet[] expected = [
-                SELECT Id, Name
-                FROM PermissionSet
-                WHERE IsOwnedByProfile = FALSE AND Id IN (
-                        SELECT PermissionSetId
-                        FROM PermissionSetAssignment
-                        WHERE AssigneeId = :UserInfo.getUserId()
-                )
-        ];
-        PermissionSet[] actual = new PermissionSetQuery().ofCurrentUser();
-
-        System.assertEquals(expected, actual);
     }
 }

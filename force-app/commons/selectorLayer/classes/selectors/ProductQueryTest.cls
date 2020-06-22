@@ -44,32 +44,20 @@ private class ProductQueryTest {
     static void testSelectByName() {
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Product2 WHERE Name = 'Name 1']),
-                new ProductQuery().byName('Name 1'));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Product2 WHERE Name IN ('Name 1', 'Name 2')]),
-                new ProductQuery().byName(new List<String>{'Name 1', 'Name 2'}));
+                new ProductQuery().byName('Name 1').getList());
     }
 
     @IsTest
     static void testSelectByProductCode() {
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Product2 WHERE ProductCode = 'Code 1']),
-                new ProductQuery().byProductCode('Code 1'));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Product2 WHERE ProductCode IN ('Code 1', 'Code 2')]),
-                new ProductQuery().byProductCode(new List<String>{'Code 1', 'Code 2'}));
+                new ProductQuery().byProductCode('Code 1').getList());
     }
 
     @IsTest
     static void testSelectByExternalId() {
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Product2 WHERE ExternalId = 'Code 1']),
-                new ProductQuery().byExternalId('Code 1'));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Product2 WHERE ExternalId IN ('Code 1', 'Code 2')]),
-                new ProductQuery().byExternalId(new List<String>{'Code 1', 'Code 2'}));
+                new ProductQuery().byExternalId('Code 1').getList());
     }
 }

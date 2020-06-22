@@ -74,7 +74,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
     /**
      * Accounts will be queried with related child Account records
      */
-    public AccountQuery withChildrenAccounts() {
+    public AccountQuery withChildAccounts() {
         this.query.addChildFields(QUERIED_FIELDS, 'ChildAccounts');
         return this;
     }
@@ -89,39 +89,17 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
 
 
     /**
-     * @return Accounts with given name
+     * Filters Accounts with given name
      */
-    public Account[] byName(String name) {
-        return byField(Account.Name, '=', name);
+    public AccountQuery byName(String name) {
+        return byName(new List<String>{name});
     }
 
     /**
-     * @return Accounts with given names (List or Set)
+     * Filters Accounts with given names (List or Set)
      */
-    public Account[] byName(Iterable<String> names) {
-        return byField(Account.Name, 'IN', names);
-    }
-
-
-    /**
-    * @see QueryObject.withoutSharingImpl
-    */
-    public AccountQuery withoutSharing() {
-        return (AccountQuery) withoutSharingImpl();
-    }
-
-    /**
-    * @see QueryObject.withoutCacheImpl
-    */
-    public AccountQuery withoutCache() {
-        return (AccountQuery) withoutCacheImpl();
-    }
-
-    /**
-    * @see QueryObject.withAllFieldsImpl
-    */
-    public AccountQuery withAllFields() {
-        return (AccountQuery) withAllFieldsImpl();
+    public AccountQuery byName(Iterable<String> names) {
+        return (AccountQuery) byField(Account.Name, 'IN', names);
     }
 
 

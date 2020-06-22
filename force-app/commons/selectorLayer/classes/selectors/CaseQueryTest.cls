@@ -41,23 +41,19 @@ private class CaseQueryTest {
 
     @IsTest
     static void testSelectWithParentAccount() {
-        System.assertEquals('Parent Account',
-                new CaseQuery()
-                        .withParentAccount()
-                        .bySubject(new List<String>{'Subject 1'})[0]
-                        .Account.Name
-        );
+        Case c = (Case) new CaseQuery()
+                .withParentAccount()
+                .bySubject(new List<String>{'Subject 1'})
+                .getFirstOrNull();
+
+        System.assertEquals('Parent Account', c.Account.Name);
     }
 
     @IsTest
     static void testSelectBySubject() {
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Case WHERE Subject = 'Subject 1']),
-                new CaseQuery().bySubject('Subject 1'));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Case WHERE Subject IN ('Subject 1', 'Subject 2')]),
-                new CaseQuery().bySubject(new List<String>{'Subject 1', 'Subject 2'}));
+                new CaseQuery().bySubject('Subject 1').getList());
     }
 
     @IsTest
@@ -66,11 +62,7 @@ private class CaseQueryTest {
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Case WHERE AccountId = :account.Id]),
-                new CaseQuery().byAccountId(account.Id));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Case WHERE AccountId IN (:account.Id)]),
-                new CaseQuery().byAccountId(new List<Id>{account.Id}));
+                new CaseQuery().byAccountId(account.Id).getList());
     }
 
     @IsTest
@@ -79,10 +71,6 @@ private class CaseQueryTest {
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Case WHERE ContactId = :contact.Id]),
-                new CaseQuery().byContactId(contact.Id));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Case WHERE ContactId IN (:contact.Id)]),
-                new CaseQuery().byContactId(new List<Id>{contact.Id}));
+                new CaseQuery().byContactId(contact.Id).getList());
     }
 }

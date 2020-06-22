@@ -48,14 +48,14 @@ private class PricebookQueryTest {
     static void testSelectStandardPricebookId() {
         System.assertEquals(
                 Test.getStandardPricebookId(),
-                new PricebookQuery().standardPricebookId()
+                new PricebookQuery().getStandardPricebookId()
         );
     }
 
     @IsTest
     static void testSelectById() {
         Pricebook2 actual = [SELECT Id FROM Pricebook2 WHERE Name = 'Test Pricebook 0'];
-        Pricebook2 expected = (Pricebook2) new PricebookQuery().byId(actual.Id);
+        Pricebook2 expected = (Pricebook2) new PricebookQuery().byId(actual.Id).getFirstOrNull();
 
         System.assertEquals(actual.Id, expected.Id);
     }
@@ -67,9 +67,7 @@ private class PricebookQueryTest {
                 FROM Pricebook2
                 WHERE Name IN ('Test Pricebook 0', 'Test Pricebook 1')
         ]);
-        Map<Id, Pricebook2> expected = new Map<Id, Pricebook2>(
-                (Pricebook2[]) new PricebookQuery().byId((Iterable<Id>) actual.keySet())
-        );
+        Map<Id, Pricebook2> expected = (Map<Id, Pricebook2>) new PricebookQuery().byId((Iterable<Id>) actual.keySet()).getMapById();
 
         System.assertEquals(actual.keySet(), expected.keySet());
     }
@@ -77,7 +75,7 @@ private class PricebookQueryTest {
     @IsTest
     static void testSelectByName() {
         Pricebook2 actual = [SELECT Id FROM Pricebook2 WHERE Name = 'Test Pricebook 0'];
-        Pricebook2 expected = new PricebookQuery().byName('Test Pricebook 0');
+        Pricebook2 expected = (Pricebook2) new PricebookQuery().byName('Test Pricebook 0').getFirstOrEmpty();
 
         System.assertEquals(actual.Id, expected.Id);
     }
@@ -89,17 +87,15 @@ private class PricebookQueryTest {
                 FROM Pricebook2
                 WHERE Name IN ('Test Pricebook 0', 'Test Pricebook 1')
         ]);
-        Map<Id, Pricebook2> expected = new Map<Id, Pricebook2>(
-                new PricebookQuery().byName(new List<String>{
-                        'Test Pricebook 0', 'Test Pricebook 1'
-                })
-        );
+        Map<Id, Pricebook2> expected = (Map<Id, Pricebook2>) new PricebookQuery().byName(new List<String>{
+                'Test Pricebook 0', 'Test Pricebook 1'
+        }).getMapById();
 
         System.assertEquals(actual.keySet(), expected.keySet());
     }
 
     @IsTest
     static void testSelectorReturnsNullWhenPricebookIsNotFound() {
-        System.assertEquals(null, new PricebookQuery().byName('Other'));
+        System.assertEquals(null, new PricebookQuery().byName('Other').getFirstOrNull());
     }
 }

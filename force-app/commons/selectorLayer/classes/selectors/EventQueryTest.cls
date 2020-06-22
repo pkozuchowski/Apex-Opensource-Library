@@ -48,11 +48,7 @@ public inherited sharing class EventQueryTest {
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Event WHERE AccountId = :account.Id]),
-                new EventQuery().byAccountId(account.Id)
-        );
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Event WHERE AccountId = :account.Id]),
-                new EventQuery().byAccountId(new List<Id>{account.Id})
+                new EventQuery().byAccountId(account.Id).getList()
         );
     }
 
@@ -62,11 +58,7 @@ public inherited sharing class EventQueryTest {
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Event WHERE WhatId = :account.Id]),
-                new EventQuery().byWhatId(account.Id)
-        );
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Event WHERE WhatId = :account.Id]),
-                new EventQuery().byWhatId(new List<Id>{account.Id})
+                new EventQuery().byWhatId(account.Id).getList()
         );
     }
 
@@ -76,11 +68,7 @@ public inherited sharing class EventQueryTest {
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Event WHERE WhoId = :contact.Id]),
-                new EventQuery().byWhoId(contact.Id)
-        );
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Event WHERE WhoId = :contact.Id]),
-                new EventQuery().byWhoId(new List<Id>{contact.Id})
+                new EventQuery().byWhoId(contact.Id).getList()
         );
     }
 }

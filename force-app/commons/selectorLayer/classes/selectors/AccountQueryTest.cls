@@ -44,46 +44,21 @@ private without sharing class AccountQueryTest {
 
     @IsTest
     static void testSelectByName() {
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Account WHERE Name = 'Name 1']),
-                new AccountQuery().byName('Name 1'));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Account WHERE Name IN ('Name 1', 'Name 2')]),
-                new AccountQuery().byName(new List<String>{'Name 1', 'Name 2'}));
-    }
-
-    @IsTest
-    static void testSelectWithRelated() {
-        Account expected = [
-                SELECT Id,Name, (SELECT Id FROM Contacts), (SELECT Id FROM Cases), (SELECT Id FROM Opportunities), (SELECT Id FROM ChildAccounts),
-                        Parent.Name
-                FROM Account
-                WHERE Name = 'Test Child Account'
-        ];
-
-        Account actual = new AccountQuery()
-                .withParentAccount()
-                .withChildrenAccounts()
-                .withContacts()
+        Account account = (Account) new AccountQuery()
                 .withCases()
+                .withChildAccounts()
+                .withContacts()
+                .withParentAccount()
+                .byName('Test Child Account')
                 .withOpportunities()
-                .byName(expected.Name)[0];
-
-        System.assertEquals(expected.Id, actual.Id);
-        System.assertEquals(expected.Parent.Name, actual.Parent.Name);
-        System.assertEquals(expected.ChildAccounts.size(), actual.ChildAccounts.size());
-        System.assertEquals(expected.Contacts.size(), actual.Contacts.size());
-        System.assertEquals(expected.Cases.size(), actual.Cases.size());
-        System.assertEquals(expected.Opportunities.size(), actual.Opportunities.size());
-    }
-
-    @IsTest
-    static void testCacheSharingAndAllFieldsCoverage() {
-        Account[] accounts = new AccountQuery()
-                .withAllFields()
                 .withoutSharing()
-                .withoutCache()
-                .byName('Name 0');
+                .getFirstOrNull();
+
+
+        System.assertEquals(1, account.Contacts.size());
+        System.assertEquals(1, account.Cases.size());
+        System.assertEquals(1, account.Opportunities.size());
+        System.assertEquals(0, account.ChildAccounts.size());
+        System.assertEquals('Name 0', account.Parent.Name);
     }
 }

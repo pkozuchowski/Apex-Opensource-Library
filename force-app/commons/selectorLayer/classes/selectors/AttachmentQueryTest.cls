@@ -33,27 +33,14 @@ public inherited sharing class AttachmentQueryTest {
         insert new Attachment(ParentId = account.Id, Name = 'Test', Body = Blob.valueOf('Test'));
     }
 
-    @IsTest
-    static void testSelectByParentId() {
-        Account account = [SELECT Id FROM Account];
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Attachment WHERE ParentId = :account.Id]),
-                new AttachmentQuery().byParentId(account.Id)
-        );
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Attachment WHERE ParentId = :account.Id]),
-                new AttachmentQuery().byParentId(new List<Id>{account.Id})
-        );
-    }
 
     @IsTest
-    static void testSelectByName() {
+    static void testSelectByParentAndName() {
         Account account = [SELECT Id FROM Account];
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Attachment WHERE ParentId = :account.Id AND Name = 'Test']),
-                new AttachmentQuery().byParentIdAndName(account.Id, 'Test')
+                new AttachmentQuery().byParentIdAndName(account.Id, 'Test').getList()
         );
     }
 }

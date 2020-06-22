@@ -27,13 +27,13 @@ private class ProfileQueryTest {
     @IsTest
     static void testProfileSelectorReturnsStandardUser() {
         Profile stdUser = [SELECT Id FROM Profile WHERE Name = 'Standard User'];
-        System.assertEquals(stdUser.Id, new ProfileQuery().byName('Standard User').Id);
+        System.assertEquals(stdUser.Id, new ProfileQuery().byName('Standard User').getFirstOrNull().Id);
     }
 
     @IsTest
     static void testProfileSelectorReturnsStandardUserById() {
         Profile stdUser = [SELECT Id FROM Profile WHERE Name = 'Standard User'];
-        System.assertEquals(stdUser.Id, new ProfileQuery().byId(stdUser.Id).Id);
+        System.assertEquals(stdUser.Id, new ProfileQuery().byId(stdUser.Id).getFirstOrNull().Id);
     }
 
     @IsTest
@@ -43,7 +43,7 @@ private class ProfileQueryTest {
                 FROM Profile
                 WHERE Name IN ('Standard User', 'System Administrator')
         ]);
-        Map<Id, Profile> actual = new Map<Id, Profile>((Profile[]) new ProfileQuery().byId((Iterable<Id>) expected.keySet()));
+        Map<Id, Profile> actual = (Map<Id, Profile>) new ProfileQuery().byId((Iterable<Id>) expected.keySet()).getMapById();
 
         System.assertEquals(expected.keySet(), actual.keySet());
     }
@@ -55,9 +55,7 @@ private class ProfileQueryTest {
                 FROM Profile
                 WHERE Name IN ('Standard User', 'System Administrator')
         ]);
-        Map<Id, Profile> actual = new Map<Id, Profile>(
-                (Profile[]) new ProfileQuery().byName((Iterable<String>) new Set<String>{'Standard User', 'System Administrator'})
-        );
+        Map<Id, Profile> actual = (Map<Id, Profile>) new ProfileQuery().byName(new List<String>{'Standard User', 'System Administrator'}).getMapById();
 
         System.assertEquals(expected.keySet(), actual.keySet());
     }
@@ -65,6 +63,6 @@ private class ProfileQueryTest {
     @IsTest
     static void testSelectOfCurrentUser() {
         Profile userProfile = [SELECT Id FROM Profile WHERE Id = :UserInfo.getProfileId()];
-        System.assertEquals(userProfile.Id, new ProfileQuery().ofCurrentUser().Id);
+        System.assertEquals(userProfile.Id, new ProfileQuery().byCurrentUser().getFirstOrNull().Id);
     }
 }

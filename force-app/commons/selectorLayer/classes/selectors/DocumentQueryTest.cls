@@ -39,11 +39,11 @@ public inherited sharing class DocumentQueryTest {
     static void testSelectByParentId() {
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Document WHERE DeveloperName = 'DocumentQueryTest']),
-                new DocumentQuery().byDeveloperName('DocumentQueryTest')
+                new DocumentQuery().byDeveloperName('DocumentQueryTest').getList()
         );
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Document WHERE DeveloperName = 'DocumentQueryTest']),
-                new DocumentQuery().byDeveloperName(new List<String>{'DocumentQueryTest'})
+                new DocumentQuery().byDeveloperName(new List<String>{'DocumentQueryTest'}).getList()
         );
     }
 }

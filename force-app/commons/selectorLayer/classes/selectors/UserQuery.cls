@@ -24,7 +24,7 @@
 
 /**
  * Selector layer for User sObject
- * @see UserSelectorTest
+ * @see UserQueryTest
  */
 public inherited sharing class UserQuery extends QueryObject {
     public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
@@ -42,52 +42,52 @@ public inherited sharing class UserQuery extends QueryObject {
 
 
     /**
-     * @return User records with given name or null if user does not exist.
+     * Filters User records with given name or null if user does not exist.
      */
-    public User byName(String name) {
-        return (User) oneRecordByField(User.Name, '=', name);
+    public UserQuery byName(String name) {
+        return byName(new List<String>{name});
     }
 
     /**
-     * @return User with given names.
+     * Filters User with given names.
      */
-    public User[] byName(List<String> names) {
-        return byField(User.Name, 'IN', names);
+    public UserQuery byName(List<String> names) {
+        return (UserQuery) byField(User.Name, 'IN', names);
     }
 
     /**
-     * @return User records with given email or null if user does not exist.
+     * Filters User records with given email or null if user does not exist.
      */
-    public User byEmail(String email) {
-        return (User) oneRecordByField(User.Email, '=', email);
+    public UserQuery byEmail(String email) {
+        return byEmail(new List<String>{email});
     }
 
     /**
-     * @return User with given emails.
+     * Filters User with given emails.
      */
-    public User[] byEmail(List<String> emails) {
-        return byField(User.Email, 'IN', emails);
+    public UserQuery byEmail(List<String> emails) {
+        return (UserQuery) byField(User.Email, 'IN', emails);
     }
 
     /**
-     * @return User records with given UserName or null if user does not exist.
+     * Filters User records with given UserName or null if user does not exist.
      */
-    public User byUsername(String username) {
-        return (User) oneRecordByField(User.Username, '=', username);
+    public UserQuery byUsername(String username) {
+        return byUsername(new List<String>{username});
     }
 
     /**
-     * @return User with given usernames.
+     * Filters User with given usernames.
      */
-    public User[] byUsername(List<String> usernames) {
-        return byField(User.Username, 'IN', usernames);
+    public UserQuery byUsername(List<String> usernames) {
+        return (UserQuery) byField(User.Username, 'IN', usernames);
     }
 
     /**
-     * @return User record identified by UserInfo.getUserId().
+     * Filters User record identified by UserInfo.getUserId().
      */
-    public User currentUser() {
-        return (User) byId(UserInfo.getUserId());
+    public User getCurrentUser() {
+        return (User) byId(UserInfo.getUserId()).getFirstOrNull();
     }
 
     protected override Set<SObjectField> getFieldsToCacheBy() {

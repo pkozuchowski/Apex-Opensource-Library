@@ -51,33 +51,34 @@ public inherited sharing class OpportunityQuery extends QueryObject {
 
 
     /**
-     * @return Opportunities by given name
+     * Filters Opportunities by given name
      */
-    public Opportunity[] byName(String name) {
-        return byField(Opportunity.Name, '=', name);
+    public OpportunityQuery byName(String name) {
+        return byName(new List<String>{name});
     }
 
     /**
-     * @return Opportunities by given names (List or Set)
+     * Filters Opportunities by given names (List or Set)
      */
-    public Opportunity[] byName(Iterable<String> names) {
-        return byField(Opportunity.Name, 'IN', names);
+    public OpportunityQuery byName(Iterable<String> names) {
+        return (OpportunityQuery) byField(Opportunity.Name, 'IN', names);
     }
 
 
     /**
-     * @return Opportunities related to given account Ids (List or Set)
+     * Filters Opportunities related to given account Ids (List or Set)
      */
-    public Opportunity[] byAccountId(Id accountId) {
-        return byField(Opportunity.AccountId, '=', accountId);
+    public OpportunityQuery byAccountId(Id accountId) {
+        return byAccountId(new List<Id>{accountId});
     }
 
     /**
-     * @return Opportunities related to given account Ids (List or Set)
+     * Filters Opportunities related to given account Ids (List or Set)
      */
-    public Opportunity[] byAccountId(Iterable<Id> accountIds) {
-        return byField(Opportunity.AccountId, 'IN', accountIds);
+    public OpportunityQuery byAccountId(Iterable<Id> accountIds) {
+        return (OpportunityQuery) byField(Opportunity.AccountId, 'IN', accountIds);
     }
+
 
     protected override Set<SObjectField> getFieldsToCacheBy() {
         return new Set<SObjectField>{

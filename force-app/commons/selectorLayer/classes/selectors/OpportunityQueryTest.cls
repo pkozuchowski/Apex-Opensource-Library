@@ -38,23 +38,19 @@ private class OpportunityQueryTest {
 
     @IsTest
     static void testSelectWithParentAccount() {
-        System.assertEquals('Parent Account',
-                new OpportunityQuery()
-                        .withParentAccount()
-                        .byName(new List<String>{'Name 1'})[0]
-                        .Account.Name
-        );
+        Opportunity opp = (Opportunity) new OpportunityQuery()
+                .withParentAccount()
+                .byName(new List<String>{'Name 1'})
+                .getFirstOrNull();
+
+        System.assertEquals('Parent Account', opp.Account.Name);
     }
 
     @IsTest
     static void testSelectByName() {
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Opportunity WHERE Name = 'Name 1']),
-                new OpportunityQuery().byName('Name 1'));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Opportunity WHERE Name IN ('Name 1', 'Name 2')]),
-                new OpportunityQuery().byName(new List<String>{'Name 1', 'Name 2'}));
+                new OpportunityQuery().byName('Name 1').getList());
     }
 
     @IsTest
@@ -63,10 +59,6 @@ private class OpportunityQueryTest {
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Opportunity WHERE AccountId = :account.Id]),
-                new OpportunityQuery().byAccountId(account.Id));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Opportunity WHERE AccountId IN (:account.Id)]),
-                new OpportunityQuery().byAccountId(new List<Id>{account.Id}));
+                new OpportunityQuery().byAccountId(account.Id).getList());
     }
 }

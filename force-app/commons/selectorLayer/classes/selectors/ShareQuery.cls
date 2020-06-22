@@ -34,6 +34,32 @@ public inherited sharing class ShareQuery extends QueryObject {
         this.parentField = this.getParentField();
     }
 
+
+    /**
+     * @return Share records for given user or group ids (List or Set)
+     */
+    public ShareQuery byUserOrGroupId(Iterable<Id> userOrGroupIds) {
+        return (ShareQuery) byField('UserOrGroupId', 'IN', userOrGroupIds);
+    }
+
+    /**
+     * @return Share records for given records
+     */
+    public ShareQuery byParentId(Iterable<Id> parentIds) {
+        return (ShareQuery) byField(parentField, 'IN', parentIds);
+    }
+
+    /**
+     * @return Share records for given records and users/groups (List or cast Set may be supplied as iterable)
+     */
+    public ShareQuery byParentIdAndUserOrGroupId(Iterable<Id> parentIds, Iterable<Id> userOrGroupIds) {
+        this.query.setWhere('' + parentField + ' IN :parentIds AND UserOrGroupId IN :userOrGroupIds')
+                .bindVariable('parentIds', parentIds)
+                .bindVariable('userOrGroupIds', userOrGroupIds);
+        return this;
+    }
+
+
     /**
      * Share fields do not have consistent naming convention (AccountId, OpportunityId, ParentId)
      * This method checks for ParentId field.
@@ -52,30 +78,5 @@ public inherited sharing class ShareQuery extends QueryObject {
 
             return null;
         }
-    }
-
-
-    /**
-     * @return Share records for given user or group ids (List or Set)
-     */
-    public SObject[] byUserOrGroupId(Iterable<Id> userOrGroupIds) {
-        return byField('UserOrGroupId', 'IN', userOrGroupIds);
-    }
-
-    /**
-     * @return Share records for given records
-     */
-    public SObject[] byParentId(Iterable<Id> parentIds) {
-        return byField(parentField, 'IN', parentIds);
-    }
-
-    /**
-     * @return Share records for given records and users/groups (List or cast Set may be supplied as iterable)
-     */
-    public SObject[] byParentIdAndUserOrGroupId(Iterable<Id> parentIds, Iterable<Id> userOrGroupIds) {
-        this.query.bindVariable('parentIds', parentIds)
-                .bindVariable('userOrGroupIds', userOrGroupIds)
-                .setWhere('' + parentField + ' IN :parentIds AND UserOrGroupId IN :userOrGroupIds');
-        return executeQuery();
     }
 }

@@ -47,11 +47,7 @@ private class PricebookEntryQueryTest {
         Id std = Test.getStandardPricebookId();
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM PricebookEntry WHERE Pricebook2Id = :std]),
-                new PricebookEntryQuery().byPricebookId(std));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM PricebookEntry WHERE Pricebook2Id IN (:std)]),
-                new PricebookEntryQuery().byPricebookId(new List<Id>{std}));
+                new PricebookEntryQuery().byPricebookId(std).getList());
     }
 
     @IsTest
@@ -60,10 +56,6 @@ private class PricebookEntryQueryTest {
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM PricebookEntry WHERE Product2Id = :product2s[0].Id]),
-                new PricebookEntryQuery().byProductId(product2s[0].Id));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM PricebookEntry WHERE Product2Id IN (:product2s[0].Id, :product2s[1].Id)]),
-                new PricebookEntryQuery().byProductId(new List<Id>{product2s[0].Id, product2s[1].Id}));
+                new PricebookEntryQuery().byProductId(product2s[0].Id).getList());
     }
 }

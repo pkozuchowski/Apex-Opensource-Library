@@ -46,11 +46,7 @@ public inherited sharing class TaskQueryTest {
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Task WHERE AccountId = :account.Id]),
-                new TaskQuery().byAccountId(account.Id)
-        );
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Task WHERE AccountId = :account.Id]),
-                new TaskQuery().byAccountId(new List<Id>{account.Id})
+                new TaskQuery().byAccountId(account.Id).getList()
         );
     }
 
@@ -60,11 +56,7 @@ public inherited sharing class TaskQueryTest {
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Task WHERE WhatId = :account.Id]),
-                new TaskQuery().byWhatId(account.Id)
-        );
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Task WHERE WhatId = :account.Id]),
-                new TaskQuery().byWhatId(new List<Id>{account.Id})
+                new TaskQuery().byWhatId(account.Id).getList()
         );
     }
 
@@ -74,11 +66,7 @@ public inherited sharing class TaskQueryTest {
 
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Task WHERE WhoId = :contact.Id]),
-                new TaskQuery().byWhoId(contact.Id)
-        );
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Task WHERE WhoId = :contact.Id]),
-                new TaskQuery().byWhoId(new List<Id>{contact.Id})
+                new TaskQuery().byWhoId(contact.Id).getList()
         );
     }
 }

@@ -35,22 +35,23 @@ private class EmailTemplateQueryTest {
             ];
 
 
-            EmailTemplate actual = new EmailTemplateQuery()
+            EmailTemplate actual = (EmailTemplate) new EmailTemplateQuery()
                     .withHtmlBody()
                     .withTextBody()
-                    .byDeveloperName(template.DeveloperName);
+                    .byDeveloperName(template.DeveloperName)
+                    .getFirstOrNull();
 
             System.assertNotEquals(null, actual);
             System.assertEquals(template.DeveloperName, actual.DeveloperName);
             System.assertEquals(template.Body, actual.Body);
             System.assertEquals(template.HtmlValue, actual.HtmlValue);
-            System.assertEquals(1, new EmailTemplateQuery().byDeveloperName(new List<String>{template.DeveloperName}).size());
+            System.assertEquals(1, new EmailTemplateQuery().byDeveloperName(new List<String>{template.DeveloperName}).getList().size());
         } catch (QueryException ex) {
             new EmailTemplateQuery()
                     .withHtmlBody()
                     .withTextBody()
                     .byDeveloperName('');
-            System.assertEquals(0, new EmailTemplateQuery().byDeveloperName(new List<String>{''}).size());
+            System.assertEquals(0, new EmailTemplateQuery().byDeveloperName(new List<String>{''}).getList().size());
         }
     }
 }

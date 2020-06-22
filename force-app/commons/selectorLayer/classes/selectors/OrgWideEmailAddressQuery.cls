@@ -41,30 +41,30 @@ public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
     /**
      * @return OrgWideEmailAddress by given Display Names or null
      */
-    public OrgWideEmailAddress byDisplayName(String name) {
-        return (OrgWideEmailAddress) firstOrNull(byDisplayName(new List<String>{name}));
+    public OrgWideEmailAddressQuery byDisplayName(String name) {
+        return byDisplayName(new List<String>{name});
     }
 
     /**
      * @return OrgWideEmailAddress by given Display Names (List or Set)
      */
-    public OrgWideEmailAddress[] byDisplayName(Iterable<String> names) {
-        return byField(OrgWideEmailAddress.DisplayName, 'IN', names);
+    public OrgWideEmailAddressQuery byDisplayName(Iterable<String> names) {
+        return (OrgWideEmailAddressQuery) byField(OrgWideEmailAddress.DisplayName, 'IN', names);
     }
 
 
     /**
      * @return OrgWideEmailAddress by given Email Address or null
      */
-    public OrgWideEmailAddress byAddress(String address) {
-        return (OrgWideEmailAddress) firstOrNull(byAddress(new List<String>{address}));
+    public OrgWideEmailAddressQuery byAddress(String address) {
+        return byAddress(new List<String>{address});
     }
 
     /**
      * @return OrgWideEmailAddress by given Email Addresses (List or Set)
      */
-    public OrgWideEmailAddress[] byAddress(Iterable<String> names) {
-        return byField(OrgWideEmailAddress.Address, 'IN', names);
+    public OrgWideEmailAddressQuery byAddress(Iterable<String> names) {
+        return (OrgWideEmailAddressQuery) byField(OrgWideEmailAddress.Address, 'IN', names);
     }
 
 
@@ -77,6 +77,6 @@ public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
     }
 
     protected override List<SObject> getRecordsToPrecache() {
-        return all();
+        return getList();
     }
 }

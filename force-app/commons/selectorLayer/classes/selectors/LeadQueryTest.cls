@@ -38,32 +38,20 @@ private class LeadQueryTest {
     static void testSelectByName() {
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Lead WHERE Name = 'Name 1']),
-                new LeadQuery().byName('Name 1'));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Lead WHERE Name IN ('Name 1', 'Name 2')]),
-                new LeadQuery().byName(new List<String>{'Name 1', 'Name 2'}));
+                new LeadQuery().byName('Name 1').getList());
     }
 
     @IsTest
     static void testSelectByEmail() {
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Lead WHERE Email = 'Email1@example.com']),
-                new LeadQuery().byEmail('Email1@example.com'));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Lead WHERE Email IN ('Email1@example.com', 'Email2@example.com')]),
-                new LeadQuery().byEmail(new List<String>{'Email1@example.com', 'Email2@example.com'}));
+                new LeadQuery().byEmail('Email1@example.com').getList());
     }
 
     @IsTest
     static void testSelectByCompany() {
         QueryObjectTest.assertEquals(
                 ([SELECT Id FROM Lead WHERE Company = 'Company 1']),
-                new LeadQuery().byCompany('Company 1'));
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Lead WHERE Company IN ('Company 1', 'Company 2')]),
-                new LeadQuery().byCompany(new List<String>{'Company 1', 'Company 2'}));
+                new LeadQuery().byCompany('Company 1').getList());
     }
 }

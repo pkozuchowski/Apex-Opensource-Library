@@ -24,7 +24,7 @@
 
 /**
  * Selector Layer class for UserRoles. Records are queried only once and cached to minimize SOQL limits usage.
- * @see UserRoleSelectorTest
+ * @see UserRoleQueryTest
  */
 public inherited sharing class UserRoleQuery extends QueryObject {
 
@@ -41,23 +41,23 @@ public inherited sharing class UserRoleQuery extends QueryObject {
     /**
     * @return UserRole of current user
     */
-    public UserRole ofCurrentUser() {
-        return (UserRole) oneRecordByField(UserRole.Id, '=', UserInfo.getUserRoleId());
+    public UserRoleQuery byCurrentUser() {
+        return (UserRoleQuery) byField(UserRole.Id, '=', UserInfo.getUserRoleId());
     }
 
     /**
      * @return UserRole record by given name or null
      */
-    public UserRole byDeveloperName(String developerName) {
-        return (UserRole) firstOrNull(byDeveloperName(new List<String>{developerName}));
+    public UserRoleQuery byDeveloperName(String developerName) {
+        return byDeveloperName(new List<String>{developerName});
     }
 
 
     /**
      * @return UserRoles by given developer names
      */
-    public UserRole[] byDeveloperName(Iterable<String> developerNames) {
-        return byField(UserRole.DeveloperName, 'IN', developerNames);
+    public UserRoleQuery byDeveloperName(Iterable<String> developerNames) {
+        return (UserRoleQuery) byField(UserRole.DeveloperName, 'IN', developerNames);
     }
 
 
@@ -69,6 +69,6 @@ public inherited sharing class UserRoleQuery extends QueryObject {
     }
 
     protected override List<SObject> getRecordsToPrecache() {
-        return all();
+        return getListForCache();
     }
 }

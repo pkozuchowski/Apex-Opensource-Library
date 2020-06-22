@@ -41,16 +41,16 @@ public inherited sharing class StaticResourceQuery extends QueryObject {
 
 
     /**
-     * @return Static Resource by given name or null
+     * Filters Static Resource by given name or null
      */
-    public StaticResource byName(String name) {
-        return (StaticResource) oneRecordByField(StaticResource.Name, '=', name);
+    public StaticResourceQuery byName(String name) {
+        return byName(new List<String>{name});
     }
 
     /**
-     * @return Static Resource by given names (List or Set)
+     * Filters Static Resource by given names (List or Set)
      */
-    public StaticResource[] byName(Iterable<String> names) {
-        return byField(StaticResource.Name, 'IN', names);
+    public StaticResourceQuery byName(Iterable<String> names) {
+        return (StaticResourceQuery) byField(StaticResource.Name, 'IN', names);
     }
 }

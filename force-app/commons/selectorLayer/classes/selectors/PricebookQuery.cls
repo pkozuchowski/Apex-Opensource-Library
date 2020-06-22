@@ -24,7 +24,7 @@
 
 /**
  * Selector layer for Pricebook2 SObject.
- * @see PricebookSelectorTest
+ * @see PricebookQueryTest
  */
 public inherited sharing class PricebookQuery extends QueryObject {
 
@@ -49,27 +49,27 @@ public inherited sharing class PricebookQuery extends QueryObject {
     }
 
     /**
-     * @return Pricebook2 record with given name or null.
+     * Filters Pricebook2 record with given name or null.
      */
-    public Pricebook2 byName(String name) {
-        return (Pricebook2) oneRecordByField(Pricebook2.Name, '=', name);
+    public PricebookQuery byName(String name) {
+        return byName(new List<String>{name});
     }
 
     /**
-     * @return Pricebook2 records with given names.
+     * Filters Pricebook2 records with given names.
      */
-    public Pricebook2[] byName(Iterable<String> names) {
-        return byField(Pricebook2.Name, 'IN', names);
+    public PricebookQuery byName(Iterable<String> names) {
+        return (PricebookQuery) byField(Pricebook2.Name, 'IN', names);
     }
 
     /**
-     * @return Id of Standard Pricebook. In Unit Test context Test.getStandardPricebookId() value is returned.
+     * Filters Id of Standard Pricebook. In Unit Test context Test.getStandardPricebookId() value is returned.
      */
-    public Id standardPricebookId() {
+    public Id getStandardPricebookId() {
         if (Test.isRunningTest()) {
             return Test.getStandardPricebookId();
         } else {
-            return oneRecordByField(Pricebook2.IsStandard, '=', true).Id;
+            return byField(Pricebook2.IsStandard, '=', true).getFirstOrEmpty().Id;
         }
     }
 }

@@ -49,48 +49,49 @@ public inherited sharing class TaskQuery extends QueryObject {
 
 
     /**
-     * @return Tasks associated with given Account
+     * Filters Tasks associated with given Account
      */
-    public Task[] byAccountId(Id accountId) {
-        return byField(Task.AccountId, '=', accountId);
+    public TaskQuery byAccountId(Id accountId) {
+        return byAccountId(new List<Id>{accountId});
     }
 
     /**
-     * @return Tasks associated with given Accounts (List or Set)
+     * Filters Tasks associated with given Accounts (List or Set)
      */
-    public Task[] byAccountId(Iterable<Id> accountIds) {
-        return byField(Task.AccountId, 'IN', accountIds);
-    }
-
-
-    /**
-     * @return Tasks associated with given Account
-     */
-    public Task[] byWhatId(Id whatId) {
-        return byField(Task.WhatId, '=', whatId);
-    }
-
-    /**
-     * @return Tasks associated with given Accounts (List or Set)
-     */
-    public Task[] byWhatId(Iterable<Id> whatIds) {
-        return byField(Task.WhatId, 'IN', whatIds);
+    public TaskQuery byAccountId(Iterable<Id> accountIds) {
+        return (TaskQuery) byField(Task.AccountId, 'IN', accountIds);
     }
 
 
     /**
-     * @return Tasks associated with given Account
+     * Filters Tasks associated with given Account
      */
-    public Task[] byWhoId(Id whoId) {
-        return byField(Task.WhoId, '=', whoId);
+    public TaskQuery byWhatId(Id whatId) {
+        return byWhatId(new List<Id>{whatId});
     }
 
     /**
-     * @return Tasks associated with given Accounts (List or Set)
+     * Filters Tasks associated with given Accounts (List or Set)
      */
-    public Task[] byWhoId(Iterable<Id> whoIds) {
-        return byField(Task.WhoId, 'IN', whoIds);
+    public TaskQuery byWhatId(Iterable<Id> whatIds) {
+        return (TaskQuery) byField(Task.WhatId, 'IN', whatIds);
     }
+
+
+    /**
+     * Filters Tasks associated with given Account
+     */
+    public TaskQuery byWhoId(Id whoId) {
+        return byWhoId(new List<Id>{whoId});
+    }
+
+    /**
+     * Filters Tasks associated with given Accounts (List or Set)
+     */
+    public TaskQuery byWhoId(Iterable<Id> whoIds) {
+        return (TaskQuery) byField(Task.WhoId, 'IN', whoIds);
+    }
+
 
     protected override Set<SObjectField> getFieldsToCacheBy() {
         return new Set<SObjectField>{

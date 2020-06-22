@@ -64,4 +64,28 @@ private class DatabaseServiceTest {
             );
         }
     }
+
+    @IsTest
+    static void testQueryLocator() {
+        DatabaseService databaseService = new DatabaseService();
+
+        List<User> expected = [SELECT Id FROM User LIMIT 50];
+
+        for (Sharing s : Sharing.values()) {
+            databaseService.setSharing(s);
+            Database.QueryLocator queryLocator = databaseService.getQueryLocator('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
+            Database.QueryLocatorIterator it = queryLocator.iterator();
+
+            List<User> actual = new List<User>();
+            while(it.hasNext()){
+                User user = (User) it.next();
+                actual.add(user);
+            }
+
+            System.assertEquals(
+                    new Map<Id, User>(expected).keySet(),
+                    new Map<Id, User>(actual).keySet()
+            );
+        }
+    }
 }

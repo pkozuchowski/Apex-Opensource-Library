@@ -65,17 +65,41 @@ public class DatabaseService {
     }
 
 
+    /**
+     * Executes database query
+     * @param query Query string (ex. 'SELECT Id FROM Account')
+     */
     public List<SObject> query(String query) {
         return query(query, null);
     }
 
     /**
-     * Performs query with given Sharing and bound variables
-     * @param boundVars Variables to bind to query
+     * Executes database query with given bound variables
+     * @param query Query string (ex. 'SELECT Id FROM Account WHERE Name IN: names')
+     * @param boundVars Variables to bind to query ex. {'names' => ['Name 1', 'Name 2']}
      */
     public List<SObject> query(String query, Map<String, Object> boundVars) {
         return dmlIssuer.query(query, boundVars == null ? new Map<String, Object>() : boundVars);
     }
+
+
+    /**
+     * @param query Query string (ex. 'SELECT Id FROM Account')
+     * @return QueryLocator for given query
+     */
+    public Database.QueryLocator getQueryLocator(String query) {
+        return getQueryLocator(query, null);
+    }
+
+    /**
+     * @param query Query string (ex. 'SELECT Id FROM Account')
+     * @param boundVars Variables to bind to query ex. {'names' => ['Name 1', 'Name 2']}
+     * @return QueryLocator for given query and bound variables
+     */
+    public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
+        return dmlIssuer.getQueryLocator(query, boundVars == null ? new Map<String, Object>() : boundVars);
+    }
+
 
 
     public Database.SaveResult doInsert(SObject record) {
@@ -145,6 +169,7 @@ public class DatabaseService {
         List<Database.DeleteResult> doDelete(List<SObject> records, Boolean allOrNone);
         List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone);
         List<SObject> query(String query, Map<String, Object> boundVars);
+        Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars);
     }
 
 
@@ -171,6 +196,30 @@ public class DatabaseService {
             }
 
             return Database.query(finalQuery);
+        }
+
+        public virtual Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
+            Object var0, var1, var2, var3, var4, var5, var6, var7, var8, var9;
+            String finalQuery = query;
+
+            Integer i = 0;
+            for (String var : boundVars.keySet()) {
+                finalQuery = finalQuery.replace(':' + var, ':var' + i);
+
+                if (i == 0) var0 = boundVars.get(var);
+                if (i == 1) var1 = boundVars.get(var);
+                if (i == 2) var2 = boundVars.get(var);
+                if (i == 3) var3 = boundVars.get(var);
+                if (i == 4) var4 = boundVars.get(var);
+                if (i == 5) var5 = boundVars.get(var);
+                if (i == 6) var6 = boundVars.get(var);
+                if (i == 7) var7 = boundVars.get(var);
+                if (i == 8) var8 = boundVars.get(var);
+                if (i == 9) var9 = boundVars.get(var);
+                i++;
+            }
+
+            return Database.getQueryLocator(finalQuery);
         }
     }
 
@@ -203,6 +252,10 @@ public class DatabaseService {
         public override List<SObject> query(String query, Map<String, Object> boundVars) {
             return super.query(query, boundVars);
         }
+
+        public override Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
+            return super.getQueryLocator(query, boundVars);
+        }
     }
 
 
@@ -234,6 +287,10 @@ public class DatabaseService {
         public override List<SObject> query(String query, Map<String, Object> boundVars) {
             return super.query(query, boundVars);
         }
+
+        public override Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
+            return super.getQueryLocator(query, boundVars);
+        }
     }
 
 
@@ -264,6 +321,10 @@ public class DatabaseService {
 
         public override List<SObject> query(String query, Map<String, Object> boundVars) {
             return super.query(query, boundVars);
+        }
+
+        public override Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
+            return super.getQueryLocator(query, boundVars);
         }
     }
 }

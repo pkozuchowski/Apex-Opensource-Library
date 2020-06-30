@@ -27,7 +27,7 @@
 */
 public with sharing class QueryMocker {
     private final static QueryMocker instance = new QueryMocker();
-    private final Map<SObjectType, QueryMock> mocks = new Map<SObjectType, QueryMock>();
+    private final Map<Type, QueryMock> mocksByQueryClass = new Map<Type, QueryMock>();
 
     public static QueryMocker getInstance() {
         return instance;
@@ -36,57 +36,62 @@ public with sharing class QueryMocker {
     private QueryMocker() {
     }
 
+
+    /**
+     * Mocks selector method with given results
+     */
+    public QueryMock getMock(Type queryClass) {
+        return this.mocksByQueryClass.get(queryClass);
+    }
+
+    /**
+     * Mocks selector method with given results
+     */
+    public void setMock(Type queryClass, SObject[] mockRecords) {
+        this.mocksByQueryClass.put(queryClass, new SimpleQueryMock(mockRecords));
+    }
+
     /**
      * Mocks query result for given selector type
      */
-    public void setMock(SObjectType sObjectType, QueryMock mock) {
+    public void setMock(Type queryClass, QueryMock mock) {
         if (Test.isRunningTest()) {
-            getInstance().mocks.put(sObjectType, mock);
+            getInstance().mocksByQueryClass.put(queryClass, mock);
 
         } else {
-            throw new QueryException('.setMock() can only be called from test methods');
+            throw new QueryException('Query mock can be only set in test methods');
         }
     }
 
-    public void removeMock(SObjectType sObjectType) {
-        getInstance().mocks.remove(sObjectType);
+
+    /**
+     * Removes mocks set on given SObjectType
+     */
+    public void removeMock(Type queryClass) {
+        mocksByQueryClass.remove(queryClass);
     }
 
 
     /**
     * @return True, if given sObjectType should be mocked
     */
-    public Boolean isMocked(SObjectType sObjectType) {
-        return mocks.containsKey(sObjectType);
+    public Boolean isMocked(Type queryClass) {
+        return mocksByQueryClass.containsKey(queryClass);
     }
 
 
     /**
-    * This method checks context of execution (which class called selector, in which method,
-    * what method on which selector etc.) and mocks the response.
-    */
-    public SObject[] mockResponse(QueryObject queryObject, SObjectType sObjectType, Map<String, Object> queryVariables, SObject[] result) {
-        String selectorName = Runtime.getTypeName(queryObject);
-        String selectorMethod, caller, callerMethod;
+     * Mocks selector's method with given result.
+     */
+    private class SimpleQueryMock implements QueryMock {
+        private SObject[] mockRecords;
 
-        for (Runtime.StackTraceLine line : Runtime.getStackTrace()) {
-            if (line.apexClass == selectorName || line.apexClass == QueryObject.class.getName()) {
-                selectorMethod = line.method;
-
-            } else if (String.isNotBlank(selectorMethod)) {
-                caller = line.apexClass;
-                callerMethod = line.method;
-            }
+        private SimpleQueryMock(SObject[] mockRecords) {
+            this.mockRecords = mockRecords;
         }
 
-        QueryMock mock = mocks.get(sObjectType);
-        return mock.handleQuery(
-                caller,
-                callerMethod,
-                selectorName,
-                selectorMethod,
-                queryVariables,
-                result
-        );
+        public SObject[] handleQuery(Type queryObject, QueryCriteria[] criteria, SObject[] queryResult) {
+            return mockRecords;
+        }
     }
 }

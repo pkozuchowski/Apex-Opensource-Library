@@ -322,8 +322,10 @@ public inherited sharing abstract class QueryObject {
             }
         }
 
-        if (mocker.isMocked(sObjectType)) {
-            return mocker.mockResponse(this, sObjectType, query.getVariables(), result);
+        Type thisQueryClass = Runtime.getType(this);
+        if (mocker.isMocked(thisQueryClass)) {
+            QueryMock mock = mocker.getMock(thisQueryClass);
+            return mock.handleQuery(thisQueryClass, criteria, result);
 
         } else {
             return result;

@@ -24,7 +24,7 @@
 @IsTest
 private class QueryMockerTest {
 
-    private class TestAccountQuery extends QueryObject {
+    public class TestAccountQuery extends QueryObject {
         private TestAccountQuery() {
             super(new List<SObjectField>{
                     Account.Id,
@@ -38,45 +38,74 @@ private class QueryMockerTest {
         }
     }
 
+
     @IsTest
-    static void testMocking() {
+    static void testIsMocked() {
+        QueryMocker queryMocker = QueryMocker.getInstance();
+
+        System.assertEquals(false, queryMocker.isMocked(TestAccountQuery.class));
+        queryMocker.setMock(TestAccountQuery.class, new List<Account>{
+                new Account()
+        });
+        System.assertEquals(true, queryMocker.isMocked(TestAccountQuery.class));
+    }
+
+
+    @IsTest
+    static void testMockingByMethod() {
+        QueryMocker queryMocker = QueryMocker.getInstance();
+        queryMocker.setMock(TestAccountQuery.class, new List<Account>{
+                new Account(Name = 'Mock Result 1'),
+                new Account(Name = 'Mock Result 2'),
+                new Account(Name = 'Mock Result 3')
+        });
+
+
+        Test.startTest();
+        List<Account> resultAfterMock = new TestAccountQuery().byName('Mock Result').getList();
+        queryMocker.removeMock(TestAccountQuery.class);
+        List<Account> resultBeforeMock = new TestAccountQuery().byName('Mock Result').getList();
+        Test.stopTest();
+
+
+        System.assertEquals(true, resultBeforeMock.isEmpty());
+        System.assertEquals(3, resultAfterMock.size());
+        System.assertEquals('Mock Result 1', resultAfterMock[0].Name);
+        System.assertEquals('Mock Result 2', resultAfterMock[1].Name);
+        System.assertEquals('Mock Result 3', resultAfterMock[2].Name);
+    }
+
+
+    @IsTest
+    static void testMockingByInterface() {
         QueryMocker queryMocker = QueryMocker.getInstance();
 
         Test.startTest();
-        queryMocker.setMock(Account.SObjectType, new AccountQueryMock());
+        queryMocker.setMock(TestAccountQuery.class, new AccountQueryMock());
         List<Account> resultAfterMock = new TestAccountQuery().byName('Mock Result').getList();
 
-        queryMocker.removeMock(Account.SObjectType);
+        queryMocker.removeMock(TestAccountQuery.class);
         List<Account> resultBeforeMock = new TestAccountQuery().byName('Mock Result').getList();
         Test.stopTest();
 
 
         System.assertEquals(true, resultBeforeMock.isEmpty());
         System.assertEquals(false, resultAfterMock.isEmpty());
-        System.assertEquals('Mock Result', resultAfterMock[0].Name);
+        System.assertEquals('Mock Result 1', resultAfterMock[0].Name);
+        System.assertEquals('Mock Result 2', resultAfterMock[1].Name);
+        System.assertEquals('Mock Result 3', resultAfterMock[2].Name);
     }
 
     private class AccountQueryMock implements QueryMock {
-        public SObject[] handleQuery(
-                String caller,
-                String callerMethod,
-                String selector,
-                String selectorMethod,
-                Map<String, Object> queryBoundVariables,
-                SObject[] queryResult) {
 
-            System.assertEquals(QueryMockerTest.class.getName(), caller, 'Should return name of class where query was called');
-            System.assertEquals('testMocking', callerMethod, 'Should return name of method where query was called');
-            System.assertEquals(TestAccountQuery.class.getName(), selector, 'Should return name of the Query/Selector class');
-            System.assertEquals('byName', selectorMethod, 'Should return name of the method on Query');
-            System.assertEquals(new List<Object>{
-                    'Mock Result'
-            }, queryBoundVariables.values(), 'Should return list of parameters bound to the query');
-            System.assertEquals(new List<Account>(), queryResult, 'Should return result of the query before mocking');
-
+        public SObject[] handleQuery(Type queryObject, QueryCriteria[] criteria, SObject[] queryResult) {
+            System.assertEquals(TestAccountQuery.class, queryObject);
+            System.assertEquals(criteria[0], new QueryCriteria(Account.Name, '=', 'Mock Result'));
 
             return new List<Account>{
-                    new Account(Name = 'Mock Result')
+                    new Account(Name = 'Mock Result 1'),
+                    new Account(Name = 'Mock Result 2'),
+                    new Account(Name = 'Mock Result 3')
             };
         }
     }

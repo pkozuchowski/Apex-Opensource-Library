@@ -29,6 +29,13 @@
 * */
 public inherited sharing class QueueQuery extends QueryObject {
 
+    /**
+     * Caches all Queues to save SOQL limits
+     */
+    static {
+        new QueueQuery().byField(Group.Type, '=', 'Queue').getList();
+    }
+
     public QueueQuery() {
         super(new List<SObjectField>{
                 Group.Id,
@@ -68,10 +75,6 @@ public inherited sharing class QueueQuery extends QueryObject {
         return (QueueQuery) byField(Group.Name, 'IN', names);
     }
 
-
-    protected override List<SObject> getRecordsToPrecache() {
-        return byField(Group.Type, '=', 'Queue').getListForCache();
-    }
 
     protected override Set<SObjectField> getFieldsToCacheBy() {
         return new Set<SObjectField>{

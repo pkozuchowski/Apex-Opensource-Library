@@ -28,6 +28,13 @@
  */
 public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
 
+    /**
+     * Cache all records on first initialization
+     */
+    static {
+        new OrgWideEmailAddressQuery().getList();
+    }
+
     public OrgWideEmailAddressQuery() {
         super(new List<SObjectField>{
                 OrgWideEmailAddress.Id,
@@ -74,9 +81,5 @@ public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
                 OrgWideEmailAddress.Address,
                 OrgWideEmailAddress.DisplayName
         };
-    }
-
-    protected override List<SObject> getRecordsToPrecache() {
-        return getList();
     }
 }

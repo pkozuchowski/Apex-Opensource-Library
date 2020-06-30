@@ -47,8 +47,14 @@ public inherited sharing class BusinessHoursQuery extends QueryObject {
             BusinessHours.SaturdayEndTime,
             BusinessHours.SundayStartTime,
             BusinessHours.SundayEndTime
-
     };
+
+    /**
+     * Cache all Business Hours on first query to save SOQL limits
+     */
+    static {
+        new BusinessHoursQuery().byField(BusinessHours.IsActive, '=', true).getList();
+    }
 
     public BusinessHoursQuery() {
         super(QUERIED_FIELDS, BusinessHours.SObjectType);
@@ -83,9 +89,5 @@ public inherited sharing class BusinessHoursQuery extends QueryObject {
                 BusinessHours.Id,
                 BusinessHours.Name
         };
-    }
-
-    protected override List<SObject> getRecordsToPrecache() {
-        return byField(BusinessHours.IsActive, '=', true).getList();
     }
 }

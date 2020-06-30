@@ -28,6 +28,14 @@
  */
 public inherited sharing class ProfileQuery extends QueryObject {
 
+    /**
+     * Cache all profiles
+     * */
+    static {
+        new ProfileQuery().getList();
+    }
+
+
     public ProfileQuery() {
         super(new List<SObjectField>{
                 Profile.Id,
@@ -65,9 +73,5 @@ public inherited sharing class ProfileQuery extends QueryObject {
                 Profile.Id,
                 Profile.Name
         };
-    }
-
-    protected override List<SObject> getRecordsToPrecache() {
-        return getList();
     }
 }

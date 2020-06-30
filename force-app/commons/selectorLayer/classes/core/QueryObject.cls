@@ -28,7 +28,6 @@
 public inherited sharing abstract class QueryObject {
     private final static QueryMocker mocker = QueryMocker.getInstance();
     private final static QueryCache cache = QueryCache.getInstance();
-    private final static Set<SObjectType> firstInitialization = new Set<SObjectType>();
 
     protected final QueryBuilder query;
     protected final DatabaseService databaseService;
@@ -46,12 +45,6 @@ public inherited sharing abstract class QueryObject {
 
         this.allFields = sObjectType.getDescribe().fields.getMap();
         this.sObjectType = sObjectType;
-
-        if (!firstInitialization.contains(sObjectType)) {
-            firstInitialization.add(sObjectType);
-
-            cache.put(getFieldsToCacheBy(), getRecordsToPrecache());
-        }
     }
 
 
@@ -279,23 +272,6 @@ public inherited sharing abstract class QueryObject {
     */
     protected virtual Set<SObjectField> getFieldsToCacheBy() {
         return new Set<SObjectField>();
-    }
-
-    /**
-    * These records will be cached at first initialization of the selector:
-    * Example use-cases:
-    * - caching all Profiles / UserRoles / Permission Sets to reduce soql limits against these
-    * setup objects to 1 during whole transaction
-    */
-    protected virtual List<SObject> getRecordsToPrecache() {
-        return new List<SObject>();
-    }
-
-    protected List<SObject> getListForCache() {
-        List<SObject> result = getList();
-        this.criteria.clear();
-        this.query.boundVars.clear();
-        return result;
     }
 
 

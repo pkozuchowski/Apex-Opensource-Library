@@ -23,7 +23,7 @@
 */
 
 /**
- * Selector Layer class for UserRoles. Records are queried only once and cached to minimize SOQL limits usage.
+ * Selector Layer class for UserRoles.
  * @see UserRoleQueryTest
  */
 public inherited sharing class UserRoleQuery extends QueryObject {
@@ -68,7 +68,4 @@ public inherited sharing class UserRoleQuery extends QueryObject {
         };
     }
 
-    protected override List<SObject> getRecordsToPrecache() {
-        return getListForCache();
-    }
 }

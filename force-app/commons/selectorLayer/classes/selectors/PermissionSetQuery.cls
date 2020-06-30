@@ -28,6 +28,13 @@
  */
 public inherited sharing class PermissionSetQuery extends QueryObject {
 
+    /**
+     * Cache all Permission Sets on first initialization
+     */
+    static {
+        new PermissionSetQuery().byField(PermissionSet.IsOwnedByProfile, '=', false).getList();
+    }
+
     public PermissionSetQuery() {
         super(new List<SObjectField>{
                 PermissionSet.Id,
@@ -56,9 +63,5 @@ public inherited sharing class PermissionSetQuery extends QueryObject {
                 PermissionSet.Id,
                 PermissionSet.Name
         };
-    }
-
-    protected override List<SObject> getRecordsToPrecache() {
-        return byField(PermissionSet.IsOwnedByProfile, '=', false).getListForCache();
     }
 }

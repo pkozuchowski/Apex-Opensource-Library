@@ -26,14 +26,13 @@ private class UserRoleQueryTest {
 
     @IsTest
     static void testSelectByDeveloperName() {
-        List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
+        UserRole userRole = [SELECT Id,DeveloperName FROM UserRole LIMIT 1];
 
-        for (UserRole userRole : userRoles) {
-            UserRole role = (UserRole) new UserRoleQuery().byDeveloperName(userRole.DeveloperName).getFirstOrEmpty();
-            System.assertEquals(userRole.DeveloperName, role.DeveloperName);
-        }
+        Test.startTest();
+        UserRole role = (UserRole) new UserRoleQuery().byDeveloperName(userRole.DeveloperName).getFirstOrEmpty();
+        Test.stopTest();
 
-        System.assertEquals(2, Limits.getQueries());
+        System.assertEquals(userRole.DeveloperName, role.DeveloperName);
     }
 
 
@@ -45,21 +44,25 @@ private class UserRoleQueryTest {
             devNames.add(userRole.DeveloperName);
         }
 
+        Test.startTest();
         Map<Id, UserRole> result = (Map<Id, UserRole>) new UserRoleQuery().byDeveloperName((Iterable<String>) devNames).getMapById();
+        Test.stopTest();
+
         System.assertEquals(expected.keySet(), result.keySet());
     }
 
+
     @IsTest
     static void testSelectById() {
-        List<UserRole> userRoles = [SELECT Id,DeveloperName FROM UserRole];
+        UserRole userRole = [SELECT Id,DeveloperName FROM UserRole LIMIT 1];
 
-        for (UserRole userRole : userRoles) {
-            UserRole result = (UserRole) new UserRoleQuery().byId(userRole.Id).getFirstOrNull();
-            System.assertEquals(userRole.DeveloperName, result.DeveloperName);
-        }
+        Test.startTest();
+        UserRole result = (UserRole) new UserRoleQuery().byId(userRole.Id).getFirstOrNull();
+        Test.stopTest();
 
-        System.assertEquals(2, Limits.getQueries());
+        System.assertEquals(userRole.DeveloperName, result.DeveloperName);
     }
+
 
     @IsTest
     static void testSelectByIds() {
@@ -68,6 +71,7 @@ private class UserRoleQueryTest {
 
         System.assertEquals(expected.keySet(), result.keySet());
     }
+
 
     @IsTest
     static void testSelectOfCurrentUser() {

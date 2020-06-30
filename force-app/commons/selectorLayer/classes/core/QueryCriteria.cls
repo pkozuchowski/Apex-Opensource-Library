@@ -48,4 +48,16 @@ public with sharing class QueryCriteria {
     public override Integer hashCode() {
         return toString().hashCode();
     }
+
+    public Boolean equals(Object obj) {
+        if (obj instanceof QueryCriteria) {
+            QueryCriteria other = (QueryCriteria) obj;
+            return this.field == other.field
+                    && this.operator == other.operator
+                    && this.value == other.value;
+
+        } else {
+            return false;
+        }
+    }
 }

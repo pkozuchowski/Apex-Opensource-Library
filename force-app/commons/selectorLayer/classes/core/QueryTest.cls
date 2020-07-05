@@ -40,6 +40,7 @@ private class QueryTest {
         System.assertNotEquals(null, Query.Opportunities);
         System.assertNotEquals(null, Query.OrgWideEmailAddresses);
         System.assertNotEquals(null, Query.PermissionSets);
+        System.assertNotEquals(null, Query.PermissionSetAssignments);
         System.assertNotEquals(null, Query.PricebookEntries);
         System.assertNotEquals(null, Query.Pricebooks);
         System.assertNotEquals(null, Query.Products);

@@ -25,13 +25,17 @@
 public class QueryObjectTest {
 
     private class TestUserQuery extends QueryObject {
-        private TestUserQuery() {
-            super(new List<SObjectField>{
+        public override List<SObjectField> getFields() {
+            return new List<SObjectField>{
                     User.Id,
                     User.Name,
                     User.Email,
                     User.Username
-            }, User.SObjectType);
+            };
+        }
+
+        public override SObjectType getSObjectType() {
+            return User.SObjectType;
         }
     }
 
@@ -132,7 +136,7 @@ public class QueryObjectTest {
                 .getFirstOrNull();
 
         new TestUserQuery().byId(UserInfo.getUserId()).getCount();
-        new TestUserQuery().byId(UserInfo.getUserId()).getCount(new List<String>{'' + User.Name});
+        new TestUserQuery().byId(UserInfo.getUserId()).getCountBy(new List<String>{'' + User.Name});
         new TestUserQuery().byId(UserInfo.getUserId()).getMapById();
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrEmpty();

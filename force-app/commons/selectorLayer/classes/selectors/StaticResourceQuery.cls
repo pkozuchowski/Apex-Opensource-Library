@@ -27,8 +27,8 @@
  */
 public inherited sharing class StaticResourceQuery extends QueryObject {
 
-    public StaticResourceQuery() {
-        super(new List<SObjectField>{
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
                 StaticResource.Id,
                 StaticResource.Body,
                 StaticResource.BodyLength,
@@ -36,7 +36,11 @@ public inherited sharing class StaticResourceQuery extends QueryObject {
                 StaticResource.Description,
                 StaticResource.Name,
                 StaticResource.NamespacePrefix
-        }, StaticResource.SObjectType);
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return StaticResource.SObjectType;
     }
 
 

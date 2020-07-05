@@ -26,22 +26,25 @@
  * Selector layer for Document SObjects
  */
 public inherited sharing class DocumentQuery extends QueryObject {
-    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
-            Document.Id,
-            Document.AuthorId,
-            Document.Body,
-            Document.BodyLength,
-            Document.ContentType,
-            Document.Description,
-            Document.DeveloperName,
-            Document.FolderId,
-            Document.Name,
-            Document.Type,
-            Document.Url
-    };
 
-    public DocumentQuery() {
-        super(QUERIED_FIELDS, Document.SObjectType);
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
+                Document.Id,
+                Document.AuthorId,
+                Document.Body,
+                Document.BodyLength,
+                Document.ContentType,
+                Document.Description,
+                Document.DeveloperName,
+                Document.FolderId,
+                Document.Name,
+                Document.Type,
+                Document.Url
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return Document.SObjectType;
     }
 
 

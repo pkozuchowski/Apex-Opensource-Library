@@ -34,7 +34,7 @@ private class UserQueryTest {
     @IsTest
     static void testSelectByName() {
         System.assertEquals(
-                [SELECT Id FROM User WHERE Name = :UserInfo.getName()].Id,
+                [SELECT Id FROM User WHERE Name = :UserInfo.getName() LIMIT 1].Id,
                 new UserQuery().byName(UserInfo.getName()).getFirstOrEmpty().Id
         );
 
@@ -48,7 +48,7 @@ private class UserQueryTest {
     @IsTest
     static void testSelectByEmail() {
         System.assertEquals(
-                [SELECT Id FROM User WHERE Email = :UserInfo.getUserEmail()].Id,
+                [SELECT Id FROM User WHERE Email = :UserInfo.getUserEmail() LIMIT 1].Id,
                 new UserQuery().byEmail(UserInfo.getUserEmail()).getFirstOrEmpty().Id
         );
 

@@ -27,11 +27,19 @@
  */
 public inherited sharing class ShareQuery extends QueryObject {
     private SObjectField parentField;
+    private SObjectType shareObjectType;
 
     public ShareQuery(SObjectType shareObjectType) {
-        super(new List<SObjectField>{}, shareObjectType);
-        this.query.addFields(allFields.values());
-        this.parentField = this.getParentField();
+        this.shareObjectType = shareObjectType;
+        this.parentField = getParentField();
+    }
+
+    public override List<SObjectField> getFields() {
+        return getAllFields().values();
+    }
+
+    public override SObjectType getSObjectType() {
+        return shareObjectType;
     }
 
 
@@ -65,6 +73,8 @@ public inherited sharing class ShareQuery extends QueryObject {
      * This method checks for ParentId field.
      */
     private SObjectField getParentField() {
+        Map<String, SObjectField> allFields = getAllFields();
+
         if (allFields.containsKey('ParentId')) {
             return allFields.get('ParentId');
 

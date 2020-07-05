@@ -26,28 +26,32 @@
  * Selector layer for Case SObjects
  */
 public inherited sharing class CaseQuery extends QueryObject {
-    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
-            Case.Id,
-            Case.AccountId,
-            Case.CaseNumber,
-            Case.Description,
-            Case.Origin,
-            Case.Priority,
-            Case.Reason,
-            Case.Status,
-            Case.Subject,
-            Case.Type
-    };
 
-    public CaseQuery() {
-        super(QUERIED_FIELDS, Case.SObjectType);
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
+                Case.Id,
+                Case.AccountId,
+                Case.CaseNumber,
+                Case.Description,
+                Case.Origin,
+                Case.Priority,
+                Case.Reason,
+                Case.Status,
+                Case.Subject,
+                Case.Type
+        };
     }
+
+    public override SObjectType getSObjectType() {
+        return Case.SObjectType;
+    }
+
 
     /**
      * Cases will include information about parent Account field through Case.AccountId field.
      */
     public CaseQuery withParentAccount() {
-        this.query.addParentFields(AccountQuery.QUERIED_FIELDS, Case.AccountId);
+        this.query.addParentFields(new AccountQuery().getFields(), Case.AccountId);
         return this;
     }
 

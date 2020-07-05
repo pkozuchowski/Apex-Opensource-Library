@@ -26,19 +26,25 @@
  * Selector layer for PricebookEntry SObject.
  */
 public inherited sharing class PricebookEntryQuery extends QueryObject {
-    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
-            PricebookEntry.Id,
-            PricebookEntry.IsActive,
-            PricebookEntry.Name,
-            PricebookEntry.Pricebook2Id,
-            PricebookEntry.Product2Id,
-            PricebookEntry.UnitPrice,
-            PricebookEntry.UseStandardPrice
-    };
 
     public PricebookEntryQuery() {
-        super(QUERIED_FIELDS, PricebookEntry.SObjectType);
-        this.query.addParentFields(ProductQuery.QUERIED_FIELDS, PricebookEntry.Product2Id);
+        this.query.addParentFields(new ProductQuery().getFields(), PricebookEntry.Product2Id);
+    }
+
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
+                PricebookEntry.Id,
+                PricebookEntry.IsActive,
+                PricebookEntry.Name,
+                PricebookEntry.Pricebook2Id,
+                PricebookEntry.Product2Id,
+                PricebookEntry.UnitPrice,
+                PricebookEntry.UseStandardPrice
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return PricebookEntry.SObjectType;
     }
 
 

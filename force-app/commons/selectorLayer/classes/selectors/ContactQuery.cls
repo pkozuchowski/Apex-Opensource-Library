@@ -26,33 +26,35 @@
  * Selector layer for Contact SObjects
  */
 public inherited sharing class ContactQuery extends QueryObject {
-    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
-            Contact.Id,
-            Contact.FirstName,
-            Contact.LastName,
-            Contact.Name,
-            Contact.Email,
-            Contact.MailingAddress,
-            Contact.MailingCity,
-            Contact.MailingCountry,
-            Contact.MailingPostalCode,
-            Contact.MailingState,
-            Contact.MailingStreet,
-            Contact.OtherCity,
-            Contact.OtherCountry,
-            Contact.OtherPhone,
-            Contact.OtherPostalCode,
-            Contact.OtherState,
-            Contact.OtherStreet,
-            Contact.OwnerId,
-            Contact.Phone,
-            Contact.Salutation,
-            Contact.Title
-    };
 
+    public override List<SObjectField> getFields() {
+        return  new List<SObjectField>{
+                Contact.Id,
+                Contact.FirstName,
+                Contact.LastName,
+                Contact.Name,
+                Contact.Email,
+                Contact.MailingAddress,
+                Contact.MailingCity,
+                Contact.MailingCountry,
+                Contact.MailingPostalCode,
+                Contact.MailingState,
+                Contact.MailingStreet,
+                Contact.OtherCity,
+                Contact.OtherCountry,
+                Contact.OtherPhone,
+                Contact.OtherPostalCode,
+                Contact.OtherState,
+                Contact.OtherStreet,
+                Contact.OwnerId,
+                Contact.Phone,
+                Contact.Salutation,
+                Contact.Title
+        };
+    }
 
-    public ContactQuery() {
-        super(QUERIED_FIELDS, Contact.SObjectType);
+    public override SObjectType getSObjectType() {
+        return Contact.SObjectType;
     }
 
 
@@ -60,7 +62,7 @@ public inherited sharing class ContactQuery extends QueryObject {
      * Contacts will include information about parent Account field through Contact.AccountId field.
      */
     public ContactQuery withParentAccount() {
-        this.query.addParentFields(AccountQuery.QUERIED_FIELDS, Contact.AccountId);
+        this.query.addParentFields(new AccountQuery().getFields(), Contact.AccountId);
         return this;
     }
 

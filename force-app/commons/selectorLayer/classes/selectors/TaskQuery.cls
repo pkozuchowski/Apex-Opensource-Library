@@ -26,25 +26,28 @@
  * Selector layer for Task SObjects
  */
 public inherited sharing class TaskQuery extends QueryObject {
-    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
-            Task.Id,
-            Task.AccountId,
-            Task.CompletedDateTime,
-            Task.Description,
-            Task.IsClosed,
-            Task.IsRecurrence,
-            Task.IsReminderSet,
-            Task.OwnerId,
-            Task.Status,
-            Task.Subject,
-            Task.TaskSubtype,
-            Task.Type,
-            Task.WhatId,
-            Task.WhoId
-    };
 
-    public TaskQuery() {
-        super(QUERIED_FIELDS, Task.SObjectType);
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
+                Task.Id,
+                Task.AccountId,
+                Task.CompletedDateTime,
+                Task.Description,
+                Task.IsClosed,
+                Task.IsRecurrence,
+                Task.IsReminderSet,
+                Task.OwnerId,
+                Task.Status,
+                Task.Subject,
+                Task.TaskSubtype,
+                Task.Type,
+                Task.WhatId,
+                Task.WhoId
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return Task.SObjectType;
     }
 
 

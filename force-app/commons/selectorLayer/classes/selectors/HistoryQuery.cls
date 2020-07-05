@@ -27,17 +27,22 @@
  */
 public inherited sharing class HistoryQuery extends QueryObject {
     private SObjectField parentField;
+    private SObjectType historySObjectType;
 
     /**
-     * @param shareObjectType History SObjectType ex. AccountShare, CustomObject__Share
+     * @param historySObjectType History SObjectType ex. AccountHistory
      */
-    public HistoryQuery(SObjectType shareObjectType) {
-        super(
-                shareObjectType.getDescribe().fields.getMap().values(),
-                shareObjectType
-        );
+    public HistoryQuery(SObjectType historySObjectType) {
+        this.historySObjectType = historySObjectType;
+        this.parentField = getParentField(historySObjectType);
+    }
 
-        initializeParentField(shareObjectType);
+    public override List<SObjectField> getFields() {
+        return historySObjectType.getDescribe().fields.getMap().values();
+    }
+
+    public override SObjectType getSObjectType() {
+        return historySObjectType;
     }
 
 
@@ -53,19 +58,21 @@ public inherited sharing class HistoryQuery extends QueryObject {
      * History fields do not have consistent naming convention.
      * This method checks for ParentId field.
      */
-    private void initializeParentField(SObjectType shareObjectType) {
+    private SObjectField getParentField(SObjectType shareObjectType) {
         Map<String, SObjectField> fields = shareObjectType.getDescribe().fields.getMap();
 
         if (fields.containsKey('ParentId')) {
-            parentField = fields.get('ParentId');
+            return fields.get('ParentId');
         } else {
             Set<String> excluded = new Set<String>{'id', 'lastmodifiedbyid', 'createdbyid'};
 
             for (String field : fields.keySet()) {
                 if (!excluded.contains(field) && field.endsWith('id')) {
-                    parentField = fields.get(field);
+                    return fields.get(field);
                 }
             }
         }
+
+        return null;
     }
 }

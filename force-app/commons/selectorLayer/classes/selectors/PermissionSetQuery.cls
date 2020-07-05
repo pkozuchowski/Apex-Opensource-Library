@@ -35,11 +35,15 @@ public inherited sharing class PermissionSetQuery extends QueryObject {
         new PermissionSetQuery().byField(PermissionSet.IsOwnedByProfile, '=', false).getList();
     }
 
-    public PermissionSetQuery() {
-        super(new List<SObjectField>{
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
                 PermissionSet.Id,
                 PermissionSet.Name
-        }, PermissionSet.SObjectType);
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return PermissionSet.SObjectType;
     }
 
 

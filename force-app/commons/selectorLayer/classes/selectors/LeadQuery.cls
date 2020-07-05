@@ -27,8 +27,8 @@
  */
 public inherited sharing class LeadQuery extends QueryObject {
 
-    public LeadQuery() {
-        super(new List<SObjectField>{
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
                 Lead.Id,
                 Lead.FirstName,
                 Lead.LastName,
@@ -39,7 +39,11 @@ public inherited sharing class LeadQuery extends QueryObject {
                 Lead.Street,
                 Lead.PostalCode,
                 Lead.Industry
-        }, Lead.SObjectType);
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return Lead.SObjectType;
     }
 
 

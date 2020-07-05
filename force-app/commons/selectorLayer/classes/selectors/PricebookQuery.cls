@@ -28,21 +28,26 @@
  */
 public inherited sharing class PricebookQuery extends QueryObject {
 
-    public PricebookQuery() {
-        super(new List<SObjectField>{
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
                 Pricebook2.Id,
                 Pricebook2.Name,
                 Pricebook2.IsStandard
-        }, Pricebook2.SObjectType);
+        };
     }
+
+    public override SObjectType getSObjectType() {
+        return Pricebook2.SObjectType;
+    }
+
 
     /**
      * Add Pricebook Entries to query
      */
     public PricebookQuery withEntries() {
         this.query.addSubquery(new QueryBuilder()
-                .addFields(PricebookEntryQuery.QUERIED_FIELDS)
-                .addParentFields(ProductQuery.QUERIED_FIELDS, PricebookEntry.Product2Id)
+                .addFields(new PricebookEntryQuery().getFields())
+                .addParentFields(new ProductQuery().getFields(), PricebookEntry.Product2Id)
                 .fromObject('PricebookEntries')
         );
         return this;

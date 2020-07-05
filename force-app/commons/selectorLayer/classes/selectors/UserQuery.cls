@@ -27,17 +27,20 @@
  * @see UserQueryTest
  */
 public inherited sharing class UserQuery extends QueryObject {
-    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
-            User.Id,
-            User.Name,
-            User.FirstName,
-            User.LastName,
-            User.Username,
-            User.Email
-    };
 
-    public UserQuery() {
-        super(QUERIED_FIELDS, User.SObjectType);
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
+                User.Id,
+                User.Name,
+                User.FirstName,
+                User.LastName,
+                User.Username,
+                User.Email
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return User.SObjectType;
     }
 
 
@@ -93,7 +96,6 @@ public inherited sharing class UserQuery extends QueryObject {
     protected override Set<SObjectField> getFieldsToCacheBy() {
         return new Set<SObjectField>{
                 User.Id,
-                User.Email,
                 User.Username
         };
     }

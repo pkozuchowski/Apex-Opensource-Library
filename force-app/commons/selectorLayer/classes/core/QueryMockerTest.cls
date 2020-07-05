@@ -25,12 +25,16 @@
 private class QueryMockerTest {
 
     public class TestAccountQuery extends QueryObject {
-        private TestAccountQuery() {
-            super(new List<SObjectField>{
+        public override List<SObjectField> getFields() {
+            return new List<SObjectField>{
                     Account.Id,
                     Account.Name
 
-            }, Account.SObjectType);
+            };
+        }
+
+        public override SObjectType getSObjectType() {
+            return Account.SObjectType;
         }
 
         public TestAccountQuery byName(String name) {

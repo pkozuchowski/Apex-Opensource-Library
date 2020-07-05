@@ -26,18 +26,21 @@
  * Selector layer for Attachment SObjects
  */
 public inherited sharing class AttachmentQuery extends QueryObject {
-    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
-            Attachment.Id,
-            Attachment.Body,
-            Attachment.BodyLength,
-            Attachment.ContentType,
-            Attachment.Description,
-            Attachment.Name,
-            Attachment.ParentId
-    };
 
-    public AttachmentQuery() {
-        super(QUERIED_FIELDS, Attachment.SObjectType);
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
+                Attachment.Id,
+                Attachment.Body,
+                Attachment.BodyLength,
+                Attachment.ContentType,
+                Attachment.Description,
+                Attachment.Name,
+                Attachment.ParentId
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return Attachment.SObjectType;
     }
 
     /**

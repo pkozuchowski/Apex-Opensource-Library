@@ -26,26 +26,30 @@
  * Selector layer for Opportunity SObjects
  */
 public inherited sharing class OpportunityQuery extends QueryObject {
-    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
-            Opportunity.Id,
-            Opportunity.Name,
-            Opportunity.AccountId,
-            Opportunity.CloseDate,
-            Opportunity.Description,
-            Opportunity.NextStep,
-            Opportunity.StageName,
-            Opportunity.Type
-    };
 
-    public OpportunityQuery() {
-        super(QUERIED_FIELDS, Opportunity.SObjectType);
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
+                Opportunity.Id,
+                Opportunity.Name,
+                Opportunity.AccountId,
+                Opportunity.CloseDate,
+                Opportunity.Description,
+                Opportunity.NextStep,
+                Opportunity.StageName,
+                Opportunity.Type
+        };
     }
+
+    public override SObjectType getSObjectType() {
+        return Opportunity.SObjectType;
+    }
+
 
     /**
      * Opportunities will include information about parent Account field through Opportunity.AccountId field.
      */
     public OpportunityQuery withParentAccount() {
-        this.query.addParentFields(AccountQuery.QUERIED_FIELDS, Opportunity.AccountId);
+        this.query.addParentFields(new AccountQuery().getFields(), Opportunity.AccountId);
         return this;
     }
 

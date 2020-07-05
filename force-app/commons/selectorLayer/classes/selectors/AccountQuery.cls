@@ -28,30 +28,34 @@
  * Query.Accounts.byName(...);
  */
 public virtual inherited sharing class AccountQuery extends QueryObject {
-    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
-            Account.Id,
-            Account.Name,
-            Account.BillingCity,
-            Account.BillingCountry,
-            Account.BillingPostalCode,
-            Account.BillingState,
-            Account.BillingStreet,
-            Account.ShippingCity,
-            Account.ShippingCountry,
-            Account.ShippingPostalCode,
-            Account.ShippingState,
-            Account.ShippingStreet
-    };
 
-    public AccountQuery() {
-        super(QUERIED_FIELDS, Account.SObjectType);
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
+                Account.Id,
+                Account.Name,
+                Account.BillingCity,
+                Account.BillingCountry,
+                Account.BillingPostalCode,
+                Account.BillingState,
+                Account.BillingStreet,
+                Account.ShippingCity,
+                Account.ShippingCountry,
+                Account.ShippingPostalCode,
+                Account.ShippingState,
+                Account.ShippingStreet
+        };
     }
+
+    public override SObjectType getSObjectType() {
+        return Account.SObjectType;
+    }
+
 
     /**
      * Accounts will be queried with related Contact records
      */
     public AccountQuery withContacts() {
-        this.query.addChildFields(ContactQuery.QUERIED_FIELDS, 'Contacts');
+        this.query.addChildFields(new ContactQuery().getFields(), 'Contacts');
         return this;
     }
 
@@ -59,7 +63,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
      * Accounts will be queried with related Opportunity records
      */
     public AccountQuery withOpportunities() {
-        this.query.addChildFields(OpportunityQuery.QUERIED_FIELDS, 'Opportunities');
+        this.query.addChildFields(new OpportunityQuery().getFields(), 'Opportunities');
         return this;
     }
 
@@ -67,7 +71,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
      * Accounts will be queried with related Contact records
      */
     public AccountQuery withCases() {
-        this.query.addChildFields(CaseQuery.QUERIED_FIELDS, 'Cases');
+        this.query.addChildFields(new CaseQuery().getFields(), 'Cases');
         return this;
     }
 
@@ -75,7 +79,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
      * Accounts will be queried with related child Account records
      */
     public AccountQuery withChildAccounts() {
-        this.query.addChildFields(QUERIED_FIELDS, 'ChildAccounts');
+        this.query.addChildFields(this.getFields(), 'ChildAccounts');
         return this;
     }
 
@@ -83,7 +87,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
      * Accounts will be queried with related Parent Account
      */
     public AccountQuery withParentAccount() {
-        this.query.addParentFields(QUERIED_FIELDS, Account.ParentId);
+        this.query.addParentFields(getFields(), Account.ParentId);
         return this;
     }
 

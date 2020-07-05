@@ -34,6 +34,7 @@ public inherited sharing class AttachmentQueryTest {
     }
 
 
+
     @IsTest
     static void testSelectByParentAndName() {
         Account account = [SELECT Id FROM Account];

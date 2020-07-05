@@ -28,14 +28,18 @@
  */
 public inherited sharing class EmailTemplateQuery extends QueryObject {
 
-    public EmailTemplateQuery() {
-        super(new List<SObjectField>{
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
                 EmailTemplate.Id,
                 EmailTemplate.Name,
                 EmailTemplate.DeveloperName,
                 EmailTemplate.Subject,
                 EmailTemplate.IsActive
-        }, EmailTemplate.SObjectType);
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return EmailTemplate.SObjectType;
     }
 
 

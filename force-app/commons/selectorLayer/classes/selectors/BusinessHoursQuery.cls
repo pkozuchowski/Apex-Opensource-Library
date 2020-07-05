@@ -28,26 +28,6 @@
  * @see BusinessHoursQueryTest
  */
 public inherited sharing class BusinessHoursQuery extends QueryObject {
-    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
-            BusinessHours.Id,
-            BusinessHours.Name,
-            BusinessHours.IsDefault,
-            BusinessHours.IsActive,
-            BusinessHours.MondayStartTime,
-            BusinessHours.MondayEndTime,
-            BusinessHours.TuesdayStartTime,
-            BusinessHours.TuesdayEndTime,
-            BusinessHours.WednesdayStartTime,
-            BusinessHours.WednesdayEndTime,
-            BusinessHours.ThursdayStartTime,
-            BusinessHours.ThursdayEndTime,
-            BusinessHours.FridayStartTime,
-            BusinessHours.FridayEndTime,
-            BusinessHours.SaturdayStartTime,
-            BusinessHours.SaturdayEndTime,
-            BusinessHours.SundayStartTime,
-            BusinessHours.SundayEndTime
-    };
 
     /**
      * Cache all Business Hours on first query to save SOQL limits
@@ -56,8 +36,32 @@ public inherited sharing class BusinessHoursQuery extends QueryObject {
         new BusinessHoursQuery().byField(BusinessHours.IsActive, '=', true).getList();
     }
 
-    public BusinessHoursQuery() {
-        super(QUERIED_FIELDS, BusinessHours.SObjectType);
+
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
+                BusinessHours.Id,
+                BusinessHours.Name,
+                BusinessHours.IsDefault,
+                BusinessHours.IsActive,
+                BusinessHours.MondayStartTime,
+                BusinessHours.MondayEndTime,
+                BusinessHours.TuesdayStartTime,
+                BusinessHours.TuesdayEndTime,
+                BusinessHours.WednesdayStartTime,
+                BusinessHours.WednesdayEndTime,
+                BusinessHours.ThursdayStartTime,
+                BusinessHours.ThursdayEndTime,
+                BusinessHours.FridayStartTime,
+                BusinessHours.FridayEndTime,
+                BusinessHours.SaturdayStartTime,
+                BusinessHours.SaturdayEndTime,
+                BusinessHours.SundayStartTime,
+                BusinessHours.SundayEndTime
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return BusinessHours.SObjectType;
     }
 
 

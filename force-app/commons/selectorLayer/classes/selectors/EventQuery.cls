@@ -26,23 +26,26 @@
  * Selector layer for Event SObjects
  */
 public inherited sharing class EventQuery extends QueryObject {
-    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
-            Event.Id,
-            Event.AccountId,
-            Event.Description,
-            Event.IsPrivate,
-            Event.IsRecurrence,
-            Event.IsReminderSet,
-            Event.OwnerId,
-            Event.Subject,
-            Event.EventSubtype,
-            Event.Type,
-            Event.WhatId,
-            Event.WhoId
-    };
 
-    public EventQuery() {
-        super(QUERIED_FIELDS, Event.SObjectType);
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
+                Event.Id,
+                Event.AccountId,
+                Event.Description,
+                Event.IsPrivate,
+                Event.IsRecurrence,
+                Event.IsReminderSet,
+                Event.OwnerId,
+                Event.Subject,
+                Event.EventSubtype,
+                Event.Type,
+                Event.WhatId,
+                Event.WhoId
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return Event.SObjectType;
     }
 
 

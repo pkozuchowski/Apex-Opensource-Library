@@ -26,28 +26,31 @@
  * Selector layer for Email Message SObjects
  */
 public inherited sharing class EmailMessageQuery extends QueryObject {
-    public final static List<SObjectField> QUERIED_FIELDS = new List<SObjectField>{
-            EmailMessage.Id,
-            EmailMessage.ActivityId,
-            EmailMessage.BccAddress,
-            EmailMessage.CcAddress,
-            EmailMessage.EmailTemplateId,
-            EmailMessage.FromAddress,
-            EmailMessage.FromName,
-            EmailMessage.HasAttachment,
-            EmailMessage.HtmlBody,
-            EmailMessage.Incoming,
-            EmailMessage.IsBounced,
-            EmailMessage.ParentId,
-            EmailMessage.Status,
-            EmailMessage.Subject,
-            EmailMessage.Subject,
-            EmailMessage.TextBody,
-            EmailMessage.ToAddress
-    };
 
-    public EmailMessageQuery() {
-        super(QUERIED_FIELDS, EmailMessage.SObjectType);
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
+                EmailMessage.Id,
+                EmailMessage.ActivityId,
+                EmailMessage.BccAddress,
+                EmailMessage.CcAddress,
+                EmailMessage.EmailTemplateId,
+                EmailMessage.FromAddress,
+                EmailMessage.FromName,
+                EmailMessage.HasAttachment,
+                EmailMessage.HtmlBody,
+                EmailMessage.Incoming,
+                EmailMessage.IsBounced,
+                EmailMessage.ParentId,
+                EmailMessage.Status,
+                EmailMessage.Subject,
+                EmailMessage.Subject,
+                EmailMessage.TextBody,
+                EmailMessage.ToAddress
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return EmailMessage.SObjectType;
     }
 
 

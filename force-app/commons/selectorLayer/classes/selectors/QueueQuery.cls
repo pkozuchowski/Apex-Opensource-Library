@@ -36,13 +36,18 @@ public inherited sharing class QueueQuery extends QueryObject {
         new QueueQuery().byField(Group.Type, '=', 'Queue').getList();
     }
 
-    public QueueQuery() {
-        super(new List<SObjectField>{
+
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
                 Group.Id,
                 Group.Type,
                 Group.DeveloperName,
                 Group.Name
-        }, Group.SObjectType);
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return Group.SObjectType;
     }
 
 

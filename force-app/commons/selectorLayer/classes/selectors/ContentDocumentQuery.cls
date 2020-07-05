@@ -28,13 +28,6 @@
 public inherited sharing class ContentDocumentQuery extends QueryObject {
 
     public ContentDocumentQuery() {
-        super(new List<SObjectField>{
-                ContentDocument.Id,
-                ContentDocument.Title,
-                ContentDocument.FileType
-
-        }, ContentDocument.SObjectType);
-
         this.query.addParentFields(new List<SObjectField>{
                 ContentVersion.Id,
                 ContentVersion.ContentSize,
@@ -46,6 +39,18 @@ public inherited sharing class ContentDocumentQuery extends QueryObject {
                 ContentVersion.VersionData
 
         }, ContentDocument.LatestPublishedVersionId);
+    }
+
+    public override List<SObjectField> getFields() {
+        return new List<SObjectField>{
+                ContentDocument.Id,
+                ContentDocument.Title,
+                ContentDocument.FileType
+        };
+    }
+
+    public override SObjectType getSObjectType() {
+        return ContentDocument.SObjectType;
     }
 
 

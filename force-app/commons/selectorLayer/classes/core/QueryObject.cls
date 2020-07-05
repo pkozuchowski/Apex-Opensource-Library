@@ -26,27 +26,19 @@
  * Base class for selectors. Contains query builder and common query methods.
  */
 public inherited sharing abstract class QueryObject {
+    private final static Map<SObjectType, Map<String, SObjectField>> SOBJECT_FIELD_MAP = new Map<SObjectType, Map<String, SObjectField>>();
     private final static QueryMocker mocker = QueryMocker.getInstance();
     private final static QueryCache cache = QueryCache.getInstance();
 
-    protected final QueryBuilder query;
-    protected final DatabaseService databaseService;
-    protected final Map<String, SObjectField> allFields;
+    protected final QueryBuilder query = new QueryBuilder();
+    protected final DatabaseService databaseService = new DatabaseService();
+    protected final List<QueryCriteria> criteria = new List<QueryCriteria>();
 
-    private final QueryCriteria[] criteria;
-    private final SObjectType sObjectType;
     private Boolean useCache = true;
     private Boolean enforceSecurity = false;
 
-    protected QueryObject(List<SObjectField> queryFields, SObjectType sObjectType) {
-        this.databaseService = new DatabaseService();
-        this.query = new QueryBuilder();
-        this.query.addFields(queryFields).fromObject(sObjectType);
-        this.criteria = new List<QueryCriteria>();
-
-        this.allFields = sObjectType.getDescribe().fields.getMap();
-        this.sObjectType = sObjectType;
-    }
+    public abstract List<SObjectField> getFields();
+    public abstract SObjectType getSObjectType();
 
 
     /**
@@ -85,7 +77,7 @@ public inherited sharing abstract class QueryObject {
     * this method should be reimplemented where it's needed as public XXXSelector withAllFields();
     */
     public QueryObject withAllFields() {
-        this.query.addFields(allFields.values());
+        this.query.addFields(getAllFields().values());
         return this;
     }
 
@@ -219,6 +211,7 @@ public inherited sharing abstract class QueryObject {
      * @return First record or null if list has no results
      */
     public SObject getFirstOrNull() {
+        this.query.setLimit(1);
         List<SObject> result = executeQuery();
         return result.isEmpty() ? null : result.get(0);
     }
@@ -227,8 +220,9 @@ public inherited sharing abstract class QueryObject {
      * @return First record or empty record instance if list has no results
      */
     public SObject getFirstOrEmpty() {
+        this.query.setLimit(1);
         List<SObject> result = executeQuery();
-        return result.isEmpty() ? sObjectType.newSObject(null, true) : result.get(0);
+        return result.isEmpty() ? getSObjectType().newSObject(null, true) : result.get(0);
     }
 
     /**
@@ -249,7 +243,7 @@ public inherited sharing abstract class QueryObject {
      * @return SObject map by Ids
      */
     public Map<Id, SObject> getMapById() {
-        Map<Id, SObject> resultMap = (Map<Id, SObject>) Type.forName('Map<Id,' + sObjectType + '>').newInstance();
+        Map<Id, SObject> resultMap = (Map<Id, SObject>) Type.forName('Map<Id,' + getSObjectType() + '>').newInstance();
         resultMap.putAll(getList());
 
         return resultMap;
@@ -259,6 +253,7 @@ public inherited sharing abstract class QueryObject {
      * @return Query Locator for current query
      */
     public Database.QueryLocator getQueryLocator() {
+        this.query.addFields(getFields()).fromObject(getSObjectType());
         return this.databaseService.getQueryLocator(query.toSOQL(), query.getVariables());
     }
 
@@ -295,11 +290,24 @@ public inherited sharing abstract class QueryObject {
         return new Set<SObjectField>();
     }
 
+    /**
+     * @return All fields for query's sObject type
+     */
+    protected Map<String, SObjectField> getAllFields() {
+        if (!SOBJECT_FIELD_MAP.containsKey(getSObjectType())) {
+            SOBJECT_FIELD_MAP.put(getSObjectType(), getSObjectType().getDescribe().fields.getMap());
+        }
+
+        return SOBJECT_FIELD_MAP.get(getSObjectType());
+    }
+
 
     /**
     * Executes query and caches results
     */
     protected SObject[] executeQuery() {
+        this.query.addFields(getFields()).fromObject(getSObjectType());
+
         List<SObject> result = new List<SObject>();
         Boolean doQuery = true;
 
@@ -346,7 +354,7 @@ public inherited sharing abstract class QueryObject {
         return useCache
                 && criteria.size() == 1
                 && (criteria[0].operator == '=' || criteria[0].operator == 'IN')
-                && getFieldsToCacheBy().contains(allFields.get((criteria[0].field)));
+                && getFieldsToCacheBy().contains(getAllFields().get((criteria[0].field)));
     }
 
     /**
@@ -355,7 +363,7 @@ public inherited sharing abstract class QueryObject {
      */
     private Boolean getCachedRecords(List<SObject> result) {
         QueryCriteria criteria = criteria.get(0);
-        SObjectField field = allFields.get(criteria.field);
+        SObjectField field = getAllFields().get(criteria.field);
         QueryCache.CacheResult cacheResult = cache.getCachedRecords(field, criteria.value);
 
         result.addAll(cacheResult.cachedRecords.values());

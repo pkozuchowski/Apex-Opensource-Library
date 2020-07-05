@@ -97,6 +97,13 @@ public class QueryObjectTest {
     }
 
     @IsTest
+    static void coverageSelectWithEnforcedSecurity() {
+        new TestUserQuery()
+                .withEnforcedSecurity()
+                .byId(UserInfo.getUserId()).getFirstOrNull();
+    }
+
+    @IsTest
     static void testSelectByCondition() {
         assertEquals(
                 ([SELECT Id FROM User WHERE Name = :UserInfo.getUserName()]),

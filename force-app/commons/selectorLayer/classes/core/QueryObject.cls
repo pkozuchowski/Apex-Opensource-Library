@@ -33,9 +33,10 @@ public inherited sharing abstract class QueryObject {
     protected final DatabaseService databaseService;
     protected final Map<String, SObjectField> allFields;
 
-    private Boolean useCache = true;
     private final QueryCriteria[] criteria;
     private final SObjectType sObjectType;
+    private Boolean useCache = true;
+    private Boolean enforceSecurity = false;
 
     protected QueryObject(List<SObjectField> queryFields, SObjectType sObjectType) {
         this.databaseService = new DatabaseService();
@@ -85,6 +86,18 @@ public inherited sharing abstract class QueryObject {
     */
     public QueryObject withAllFields() {
         this.query.addFields(allFields.values());
+        return this;
+    }
+
+
+    /**
+     * Enforces Object and Field level security on records.
+     * Inaccessible fields are stripped from result and inaccessible objects throws exception.
+     *
+     * @throws System.NoAccessException No access to entity
+     */
+    public QueryObject withEnforcedSecurity() {
+        this.enforceSecurity = true;
         return this;
     }
 
@@ -301,11 +314,16 @@ public inherited sharing abstract class QueryObject {
         Type thisQueryClass = Runtime.getType(this);
         if (mocker.isMocked(thisQueryClass)) {
             QueryMock mock = mocker.getMock(thisQueryClass);
-            return mock.handleQuery(thisQueryClass, criteria, result);
+            result = mock.handleQuery(thisQueryClass, criteria, result);
 
-        } else {
-            return result;
         }
+
+        if (enforceSecurity) {
+            SObjectAccessDecision decision = Security.stripInaccessible(AccessType.READABLE, result);
+            result = decision.getRecords();
+        }
+
+        return result;
     }
 
 

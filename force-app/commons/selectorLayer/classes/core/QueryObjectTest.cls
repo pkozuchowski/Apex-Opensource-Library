@@ -97,13 +97,6 @@ public class QueryObjectTest {
     }
 
     @IsTest
-    static void coverageSelectWithEnforcedSecurity() {
-        new TestUserQuery()
-                .withEnforcedSecurity()
-                .byId(UserInfo.getUserId()).getFirstOrNull();
-    }
-
-    @IsTest
     static void testSelectByCondition() {
         assertEquals(
                 ([SELECT Id FROM User WHERE Name = :UserInfo.getUserName()]),
@@ -121,14 +114,31 @@ public class QueryObjectTest {
 
     @IsTest
     static void testCountBy() {
-//        System.assertEquals(
-//                ([
-//                        SELECT COUNT(Id) cnt, ProfileId
-//                        FROM User
-//                        GROUP BY ProfileId
-//                ]),
-//                new TestUserQuery().by
-//        );
+        Integer cnt = (Integer) [SELECT COUNT(Id) cnt FROM User].get(0).get('cnt');
+        System.assertEquals(
+                cnt,
+                new TestUserQuery().getCount()
+        );
+    }
+
+    @IsTest
+    static void coverage() {
+        new TestUserQuery()
+                .withoutSharing()
+                .withoutCache()
+                .withEnforcedSecurity()
+                .withAllFields()
+                .byId(UserInfo.getUserId())
+                .getFirstOrNull();
+
+        new TestUserQuery().byId(UserInfo.getUserId()).getCount();
+        new TestUserQuery().byId(UserInfo.getUserId()).getCount(new List<String>{'' + User.Name});
+        new TestUserQuery().byId(UserInfo.getUserId()).getMapById();
+        new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
+        new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrEmpty();
+        new TestUserQuery().byId(UserInfo.getUserId()).getFirstIdOrNull();
+        new TestUserQuery().byId(UserInfo.getUserId()).getQueryLocator();
+        new TestUserQuery().byId(UserInfo.getUserId()).getFirstFieldOrNull(User.Name);
     }
 
 

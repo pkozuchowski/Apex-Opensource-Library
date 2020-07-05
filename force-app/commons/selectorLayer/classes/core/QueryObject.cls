@@ -263,19 +263,27 @@ public inherited sharing abstract class QueryObject {
     }
 
     /**
+    * @return Count of records
+    */
+    public Integer getCount() {
+        return (Integer) getCountBy(new List<String>()).get(0).get('cnt');
+    }
+
+    /**
     * @return Records counted by given SObject field
     */
-    public AggregateResult[] getCount(List<String> fields) {
+    public AggregateResult[] getCountBy(List<String> fields) {
         String fieldsCSV = fields == null ? '' : String.join(fields, ',');
 
-        this.query.setFields(new List<String>{'COUNT(Id)'});
+        this.query.setFields(new List<String>{'COUNT(Id) cnt'});
 
         if (String.isNotBlank(fieldsCSV)) {
             this.query.addFields(fields);
             this.query.setGroupBy(fieldsCSV);
         }
 
-        return executeQuery();
+        this.query.fromObject(getSObjectType());
+        return this.databaseService.query(query.toSOQL(), query.getVariables());
     }
 
 

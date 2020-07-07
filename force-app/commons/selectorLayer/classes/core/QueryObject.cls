@@ -222,7 +222,7 @@ public inherited sharing abstract class QueryObject {
     public SObject getFirstOrEmpty() {
         this.query.setLimit(1);
         List<SObject> result = executeQuery();
-        return result.isEmpty() ? getSObjectType().newSObject(null, true) : result.get(0);
+        return result.isEmpty() ? getSObjectType().newSObject(null, false) : result.get(0);
     }
 
     /**

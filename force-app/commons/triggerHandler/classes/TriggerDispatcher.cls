@@ -26,11 +26,16 @@ public with sharing class TriggerDispatcher {
     private static TriggerLogicSelector logicSelector = new TriggerLogicSelector();
     private static LogicSwitch__c logicSwitchSetting = LogicSwitch__c.getInstance();
 
+
     /**
      * Runs trigger field defaults, validations and logic defined in custom metadata
      */
     public static void runMetadataDefinedTriggers() {
-        TriggerContext triggerContext = new TriggerContextImpl();
+        runMetadataDefinedTriggers(new TriggerContext());
+    }
+
+    @TestVisible
+    private static void runMetadataDefinedTriggers(TriggerContext triggerContext) {
         TriggerHandler metadataTrigger = new CustomMetadataTrigger();
 
         if (shouldRun(triggerContext)) {
@@ -39,11 +44,12 @@ public with sharing class TriggerDispatcher {
         }
     }
 
+
     /**
      * Runs instance of concrete Trigger Handler implementation
      */
     public static void run(TriggerHandler triggerHandler) {
-        run(triggerHandler, new TriggerContextImpl());
+        run(triggerHandler, new TriggerContext());
     }
 
     @TestVisible
@@ -64,7 +70,6 @@ public with sharing class TriggerDispatcher {
                 }
                 when AFTER_UPDATE {
                     triggerHandler.handleAfterUpdate(triggerContext.getRecords(), triggerContext);
-                    ((TriggerContextImpl) triggerContext).cacheOldMap();
                 }
                 when AFTER_DELETE {
                     triggerHandler.handleAfterDelete(triggerContext.getRecords(), triggerContext);
@@ -75,6 +80,7 @@ public with sharing class TriggerDispatcher {
             }
         }
     }
+
 
     /**
     * Disable all triggers execution for given sObjectType for current transaction or until enableTrigger is called
@@ -134,19 +140,6 @@ public with sharing class TriggerDispatcher {
     private TriggerDispatcher() {
     }
 
-    @TestVisible
-    private virtual class TriggerContextImpl extends TriggerContext {
-        /**
-         * Caches value of the new map at the end of trigger execution, so subsequent reruns of the same trigger on workflow updates
-         * will not rerun the same methods again if they check for updated fields.
-         *
-         * For example, when trigger logic was executed on Account.Name change and workflow updated different field,
-         * the subsequent trigger run will see new account name as "old" and will not execute logic.
-         */
-        private void cacheOldMap() {
-            getPreviousMapsCache().put(originalOldMap, triggerNewMap);
-        }
-    }
 
     /**
      * Empty Implementation of Trigger Handler without any logic

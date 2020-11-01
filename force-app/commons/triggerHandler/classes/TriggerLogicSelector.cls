@@ -29,28 +29,13 @@
 public with sharing class TriggerLogicSelector {
     @TestVisible static List<TriggerLogic__mdt> mockMetadata;
 
-    /**
-     * @param tc Trigger Context of running trigger
-     * @return Trigger Validation Rules for currently executing trigger
-     */
-    public List<TriggerHandler.ValidationRule> getValidationRules(TriggerContext tc) {
-        return (List<TriggerHandler.ValidationRule>) getInstances('Validation Rule', tc, new List<TriggerHandler.ValidationRule>());
-    }
-
-    /**
-     * @param tc Trigger Context of running trigger
-     * @return Trigger Field Defaults for currently executing trigger
-     */
-    public List<TriggerHandler.FieldDefault> getFieldDefault(TriggerContext tc) {
-        return (List<TriggerHandler.FieldDefault>) getInstances('Field Default', tc, new List<TriggerHandler.FieldDefault>());
-    }
 
     /**
      * @param tc Trigger Context of running trigger
      * @return Trigger Logic for currently executing trigger
      */
     public List<TriggerHandler.Logic> getLogic(TriggerContext tc) {
-        return (List<TriggerHandler.Logic>) getInstances('Logic', tc, new List<TriggerHandler.Logic>());
+        return (List<TriggerHandler.Logic>) getInstances(tc, new List<TriggerHandler.Logic>(), false);
     }
 
     /**
@@ -58,20 +43,20 @@ public with sharing class TriggerLogicSelector {
      * @return Trigger Logic for currently executing trigger
      */
     public List<TriggerHandler.AsyncLogic> getAsyncLogic(TriggerContext tc) {
-        return (List<TriggerHandler.AsyncLogic>) getInstances('Async Logic', tc, new List<TriggerHandler.AsyncLogic>());
+        return (List<TriggerHandler.AsyncLogic>) getInstances(tc, new List<TriggerHandler.AsyncLogic>(), true);
     }
 
 
     /**
-     * @param customMetadata Type of custom metadata to query TriggerValidationRule__mdt/TriggerLogic__mdt/TriggerFieldDefault__mdt
      * @param tc Current Trigger Context
      * @param instances Empty list of desired result type ex. `new List<TriggerValidationRule> ()`
+     * @param async return sync/async logic
      *
      * @return New instances of classes defined in ApexClass__c field of the custom metadata.
      * @throws TypeException if Type.newInstance() failed.
      */
-    private List<Object> getInstances(String logicType, TriggerContext tc, List<Object> instances) {
-        for (TriggerLogic__mdt setting : getCustomMetadataRecords(logicType, String.valueOf(tc.sObjectType), tc.operationType)) {
+    private List<Object> getInstances(TriggerContext tc, List<Object> instances, Boolean async) {
+        for (TriggerLogic__mdt setting : getCustomMetadataRecords(String.valueOf(tc.sObjectType), tc.operationType, async)) {
             try {
                 Type ruleClass = Type.forName(setting.ApexClass__c);
                 instances.add(ruleClass.newInstance());
@@ -87,7 +72,7 @@ public with sharing class TriggerLogicSelector {
         return instances;
     }
 
-    private List<TriggerLogic__mdt> getCustomMetadataRecords(String type, String sObjectType, TriggerOperation op) {
+    private List<TriggerLogic__mdt> getCustomMetadataRecords(String sObjectType, TriggerOperation op, Boolean async) {
         SObjectField triggerField = new Map<TriggerOperation, SObjectField>{
                 TriggerOperation.BEFORE_INSERT => TriggerLogic__mdt.BeforeInsert__c,
                 TriggerOperation.BEFORE_UPDATE => TriggerLogic__mdt.BeforeUpdate__c,
@@ -103,7 +88,7 @@ public with sharing class TriggerLogicSelector {
                     + ' FROM TriggerLogic__mdt'
                     + ' WHERE Enabled__c = TRUE'
                     + ' AND SObject__c = :sObjectType'
-                    + ' AND Type__c =:type'
+                    + ' AND Async__c =:async'
                     + ' AND ' + triggerField + ' = TRUE'
                     + ' ORDER BY Order__c ASC NULLS LAST, ApexClass__c ASC'
             );
@@ -114,7 +99,7 @@ public with sharing class TriggerLogicSelector {
                 if (logic.Enabled__c = true
                         && logic.SObject__c == sObjectType
                         && logic.get(triggerField) == true
-                        && logic.Type__c == type) {
+                        && logic.Async__c == async) {
                     settings.add(logic);
                 }
             }

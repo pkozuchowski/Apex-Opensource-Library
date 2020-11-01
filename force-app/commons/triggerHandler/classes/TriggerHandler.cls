@@ -45,32 +45,6 @@ public virtual class TriggerHandler  {
 
 
     /**
-     * Applies given FieldDefaultRules to inserted or updated records.
-     */
-    public void apply(List<SObject> records, TriggerContext tc, List<FieldDefault> triggerFieldDefaults) {
-        for (FieldDefault fieldDefaultRule : triggerFieldDefaults) {
-            fieldDefaultRule.prepare(records, tc);
-
-            for (Integer i = 0, size = records.size(); i < size; i++) {
-                fieldDefaultRule.populate(records[i], tc);
-            }
-        }
-    }
-
-    /**
-     * Validates triggered records with a set of specified rules (ValidationRule implementations).
-     */
-    public void validate(List<SObject> records, TriggerContext tc, List<ValidationRule> validationRules) {
-        for (ValidationRule validationRule : validationRules) {
-            validationRule.prepare(records, tc);
-
-            for (Integer i = 0, size = records.size(); i < size; i++) {
-                validationRule.validate(records[i], tc);
-            }
-        }
-    }
-
-    /**
      * Executes given trigger logic implementations.
      */
     public void execute(List<SObject> records, TriggerContext tc, List<Logic> triggerLogics) {
@@ -96,43 +70,6 @@ public virtual class TriggerHandler  {
         }
     }
 
-
-    /**
-     * Implementation of this interface should populate field's default value on SObject in "before" trigger.
-     */
-    public interface FieldDefault {
-
-        /**
-         * Prepares prerequisites for validation if needed.
-         * This method should contain queries to required related objects.
-         */
-        void prepare(List<SObject> records, TriggerContext tc);
-
-        /**
-         * Populates field default value on record.
-         */
-        void populate(SObject record, TriggerContext tc);
-    }
-
-
-    /**
-     * Implementation of this interface should validate records in trigger.
-     * Each implementation should call .addError() on it's own, since depending on requirement,
-     * this could be called either to SObject or one of it's fields.
-     */
-    public interface ValidationRule {
-
-        /**
-         * Prepares prerequisites for validation if needed.
-         * This method should contain queries to required related objects.
-         */
-        void prepare(List<SObject> records, TriggerContext tc);
-
-        /**
-         * Validate SObject and add error to SObject or one of the fields.
-         */
-        void validate(SObject record, TriggerContext tc);
-    }
 
 
     /**

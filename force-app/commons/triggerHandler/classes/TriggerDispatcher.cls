@@ -26,28 +26,35 @@ public with sharing class TriggerDispatcher {
     private static TriggerLogicSelector logicSelector = new TriggerLogicSelector();
     private static LogicSwitch__c logicSwitchSetting = LogicSwitch__c.getInstance();
 
+
     /**
      * Runs trigger field defaults, validations and logic defined in custom metadata
      */
-    public static void run() {
-        run(new TriggerHandler());
+    public static void runMetadataDefinedTriggers() {
+        runMetadataDefinedTriggers(new TriggerContext());
     }
+
+    @TestVisible
+    private static void runMetadataDefinedTriggers(TriggerContext triggerContext) {
+        TriggerHandler metadataTrigger = new CustomMetadataTrigger();
+
+        if (shouldRun(triggerContext)) {
+            metadataTrigger.execute(triggerContext.getRecords(), triggerContext, logicSelector.getLogic(triggerContext));
+            metadataTrigger.executeAsync(triggerContext.getRecords(), triggerContext, logicSelector.getAsyncLogic(triggerContext));
+        }
+    }
+
 
     /**
      * Runs instance of concrete Trigger Handler implementation
      */
     public static void run(TriggerHandler triggerHandler) {
-        run(triggerHandler, new TriggerContextImpl());
+        run(triggerHandler, new TriggerContext());
     }
 
     @TestVisible
     private static void run(TriggerHandler triggerHandler, TriggerContext triggerContext) {
         if (shouldRun(triggerContext)) {
-            triggerHandler.apply(triggerContext.getRecords(), triggerContext, logicSelector.getFieldDefault(triggerContext));
-            triggerHandler.validate(triggerContext.getRecords(), triggerContext, logicSelector.getValidationRules(triggerContext));
-            triggerHandler.execute(triggerContext.getRecords(), triggerContext, logicSelector.getLogic(triggerContext));
-            triggerHandler.executeAsync(triggerContext.getRecords(), triggerContext, logicSelector.getAsyncLogic(triggerContext));
-
             switch on triggerContext.operationType {
                 when BEFORE_INSERT {
                     triggerHandler.handleBeforeInsert(triggerContext.getRecords(), triggerContext);
@@ -63,7 +70,6 @@ public with sharing class TriggerDispatcher {
                 }
                 when AFTER_UPDATE {
                     triggerHandler.handleAfterUpdate(triggerContext.getRecords(), triggerContext);
-                    ((TriggerContextImpl) triggerContext).cacheOldMap();
                 }
                 when AFTER_DELETE {
                     triggerHandler.handleAfterDelete(triggerContext.getRecords(), triggerContext);
@@ -74,6 +80,7 @@ public with sharing class TriggerDispatcher {
             }
         }
     }
+
 
     /**
     * Disable all triggers execution for given sObjectType for current transaction or until enableTrigger is called
@@ -133,17 +140,10 @@ public with sharing class TriggerDispatcher {
     private TriggerDispatcher() {
     }
 
-    @TestVisible
-    private virtual class TriggerContextImpl extends TriggerContext {
-        /**
-         * Caches value of the new map at the end of trigger execution, so subsequent reruns of the same trigger on workflow updates
-         * will not rerun the same methods again if they check for updated fields.
-         *
-         * For example, when trigger logic was executed on Account.Name change and workflow updated different field,
-         * the subsequent trigger run will see new account name as "old" and will not execute logic.
-         */
-        private void cacheOldMap() {
-            getPreviousMapsCache().put(originalOldMap, triggerNewMap);
-        }
+
+    /**
+     * Empty Implementation of Trigger Handler without any logic
+     */
+    private class CustomMetadataTrigger extends TriggerHandler {
     }
 }

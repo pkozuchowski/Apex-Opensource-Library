@@ -29,8 +29,6 @@
  * It also contains helper method for checking field changes.
  */
 public virtual class TriggerContext {
-    private final static Map<Map<Id, SObject>, Map<Id, SObject>> PREVIOUS_NEW_MAPS = new Map<Map<Id, SObject>, Map<Id, SObject>>();
-
     public Boolean isExecuting { get; protected set; }
     public Boolean isInsert { get; protected set; }
     public Boolean isUpdate { get; protected set; }
@@ -44,25 +42,9 @@ public virtual class TriggerContext {
     protected List<SObject> triggerNew { get; protected set; }
     protected List<SObject> triggerOld { get; protected set; }
     protected Map<Id, SObject> triggerNewMap { get; protected set; }
+    protected Map<Id, SObject> triggerOldMap { get; protected set; }
 
-    /**
-    * This is different from Trigger.oldMap in subsequent trigger runs:
-    * if trigger is run over the same set of records (WF field update), then this variable will resolve to Trigger.newMap
-    * from previous trigger iteration.
-    * Meaning, if code checks for difference between old and new field value, it will not rerun on WF field update unless WF really updated the field.
-    */
-    protected Map<Id, SObject> triggerOldMap {
-        get;
-        protected set {
-            if (value != null) {
-                this.originalOldMap = value;
-                this.triggerOldMap = PREVIOUS_NEW_MAPS.containsKey(originalOldMap) ? PREVIOUS_NEW_MAPS.get(value) : value;
-            }
-        }
-    }
-    protected Map<Id, SObject> originalOldMap;
-
-    protected TriggerContext() {
+    public TriggerContext() {
         this.isExecuting = Trigger.isExecuting == true;
         this.isInsert = Trigger.isInsert == true;
         this.isUpdate = Trigger.isUpdate == true;
@@ -75,7 +57,8 @@ public virtual class TriggerContext {
         this.triggerNew = Trigger.new;
         this.triggerNewMap = Trigger.newMap;
         this.triggerOldMap = Trigger.oldMap;
-        this.triggerOld = triggerOldMap == null ? null : triggerOldMap.values();
+        this.triggerOld = Trigger.old;
+
         if (getRecords() != null) {
             this.sObjectType = getRecords().getSObjectType();
         }
@@ -190,9 +173,5 @@ public virtual class TriggerContext {
         } else {
             return false;
         }
-    }
-
-    protected Map<Map<Id, SObject>, Map<Id, SObject>> getPreviousMapsCache() {
-        return PREVIOUS_NEW_MAPS;
     }
 }

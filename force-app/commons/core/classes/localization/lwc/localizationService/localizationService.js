@@ -24,6 +24,7 @@
 
 import apexGetCustomLabels from '@salesforce/apex/Localization.getCustomLabels';
 import apexGetFieldLabels from '@salesforce/apex/Localization.getFieldLabels';
+import apexGetPicklistLabels from '@salesforce/apex/Localization.getPicklistsLabels';
 
 /**
  * @param labelNames API names of the labels to retrieve ex. ['Site.login','ClickHere']
@@ -32,7 +33,8 @@ import apexGetFieldLabels from '@salesforce/apex/Localization.getFieldLabels';
  * @return Promise<Object> Translated custom labels by API names
  */
 export function getCustomLabels(labelNames, locale) {
-    return apexGetCustomLabels({labelNames, locale});
+    return apexGetCustomLabels({labelNames, locale})
+        .catch(handleError);
 }
 
 /**
@@ -42,5 +44,21 @@ export function getCustomLabels(labelNames, locale) {
  * @return Promise<Object> Translated field labels by API names
  */
 export function getFieldLabels(fields, locale) {
-    return apexGetFieldLabels({fields, locale});
+    return apexGetFieldLabels({fields, locale})
+        .catch(handleError);
+}
+
+/**
+ * @param fields API names of the sobject and field ex. ["Account.Name"]
+ * @param locale Locale key of the translation to retrieve. Same format as User's LocaleSidKey or LanguageLocaleKey (en/en_US/de/de_De/ru etc.)
+ *
+ * @return Promise<Object> Translated picklist labels by API Names for each SObjectType
+ */
+export function getPicklistLabels(fields, locale) {
+    return apexGetPicklistLabels({fields, locale})
+        .catch(handleError);
+}
+
+function handleError(err) {
+    throw err.body.message;
 }

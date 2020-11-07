@@ -28,7 +28,6 @@
  * It utilizes PageReference.getContent() method, which counts as callout and has to be mocked in unit tests.
  */
 public with sharing class Localization {
-    @TestVisible private static Map<String, String> mockResponse = new Map<String, String>();
 
 
     /**
@@ -36,7 +35,6 @@ public with sharing class Localization {
      *
      * @return Value of the Custom Label for user's locale
      */
-    @AuraEnabled
     public static String getCustomLabel(String labelName) {
         return getCustomLabel(labelName, null);
     }
@@ -47,7 +45,6 @@ public with sharing class Localization {
      *
      * @return Value of the Custom Label translated to given locale
      */
-    @AuraEnabled
     public static String getCustomLabel(String labelName, String locale) {
         return getCustomLabels(new List<String>{labelName}, locale).get(labelName);
     }
@@ -70,10 +67,10 @@ public with sharing class Localization {
      */
     @AuraEnabled
     public static Map<String, String> getCustomLabels(String[] labelNames, String locale) {
-        return getContent(new Map<String, String>{
+        return (Map<String, String>) getContent(new Map<String, String>{
                 'labels' => String.join(labelNames, ','),
                 'locale' => locale
-        });
+        }, Map<String, String>.class);
     }
 
 
@@ -82,7 +79,6 @@ public with sharing class Localization {
      *
      * @return Field's label in current user's locale
      */
-    @AuraEnabled
     public static String getFieldLabel(String field) {
         return getFieldLabel(field, null);
     }
@@ -93,7 +89,6 @@ public with sharing class Localization {
      *
      * @return Field's label translated to given locale
      */
-    @AuraEnabled
     public static String getFieldLabel(String field, String locale) {
         return getFieldLabels(new List<String>{field}, locale).get(field);
     }
@@ -116,57 +111,47 @@ public with sharing class Localization {
      */
     @AuraEnabled
     public static Map<String, String> getFieldLabels(String[] fields, String locale) {
-        return getContent(new Map<String, String>{
+        return (Map<String, String>) getContent(new Map<String, String>{
                 'fields' => String.join(fields, ','),
                 'locale' => locale
-        });
+        }, Map<String, String>.class);
     }
 
 
-    private static Map<String, String> getContent(Map<String, String> parameters) {
+    /**
+     * @param fields API names of the sobject and field (ex. "Account.Name")
+     * @param locale Locale key of the translation to retrieve. Same format as User's LocaleSidKey or LanguageLocaleKey (en/en_US/de/de_De/ru etc.)
+     *
+     * @return Map where keys are picklist API values and map's value are translated picklist label
+     */
+    @AuraEnabled
+    public static Map<String, String> getPicklistLabels(String fields, String locale) {
+        return getPicklistsLabels(new List<String>{fields}, locale).get(fields);
+    }
+
+    /**
+     * @param fields API names of the sobject and field (ex. "Account.Name")
+     * @param locale Locale key of the translation to retrieve. Same format as User's LocaleSidKey or LanguageLocaleKey (en/en_US/de/de_De/ru etc.)
+     *
+     * @return Map of maps - "SObjectType.SObjectField" => {"Picklist API Name" => "Tramslated Label"}
+     */
+    @AuraEnabled
+    public static Map<String, Map<String, String>> getPicklistsLabels(String[] fields, String locale) {
+        return (Map<String, Map<String, String>>) getContent(new Map<String, String>{
+                'picklists' => String.join(fields, ','),
+                'locale' => locale
+        }, Map<String, Map<String, String>>.class);
+    }
+
+
+    private static Object getContent(Map<String, String> parameters, Type resultType) {
         try {
-            PageReference p = Page.Localization;
-            p.getParameters().putAll(parameters);
-
-            if (Test.isRunningTest()) {
-                return mockResponse;
-
-            } else {
-                String content = p.getContent().toString().replaceFirst(',(\\s)*}', '}');
-                return (Map<String, String>) JSON.deserialize(content, Map<String, String>.class);
-            }
+            String content = new LocalizationCtrl().getJsonPageContent(parameters);
+            return JSON.deserialize(content, resultType);
 
         } catch (Exception e) {
             throw new LocalizationException(e.getMessage().replace('Field $Label.', 'Label '));
         }
     }
 
-    public List<String> getLabels() {
-        return getParams('labels');
-    }
-
-    public List<List<String>> getFields() {
-        List<String> fields = getParams('fields');
-
-        if (fields != null) {
-            List<List<String>> pairs = new List<List<String>>();
-
-            for (String field : fields) {
-                pairs.add(field.split('\\.'));
-            }
-
-            return pairs;
-
-        } else {
-            return null;
-        }
-    }
-
-    private List<String> getParams(String name) {
-        String param = ApexPages.currentPage().getParameters().get(name);
-        return String.isEmpty(param) ? null : param.split(',');
-    }
-
-    public class LocalizationException extends Exception {
-    }
 }

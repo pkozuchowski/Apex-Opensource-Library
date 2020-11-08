@@ -21,7 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest
+@IsTest(IsParallel=true)
 private class PicklistTest {
     private static String defaultValue;
     private static List<String> values;

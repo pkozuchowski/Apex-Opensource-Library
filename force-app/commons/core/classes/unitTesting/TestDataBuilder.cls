@@ -28,33 +28,25 @@
  */
 @IsTest
 public inherited sharing class TestDataBuilder {
+    private final static String defaults = 'default';
 
     /**
-     * Flavours of SOBject. By using different flavours, it's possible to differentiate default values for one SObject type.
-     * For example if there are record types that require completely different defaults or when you want to prepopulate RecordTypeId
-     * at builder stage.
-     * This mechanism is not restricted to Record Types though.
-     * <p/>
-     * One flavour can be reused between many different SObjects.
-     * Example flavours for some companies could be as follows: VANILLA, ENTERPRISE, SME (Small Medium Enterprise), Domestic
-     * VANILLA flavour is the default, when flavour is not specified, builder falls back to vanilla.
+     * Map of SObject field defaults by type.
+     * For each sObjectType, it's possible to configure separate set of defaults - for example, different for each Record Type
+     * or by other classification.
      */
-    public enum Flavour {
-        VANILLA
-    }
-
-    private static Map<SObjectType, Map<Flavour, SObjectFactory>> sObjectFactoriesMap = new Map<SObjectType, Map<Flavour, SObjectFactory>>{
-            User.SObjectType => new Map<Flavour, SObjectFactory>{
-                    Flavour.VANILLA => new VanillaUserFactory()
+    private static Map<SObjectType, Map<String, SObjectFactory>> sObjectFactoriesMap = new Map<SObjectType, Map<String, SObjectFactory>>{
+            User.SObjectType => new Map<String, SObjectFactory>{
+                    defaults => new DefaultUserFactory()
             },
-            Account.SObjectType => new Map<Flavour, SObjectFactory>{
-                    Flavour.VANILLA => new VanillaAccountFactory()
+            Account.SObjectType => new Map<String, SObjectFactory>{
+                    defaults => new DefaultAccountFactory()
             },
-            Contact.SObjectType => new Map<Flavour, SObjectFactory>{
-                    Flavour.VANILLA => new VanillaContactFactory()
+            Contact.SObjectType => new Map<String, SObjectFactory>{
+                    defaults => new DefaultContactFactory()
             },
-            Opportunity.SObjectType => new Map<Flavour, SObjectFactory>{
-                    Flavour.VANILLA => new VanillaOpportunityFactory()
+            Opportunity.SObjectType => new Map<String, SObjectFactory>{
+                    defaults => new DefaultOpportunityFactory()
             }
     };
 
@@ -63,7 +55,7 @@ public inherited sharing class TestDataBuilder {
 
 
     /**
-     * Creates test record with vanilla default field values, overridden by given prototype field values.
+     * Creates test record with default field values, overridden by given prototype field values.
      *
      * @param prototype Example of record to create - fields specified in the constructor will override defaults
      * @throws TestDataBuilder.TestDataBuilderException when default is not defined
@@ -71,24 +63,24 @@ public inherited sharing class TestDataBuilder {
      * @return Copy of the test-default record with fields overridden
      */
     public TestDataBuilder create(SObject prototype) {
-        return create(Flavour.VANILLA, prototype);
+        return create(defaults, prototype);
     }
 
     /**
      * Creates test record with unit test default field values, overridden by given prototype field values.
      *
-     * @param flavour Flavour of the default - defines which default field values will be used for SObject
+     * @param flavour Name of the default fields configuration - defines which default field values will be used for SObject
      * @param prototype Example of record to create - fields specified in the constructor will override defaults
      * @throws TestDataBuilder.TestDataBuilderException when flavour is not defined
      *
      * @return Copy of the test-default record with fields overridden
      */
-    public TestDataBuilder create(Flavour flavour, SObject prototype) {
+    public TestDataBuilder create(String flavour, SObject prototype) {
         return create(1, flavour, prototype);
     }
 
     /**
-     * Creates N test records with vanilla unit test default field values, overridden by given prototype field values.
+     * Creates N test records with default field values, overridden by given prototype field values.
      *
      * @param count How many copies should be created.
      * @param prototype Example of record to create - fields specified in the constructor will override defaults
@@ -97,20 +89,20 @@ public inherited sharing class TestDataBuilder {
      * @return Copy of the test-default record with fields overridden
      */
     public TestDataBuilder create(Integer count, SObject prototype) {
-        return create(count, Flavour.VANILLA, prototype);
+        return create(count, defaults, prototype);
     }
 
     /**
-     * Creates N test record with vanilla unit test default field values, overridden by given prototype field values.
+     * Creates N test record with default field values, overridden by given prototype field values.
      *
      * @param count How many copies should be created.
-     * @param flavour Flavour of the default - defines which default field values will be used for SObject
+     * @param flavour Name of the default fields configuration - defines which default field values will be used for SObject
      * @param prototype Example of record to create - fields specified in the constructor will override defaults
      * @throws TestDataBuilder.TestDataBuilderException when flavour is not defined
      *
      * @return List of copies of the test-defaulted record with fields overridden
      */
-    public TestDataBuilder create(Integer count, Flavour flavour, SObject prototype) {
+    public TestDataBuilder create(Integer count, String flavour, SObject prototype) {
         for (Integer i = 0; i < count; i++) {
             SObject newRecord = getBaseRecord(flavour, prototype);
             applyExtraFields(newRecord, prototype.getPopulatedFieldsAsMap());
@@ -212,15 +204,15 @@ public inherited sharing class TestDataBuilder {
      * If there's no factory specified for the SObject, input prototype is returned.
      * @throws TestDataBuilderException when custom flavour was demanded, but not defined in mapping
      */
-    private SObject getBaseRecord(Flavour flav, SObject prototype) {
+    private SObject getBaseRecord(String flav, SObject prototype) {
         SObject base;
         if (sObjectFactoriesMap.containsKey(prototype.getSObjectType())) {
-            Map<Flavour, SObjectFactory> flavoursFactories = sObjectFactoriesMap.get(prototype.getSObjectType());
+            Map<String, SObjectFactory> flavoursFactories = sObjectFactoriesMap.get(prototype.getSObjectType());
 
             if (flavoursFactories.containsKey(flav)) {
                 return flavoursFactories.get(flav).create();
 
-            } else if (flav != Flavour.VANILLA) {
+            } else if (flav != defaults) {
                 throw new TestDataBuilderException(String.format('SObjects custom flavour is not defined: {0}:{1}', new List<Object>{
                         prototype.getSObjectType(), flav
                 }));
@@ -246,7 +238,7 @@ public inherited sharing class TestDataBuilder {
         SObject create();
     }
 
-    private class VanillaUserFactory implements SObjectFactory {
+    private class DefaultUserFactory implements SObjectFactory {
         private Integer counter = 0;
         private Id orgId = UserInfo.getOrganizationId();
 
@@ -270,7 +262,7 @@ public inherited sharing class TestDataBuilder {
         }
     }
 
-    private class VanillaAccountFactory implements SObjectFactory {
+    private class DefaultAccountFactory implements SObjectFactory {
         public SObject create() {
             return new Account(
                     Name = 'Test Account'
@@ -278,7 +270,7 @@ public inherited sharing class TestDataBuilder {
         }
     }
 
-    private class VanillaContactFactory implements SObjectFactory {
+    private class DefaultContactFactory implements SObjectFactory {
         public SObject create() {
             return new Contact(
                     FirstName = 'Testy',
@@ -287,7 +279,7 @@ public inherited sharing class TestDataBuilder {
         }
     }
 
-    private class VanillaOpportunityFactory implements SObjectFactory {
+    private class DefaultOpportunityFactory implements SObjectFactory {
         public SObject create() {
             return new Opportunity(
                     Name = 'Test Opportunity'

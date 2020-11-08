@@ -75,4 +75,18 @@ private class PicklistTest {
 
         Map<Object, Picklist.Entry[]> entriesByController = accountSource.getEntriesByControllingValue();
     }
+
+    @IsTest
+    static void shouldThrowExceptionWhenFieldIsNotPicklist() {
+        Exception ex;
+
+        try {
+            Picklist p = new Picklist('Account.Name');
+        } catch (Exception e) {
+            ex = e;
+        }
+
+        System.assertNotEquals(null, ex);
+        System.assertNotEquals('Field is not a picklist: Account.Name', ex.getMessage());
+    }
 }

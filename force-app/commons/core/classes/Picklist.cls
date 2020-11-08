@@ -77,17 +77,22 @@ public with sharing class Picklist {
         this.isDependant = picklistDescribe.isDependentPicklist();
 
         List<PicklistEntry> picklistEntries = picklistDescribe.getPicklistValues();
-        List<Entry> allEntries = (List<Entry>) JSON.deserialize(JSON.serialize(picklistEntries), Entry[].class);
+        if (picklistEntries.isEmpty()) {
+            throw new PicklistException('Field is not a picklist: ' + field);
 
-        for (Entry entry : allEntries) {
-            if (entry.active) {
-                this.values.add(entry.value);
-                this.valueToLabel.put(entry.value.toLowerCase(), entry.label);
-                this.valueToLabelCaseSensitive.put(entry.value, entry.label);
+        } else {
+            List<Entry> allEntries = (List<Entry>) JSON.deserialize(JSON.serialize(picklistEntries), Entry[].class);
 
-                this.entries.add(entry);
+            for (Entry entry : allEntries) {
+                if (entry.active) {
+                    this.values.add(entry.value);
+                    this.valueToLabel.put(entry.value.toLowerCase(), entry.label);
+                    this.valueToLabelCaseSensitive.put(entry.value, entry.label);
 
-                if (entry.defaultValue == true) this.defaultValue = entry.value;
+                    this.entries.add(entry);
+
+                    if (entry.defaultValue == true) this.defaultValue = entry.value;
+                }
             }
         }
     }
@@ -216,5 +221,8 @@ public with sharing class Picklist {
         @AuraEnabled public Boolean defaultValue { get; private set; }
         private String validFor;
         private Boolean active;
+    }
+
+    public class PicklistException extends Exception {
     }
 }

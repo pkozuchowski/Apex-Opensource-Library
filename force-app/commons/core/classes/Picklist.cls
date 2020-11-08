@@ -33,7 +33,9 @@
  *     Picklist.Entry[] entries = p.getEntries();//(Aura Enabled)
  * </pre>
  *
- * @see BitSet dependency
+ * Dependencies:
+ * @see BitSet
+ * @see SchemaDescriptions
  */
 public with sharing class Picklist {
     private List<Entry> entries;
@@ -42,8 +44,19 @@ public with sharing class Picklist {
     private Boolean isRestricted;
     private Boolean isDependant;
     private transient Map<String, String> valueToLabel;
+    private transient Map<String, String> valueToLabelCaseSensitive;
     private transient DescribeFieldResult picklistDescribe;
 
+
+    /**
+     * Constructs Picklist instance from SObjectField of picklist type.
+     *
+     * @param sobjectField Picklist sObject field - for example 'Opportunity.StageName'
+     */
+    public Picklist(String sobjectField) {
+        SObjectField field = SchemaDescriptions.getSObjectField(sobjectField);
+        init(field);
+    }
 
     /**
      * Constructs Picklist instance from SObjectField of picklist type.
@@ -51,10 +64,15 @@ public with sharing class Picklist {
      * @param field Picklist sObject field - for example Opportunity.StageName
      */
     public Picklist(SObjectField field) {
+        init(field);
+    }
+
+    private void init(SObjectField field) {
         this.picklistDescribe = field.getDescribe();
         this.entries = new List<Entry>();
         this.values = new List<String>();
         this.valueToLabel = new Map<String, String>();
+        this.valueToLabelCaseSensitive = new Map<String, String>();
         this.isRestricted = picklistDescribe.isRestrictedPicklist();
         this.isDependant = picklistDescribe.isDependentPicklist();
 
@@ -65,6 +83,7 @@ public with sharing class Picklist {
             if (entry.active) {
                 this.values.add(entry.value);
                 this.valueToLabel.put(entry.value.toLowerCase(), entry.label);
+                this.valueToLabelCaseSensitive.put(entry.value, entry.label);
 
                 this.entries.add(entry);
 
@@ -145,6 +164,13 @@ public with sharing class Picklist {
         }
 
         return selectOptions;
+    }
+
+    /**
+     * @return Map Values to Labels
+     */
+    public Map<String, String> getEntriesMap() {
+        return valueToLabelCaseSensitive.clone();
     }
 
     /**

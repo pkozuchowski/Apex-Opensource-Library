@@ -50,6 +50,7 @@ private class PicklistTest {
     @IsTest
     static void testBehavior() {
         Picklist accountSource = new Picklist(Account.AccountSource);
+        accountSource = new Picklist('Account.AccountSource');
 
         System.assertEquals(false, accountSource.isDependent());
         System.assertEquals(false, accountSource.isRestricted());
@@ -63,9 +64,11 @@ private class PicklistTest {
         System.assertEquals(false, accountSource.containsValue('PicklistEntriesTest'));
 
         List<Picklist.Entry> entries = accountSource.getEntries();
+        Map<String, String> entriesMap = accountSource.getEntriesMap();
         List<SelectOption> selectOptions = accountSource.getSelectOptions();
 
         for (Integer i = 0; i < entries.size(); i++) {
+            System.assert(entriesMap.containsKey(values[i]));
             System.assertEquals(values[i], entries[i].value);
             System.assertEquals(values[i], selectOptions[i].getValue());
         }

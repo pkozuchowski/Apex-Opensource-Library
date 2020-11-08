@@ -24,111 +24,69 @@
 
 /**
  * Controller for Localization page. Should not be used for anything else.
+ *
+ * Dependencies:
+ * @see SchemaDescriptions
  */
 public without sharing class LocalizationCtrl {
+    /**
+     * These variables are used to fix JSON if custom labels
+     */
+    @TestVisible private static final String LOCALIZATION_START = 'LOCALIZATION_START';
+    @TestVisible private static final String LOCALIZATION_VALUE = 'LOCALIZATION_VALUE';
+
     @TestVisible private static String mockPageContent;
+    public String content { get; set; }
+    public String localizationValue { get; set; }
+    public String localizationStart { get; set; }
 
-    public String localizationValue {
-        get {
-            return 'LOCALIZATION_VALUE';
+
+    public void init() {
+        try {
+            this.localizationStart = LOCALIZATION_START;
+            this.localizationValue = LOCALIZATION_VALUE;
+            this.initFields();
+            this.initPicklists();
+
+        } catch (Exception e) {
+            this.content = JSON.serialize(new Map<String, String>{
+                    'LocalizationCtrlException' => e.getMessage()
+            });
         }
     }
-
-    public String localizationStart {
-        get {
-            return 'LOCALIZATION_START';
-        }
-    }
-
 
     public List<String> getLabels() {
         return getParams('labels');
     }
 
-    public List<List<String>> getFields() {
+    public void initFields() {
         List<String> fields = getParams('fields');
 
         if (fields != null) {
-            List<List<String>> pairs = new List<List<String>>();
+            Map<String, String> labelsByField = new Map<String, String>();
 
-            Map<String, SObjectType> globalDescribe = Schema.getGlobalDescribe();
             for (String sObjectFieldConcatenation : fields) {
-                List<String> pair = sObjectFieldConcatenation.split('\\.');
-                String sObjectName = pair[0];
-                String sObjectFieldName = pair[1];
-
-                assert(globalDescribe.containsKey(sObjectName), 'Invalid SObjectType: ' + sObjectName);
-
-                SObjectType sObjectType = globalDescribe.get(sObjectName);
-                DescribeSObjectResult sobjectDescribe = sObjectType.getDescribe();
-                Map<String, SObjectField> fieldsMap = sobjectDescribe.fields.getMap();
-                assert(fieldsMap.containsKey(sObjectFieldName), 'Invalid SObjectField: ' + sObjectFieldConcatenation);
-
-
-                pairs.add(pair);
+                String label = SchemaDescriptions.getSObjectFieldDescribe(sObjectFieldConcatenation).getLabel();
+                labelsByField.put(sObjectFieldConcatenation, label);
             }
 
-            return pairs;
-
-        } else {
-            return null;
+            this.content = JSON.serialize(labelsByField);
         }
     }
 
-    public Map<String, List<PicklistPair>> getPicklists() {
-        List<String> fields = getParams('picklists');
+    public void initPicklists() {
+        List<String> picklists = getParams('picklists');
 
-        if (fields != null) {
-            Map<String, SObjectType> globalDescribe = Schema.getGlobalDescribe();
-            Map<String, List<PicklistPair>> picklistOptionsByField = new Map<String, List<PicklistPair>>();
+        if (picklists != null) {
+            Map<String, Map<String, String>> optionsByField = new Map<String, Map<String, String>>();
 
-            for (String sObjectFieldConcatenation : fields) {
-                List<String> pair = sObjectFieldConcatenation.split('\\.');
-                String sObjectName = pair[0];
-                String sObjectFieldName = pair[1];
-
-                assert(globalDescribe.containsKey(sObjectName), 'Invalid SObjectType: ' + sObjectName);
-                SObjectType sObjectType = globalDescribe.get(sObjectName);
-                DescribeSObjectResult sobjectDescribe = sObjectType.getDescribe();
-
-                Map<String, SObjectField> fieldsMap = sobjectDescribe.fields.getMap();
-                assert(fieldsMap.containsKey(sObjectFieldName), 'Invalid SObjectField: ' + sObjectFieldConcatenation);
-
-                SObjectField field = fieldsMap.get(sObjectFieldName);
-                Picklist picklist = new Picklist(field);
-                assert(picklist.getValues().isEmpty() == false, 'Field is not a picklist: ' + sObjectFieldConcatenation);
-
-                List<PicklistPair> pPairs = picklistOptionsByField.get(sObjectFieldConcatenation);
-                pPairs = pPairs == null ? new List<PicklistPair>() : pPairs;
-
-                for (String picklistValue : picklist.getValues()) {
-                    PicklistPair pPair = new PicklistPair();
-                    pPair.field = sObjectFieldName;
-                    pPair.value = picklistValue;
-                    pPair.record = sObjectType.newSObject();
-                    pPair.record.put(field, picklistValue);
-
-                    pPairs.add(pPair);
-                }
-
-                picklistOptionsByField.put(sObjectFieldConcatenation, pPairs);
+            for (String sObjectFieldConcatenation : picklists) {
+                Picklist picklist = new Picklist(sObjectFieldConcatenation);
+                optionsByField.put(sObjectFieldConcatenation, picklist.getEntriesMap());
             }
 
-            return picklistOptionsByField;
-        } else {
-            return null;
+            this.content = JSON.serialize(optionsByField);
         }
-    }
-
-    private void assert(Boolean condition, String errorMessage) {
-        if (condition == false) throw new LocalizationException(errorMessage);
-    }
-
-    @TestVisible
-    private class PicklistPair {
-        public String field { get; set; }
-        public String value { get; set; }
-        public SObject record { get; set; }
     }
 
     private List<String> getParams(String name) {
@@ -137,28 +95,36 @@ public without sharing class LocalizationCtrl {
     }
 
 
-    public String getJsonPageContent(Map<String, String> parameters) {
+    public static String getJsonPageContent(Map<String, String> parameters) {
         PageReference p = Page.Localization;
         p.getParameters().putAll(parameters);
 
         String content = Test.isRunningTest() ? mockPageContent : p.getContent().toString();
-        return sanitizeJSONString(content);
+
+        Boolean requireSanitization = parameters.containsKey('labels');
+        if (requireSanitization == true) {
+            content = sanitizeJSONString(content);
+        }
+
+        return content;
     }
 
+    /**
+     * Fixes JSON if custom label translation contained quote marks
+     */
     @TestVisible
-    private String sanitizeJSONString(String pageContent) {
+    private static String sanitizeJSONString(String pageContent) {
         String content = pageContent
-                .stripHtmlTags()
                 .replaceAll(',(\\s)*}', '}');
 
-        List<String> parts = content.split(localizationValue);
+        List<String> parts = content.split(LOCALIZATION_VALUE);
         for (Integer i = 0; i < parts.size(); i++) {
             String part = parts.get(i);
 
-            if (part.startsWith(localizationStart)) {
+            if (part.startsWith(LOCALIZATION_START)) {
                 parts.set(i, part
                         .replaceAll('"', '\\\\"')
-                        .replaceAll(localizationStart, '')
+                        .replaceAll(LOCALIZATION_START, '')
                         .trim()
                 );
             }

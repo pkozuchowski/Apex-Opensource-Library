@@ -26,6 +26,9 @@
 /**
  * This class can dynamically fetch Custom Labels and Field labels for given names and locale
  * It utilizes PageReference.getContent() method, which counts as callout and has to be mocked in unit tests.
+ *
+ * Dependencies:
+ * @see SchemaDescriptions
  */
 public with sharing class Localization {
 
@@ -146,11 +149,18 @@ public with sharing class Localization {
 
     private static Object getContent(Map<String, String> parameters, Type resultType) {
         try {
-            String content = new LocalizationCtrl().getJsonPageContent(parameters);
+            String content = LocalizationCtrl.getJsonPageContent(parameters);
+
+            /*Check if VF Page had exception while getting it's content*/
+            if (content.contains('"LocalizationCtrlException"')) {
+                Map<String, String> vfException = (Map<String, String>) JSON.deserialize(content, Map<String, String>.class);
+                throw new LocalizationException(vfException.get('LocalizationCtrlException'));
+            }
+
             return JSON.deserialize(content, resultType);
 
         } catch (Exception e) {
-            throw new LocalizationException(e.getMessage().replace('Field $Label.', 'Label '));
+            throw new LocalizationException(e.getMessage());
         }
     }
 

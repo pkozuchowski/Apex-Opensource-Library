@@ -33,7 +33,10 @@ private class LocalizationTest {
      */
     @IsTest
     static void getCustomLabelShouldReturnValueForGivenAPIName() {
-        LocalizationCtrl.mockPageContent = '{"Site.logout":"Logout"}';
+        LocalizationCtrl.mockPageContent = '{"Site.logout":"' + LocalizationCtrl.LOCALIZATION_VALUE
+                + LocalizationCtrl.LOCALIZATION_START
+                + 'Logout'
+                + LocalizationCtrl.LOCALIZATION_VALUE + '"}';
 
         System.assertEquals('Logout', Localization.getCustomLabel('Site.logout'));
         System.assertEquals(
@@ -95,9 +98,9 @@ private class LocalizationTest {
     static void getPicklistLabelsShouldReturnTranslatedOptions() {
         LocalizationCtrl.mockPageContent = '{ ' +
                 '"Account.Type":{ ' +
-                '   "Prospect":"LOCALIZATION_VALUELOCALIZATION_START ProspectDELOCALIZATION_VALUE", ' +
-                '   "Customer - Direct":"LOCALIZATION_VALUELOCALIZATION_STARTCustomer - DirectLOCALIZATION_VALUE", ' +
-                '   "Other":"LOCALIZATION_VALUELOCALIZATION_STARTAndereLOCALIZATION_VALUE"' +
+                '   "Prospect":"ProspectDE", ' +
+                '   "Customer - Direct":"Customer - Direct", ' +
+                '   "Other":"Andere"' +
                 '   }' +
                 '}';
 
@@ -108,12 +111,10 @@ private class LocalizationTest {
 
 
     @IsTest
-    static void testControllerGetters() {
+    static void coverageLabels() {
         PageReference localizationPage = Page.Localization;
         localizationPage.getParameters().putAll(new Map<String, String>{
-                'labels' => 'Site.logout,Site.email',
-                'fields' => 'Account.Site,Account.Name',
-                'picklists' => 'Account.Type'
+                'labels' => 'Site.logout,Site.email'
         });
 
 
@@ -121,63 +122,93 @@ private class LocalizationTest {
         Test.setCurrentPage(localizationPage);
         LocalizationCtrl localizationCtrl = new LocalizationCtrl();
         List<String> labels = localizationCtrl.getLabels();
-        List<String[]> fields = localizationCtrl.getFields();
-        Map<String, List<LocalizationCtrl.PicklistPair>> picklistOptions = localizationCtrl.getPicklists();
         Test.stopTest();
 
 
         System.assertEquals(new List<String>{'Site.logout', 'Site.email'}, labels);
-        System.assertEquals(new List<String[]>{
-                new List<String>{'Account', 'Site'},
-                new List<String>{'Account', 'Name'}
-        }, fields);
     }
 
+    @IsTest
+    static void coverageFields() {
+        PageReference localizationPage = Page.Localization;
+        localizationPage.getParameters().putAll(new Map<String, String>{
+                'fields' => 'Account.Name,Account.Site'
+        });
+
+
+        Test.startTest();
+        Test.setCurrentPage(localizationPage);
+        LocalizationCtrl ctrl = new LocalizationCtrl();
+        ctrl.init();
+        Test.stopTest();
+
+
+        Map<String, String> labelMap = (Map<String, String>) JSON.deserialize(ctrl.content, Map<String, String>.class);
+        System.assertEquals(Account.Name.getDescribe().getLabel(), labelMap.get('Account.Name'));
+        System.assertEquals(Account.Site.getDescribe().getLabel(), labelMap.get('Account.Site'));
+    }
+
+    @IsTest
+    static void coveragePicklists() {
+        PageReference localizationPage = Page.Localization;
+        localizationPage.getParameters().putAll(new Map<String, String>{
+                'picklists' => 'Account.Type'
+        });
+
+
+        Test.startTest();
+        Test.setCurrentPage(localizationPage);
+        LocalizationCtrl ctrl = new LocalizationCtrl();
+        ctrl.init();
+        Test.stopTest();
+
+
+        Map<String, Map<String, String>> content = (Map<String, Map<String, String>>) JSON.deserialize(ctrl.content, Map<String, Map<String, String>>.class);
+        System.assertEquals(true, content.containsKey('Account.Type'));
+    }
+
+    @IsTest
+    static void shouldCheckSObjectValidityCtrl() {
+        PageReference localizationPage = Page.Localization;
+        localizationPage.getParameters().putAll(new Map<String, String>{
+                'picklists' => 'AccountFake.Type'
+        });
+
+
+        Test.startTest();
+        Test.setCurrentPage(localizationPage);
+        LocalizationCtrl ctrl = new LocalizationCtrl();
+        ctrl.init();
+        Test.stopTest();
+
+
+        Map<String, String> content = (Map<String, String>) JSON.deserialize(ctrl.content, Map<String, String>.class);
+        System.assertEquals('Invalid SObject: AccountFake', content.get('LocalizationCtrlException'));
+    }
 
     @IsTest
     static void shouldCheckSObjectValidity() {
         PageReference localizationPage = Page.Localization;
         localizationPage.getParameters().putAll(new Map<String, String>{
-                'fields' => 'Account_test.Name'
+                'picklists' => 'AccountFake.Type'
         });
         Exception ex;
 
-        Test.startTest();
-        Test.setCurrentPage(localizationPage);
+
         try {
-            new LocalizationCtrl().getFields();
-
-        } catch (LocalizationException e) {
-            ex = e;
+            Test.startTest();
+            Test.setCurrentPage(localizationPage);
+            LocalizationCtrl ctrl = new LocalizationCtrl();
+            ctrl.init();
+            LocalizationCtrl.mockPageContent = ctrl.content;
+            Localization.getPicklistLabels('AccountFake.Type', 'de');
+            Test.stopTest();
+        } catch (Exception e) {
+            ex = e ;
         }
-        Test.stopTest();
 
 
-        System.assertNotEquals(ex, null, 'Should throw LocalizationException');
-        System.assert(ex.getMessage().contains('Invalid SObjectType: Account_test'), 'Should check that sObject type exists');
-    }
-
-
-    @IsTest
-    static void shouldCheckFieldValidity() {
-        PageReference localizationPage = Page.Localization;
-        localizationPage.getParameters().putAll(new Map<String, String>{
-                'fields' => 'Account.Name_testy'
-        });
-        Exception ex;
-
-        Test.startTest();
-        Test.setCurrentPage(localizationPage);
-        try {
-            new LocalizationCtrl().getFields();
-
-        } catch (LocalizationException e) {
-            ex = e;
-        }
-        Test.stopTest();
-
-
-        System.assertNotEquals(ex, null, 'Should throw LocalizationException');
-        System.assert(ex.getMessage().contains('Invalid SObjectField: Account.Name_testy'), 'Should check that sObject field exists');
+        System.assertNotEquals(null, ex);
+        System.assertEquals('Invalid SObject: AccountFake', ex.getMessage());
     }
 }

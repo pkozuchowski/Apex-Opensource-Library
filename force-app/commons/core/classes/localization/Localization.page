@@ -1,28 +1,10 @@
-<apex:page contentType="application/json" controller="LocalizationCtrl" language="{!$CurrentPage.parameters.locale}">
+<apex:page contentType="application/json" controller="LocalizationCtrl" action="{!init}" language="{!$CurrentPage.parameters.locale}">
+    {!content}
+
     <apex:outputPanel layout="none" rendered="{!NOT(ISNULL(labels))}">
         {
         <apex:repeat var="val" value="{!labels}">
             "{!val}":"{!localizationValue}{!localizationStart}{!$Label[val]}{!localizationValue}",
-        </apex:repeat>
-        }
-    </apex:outputPanel>
-
-    <apex:outputPanel layout="none" rendered="{!NOT(ISNULL(fields))}">
-        {
-        <apex:repeat var="sobjectField" value="{!fields}">
-            "{!sobjectField[0] + '.' +sobjectField[1]}":"{!localizationValue}{!localizationStart}{!$ObjectType[sobjectField[0]].fields[sobjectField[1]].label}{!localizationValue}",
-        </apex:repeat>
-        }
-    </apex:outputPanel>
-
-    <apex:outputPanel layout="none" rendered="{!NOT(ISNULL(picklists))}">
-        {
-        <apex:repeat var="field" value="{!picklists}">
-            "{!field}":{
-            <apex:repeat var="pair" value="{!picklists[field]}">
-                "{!pair.value}":"{!localizationValue}{!localizationStart}<apex:outputField value="{!pair.record[pair.field]}"/>{!localizationValue}",
-            </apex:repeat>
-            },
         </apex:repeat>
         }
     </apex:outputPanel>

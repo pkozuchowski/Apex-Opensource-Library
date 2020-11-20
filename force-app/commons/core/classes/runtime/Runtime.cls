@@ -159,12 +159,7 @@ public with sharing class Runtime {
      * @return Stack Trace Lines without Apex class entry
      */
     public static StackTraceLine[] getStackTrace() {
-        List<String> lines = new List<String>();
-        try {
-            Date d = (Date) Datetime.now();
-        } catch (Exception ex) {
-            lines = ex.getStackTraceString().split('\n');
-        }
+        List<String> lines =  new DmlException('_').getStackTraceString().split('\n');
 
         List<StackTraceLine> stackTraceLines = new List<StackTraceLine>();
         for (Integer i = 1; i < lines.size(); i++) {

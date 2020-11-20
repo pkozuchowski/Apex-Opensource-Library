@@ -167,6 +167,7 @@ public with sharing class Runtime {
                 stackTraceLines.add(new StackTraceLine(lines[i]));
             }
         }
+
         return stackTraceLines;
     }
 
@@ -177,7 +178,7 @@ public with sharing class Runtime {
         List<StackTraceLine> lines = getStackTrace();
         String callerOfRuntime = lines.get(0).apexClass;
 
-        for (StackTraceLine stackTraceLine : getStackTrace()) {
+        for (StackTraceLine stackTraceLine : lines) {
             if (stackTraceLine.apexClass != callerOfRuntime) {
                 return stackTraceLine;
             }

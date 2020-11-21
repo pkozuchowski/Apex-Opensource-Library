@@ -37,8 +37,8 @@ public inherited sharing class HistoryQuery extends QueryObject {
         this.parentField = getParentField(historySObjectType);
     }
 
-    public override List<SObjectField> getFields() {
-        return historySObjectType.getDescribe().fields.getMap().values();
+    public override List<String> getFields() {
+        return getAllFieldsList();
     }
 
     public override SObjectType getSObjectType() {

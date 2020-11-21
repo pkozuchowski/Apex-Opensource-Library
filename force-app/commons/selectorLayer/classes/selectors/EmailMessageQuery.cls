@@ -27,25 +27,25 @@
  */
 public inherited sharing class EmailMessageQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                EmailMessage.Id,
-                EmailMessage.ActivityId,
-                EmailMessage.BccAddress,
-                EmailMessage.CcAddress,
-                EmailMessage.EmailTemplateId,
-                EmailMessage.FromAddress,
-                EmailMessage.FromName,
-                EmailMessage.HasAttachment,
-                EmailMessage.HtmlBody,
-                EmailMessage.Incoming,
-                EmailMessage.IsBounced,
-                EmailMessage.ParentId,
-                EmailMessage.Status,
-                EmailMessage.Subject,
-                EmailMessage.Subject,
-                EmailMessage.TextBody,
-                EmailMessage.ToAddress
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'ActivityId',
+                'BccAddress',
+                'CcAddress',
+                'EmailTemplateId',
+                'FromAddress',
+                'FromName',
+                'HasAttachment',
+                'HtmlBody',
+                'Incoming',
+                'IsBounced',
+                'ParentId',
+                'Status',
+                'Subject',
+                'Subject',
+                'TextBody',
+                'ToAddress'
         };
     }
 

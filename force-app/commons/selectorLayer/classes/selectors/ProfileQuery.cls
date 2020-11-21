@@ -36,10 +36,10 @@ public inherited sharing class ProfileQuery extends QueryObject {
     }
 
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                Profile.Id,
-                Profile.Name
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'Name'
         };
     }
 

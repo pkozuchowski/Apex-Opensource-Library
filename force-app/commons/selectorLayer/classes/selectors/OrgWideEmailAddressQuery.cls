@@ -35,12 +35,12 @@ public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
         new OrgWideEmailAddressQuery().getList();
     }
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                OrgWideEmailAddress.Id,
-                OrgWideEmailAddress.DisplayName,
-                OrgWideEmailAddress.Address,
-                OrgWideEmailAddress.IsAllowAllProfiles
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'DisplayName',
+                'Address',
+                'IsAllowAllProfiles'
         };
     }
 

@@ -29,20 +29,20 @@
  */
 public virtual inherited sharing class AccountQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                Account.Id,
-                Account.Name,
-                Account.BillingCity,
-                Account.BillingCountry,
-                Account.BillingPostalCode,
-                Account.BillingState,
-                Account.BillingStreet,
-                Account.ShippingCity,
-                Account.ShippingCountry,
-                Account.ShippingPostalCode,
-                Account.ShippingState,
-                Account.ShippingStreet
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'Name',
+                'BillingCity',
+                'BillingCountry',
+                'BillingPostalCode',
+                'BillingState',
+                'BillingStreet',
+                'ShippingCity',
+                'ShippingCountry',
+                'ShippingPostalCode',
+                'ShippingState',
+                'ShippingStreet'
         };
     }
 

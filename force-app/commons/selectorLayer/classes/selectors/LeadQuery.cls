@@ -27,18 +27,18 @@
  */
 public inherited sharing class LeadQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                Lead.Id,
-                Lead.FirstName,
-                Lead.LastName,
-                Lead.Name,
-                Lead.Phone,
-                Lead.Country,
-                Lead.City,
-                Lead.Street,
-                Lead.PostalCode,
-                Lead.Industry
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'FirstName',
+                'LastName',
+                'Name',
+                'Phone',
+                'Country',
+                'City',
+                'Street',
+                'PostalCode',
+                'Industry'
         };
     }
 

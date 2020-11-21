@@ -27,20 +27,20 @@
  */
 public inherited sharing class EventQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                Event.Id,
-                Event.AccountId,
-                Event.Description,
-                Event.IsPrivate,
-                Event.IsRecurrence,
-                Event.IsReminderSet,
-                Event.OwnerId,
-                Event.Subject,
-                Event.EventSubtype,
-                Event.Type,
-                Event.WhatId,
-                Event.WhoId
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'AccountId',
+                'Description',
+                'IsPrivate',
+                'IsRecurrence',
+                'IsReminderSet',
+                'OwnerId',
+                'Subject',
+                'EventSubtype',
+                'Type',
+                'WhatId',
+                'WhoId'
         };
     }
 

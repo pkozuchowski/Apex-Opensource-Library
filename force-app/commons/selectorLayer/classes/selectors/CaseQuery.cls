@@ -27,18 +27,18 @@
  */
 public inherited sharing class CaseQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                Case.Id,
-                Case.AccountId,
-                Case.CaseNumber,
-                Case.Description,
-                Case.Origin,
-                Case.Priority,
-                Case.Reason,
-                Case.Status,
-                Case.Subject,
-                Case.Type
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'AccountId',
+                'CaseNumber',
+                'Description',
+                'Origin',
+                'Priority',
+                'Reason',
+                'Status',
+                'Subject',
+                'Type'
         };
     }
 

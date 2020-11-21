@@ -36,7 +36,7 @@ public inherited sharing abstract class QueryObject {
     private Boolean useCache = true;
     private Boolean enforceSecurity = false;
 
-    public abstract List<SObjectField> getFields();
+    public abstract List<String> getFields();
     public abstract SObjectType getSObjectType();
 
 
@@ -76,7 +76,7 @@ public inherited sharing abstract class QueryObject {
     * this method should be reimplemented where it's needed as public XXXSelector withAllFields();
     */
     public QueryObject withAllFields() {
-        this.query.addFields(getAllFields().values());
+        this.query.addFields(getAllFieldsMap().values());
         return this;
     }
 
@@ -125,6 +125,10 @@ public inherited sharing abstract class QueryObject {
      * @return List of parent records related to given child records by given field ex. Accounts related to given contacts
      */
     public virtual QueryObject relatedToChildren(SObject[] childRecords, SObjectField relationShipField) {
+        return relatedToChildren(childRecords, '' + relationShipField);
+    }
+
+    public virtual QueryObject relatedToChildren(SObject[] childRecords, String relationShipField) {
         Set<Id> parentIds = new Set<Id>();
 
         for (SObject record : childRecords) {
@@ -289,10 +293,18 @@ public inherited sharing abstract class QueryObject {
         return new Set<SObjectField>();
     }
 
+
+    /**
+     * @return List of all fields API names
+     */
+    protected List<String> getAllFieldsList() {
+        return new List<String>(getAllFieldsMap().keySet());
+    }
+
     /**
      * @return All fields for query's sObject type
      */
-    protected Map<String, SObjectField> getAllFields() {
+    protected Map<String, SObjectField> getAllFieldsMap() {
         return SchemaDescriptions.getFieldsMap(this.getSObjectType());
     }
 
@@ -349,7 +361,7 @@ public inherited sharing abstract class QueryObject {
         return useCache
                 && criteria.size() == 1
                 && (criteria[0].operator == '=' || criteria[0].operator == 'IN')
-                && getFieldsToCacheBy().contains(getAllFields().get((criteria[0].field)));
+                && getFieldsToCacheBy().contains(getAllFieldsMap().get((criteria[0].field)));
     }
 
     /**
@@ -358,7 +370,7 @@ public inherited sharing abstract class QueryObject {
      */
     private Boolean getCachedRecords(List<SObject> result) {
         QueryCriteria criteria = criteria.get(0);
-        SObjectField field = getAllFields().get(criteria.field);
+        SObjectField field = getAllFieldsMap().get(criteria.field);
         QueryCache.CacheResult cacheResult = cache.getCachedRecords(field, criteria.value);
 
         result.addAll(cacheResult.cachedRecords.values());

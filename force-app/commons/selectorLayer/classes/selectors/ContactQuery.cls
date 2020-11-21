@@ -27,29 +27,29 @@
  */
 public inherited sharing class ContactQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return  new List<SObjectField>{
-                Contact.Id,
-                Contact.FirstName,
-                Contact.LastName,
-                Contact.Name,
-                Contact.Email,
-                Contact.MailingAddress,
-                Contact.MailingCity,
-                Contact.MailingCountry,
-                Contact.MailingPostalCode,
-                Contact.MailingState,
-                Contact.MailingStreet,
-                Contact.OtherCity,
-                Contact.OtherCountry,
-                Contact.OtherPhone,
-                Contact.OtherPostalCode,
-                Contact.OtherState,
-                Contact.OtherStreet,
-                Contact.OwnerId,
-                Contact.Phone,
-                Contact.Salutation,
-                Contact.Title
+    public override List<String> getFields() {
+        return  new List<String>{
+                'Id',
+                'FirstName',
+                'LastName',
+                'Name',
+                'Email',
+                'MailingAddress',
+                'MailingCity',
+                'MailingCountry',
+                'MailingPostalCode',
+                'MailingState',
+                'MailingStreet',
+                'OtherCity',
+                'OtherCountry',
+                'OtherPhone',
+                'OtherPostalCode',
+                'OtherState',
+                'OtherStreet',
+                'OwnerId',
+                'Phone',
+                'Salutation',
+                'Title'
         };
     }
 

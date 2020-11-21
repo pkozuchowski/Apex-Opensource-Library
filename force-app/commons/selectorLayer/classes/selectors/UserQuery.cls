@@ -28,14 +28,14 @@
  */
 public inherited sharing class UserQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                User.Id,
-                User.Name,
-                User.FirstName,
-                User.LastName,
-                User.Username,
-                User.Email
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'Name',
+                'FirstName',
+                'LastName',
+                'Username',
+                'Email'
         };
     }
 

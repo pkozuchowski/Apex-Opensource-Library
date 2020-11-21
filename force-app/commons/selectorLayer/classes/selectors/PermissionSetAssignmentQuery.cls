@@ -28,16 +28,11 @@
  */
 public inherited sharing class PermissionSetAssignmentQuery extends QueryObject {
 
-    public PermissionSetAssignmentQuery() {
-        this.query.addParentFields(new List<SObjectField>{
-                PermissionSet.Name
-        }, PermissionSetAssignment.PermissionSetId);
-    }
-
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                PermissionSetAssignment.AssigneeId,
-                PermissionSetAssignment.PermissionSetId
+    public override List<String> getFields() {
+        return new List<String>{
+                'AssigneeId',
+                'PermissionSetId',
+                'PermissionSet.Name'
 
         };
     }

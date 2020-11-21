@@ -37,12 +37,12 @@ public inherited sharing class QueueQuery extends QueryObject {
     }
 
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                Group.Id,
-                Group.Type,
-                Group.DeveloperName,
-                Group.Name
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'Type',
+                'DeveloperName',
+                'Name'
         };
     }
 

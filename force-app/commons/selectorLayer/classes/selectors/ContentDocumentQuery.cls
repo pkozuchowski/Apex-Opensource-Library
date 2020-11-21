@@ -27,25 +27,20 @@
  */
 public inherited sharing class ContentDocumentQuery extends QueryObject {
 
-    public ContentDocumentQuery() {
-        this.query.addParentFields(new List<SObjectField>{
-                ContentVersion.Id,
-                ContentVersion.ContentSize,
-                ContentVersion.ContentUrl,
-                ContentVersion.Description,
-                ContentVersion.FileType,
-                ContentVersion.TagCsv,
-                ContentVersion.Title,
-                ContentVersion.VersionData
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'Title',
+                'FileType',
 
-        }, ContentDocument.LatestPublishedVersionId);
-    }
-
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                ContentDocument.Id,
-                ContentDocument.Title,
-                ContentDocument.FileType
+                'LatestPublishedVersion.Id',
+                'LatestPublishedVersion.ContentSize',
+                'LatestPublishedVersion.ContentUrl',
+                'LatestPublishedVersion.Description',
+                'LatestPublishedVersion.FileType',
+                'LatestPublishedVersion.TagCsv',
+                'LatestPublishedVersion.Title',
+                'LatestPublishedVersion.VersionData'
         };
     }
 

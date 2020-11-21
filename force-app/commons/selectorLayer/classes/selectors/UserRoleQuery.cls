@@ -28,11 +28,11 @@
  */
 public inherited sharing class UserRoleQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                UserRole.Id,
-                UserRole.Name,
-                UserRole.DeveloperName
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'Name',
+                'DeveloperName'
 
         };
     }

@@ -27,15 +27,15 @@
  */
 public inherited sharing class AttachmentQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                Attachment.Id,
-                Attachment.Body,
-                Attachment.BodyLength,
-                Attachment.ContentType,
-                Attachment.Description,
-                Attachment.Name,
-                Attachment.ParentId
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'Body',
+                'BodyLength',
+                'ContentType',
+                'Description',
+                'Name',
+                'ParentId'
         };
     }
 

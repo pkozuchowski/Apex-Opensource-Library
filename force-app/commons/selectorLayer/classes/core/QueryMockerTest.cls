@@ -25,10 +25,10 @@
 private class QueryMockerTest {
 
     public class TestAccountQuery extends QueryObject {
-        public override List<SObjectField> getFields() {
-            return new List<SObjectField>{
-                    Account.Id,
-                    Account.Name
+        public override List<String> getFields() {
+            return new List<String>{
+                    'Id',
+                    'Name'
 
             };
         }

@@ -28,11 +28,11 @@
  */
 public inherited sharing class PricebookQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                Pricebook2.Id,
-                Pricebook2.Name,
-                Pricebook2.IsStandard
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'Name',
+                'IsStandard'
         };
     }
 

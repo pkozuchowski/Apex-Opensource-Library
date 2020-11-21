@@ -25,12 +25,12 @@
 public class QueryObjectTest {
 
     private class TestUserQuery extends QueryObject {
-        public override List<SObjectField> getFields() {
-            return new List<SObjectField>{
-                    User.Id,
-                    User.Name,
-                    User.Email,
-                    User.Username
+        public override List<String> getFields() {
+            return new List<String>{
+                    'Id',
+                    'Name',
+                    'Email',
+                    'Username'
             };
         }
 
@@ -143,6 +143,7 @@ public class QueryObjectTest {
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstIdOrNull();
         new TestUserQuery().byId(UserInfo.getUserId()).getQueryLocator();
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstFieldOrNull(User.Name);
+        new TestUserQuery().byId(UserInfo.getUserId()).getFirstFieldOrFallback(User.Name, 'fallback value');
     }
 
 

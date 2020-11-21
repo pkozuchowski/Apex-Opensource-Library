@@ -37,26 +37,26 @@ public inherited sharing class BusinessHoursQuery extends QueryObject {
     }
 
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                BusinessHours.Id,
-                BusinessHours.Name,
-                BusinessHours.IsDefault,
-                BusinessHours.IsActive,
-                BusinessHours.MondayStartTime,
-                BusinessHours.MondayEndTime,
-                BusinessHours.TuesdayStartTime,
-                BusinessHours.TuesdayEndTime,
-                BusinessHours.WednesdayStartTime,
-                BusinessHours.WednesdayEndTime,
-                BusinessHours.ThursdayStartTime,
-                BusinessHours.ThursdayEndTime,
-                BusinessHours.FridayStartTime,
-                BusinessHours.FridayEndTime,
-                BusinessHours.SaturdayStartTime,
-                BusinessHours.SaturdayEndTime,
-                BusinessHours.SundayStartTime,
-                BusinessHours.SundayEndTime
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'Name',
+                'IsDefault',
+                'IsActive',
+                'MondayStartTime',
+                'MondayEndTime',
+                'TuesdayStartTime',
+                'TuesdayEndTime',
+                'WednesdayStartTime',
+                'WednesdayEndTime',
+                'ThursdayStartTime',
+                'ThursdayEndTime',
+                'FridayStartTime',
+                'FridayEndTime',
+                'SaturdayStartTime',
+                'SaturdayEndTime',
+                'SundayStartTime',
+                'SundayEndTime'
         };
     }
 

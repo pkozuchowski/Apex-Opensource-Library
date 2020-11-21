@@ -27,22 +27,22 @@
  */
 public inherited sharing class TaskQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                Task.Id,
-                Task.AccountId,
-                Task.CompletedDateTime,
-                Task.Description,
-                Task.IsClosed,
-                Task.IsRecurrence,
-                Task.IsReminderSet,
-                Task.OwnerId,
-                Task.Status,
-                Task.Subject,
-                Task.TaskSubtype,
-                Task.Type,
-                Task.WhatId,
-                Task.WhoId
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'AccountId',
+                'CompletedDateTime',
+                'Description',
+                'IsClosed',
+                'IsRecurrence',
+                'IsReminderSet',
+                'OwnerId',
+                'Status',
+                'Subject',
+                'TaskSubtype',
+                'Type',
+                'WhatId',
+                'WhoId'
         };
     }
 

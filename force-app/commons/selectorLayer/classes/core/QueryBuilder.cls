@@ -116,10 +116,27 @@ public inherited sharing class QueryBuilder {
         );
     }
 
+    public QueryBuilder addChildFields(List<String> fields, String relationshipField) {
+        return addSubquery(new QueryBuilder()
+                .addFields(fields)
+                .fromObject(relationshipField)
+        );
+    }
+
     public QueryBuilder addParentFields(List<SObjectField> fields, SObjectField relationshipField) {
         String relation = relationshipField.getDescribe().getRelationshipName() + '.';
 
         for (SObjectField field : fields) {
+            addField(relation + field);
+        }
+
+        return this;
+    }
+
+    public QueryBuilder addParentFields(List<String> fields, SObjectField relationshipField) {
+        String relation = relationshipField.getDescribe().getRelationshipName() + '.';
+
+        for (String field : fields) {
             addField(relation + field);
         }
 

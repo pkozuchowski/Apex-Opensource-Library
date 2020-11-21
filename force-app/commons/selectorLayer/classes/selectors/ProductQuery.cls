@@ -29,14 +29,14 @@
  */
 public virtual inherited sharing class ProductQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                Product2.Id,
-                Product2.Description,
-                Product2.ExternalId,
-                Product2.IsActive,
-                Product2.Name,
-                Product2.ProductCode
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'Description',
+                'ExternalId',
+                'IsActive',
+                'Name',
+                'ProductCode'
         };
     }
 

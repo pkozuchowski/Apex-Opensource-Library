@@ -27,16 +27,16 @@
  */
 public inherited sharing class OpportunityQuery extends QueryObject {
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                Opportunity.Id,
-                Opportunity.Name,
-                Opportunity.AccountId,
-                Opportunity.CloseDate,
-                Opportunity.Description,
-                Opportunity.NextStep,
-                Opportunity.StageName,
-                Opportunity.Type
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'Name',
+                'AccountId',
+                'CloseDate',
+                'Description',
+                'NextStep',
+                'StageName',
+                'Type'
         };
     }
 

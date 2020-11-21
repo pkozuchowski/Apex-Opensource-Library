@@ -31,15 +31,15 @@ public inherited sharing class PricebookEntryQuery extends QueryObject {
         this.query.addParentFields(new ProductQuery().getFields(), PricebookEntry.Product2Id);
     }
 
-    public override List<SObjectField> getFields() {
-        return new List<SObjectField>{
-                PricebookEntry.Id,
-                PricebookEntry.IsActive,
-                PricebookEntry.Name,
-                PricebookEntry.Pricebook2Id,
-                PricebookEntry.Product2Id,
-                PricebookEntry.UnitPrice,
-                PricebookEntry.UseStandardPrice
+    public override List<String> getFields() {
+        return new List<String>{
+                'Id',
+                'IsActive',
+                'Name',
+                'Pricebook2Id',
+                'Product2Id',
+                'UnitPrice',
+                'UseStandardPrice'
         };
     }
 

@@ -59,6 +59,30 @@ public without sharing class SchemaDescriptions {
 
 
     /**
+     * @param sObjectType SObject token ex. Account.SObjectType
+     * @return All fields of that SObject
+     */
+    public static Map<String, SObjectField> getFieldsMap(SObjectType sObjectType) {
+        return getFieldsMap('' + sObjectType);
+    }
+
+    /**
+     * @param sObjectType API Name of SOBject ex. 'Account'
+     * @return All fields of that SObject
+     */
+    public static Map<String, SObjectField> getFieldsMap(String sObjectType) {
+        if (fieldMap.containsKey(sObjectType)) {
+            return fieldMap.get(sObjectType);
+
+        } else {
+            DescribeSObjectResult describeSObject = getSObjectDescribe(sObjectType);
+            fieldMap.put(sObjectType, describeSObject.fields.getMap());
+            return fieldMap.get(sObjectType);
+        }
+    }
+
+
+    /**
      * @param sobjectField Concatenation of SObjectType and SObjectField - 'Account.Name'
      * @return SObjectField for given API Name
      */

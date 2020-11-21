@@ -62,10 +62,19 @@ private class SchemaDescriptionsTest {
     }
 
     @IsTest
+    static void shouldReturnAllSObjectFields() {
+        System.assertEquals(
+                Account.SObjectType.getDescribe().fields.getMap(),
+                SchemaDescriptions.getFieldsMap(Account.SObjectType)
+        );
+    }
+
+    @IsTest
     static void cacheCoverage() {
         SchemaDescriptions.getSObjectFieldDescribe('Account.Name');
         SchemaDescriptions.getSObjectFieldDescribe('Account.Name');
         SchemaDescriptions.getSObjectDescribe('Account');
         SchemaDescriptions.getSObjectField('Account.Name');
+        SchemaDescriptions.getFieldsMap('Account');
     }
 }

@@ -26,7 +26,6 @@
  * Base class for selectors. Contains query builder and common query methods.
  */
 public inherited sharing abstract class QueryObject {
-    private final static Map<SObjectType, Map<String, SObjectField>> SOBJECT_FIELD_MAP = new Map<SObjectType, Map<String, SObjectField>>();
     private final static QueryMocker mocker = QueryMocker.getInstance();
     private final static QueryCache cache = QueryCache.getInstance();
 
@@ -294,11 +293,7 @@ public inherited sharing abstract class QueryObject {
      * @return All fields for query's sObject type
      */
     protected Map<String, SObjectField> getAllFields() {
-        if (!SOBJECT_FIELD_MAP.containsKey(getSObjectType())) {
-            SOBJECT_FIELD_MAP.put(getSObjectType(), getSObjectType().getDescribe().fields.getMap());
-        }
-
-        return SOBJECT_FIELD_MAP.get(getSObjectType());
+        return SchemaDescriptions.getFieldsMap(this.getSObjectType());
     }
 
 

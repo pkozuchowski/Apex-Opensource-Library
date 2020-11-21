@@ -27,7 +27,7 @@
  */
 public without sharing class SchemaDescriptions {
     private static Map<String, SObjectType> globalDescribe = Schema.getGlobalDescribe();
-    private static Map<String, SObjectField> fieldMap = new Map<String, SObjectField>();
+    private static Map<String, Map<String, SObjectField>> fieldMap = new Map<String, Map<String, SObjectField>>();
     private static Map<String, DescribeSObjectResult> sObjectDescribeMap = new Map<String, DescribeSObjectResult>();
     private static Map<String, DescribeFieldResult> fieldDescribeMap = new Map<String, DescribeFieldResult>();
 
@@ -63,18 +63,20 @@ public without sharing class SchemaDescriptions {
      * @return SObjectField for given API Name
      */
     public static SObjectField getSObjectField(String sobjectField) {
-        if (fieldMap.containsKey(sobjectField)) {
-            return fieldMap.get(sobjectField);
+        String[] pair = sobjectField.split('\\.');
+        String sObjectName = pair[0];
+        String sObjectFieldName = pair[1];
+
+        if (fieldMap.containsKey(sObjectName)) {
+            return fieldMap.get(sObjectName).get(sObjectFieldName);
 
         } else {
-            String[] pair = sobjectField.split('\\.');
-            DescribeSObjectResult sobjectDescribe = getSObjectDescribe(pair[0]);
+            DescribeSObjectResult sobjectDescribe = getSObjectDescribe(sObjectName);
             Map<String, SObjectField> sobjectFieldsMap = sobjectDescribe.fields.getMap();
+            fieldMap.put(sObjectName, sobjectFieldsMap);
 
-            assert(sobjectFieldsMap.containsKey(pair[1]), 'Invalid SObjectField: ' + sobjectField);
-            SObjectField field = sobjectFieldsMap.get(pair[1]);
-
-            fieldMap.put(sobjectField, field);
+            assert(sobjectFieldsMap.containsKey(sObjectFieldName), 'Invalid SObjectField: ' + sobjectField);
+            SObjectField field = sobjectFieldsMap.get(sObjectFieldName);
 
             return field;
         }

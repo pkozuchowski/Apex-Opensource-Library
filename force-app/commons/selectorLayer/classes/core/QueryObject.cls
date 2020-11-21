@@ -211,6 +211,14 @@ public inherited sharing abstract class QueryObject {
     }
 
     /**
+     * @return Field of first record or null if list has no results
+     */
+    public Object getFirstFieldOrFallback(SObjectField field, Object fallbackValue) {
+        Object val = getFirstOrEmpty().get(field);
+        return val == null ? fallbackValue : val;
+    }
+
+    /**
      * @return First record or null if list has no results
      */
     public SObject getFirstOrNull() {

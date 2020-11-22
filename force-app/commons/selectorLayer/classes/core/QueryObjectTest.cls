@@ -37,11 +37,28 @@ public class QueryObjectTest {
         public override SObjectType getSObjectType() {
             return User.SObjectType;
         }
+
+        protected override Set<SObjectField> getFieldsToCacheBy() {
+            return new Set<SObjectField>{
+                User.Id
+            };
+        }
     }
 
     @IsTest
     static void testSelectById() {
         User user = (User) new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
+
+        System.assertEquals(UserInfo.getUserId(), user.Id);
+        System.assertEquals(UserInfo.getName(), user.Name);
+        System.assertEquals(UserInfo.getUserEmail(), user.Email);
+    }
+
+    @IsTest
+    static void testSelectByIdSObject() {
+        User user = (User) new TestUserQuery().byId(new List<User>{
+                new User(Id = UserInfo.getUserId())
+        }).getFirstOrNull();
 
         System.assertEquals(UserInfo.getUserId(), user.Id);
         System.assertEquals(UserInfo.getName(), user.Name);

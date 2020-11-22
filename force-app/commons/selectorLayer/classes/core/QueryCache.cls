@@ -117,25 +117,18 @@ public inherited sharing class QueryCache {
     * - SObject[] is changed into Iterable<Id>
     */
     private Iterable<Object> getIterable(SObjectField field, Object value) {
-        if (value == null) {
+        String typeName = Runtime.getTypeName(value);
+
+        if (value instanceof SObject[]) {
+            return (Iterable<Object>) new Map<Id, SObject>((SObject[]) value).keySet();
+
+        } else if (typeName.contains('List') || typeName.contains('Set')) {
+            return ((Iterable<Object>) value);
+
+        } else {
             List<Object> values = Runtime.newListOfFieldType(field);
             values.add(value);
             return values;
-
-        } else {
-            String typeName = Runtime.getTypeName(value);
-
-            if (value instanceof SObject[]) {
-                return (Iterable<Object>) new Map<Id, SObject>((SObject[]) value).keySet();
-
-            } else if (typeName.contains('List') || typeName.contains('Set')) {
-                return ((Iterable<Object>) value);
-
-            } else {
-                List<Object> values = Runtime.newListOfFieldType(field);
-                values.add(value);
-                return values;
-            }
         }
     }
 

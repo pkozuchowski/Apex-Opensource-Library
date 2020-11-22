@@ -403,7 +403,8 @@ public inherited sharing abstract class QueryObject {
         return useCache
                 && criteria.size() == 1
                 && (criteria[0].operator == '=' || criteria[0].operator == 'IN')
-                && (criteria[0].value != null || criteria[0].value != '')
+                && criteria[0].value != null
+                && criteria[0].value != ''
                 && getFieldsToCacheBy().contains(getAllFieldsMap().get((criteria[0].field)));
     }
 

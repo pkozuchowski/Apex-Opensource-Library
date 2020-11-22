@@ -182,4 +182,21 @@ public inherited sharing class QueryBuilder {
         this.offsetQueryPart = 'OFFSET ' + offsetOf;
         return this;
     }
+
+    /**
+     * Adds query criteria to query builder and binds variable
+     */
+    public void setQueryCriteria(List<QueryCriteria> criteria) {
+        List<String> conditionStrings = new List<String>();
+
+        for (Integer i = 0, size = criteria.size(); i < size; i++) {
+            String valueBinding = 'value' + i;
+            conditionStrings.add(criteria[i].toString(valueBinding));
+            this.bindVariable(valueBinding, criteria[i].value);
+        }
+
+        if (!conditionStrings.isEmpty()) {
+            this.setWhere(String.join(conditionStrings, ' AND '));
+        }
+    }
 }

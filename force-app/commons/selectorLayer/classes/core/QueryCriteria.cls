@@ -41,6 +41,10 @@ public with sharing class QueryCriteria {
         this.value = value;
     }
 
+    public String toString(String valueBinding) {
+        return field + ' ' + operator + ' :' + valueBinding;
+    }
+
     public override String toString() {
         return field + ' ' + operator + ' :value';
     }

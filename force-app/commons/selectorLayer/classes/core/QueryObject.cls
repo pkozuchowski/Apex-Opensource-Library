@@ -296,8 +296,10 @@ public inherited sharing abstract class QueryObject {
      * @return Query Locator for current query
      */
     public Database.QueryLocator getQueryLocator() {
-        this.query.addFields(getFields()).fromObject(getSObjectType());
-        resolveQueryCriteria();
+        this.query.addFields(getFields())
+                .fromObject(getSObjectType())
+                .setQueryCriteria(criteria);
+
         return this.databaseService.getQueryLocator(query.toSOQL(), query.getVariables());
     }
 
@@ -423,22 +425,6 @@ public inherited sharing abstract class QueryObject {
 
         } else {
             return false;
-        }
-    }
-
-    /**
-     * Adds query criteria to query builder and binds variable
-     */
-    private void resolveQueryCriteria() {
-        List<String> conditionStrings = new List<String>();
-
-        for (Integer i = 0, size = criteria.size(); i < size; i++) {
-            conditionStrings.add(criteria[i].toString() + i);
-            this.query.bindVariable('value' + i, criteria[i].value);
-        }
-
-        if (!conditionStrings.isEmpty()) {
-            this.query.setWhere(String.join(conditionStrings, ' AND '));
         }
     }
 }

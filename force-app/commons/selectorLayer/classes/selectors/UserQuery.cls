@@ -48,13 +48,13 @@ public inherited sharing class UserQuery extends QueryObject {
      * Filters User records with given name or null if user does not exist.
      */
     public UserQuery byName(String name) {
-        return byName(new List<String>{name});
+        return byName(new Set<String>{name});
     }
 
     /**
      * Filters User with given names.
      */
-    public UserQuery byName(List<String> names) {
+    public UserQuery byName(Set<String> names) {
         return (UserQuery) byField(User.Name, 'IN', names);
     }
 
@@ -62,13 +62,13 @@ public inherited sharing class UserQuery extends QueryObject {
      * Filters User records with given email or null if user does not exist.
      */
     public UserQuery byEmail(String email) {
-        return byEmail(new List<String>{email});
+        return byEmail(new Set<String>{email});
     }
 
     /**
      * Filters User with given emails.
      */
-    public UserQuery byEmail(List<String> emails) {
+    public UserQuery byEmail(Set<String> emails) {
         return (UserQuery) byField(User.Email, 'IN', emails);
     }
 
@@ -76,13 +76,13 @@ public inherited sharing class UserQuery extends QueryObject {
      * Filters User records with given UserName or null if user does not exist.
      */
     public UserQuery byUsername(String username) {
-        return byUsername(new List<String>{username});
+        return byUsername(new Set<String>{username});
     }
 
     /**
      * Filters User with given usernames.
      */
-    public UserQuery byUsername(List<String> usernames) {
+    public UserQuery byUsername(Set<String> usernames) {
         return (UserQuery) byField(User.Username, 'IN', usernames);
     }
 

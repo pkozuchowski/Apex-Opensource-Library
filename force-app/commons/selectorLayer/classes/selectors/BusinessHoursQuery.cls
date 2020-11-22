@@ -77,13 +77,13 @@ public inherited sharing class BusinessHoursQuery extends QueryObject {
      * @return Active Business Hours with given name
      */
     public QueryObject byName(String name) {
-        return byName(new List<String>{name});
+        return byName(new Set<String>{name});
     }
 
     /**
      * @return Active Business Hours with given name
      */
-    public QueryObject byName(Iterable<String> names) {
+    public QueryObject byName(Set<String> names) {
         return (QueryObject) byField(BusinessHours.Name, 'IN', names);
     }
 

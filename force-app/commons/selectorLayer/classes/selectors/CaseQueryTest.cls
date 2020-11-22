@@ -43,7 +43,7 @@ private class CaseQueryTest {
     static void testSelectWithParentAccount() {
         Case c = (Case) new CaseQuery()
                 .withParentAccount()
-                .bySubject(new List<String>{'Subject 1'})
+                .bySubject(new Set<String>{'Subject 1'})
                 .getFirstOrNull();
 
         System.assertEquals('Parent Account', c.Account.Name);

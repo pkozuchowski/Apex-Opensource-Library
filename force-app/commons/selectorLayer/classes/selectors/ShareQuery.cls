@@ -48,21 +48,21 @@ public inherited sharing class ShareQuery extends QueryObject {
     /**
      * @return Share records for given user or group ids (List or Set)
      */
-    public ShareQuery byUserOrGroupId(Iterable<Id> userOrGroupIds) {
+    public ShareQuery byUserOrGroupId(Set<Id> userOrGroupIds) {
         return (ShareQuery) byField('UserOrGroupId', 'IN', userOrGroupIds);
     }
 
     /**
      * @return Share records for given records
      */
-    public ShareQuery byParentId(Iterable<Id> parentIds) {
+    public ShareQuery byParentId(Set<Id> parentIds) {
         return (ShareQuery) byField(parentField, 'IN', parentIds);
     }
 
     /**
      * @return Share records for given records and users/groups (List or cast Set may be supplied as iterable)
      */
-    public ShareQuery byParentIdAndUserOrGroupId(Iterable<Id> parentIds, Iterable<Id> userOrGroupIds) {
+    public ShareQuery byParentIdAndUserOrGroupId(Set<Id> parentIds, Set<Id> userOrGroupIds) {
         this.query.setWhere('' + parentField + ' IN :parentIds AND UserOrGroupId IN :userOrGroupIds')
                 .bindVariable('parentIds', parentIds)
                 .bindVariable('userOrGroupIds', userOrGroupIds);

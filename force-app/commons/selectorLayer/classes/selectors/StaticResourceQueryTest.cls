@@ -27,7 +27,7 @@ private class StaticResourceQueryTest {
     @IsTest
     static void coverage() {
         new StaticResourceQuery().byName('Test').getList();
-        new StaticResourceQuery().byName(new List<String>{'Test'}).getList();
-        new StaticResourceQuery().byName((Iterable<String>) new Set<String>{'Test'}).getList();
+        new StaticResourceQuery().byName(new Set<String>{'Test'}).getList();
+        new StaticResourceQuery().byName((Set<String>) new Set<String>{'Test'}).getList();
     }
 }

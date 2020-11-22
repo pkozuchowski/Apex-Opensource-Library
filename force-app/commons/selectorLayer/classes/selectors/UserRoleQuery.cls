@@ -53,14 +53,14 @@ public inherited sharing class UserRoleQuery extends QueryObject {
      * @return UserRole record by given name or null
      */
     public UserRoleQuery byDeveloperName(String developerName) {
-        return byDeveloperName(new List<String>{developerName});
+        return byDeveloperName(new Set<String>{developerName});
     }
 
 
     /**
      * @return UserRoles by given developer names
      */
-    public UserRoleQuery byDeveloperName(Iterable<String> developerNames) {
+    public UserRoleQuery byDeveloperName(Set<String> developerNames) {
         return (UserRoleQuery) byField(UserRole.DeveloperName, 'IN', developerNames);
     }
 

@@ -96,13 +96,13 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
      * Filters Accounts with given name
      */
     public AccountQuery byName(String name) {
-        return byName(new List<String>{name});
+        return byName(new Set<String>{name});
     }
 
     /**
      * Filters Accounts with given names (List or Set)
      */
-    public AccountQuery byName(Iterable<String> names) {
+    public AccountQuery byName(Set<String> names) {
         return (AccountQuery) byField(Account.Name, 'IN', names);
     }
 

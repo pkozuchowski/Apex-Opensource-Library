@@ -60,13 +60,13 @@ public inherited sharing class CaseQuery extends QueryObject {
      * Filters Cases by given name
      */
     public CaseQuery bySubject(String name) {
-        return bySubject(new List<String>{name});
+        return bySubject(new Set<String>{name});
     }
 
     /**
      * Filters Cases by given names (List or Set)
      */
-    public CaseQuery bySubject(Iterable<String> names) {
+    public CaseQuery bySubject(Set<String> names) {
         return (CaseQuery) byField(Case.Subject, 'IN', names);
     }
 
@@ -75,13 +75,13 @@ public inherited sharing class CaseQuery extends QueryObject {
      * Filters Cases related to given account Ids (List or Set)
      */
     public CaseQuery byAccountId(Id accountId) {
-        return byAccountId(new List<Id>{accountId});
+        return byAccountId(new Set<Id>{accountId});
     }
 
     /**
      * Filters Cases related to given account Ids (List or Set)
      */
-    public CaseQuery byAccountId(Iterable<Id> accountIds) {
+    public CaseQuery byAccountId(Set<Id> accountIds) {
         return (CaseQuery) byField(Case.AccountId, 'IN', accountIds);
     }
 
@@ -90,13 +90,13 @@ public inherited sharing class CaseQuery extends QueryObject {
      * Filters Cases related to given contact Ids (List or Set)
      */
     public CaseQuery byContactId(Id contactId) {
-        return byContactId(new List<Id>{contactId});
+        return byContactId(new Set<Id>{contactId});
     }
 
     /**
      * Filters Cases related to given contact Ids (List or Set)
      */
-    public CaseQuery byContactId(Iterable<Id> contactIds) {
+    public CaseQuery byContactId(Set<Id> contactIds) {
         return (CaseQuery) byField(Case.ContactId, 'IN', contactIds);
     }
 

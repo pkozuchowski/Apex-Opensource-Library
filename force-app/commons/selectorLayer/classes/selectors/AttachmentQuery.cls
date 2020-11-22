@@ -55,13 +55,13 @@ public inherited sharing class AttachmentQuery extends QueryObject {
      * Filters Attachments associated with given record
      */
     public AttachmentQuery byParentId(Id parentId) {
-        return byParentId(new List<Id>{parentId});
+        return byParentId(new Set<Id>{parentId});
     }
 
     /**
      * Filters Attachments associated with given records (List or Set)
      */
-    public AttachmentQuery byParentId(Iterable<Id> parentIds) {
+    public AttachmentQuery byParentId(Set<Id> parentIds) {
         return (AttachmentQuery) byField(Attachment.ParentId, 'IN', parentIds);
     }
 }

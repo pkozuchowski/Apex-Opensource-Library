@@ -54,13 +54,13 @@ public inherited sharing class PermissionSetAssignmentQuery extends QueryObject 
      * Filter Permission Sets Assignments to those of given users
      */
     public PermissionSetAssignmentQuery byAssigneeId(Id assigneeId) {
-        return byAssigneeId(new List<Id>{assigneeId});
+        return byAssigneeId(new Set<Id>{assigneeId});
     }
 
     /**
      * Filter Permission Sets Assignments to those of given users
      */
-    public PermissionSetAssignmentQuery byAssigneeId(Iterable<Id> assigneeId) {
+    public PermissionSetAssignmentQuery byAssigneeId(Set<Id> assigneeId) {
         return (PermissionSetAssignmentQuery) byField(PermissionSetAssignment.AssigneeId, 'IN', assigneeId);
     }
 
@@ -69,13 +69,13 @@ public inherited sharing class PermissionSetAssignmentQuery extends QueryObject 
      * Filter Permission Sets Assignments to those associated with given permission set
      */
     public PermissionSetAssignmentQuery byPermissionSetId(Id permissionSetId) {
-        return byPermissionSetId(new List<Id>{permissionSetId});
+        return byPermissionSetId(new Set<Id>{permissionSetId});
     }
 
     /**
      * Filter Permission Sets Assignments to those associated with given permission sets
      */
-    public PermissionSetAssignmentQuery byPermissionSetId(Iterable<Id> permissionSetId) {
+    public PermissionSetAssignmentQuery byPermissionSetId(Set<Id> permissionSetId) {
         return (PermissionSetAssignmentQuery) byField(PermissionSetAssignment.PermissionSetId, 'IN', permissionSetId);
     }
 }

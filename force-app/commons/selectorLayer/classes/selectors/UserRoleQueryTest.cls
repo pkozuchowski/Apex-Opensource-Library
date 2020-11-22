@@ -45,7 +45,7 @@ private class UserRoleQueryTest {
         }
 
         Test.startTest();
-        Map<Id, UserRole> result = (Map<Id, UserRole>) new UserRoleQuery().byDeveloperName((Iterable<String>) devNames).getMapById();
+        Map<Id, UserRole> result = (Map<Id, UserRole>) new UserRoleQuery().byDeveloperName((Set<String>) devNames).getMapById();
         Test.stopTest();
 
         System.assertEquals(expected.keySet(), result.keySet());
@@ -67,7 +67,7 @@ private class UserRoleQueryTest {
     @IsTest
     static void testSelectByIds() {
         Map<Id, UserRole> expected = new Map<Id, UserRole>([SELECT Id,DeveloperName FROM UserRole]);
-        Map<Id, UserRole> result = (Map<Id, UserRole>) new UserRoleQuery().byId((Iterable<String>) expected.keySet()).getMapById();
+        Map<Id, UserRole> result = (Map<Id, UserRole>) new UserRoleQuery().byId(expected.keySet()).getMapById();
 
         System.assertEquals(expected.keySet(), result.keySet());
     }

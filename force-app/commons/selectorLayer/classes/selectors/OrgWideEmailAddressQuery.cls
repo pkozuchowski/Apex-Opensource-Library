@@ -53,13 +53,13 @@ public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
      * @return OrgWideEmailAddress by given Display Names or null
      */
     public OrgWideEmailAddressQuery byDisplayName(String name) {
-        return byDisplayName(new List<String>{name});
+        return byDisplayName(new Set<String>{name});
     }
 
     /**
      * @return OrgWideEmailAddress by given Display Names (List or Set)
      */
-    public OrgWideEmailAddressQuery byDisplayName(Iterable<String> names) {
+    public OrgWideEmailAddressQuery byDisplayName(Set<String> names) {
         return (OrgWideEmailAddressQuery) byField(OrgWideEmailAddress.DisplayName, 'IN', names);
     }
 
@@ -68,13 +68,13 @@ public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
      * @return OrgWideEmailAddress by given Email Address or null
      */
     public OrgWideEmailAddressQuery byAddress(String address) {
-        return byAddress(new List<String>{address});
+        return byAddress(new Set<String>{address});
     }
 
     /**
      * @return OrgWideEmailAddress by given Email Addresses (List or Set)
      */
-    public OrgWideEmailAddressQuery byAddress(Iterable<String> names) {
+    public OrgWideEmailAddressQuery byAddress(Set<String> names) {
         return (OrgWideEmailAddressQuery) byField(OrgWideEmailAddress.Address, 'IN', names);
     }
 

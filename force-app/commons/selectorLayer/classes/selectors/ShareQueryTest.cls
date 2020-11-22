@@ -31,7 +31,7 @@ private class ShareQueryTest {
 
     @IsTest
     static void testSelectByUserOrGroup() {
-        List<Id> userIds = new List<Id>{UserInfo.getUserId()};
+        Set<Id> userIds = new Set<Id>{UserInfo.getUserId()};
         List<MacroShare> expected = [SELECT Id FROM MacroShare WHERE UserOrGroupId IN :userIds];
         List<MacroShare> actual = new ShareQuery(MacroShare.SObjectType).byUserOrGroupId(userIds).getList();
 
@@ -43,7 +43,7 @@ private class ShareQueryTest {
 
     @IsTest
     static void testSelectByParentId() {
-        List<Id> parentIds = new List<Id>{[SELECT Id FROM Macro LIMIT 1][0].Id};
+        Set<Id> parentIds = new Set<Id>{[SELECT Id FROM Macro LIMIT 1][0].Id};
         List<MacroShare> expected = [SELECT Id FROM MacroShare WHERE ParentId IN :parentIds];
         List<MacroShare> actual = new ShareQuery(MacroShare.SObjectType).byParentId(parentIds).getList();
 
@@ -55,8 +55,8 @@ private class ShareQueryTest {
 
     @IsTest
     static void testSelectByParentIdAndUser() {
-        List<Id> parentIds = new List<Id>{[SELECT Id FROM Macro LIMIT 1][0].Id};
-        List<Id> userIds = new List<Id>{UserInfo.getUserId()};
+        Set<Id> parentIds = new Set<Id>{[SELECT Id FROM Macro LIMIT 1][0].Id};
+        Set<Id> userIds = new Set<Id>{UserInfo.getUserId()};
 
         List<MacroShare> expected = [SELECT Id FROM MacroShare WHERE ParentId IN :parentIds AND UserOrGroupId IN :userIds];
         List<MacroShare> actual = new ShareQuery(MacroShare.SObjectType).byParentIdAndUserOrGroupId(parentIds, userIds).getList();
@@ -69,7 +69,7 @@ private class ShareQueryTest {
 
     @IsTest
     static void coverage() {
-        List<Id> userIds = new List<Id>{UserInfo.getUserId()};
+        Set<Id> userIds = new Set<Id>{UserInfo.getUserId()};
 
         new ShareQuery(AssetShare.SObjectType).byUserOrGroupId(userIds);
     }

@@ -57,13 +57,13 @@ public inherited sharing class PricebookQuery extends QueryObject {
      * Filters Pricebook2 record with given name or null.
      */
     public PricebookQuery byName(String name) {
-        return byName(new List<String>{name});
+        return byName(new Set<String>{name});
     }
 
     /**
      * Filters Pricebook2 records with given names.
      */
-    public PricebookQuery byName(Iterable<String> names) {
+    public PricebookQuery byName(Set<String> names) {
         return (PricebookQuery) byField(Pricebook2.Name, 'IN', names);
     }
 

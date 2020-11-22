@@ -59,14 +59,14 @@ public inherited sharing class ProfileQuery extends QueryObject {
      * Filters Profile record by given name or null
      */
     public ProfileQuery byName(String name) {
-        return byName(new List<String>{name});
+        return byName(new Set<String>{name});
     }
 
 
     /**
      * Filters Profile records by given names.
      */
-    public ProfileQuery byName(Iterable<String> names) {
+    public ProfileQuery byName(Set<String> names) {
         return (ProfileQuery) byField(Profile.Name, 'IN', names);
     }
 

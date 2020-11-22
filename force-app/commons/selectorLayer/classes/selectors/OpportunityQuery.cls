@@ -58,13 +58,13 @@ public inherited sharing class OpportunityQuery extends QueryObject {
      * Filters Opportunities by given name
      */
     public OpportunityQuery byName(String name) {
-        return byName(new List<String>{name});
+        return byName(new Set<String>{name});
     }
 
     /**
      * Filters Opportunities by given names (List or Set)
      */
-    public OpportunityQuery byName(Iterable<String> names) {
+    public OpportunityQuery byName(Set<String> names) {
         return (OpportunityQuery) byField(Opportunity.Name, 'IN', names);
     }
 
@@ -73,13 +73,13 @@ public inherited sharing class OpportunityQuery extends QueryObject {
      * Filters Opportunities related to given account Ids (List or Set)
      */
     public OpportunityQuery byAccountId(Id accountId) {
-        return byAccountId(new List<Id>{accountId});
+        return byAccountId(new Set<Id>{accountId});
     }
 
     /**
      * Filters Opportunities related to given account Ids (List or Set)
      */
-    public OpportunityQuery byAccountId(Iterable<Id> accountIds) {
+    public OpportunityQuery byAccountId(Set<Id> accountIds) {
         return (OpportunityQuery) byField(Opportunity.AccountId, 'IN', accountIds);
     }
 

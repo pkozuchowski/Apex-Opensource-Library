@@ -66,13 +66,13 @@ public inherited sharing class EmailTemplateQuery extends QueryObject {
      * @return Email Template by given name or null
      */
     public EmailTemplateQuery byDeveloperName(String developerName) {
-        return byDeveloperName(new List<String>{developerName});
+        return byDeveloperName(new Set<String>{developerName});
     }
 
     /**
      * @return Email Templates By given names (List or Set)
      */
-    public EmailTemplateQuery byDeveloperName(Iterable<String> developerNames) {
+    public EmailTemplateQuery byDeveloperName(Set<String> developerNames) {
         return (EmailTemplateQuery) byField(EmailTemplate.DeveloperName, 'IN', developerNames);
     }
 }

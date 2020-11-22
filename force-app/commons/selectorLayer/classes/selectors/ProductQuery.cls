@@ -56,13 +56,13 @@ public virtual inherited sharing class ProductQuery extends QueryObject {
      * Adds pricebook entries to given pricebook
      */
     public ProductQuery withPricebookEntries(Id pricebookId) {
-        return withPricebookEntries(new List<Id>{pricebookId});
+        return withPricebookEntries(new Set<Id>{pricebookId});
     }
 
     /**
      * Adds pricebook entries to given pricebooks
      */
-    public ProductQuery withPricebookEntries(Iterable<Id> pricebookIds) {
+    public ProductQuery withPricebookEntries(Set<Id> pricebookIds) {
         this.query.bindVariable('pricebookIds', pricebookIds);
         this.query.addSubquery(new QueryBuilder()
                 .addFields(new PricebookEntryQuery().getFields())
@@ -77,13 +77,13 @@ public virtual inherited sharing class ProductQuery extends QueryObject {
      * Filters Product2s with given name
      */
     public ProductQuery byName(String name) {
-        return byName(new List<String>{name});
+        return byName(new Set<String>{name});
     }
 
     /**
      * Filters Product2s with given names (List or Set)
      */
-    public ProductQuery byName(Iterable<String> names) {
+    public ProductQuery byName(Set<String> names) {
         return (ProductQuery) byField(Product2.Name, 'IN', names);
     }
 
@@ -91,13 +91,13 @@ public virtual inherited sharing class ProductQuery extends QueryObject {
      * Filters Product2s with given name
      */
     public ProductQuery byProductCode(String productCode) {
-        return byProductCode(new List<String>{productCode});
+        return byProductCode(new Set<String>{productCode});
     }
 
     /**
      * Filters Product2s with given names (List or Set)
      */
-    public ProductQuery byProductCode(Iterable<String> productCodes) {
+    public ProductQuery byProductCode(Set<String> productCodes) {
         return (ProductQuery) byField(Product2.ProductCode, 'IN', productCodes);
     }
 
@@ -105,13 +105,13 @@ public virtual inherited sharing class ProductQuery extends QueryObject {
      * Filters Product2s with given name
      */
     public ProductQuery byExternalId(String externalId) {
-        return byExternalId(new List<String>{externalId});
+        return byExternalId(new Set<String>{externalId});
     }
 
     /**
      * Filters Product2s with given names (List or Set)
      */
-    public ProductQuery byExternalId(Iterable<String> externalIds) {
+    public ProductQuery byExternalId(Set<String> externalIds) {
         return (ProductQuery) byField(Product2.ExternalId, 'IN', externalIds);
     }
 }

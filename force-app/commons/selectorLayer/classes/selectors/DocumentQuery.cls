@@ -52,13 +52,13 @@ public inherited sharing class DocumentQuery extends QueryObject {
      * @return Documents by given developer name
      */
     public DocumentQuery byDeveloperName(String developerName) {
-        return byDeveloperName(new List<String>{developerName});
+        return byDeveloperName(new Set<String>{developerName});
     }
 
     /**
      * @return Documents by given developer names (List or Set)
      */
-    public DocumentQuery byDeveloperName(Iterable<String> developerNames) {
+    public DocumentQuery byDeveloperName(Set<String> developerNames) {
         return (DocumentQuery) byField(Document.DeveloperName, 'IN', developerNames);
     }
 }

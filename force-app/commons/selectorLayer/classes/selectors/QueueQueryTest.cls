@@ -28,8 +28,8 @@ private class QueueQueryTest {
     static void testQueueSelector() {
         Map<Id, Group> queues = new Map<Id, Group>([SELECT Id,Name,DeveloperName FROM Group WHERE Type = 'Queue' LIMIT 10]);
 
-        List<String> developerNames = new List<String>();
-        List<String> names = new List<String>();
+        Set<String> developerNames = new Set<String>();
+        Set<String> names = new Set<String>();
         for (Group queue : queues.values()) {
             developerNames.add(queue.DeveloperName);
             names.add(queue.Name);
@@ -43,12 +43,12 @@ private class QueueQueryTest {
         System.assertEquals(queues.size(), new QueueQuery().byDeveloperName(developerNames).getList().size());
 
         /*+ 2 SOQL queries*/
-        System.assertEquals(queues.size(), new QueueQuery().byName((Iterable<String>) names).getList().size());
-        System.assertEquals(queues.size(), new QueueQuery().byName((Iterable<String>) names).getList().size());
+        System.assertEquals(queues.size(), new QueueQuery().byName((Set<String>) names).getList().size());
+        System.assertEquals(queues.size(), new QueueQuery().byName((Set<String>) names).getList().size());
 
         /*Ids are cached*/
-        System.assertEquals(queues.size(), new QueueQuery().byId((Iterable<Id>) queues.keySet()).getList().size());
-        System.assertEquals(queues.size(), new QueueQuery().byId((Iterable<Id>) queues.keySet()).getList().size());
+        System.assertEquals(queues.size(), new QueueQuery().byId((Set<Id>) queues.keySet()).getList().size());
+        System.assertEquals(queues.size(), new QueueQuery().byId((Set<Id>) queues.keySet()).getList().size());
 
         System.assertEquals(4, Limits.getQueries());
     }

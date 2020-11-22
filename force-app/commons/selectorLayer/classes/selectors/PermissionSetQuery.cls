@@ -51,13 +51,13 @@ public inherited sharing class PermissionSetQuery extends QueryObject {
      * Filter Permission Set by given name or null if it does not exist.
      */
     public PermissionSetQuery byName(String name) {
-        return byName(new List<String>{name});
+        return byName(new Set<String>{name});
     }
 
     /**
      * Filter Permission Set by given name or null if it does not exist.
      */
-    public PermissionSetQuery byName(Iterable<String> names) {
+    public PermissionSetQuery byName(Set<String> names) {
         return (PermissionSetQuery) byField(PermissionSet.Name, 'IN', names);
     }
 

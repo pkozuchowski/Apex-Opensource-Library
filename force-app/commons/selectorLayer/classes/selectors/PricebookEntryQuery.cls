@@ -52,13 +52,13 @@ public inherited sharing class PricebookEntryQuery extends QueryObject {
      * Filters PricebookEntry record with given name or null.
      */
     public PricebookEntryQuery byProductId(Id productId) {
-        return byProductId(new List<Id>{productId});
+        return byProductId(new Set<Id>{productId});
     }
 
     /**
      * Filters PricebookEntry records with given productIds.
      */
-    public PricebookEntryQuery byProductId(Iterable<Id> productIds) {
+    public PricebookEntryQuery byProductId(Set<Id> productIds) {
         return (PricebookEntryQuery) byField(PricebookEntry.Product2Id, 'IN', productIds);
     }
 
@@ -67,13 +67,13 @@ public inherited sharing class PricebookEntryQuery extends QueryObject {
      * Filters PricebookEntry record with given name or null.
      */
     public PricebookEntryQuery byPricebookId(Id pricebookId) {
-        return byPricebookId(new List<Id>{pricebookId});
+        return byPricebookId(new Set<Id>{pricebookId});
     }
 
     /**
      * Filters PricebookEntry records with given pricebookIds.
      */
-    public PricebookEntryQuery byPricebookId(Iterable<Id> pricebookIds) {
+    public PricebookEntryQuery byPricebookId(Set<Id> pricebookIds) {
         return (PricebookEntryQuery) byField(PricebookEntry.Pricebook2Id, 'IN', pricebookIds);
     }
 }

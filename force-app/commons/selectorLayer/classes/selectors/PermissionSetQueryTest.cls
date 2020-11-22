@@ -41,7 +41,7 @@ private class PermissionSetQueryTest {
                     new PermissionSetQuery().byId(permissionSet.Id).getFirstOrEmpty().Id
             );
 
-            System.assertEquals(1, new PermissionSetQuery().byId(new List<Id>{permissionSet.Id}).getList().size());
+            System.assertEquals(1, new PermissionSetQuery().byId(new Set<Id>{permissionSet.Id}).getList().size());
         }
     }
 

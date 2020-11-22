@@ -55,13 +55,13 @@ public inherited sharing class TaskQuery extends QueryObject {
      * Filters Tasks associated with given Account
      */
     public TaskQuery byAccountId(Id accountId) {
-        return byAccountId(new List<Id>{accountId});
+        return byAccountId(new Set<Id>{accountId});
     }
 
     /**
      * Filters Tasks associated with given Accounts (List or Set)
      */
-    public TaskQuery byAccountId(Iterable<Id> accountIds) {
+    public TaskQuery byAccountId(Set<Id> accountIds) {
         return (TaskQuery) byField(Task.AccountId, 'IN', accountIds);
     }
 
@@ -70,13 +70,13 @@ public inherited sharing class TaskQuery extends QueryObject {
      * Filters Tasks associated with given Account
      */
     public TaskQuery byWhatId(Id whatId) {
-        return byWhatId(new List<Id>{whatId});
+        return byWhatId(new Set<Id>{whatId});
     }
 
     /**
      * Filters Tasks associated with given Accounts (List or Set)
      */
-    public TaskQuery byWhatId(Iterable<Id> whatIds) {
+    public TaskQuery byWhatId(Set<Id> whatIds) {
         return (TaskQuery) byField(Task.WhatId, 'IN', whatIds);
     }
 
@@ -85,13 +85,13 @@ public inherited sharing class TaskQuery extends QueryObject {
      * Filters Tasks associated with given Account
      */
     public TaskQuery byWhoId(Id whoId) {
-        return byWhoId(new List<Id>{whoId});
+        return byWhoId(new Set<Id>{whoId});
     }
 
     /**
      * Filters Tasks associated with given Accounts (List or Set)
      */
-    public TaskQuery byWhoId(Iterable<Id> whoIds) {
+    public TaskQuery byWhoId(Set<Id> whoIds) {
         return (TaskQuery) byField(Task.WhoId, 'IN', whoIds);
     }
 

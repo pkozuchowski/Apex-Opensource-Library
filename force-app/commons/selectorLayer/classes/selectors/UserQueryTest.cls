@@ -38,7 +38,7 @@ private class UserQueryTest {
                 new UserQuery().byName(UserInfo.getName()).getFirstOrEmpty().Id
         );
 
-        List<String> names = new List<String>{UserInfo.getName()};
+        Set<String> names = new Set<String>{UserInfo.getName()};
         System.assertEquals(
         [SELECT COUNT() FROM User WHERE Name IN :names],
                 new UserQuery().byName(names).getList().size()
@@ -52,7 +52,7 @@ private class UserQueryTest {
                 new UserQuery().byEmail(UserInfo.getUserEmail()).getFirstOrEmpty().Id
         );
 
-        List<String> emails = new List<String>{UserInfo.getUserEmail()};
+        Set<String> emails = new Set<String>{UserInfo.getUserEmail()};
         System.assertEquals(
         [SELECT COUNT() FROM User WHERE Email IN :emails],
                 new UserQuery().byEmail(emails).getList().size()
@@ -66,7 +66,7 @@ private class UserQueryTest {
                 new UserQuery().byUsername(UserInfo.getUserName()).getFirstOrEmpty().Id
         );
 
-        List<String> usernames = new List<String>{UserInfo.getUserName()};
+        Set<String> usernames = new Set<String>{UserInfo.getUserName()};
         System.assertEquals(
         [SELECT COUNT() FROM User WHERE Username IN :usernames],
                 new UserQuery().byUsername(usernames).getList().size()

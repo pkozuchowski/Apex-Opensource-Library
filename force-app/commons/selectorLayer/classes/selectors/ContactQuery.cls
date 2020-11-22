@@ -71,13 +71,13 @@ public inherited sharing class ContactQuery extends QueryObject {
      * Filters Contacts with given names (List or Set)
      */
     public ContactQuery byName(String name) {
-        return byName(new List<String>{name});
+        return byName(new Set<String>{name});
     }
 
     /**
      * Filters Contacts with given names (List or Set)
      */
-    public ContactQuery byName(Iterable<String> names) {
+    public ContactQuery byName(Set<String> names) {
         return (ContactQuery) byField(Contact.Name, 'IN', names);
     }
 
@@ -86,13 +86,13 @@ public inherited sharing class ContactQuery extends QueryObject {
      * Filters Contacts with given emails (List or Set)
      */
     public ContactQuery byEmail(String email) {
-        return byEmail(new List<String>{email});
+        return byEmail(new Set<String>{email});
     }
 
     /**
      * Filters Contacts with given emails (List or Set)
      */
-    public ContactQuery byEmail(Iterable<String> emails) {
+    public ContactQuery byEmail(Set<String> emails) {
         return (ContactQuery) byField(Contact.Email, 'IN', emails);
     }
 
@@ -101,13 +101,13 @@ public inherited sharing class ContactQuery extends QueryObject {
      * Filters Contacts related to given account Ids (List or Set)
      */
     public ContactQuery byAccountId(Id accountId) {
-        return byAccountId(new List<Id>{accountId});
+        return byAccountId(new Set<Id>{accountId});
     }
 
     /**
      * Filters Contacts related to given account Ids (List or Set)
      */
-    public ContactQuery byAccountId(Iterable<Id> accountIds) {
+    public ContactQuery byAccountId(Set<Id> accountIds) {
         return (ContactQuery) byField(Contact.AccountId, 'IN', accountIds);
     }
 

@@ -53,13 +53,13 @@ public inherited sharing class ContentDocumentQuery extends QueryObject {
      * Filters Content Document with Latest Version linked to given record.
      */
     public ContentDocumentQuery byLinkedEntityId(Id linkedEntityId) {
-        return byLinkedEntityId(new List<Id>{linkedEntityId});
+        return byLinkedEntityId(new Set<Id>{linkedEntityId});
     }
 
     /**
      * Filters Content Document with Latest Version linked to given records (List of Set of ids)
      */
-    public ContentDocumentQuery byLinkedEntityId(Iterable<Id> linkedEntityId) {
+    public ContentDocumentQuery byLinkedEntityId(Set<Id> linkedEntityId) {
         List<ContentDocumentLink> links = Database.query('SELECT ContentDocumentId FROM ContentDocumentLink WHERE LinkedEntityId IN :linkedEntityId');
 
         Set<Id> documentIds = new Set<Id>();
@@ -67,6 +67,6 @@ public inherited sharing class ContentDocumentQuery extends QueryObject {
             documentIds.add(link.ContentDocumentId);
         }
 
-        return (ContentDocumentQuery) byId((Iterable<Id>) documentIds);
+        return (ContentDocumentQuery) byId(documentIds);
     }
 }

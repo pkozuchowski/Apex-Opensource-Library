@@ -51,13 +51,13 @@ public inherited sharing class LeadQuery extends QueryObject {
      * Filters Leads by given name
      */
     public LeadQuery byName(String name) {
-        return byName(new List<String>{name});
+        return byName(new Set<String>{name});
     }
 
     /**
      * Filters Leads by given names (List or Set)
      */
-    public LeadQuery byName(Iterable<String> names) {
+    public LeadQuery byName(Set<String> names) {
         return (LeadQuery) byField(Lead.Name, 'IN', names);
     }
 
@@ -65,13 +65,13 @@ public inherited sharing class LeadQuery extends QueryObject {
      * Filters Leads by given email
      */
     public LeadQuery byEmail(String email) {
-        return byEmail(new List<String>{email});
+        return byEmail(new Set<String>{email});
     }
 
     /**
      * Filters Leads by given emails (List or Set)
      */
-    public LeadQuery byEmail(Iterable<String> emails) {
+    public LeadQuery byEmail(Set<String> emails) {
         return (LeadQuery) byField(Lead.Email, 'IN', emails);
     }
 
@@ -79,13 +79,13 @@ public inherited sharing class LeadQuery extends QueryObject {
      * Filters Leads by given company
      */
     public LeadQuery byCompany(String company) {
-        return byCompany(new List<String>{company});
+        return byCompany(new Set<String>{company});
     }
 
     /**
      * Filters Leads by given companies (List or Set)
      */
-    public LeadQuery byCompany(Iterable<String> companies) {
+    public LeadQuery byCompany(Set<String> companies) {
         return (LeadQuery) byField(Lead.Company, 'IN', companies);
     }
 

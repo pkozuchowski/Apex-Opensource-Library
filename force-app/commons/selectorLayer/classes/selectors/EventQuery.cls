@@ -53,13 +53,13 @@ public inherited sharing class EventQuery extends QueryObject {
      * Filters Events associated with given Account
      */
     public EventQuery byAccountId(Id accountId) {
-        return byAccountId(new List<Id>{accountId});
+        return byAccountId(new Set<Id>{accountId});
     }
 
     /**
      * Filters Events associated with given Accounts (List or Set)
      */
-    public EventQuery byAccountId(Iterable<Id> accountIds) {
+    public EventQuery byAccountId(Set<Id> accountIds) {
         return (EventQuery) byField(Event.AccountId, 'IN', accountIds);
     }
 
@@ -68,13 +68,13 @@ public inherited sharing class EventQuery extends QueryObject {
      * Filters Events associated with given Account
      */
     public EventQuery byWhatId(Id whatId) {
-        return byWhatId(new List<Id>{whatId});
+        return byWhatId(new Set<Id>{whatId});
     }
 
     /**
      * Filters Events associated with given Accounts (List or Set)
      */
-    public EventQuery byWhatId(Iterable<Id> whatIds) {
+    public EventQuery byWhatId(Set<Id> whatIds) {
         return (EventQuery) byField(Event.WhatId, 'IN', whatIds);
     }
 
@@ -83,13 +83,13 @@ public inherited sharing class EventQuery extends QueryObject {
      * Filters Events associated with given Account
      */
     public EventQuery byWhoId(Id whoId) {
-        return byWhoId(new List<Id>{whoId});
+        return byWhoId(new Set<Id>{whoId});
     }
 
     /**
      * Filters Events associated with given Accounts (List or Set)
      */
-    public EventQuery byWhoId(Iterable<Id> whoIds) {
+    public EventQuery byWhoId(Set<Id> whoIds) {
         return (EventQuery) byField(Event.WhoId, 'IN', whoIds);
     }
 

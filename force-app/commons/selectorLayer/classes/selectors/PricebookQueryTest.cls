@@ -67,7 +67,7 @@ private class PricebookQueryTest {
                 FROM Pricebook2
                 WHERE Name IN ('Test Pricebook 0', 'Test Pricebook 1')
         ]);
-        Map<Id, Pricebook2> expected = (Map<Id, Pricebook2>) new PricebookQuery().byId((Iterable<Id>) actual.keySet()).getMapById();
+        Map<Id, Pricebook2> expected = (Map<Id, Pricebook2>) new PricebookQuery().byId((Set<Id>) actual.keySet()).getMapById();
 
         System.assertEquals(actual.keySet(), expected.keySet());
     }
@@ -87,7 +87,7 @@ private class PricebookQueryTest {
                 FROM Pricebook2
                 WHERE Name IN ('Test Pricebook 0', 'Test Pricebook 1')
         ]);
-        Map<Id, Pricebook2> expected = (Map<Id, Pricebook2>) new PricebookQuery().byName(new List<String>{
+        Map<Id, Pricebook2> expected = (Map<Id, Pricebook2>) new PricebookQuery().byName(new Set<String>{
                 'Test Pricebook 0', 'Test Pricebook 1'
         }).getMapById();
 

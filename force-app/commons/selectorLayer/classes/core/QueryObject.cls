@@ -126,14 +126,22 @@ public inherited sharing abstract class QueryObject {
     * @return Record by given Salesforce Id
     */
     public virtual QueryObject byId(Id recordId) {
-        return byId(new List<Id>{recordId});
+        return byId(new Set<Id>{recordId});
     }
 
     /**
-     * @param recordIds [List<Id>] or [(Iterable<Id>) Set<Id>] or [(Iterable<Id>) List<SObject>]
+     * @param records SObjects with Ids
      * @return Records by given Salesforce Ids
      */
-    public virtual QueryObject byId(Iterable<Id> recordIds) {
+    public virtual QueryObject byId(List<SObject> records) {
+        return byId(new Map<Id, SObject>(records).keySet());
+    }
+
+    /**
+     * @param recordIds Set of Salesforce Ids
+     * @return Records by given Salesforce Ids
+     */
+    public virtual QueryObject byId(Set<Id> recordIds) {
         return byField('Id', 'IN', recordIds);
     }
 
@@ -159,7 +167,7 @@ public inherited sharing abstract class QueryObject {
             parentIds.add((Id) record.get(relationShipField));
         }
 
-        byId((Iterable<Id>) parentIds);
+        byId(parentIds);
         return this;
     }
 
@@ -174,7 +182,7 @@ public inherited sharing abstract class QueryObject {
      * @return List of child records related to given parent records by given field
      */
     public virtual QueryObject relatedToParent(SObject[] parentRecords, SObjectField relationShipField) {
-        return byField(relationShipField, 'IN', parentRecords);
+        return byField(relationShipField, 'IN', new Map<Id, SObject>(parentRecords).keySet());
     }
 
 

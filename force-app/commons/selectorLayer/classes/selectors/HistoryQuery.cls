@@ -51,7 +51,7 @@ public inherited sharing class HistoryQuery extends QueryObject {
     /**
      * @return Share records for given records (List or Set of parent ids)
      */
-    public HistoryQuery byParentId(Iterable<Id> parentIds) {
+    public HistoryQuery byParentId(Set<Id> parentIds) {
         return (HistoryQuery) byField(parentField, 'IN', parentIds);
     }
 

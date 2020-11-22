@@ -55,13 +55,13 @@ public inherited sharing class QueueQuery extends QueryObject {
      * Filters Queue for given Developer Name. If there is no such Queue, null is returned
      */
     public QueueQuery byDeveloperName(String developerName) {
-        return byDeveloperName(new List<String>{developerName});
+        return byDeveloperName(new Set<String>{developerName});
     }
 
     /**
      * Filters List of Queues for given Developer Names.
      */
-    public QueueQuery byDeveloperName(Iterable<String> developerNames) {
+    public QueueQuery byDeveloperName(Set<String> developerNames) {
         return (QueueQuery) byField(Group.DeveloperName, 'IN', developerNames);
     }
 
@@ -70,13 +70,13 @@ public inherited sharing class QueueQuery extends QueryObject {
      * Filters Queue for given Name (label). If there is no such Queue, null is returned
      */
     public QueueQuery byName(String name) {
-        return byName(new List<String>{name});
+        return byName(new Set<String>{name});
     }
 
     /**
      * Filters Queues with given names (label).
      */
-    public QueueQuery byName(Iterable<String> names) {
+    public QueueQuery byName(Set<String> names) {
         return (QueueQuery) byField(Group.Name, 'IN', names);
     }
 

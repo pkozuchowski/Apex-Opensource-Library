@@ -58,13 +58,13 @@ public inherited sharing class EmailMessageQuery extends QueryObject {
      * Filters Email Messages associated with given record
      */
     public EmailMessageQuery byParentId(Id parentId) {
-        return byParentId(new List<Id>{parentId});
+        return byParentId(new Set<Id>{parentId});
     }
 
     /**
      * Filters Email Messages associated with given records (List or Set)
      */
-    public EmailMessageQuery byParentId(Iterable<Id> parentIds) {
+    public EmailMessageQuery byParentId(Set<Id> parentIds) {
         return (EmailMessageQuery) byField(EmailMessage.ParentId, 'IN', parentIds);
     }
 }

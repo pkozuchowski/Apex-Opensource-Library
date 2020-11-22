@@ -40,7 +40,7 @@ private class OpportunityQueryTest {
     static void testSelectWithParentAccount() {
         Opportunity opp = (Opportunity) new OpportunityQuery()
                 .withParentAccount()
-                .byName(new List<String>{'Name 1'})
+                .byName(new Set<String>{'Name 1'})
                 .getFirstOrNull();
 
         System.assertEquals('Parent Account', opp.Account.Name);

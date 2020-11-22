@@ -43,7 +43,7 @@ private class ProfileQueryTest {
                 FROM Profile
                 WHERE Name IN ('Standard User', 'System Administrator')
         ]);
-        Map<Id, Profile> actual = (Map<Id, Profile>) new ProfileQuery().byId((Iterable<Id>) expected.keySet()).getMapById();
+        Map<Id, Profile> actual = (Map<Id, Profile>) new ProfileQuery().byId((Set<Id>) expected.keySet()).getMapById();
 
         System.assertEquals(expected.keySet(), actual.keySet());
     }
@@ -55,7 +55,7 @@ private class ProfileQueryTest {
                 FROM Profile
                 WHERE Name IN ('Standard User', 'System Administrator')
         ]);
-        Map<Id, Profile> actual = (Map<Id, Profile>) new ProfileQuery().byName(new List<String>{'Standard User', 'System Administrator'}).getMapById();
+        Map<Id, Profile> actual = (Map<Id, Profile>) new ProfileQuery().byName(new Set<String>{'Standard User', 'System Administrator'}).getMapById();
 
         System.assertEquals(expected.keySet(), actual.keySet());
     }

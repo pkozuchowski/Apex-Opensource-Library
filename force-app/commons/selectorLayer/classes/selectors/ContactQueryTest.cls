@@ -40,7 +40,7 @@ private class ContactQueryTest {
     static void testSelectWithParentAccount() {
         Contact c = (Contact) new ContactQuery()
                 .withParentAccount()
-                .byName(new List<String>{'Name 1'})
+                .byName(new Set<String>{'Name 1'})
                 .getFirstOrNull();
 
         System.assertEquals('Parent Account', c.Account.Name);

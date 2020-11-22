@@ -99,7 +99,7 @@ public inherited sharing abstract class QueryObject {
     * this method should be reimplemented where it's needed as public XXXSelector withAllFields();
     */
     public QueryObject withAllFields() {
-        this.query.addFields(getAllFieldsMap().values());
+        this.query.setFields(getAllFieldsList());
         return this;
     }
 
@@ -297,6 +297,7 @@ public inherited sharing abstract class QueryObject {
      */
     public Database.QueryLocator getQueryLocator() {
         this.query.addFields(getFields()).fromObject(getSObjectType());
+        resolveQueryCriteria();
         return this.databaseService.getQueryLocator(query.toSOQL(), query.getVariables());
     }
 
@@ -408,7 +409,7 @@ public inherited sharing abstract class QueryObject {
      */
     private Boolean getCachedRecords(List<SObject> result) {
         QueryCriteria criteria = criteria.get(0);
-        SObjectField field = getAllFieldsMap().get(criteria.field);
+        SObjectField field = SchemaDescriptions.getSObjectField('' + getSObjectType() + '.' + criteria.field);
         QueryCache.CacheResult cacheResult = cache.getCachedRecords(field, criteria.value);
 
         result.addAll(cacheResult.cachedRecords.values());

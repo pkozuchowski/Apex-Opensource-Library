@@ -393,6 +393,7 @@ public inherited sharing abstract class QueryObject {
     * @return True, if selector can use cached records:
     * - Cache is not explicitly forbidden
     * - There is only 1 query criteria
+    * - Criteria value is not blank
     * - Operator is either equals or IN
     * - Field is explicitly allowed for caching or Field is unique to use it for upsert (isIdLookup)
     */
@@ -400,6 +401,7 @@ public inherited sharing abstract class QueryObject {
         return useCache
                 && criteria.size() == 1
                 && (criteria[0].operator == '=' || criteria[0].operator == 'IN')
+                && (criteria[0].value != null || criteria[0].value != '')
                 && getFieldsToCacheBy().contains(getAllFieldsMap().get((criteria[0].field)));
     }
 

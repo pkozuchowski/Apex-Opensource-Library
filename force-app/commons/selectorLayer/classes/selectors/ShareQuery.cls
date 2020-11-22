@@ -30,8 +30,10 @@ public inherited sharing class ShareQuery extends QueryObject {
     private SObjectType shareObjectType;
 
     public ShareQuery(SObjectType shareObjectType) {
+        super(false);
         this.shareObjectType = shareObjectType;
         this.parentField = getParentField();
+        init();
     }
 
     public override List<String> getFields() {

@@ -33,8 +33,10 @@ public inherited sharing class HistoryQuery extends QueryObject {
      * @param historySObjectType History SObjectType ex. AccountHistory
      */
     public HistoryQuery(SObjectType historySObjectType) {
+        super(false);
         this.historySObjectType = historySObjectType;
         this.parentField = getParentField(historySObjectType);
+        init();
     }
 
     public override List<String> getFields() {

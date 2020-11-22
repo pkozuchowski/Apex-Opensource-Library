@@ -39,6 +39,29 @@ public inherited sharing abstract class QueryObject {
     public abstract List<String> getFields();
     public abstract SObjectType getSObjectType();
 
+    /**
+     * Standard constructor for used in the most of QueryObject implementations
+     * Initializes QueryBuilder with default fields and sObjectType
+     */
+    public QueryObject() {
+        this(true);
+    }
+
+    /**
+     * @param doInit if true, initializes QueryBuilder
+     * This is special constructor which is used only when initialization has to be delayed after concrete's class constructor code.
+     */
+    protected QueryObject(Boolean doInit){
+        if(doInit) init();
+    }
+
+    /**
+     * Initializes QueryBuilder with default fields and sObjectType
+     */
+    protected void init() {
+        this.query.setFields(getFields())
+                .fromObject(getSObjectType());
+    }
 
     /**
     * Extenders
@@ -113,6 +136,7 @@ public inherited sharing abstract class QueryObject {
     public virtual QueryObject byId(Iterable<Id> recordIds) {
         return byField('Id', 'IN', recordIds);
     }
+
 
     /**
      * @example
@@ -321,8 +345,6 @@ public inherited sharing abstract class QueryObject {
     * Executes query and caches results
     */
     protected SObject[] executeQuery() {
-        this.query.addFields(getFields()).fromObject(getSObjectType());
-
         List<SObject> result = new List<SObject>();
         Boolean doQuery = true;
 

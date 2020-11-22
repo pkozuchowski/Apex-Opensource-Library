@@ -31,7 +31,7 @@ public with sharing class TriggerDispatcher {
      * Runs trigger field defaults, validations and logic defined in custom metadata
      */
     public static void runMetadataDefinedTriggers() {
-        runMetadataDefinedTriggers(new TriggerContext());
+        runMetadataDefinedTriggers(TriggerContext.getInstance());
     }
 
     @TestVisible
@@ -49,7 +49,7 @@ public with sharing class TriggerDispatcher {
      * Runs instance of concrete Trigger Handler implementation
      */
     public static void run(TriggerHandler triggerHandler) {
-        run(triggerHandler, new TriggerContext());
+        run(triggerHandler, TriggerContext.getInstance());
     }
 
     @TestVisible

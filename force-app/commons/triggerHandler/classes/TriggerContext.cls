@@ -44,7 +44,17 @@ public virtual class TriggerContext {
     protected Map<Id, SObject> triggerNewMap { get; protected set; }
     protected Map<Id, SObject> triggerOldMap { get; protected set; }
 
-    public TriggerContext() {
+    public static TriggerContext getInstance() {
+        if (Trigger.isExecuting || Test.isRunningTest()) {
+            return new TriggerContext();
+
+        } else {
+            throw null;
+        }
+    }
+
+    @TestVisible
+    private TriggerContext() {
         this.isExecuting = Trigger.isExecuting == true;
         this.isInsert = Trigger.isInsert == true;
         this.isUpdate = Trigger.isUpdate == true;

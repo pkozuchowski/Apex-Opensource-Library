@@ -50,6 +50,7 @@ private class TriggerDispatcherTest {
         }
     }
 
+
     /**
      * Emulation of AccountTriggerHandler class
      */

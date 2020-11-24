@@ -72,6 +72,10 @@ public inherited sharing class CollectionImpl extends Collection {
         return isEmpty() ? null : items[items.size() - 1];
     }
 
+    public override Object getRandom() {
+        return isEmpty() ? null : items[(Integer) Math.floor(Math.random() * size())];
+    }
+
     public override Object get(Integer i) {
         return items[i];
     }

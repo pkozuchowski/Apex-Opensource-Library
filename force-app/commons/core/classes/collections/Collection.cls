@@ -62,6 +62,7 @@ public abstract inherited sharing class Collection {
 
     /** @return Nth item of collection. */
     public abstract Object get(Integer i);
+    public abstract Object getRandom();
     public abstract Collection add(Integer index, Object element);
     public abstract Collection add(Object element);
     public abstract Collection addAll(List<Object> elements);

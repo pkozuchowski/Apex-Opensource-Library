@@ -35,7 +35,7 @@ public inherited sharing class HistoryQuery extends QueryObject {
     public HistoryQuery(SObjectType historySObjectType) {
         super(false);
         this.historySObjectType = historySObjectType;
-        this.parentField = getParentField(historySObjectType);
+        this.parentField = getParentField();
         init();
     }
 
@@ -60,8 +60,8 @@ public inherited sharing class HistoryQuery extends QueryObject {
      * History fields do not have consistent naming convention.
      * This method checks for ParentId field.
      */
-    private SObjectField getParentField(SObjectType shareObjectType) {
-        Map<String, SObjectField> fields = shareObjectType.getDescribe().fields.getMap();
+    private SObjectField getParentField() {
+        Map<String, SObjectField> fields = getAllFieldsMap();
 
         if (fields.containsKey('ParentId')) {
             return fields.get('ParentId');

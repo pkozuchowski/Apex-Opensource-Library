@@ -26,7 +26,7 @@
  * General selector for Share records (AccountShare, Share__History etc).
  */
 public inherited sharing class ShareQuery extends QueryObject {
-    private SObjectField parentField;
+    private String parentField;
     private SObjectType shareObjectType;
 
     public ShareQuery(SObjectType shareObjectType) {
@@ -74,21 +74,15 @@ public inherited sharing class ShareQuery extends QueryObject {
      * Share fields do not have consistent naming convention (AccountId, OpportunityId, ParentId)
      * This method checks for ParentId field.
      */
-    private SObjectField getParentField() {
+    private String getParentField() {
         Map<String, SObjectField> allFields = getAllFieldsMap();
+        String sobjectType = '' + shareObjectType;
 
         if (allFields.containsKey('ParentId')) {
-            return allFields.get('ParentId');
+            return '' + allFields.get('ParentId');
 
         } else {
-            Set<String> excluded = new Set<String>{'id', 'lastmodifiedbyid', 'userorgroupid'};
-            for (String field : allFields.keySet()) {
-                if (!excluded.contains(field) && field.endsWith('id')) {
-                    return allFields.get(field);
-                }
-            }
-
-            return null;
+            return sobjectType.replace('Share', 'Id');
         }
     }
 }

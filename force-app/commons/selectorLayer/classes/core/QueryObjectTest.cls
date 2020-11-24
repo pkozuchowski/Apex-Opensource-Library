@@ -38,9 +38,9 @@ public class QueryObjectTest {
             return User.SObjectType;
         }
 
-        protected override Set<SObjectField> getFieldsToCacheBy() {
-            return new Set<SObjectField>{
-                User.Id
+        protected override Set<String> getFieldsToCacheBy() {
+            return new Set<String>{
+                'Id'
             };
         }
     }

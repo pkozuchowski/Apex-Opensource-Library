@@ -35,6 +35,7 @@ public inherited sharing abstract class QueryObject {
 
     private Boolean useCache = true;
     private Boolean enforceSecurity = false;
+    private SObjectType sObjectType;
 
     public abstract List<String> getFields();
     public abstract SObjectType getSObjectType();
@@ -51,16 +52,17 @@ public inherited sharing abstract class QueryObject {
      * @param doInit if true, initializes QueryBuilder
      * This is special constructor which is used only when initialization has to be delayed after concrete's class constructor code.
      */
-    protected QueryObject(Boolean doInit){
-        if(doInit) init();
+    protected QueryObject(Boolean doInit) {
+        if (doInit) init();
     }
 
     /**
      * Initializes QueryBuilder with default fields and sObjectType
      */
     protected void init() {
+        this.sObjectType = getSObjectType();
         this.query.setFields(getFields())
-                .fromObject(getSObjectType());
+                .fromObject(sObjectType);
     }
 
     /**
@@ -332,8 +334,8 @@ public inherited sharing abstract class QueryObject {
     * Fields returned by this method will be used to cache records.
     * Whenever possible, selector will use cached fields to
     */
-    protected virtual Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>();
+    protected virtual Set<String> getFieldsToCacheBy() {
+        return new Set<String>{'Id'};
     }
 
 
@@ -363,7 +365,7 @@ public inherited sharing abstract class QueryObject {
             doQuery = getCachedRecords(result);
 
         } else {
-            resolveQueryCriteria();
+            this.query.setQueryCriteria(criteria);
         }
 
         if (doQuery) {
@@ -371,7 +373,7 @@ public inherited sharing abstract class QueryObject {
             result.addAll(records);
 
             if (!(records instanceof AggregateResult[])) {
-                cache.put(getFieldsToCacheBy(), records);
+                cache.put(sObjectType, getFieldsToCacheBy(), records);
             }
         }
 
@@ -405,7 +407,7 @@ public inherited sharing abstract class QueryObject {
                 && (criteria[0].operator == '=' || criteria[0].operator == 'IN')
                 && criteria[0].value != null
                 && criteria[0].value != ''
-                && getFieldsToCacheBy().contains(getAllFieldsMap().get((criteria[0].field)));
+                && getFieldsToCacheBy().contains(criteria[0].field);
     }
 
     /**
@@ -414,8 +416,7 @@ public inherited sharing abstract class QueryObject {
      */
     private Boolean getCachedRecords(List<SObject> result) {
         QueryCriteria criteria = criteria.get(0);
-        SObjectField field = SchemaDescriptions.getSObjectField('' + getSObjectType() + '.' + criteria.field);
-        QueryCache.CacheResult cacheResult = cache.getCachedRecords(field, criteria.value);
+        QueryCache.CacheResult cacheResult = cache.getCachedRecords(sObjectType, criteria.field, criteria.value);
 
         result.addAll(cacheResult.cachedRecords.values());
 

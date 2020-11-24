@@ -62,10 +62,10 @@ public inherited sharing class PermissionSetQuery extends QueryObject {
     }
 
 
-    protected override Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>{
-                PermissionSet.Id,
-                PermissionSet.Name
+    protected override Set<String> getFieldsToCacheBy() {
+        return new Set<String>{
+                'Id',
+                'Name'
         };
     }
 }

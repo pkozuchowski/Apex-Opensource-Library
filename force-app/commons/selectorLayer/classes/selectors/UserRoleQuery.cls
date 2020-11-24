@@ -65,10 +65,10 @@ public inherited sharing class UserRoleQuery extends QueryObject {
     }
 
 
-    protected override Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>{
-                UserRole.Id,
-                UserRole.DeveloperName
+    protected override Set<String> getFieldsToCacheBy() {
+        return new Set<String>{
+                'Id',
+                'DeveloperName'
         };
     }
 

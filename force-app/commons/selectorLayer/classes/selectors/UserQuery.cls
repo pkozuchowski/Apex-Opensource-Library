@@ -93,10 +93,10 @@ public inherited sharing class UserQuery extends QueryObject {
         return (User) byId(UserInfo.getUserId()).getFirstOrNull();
     }
 
-    protected override Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>{
-                User.Id,
-                User.Username
+    protected override Set<String> getFieldsToCacheBy() {
+        return new Set<String>{
+                'Id',
+                'Username'
         };
     }
 

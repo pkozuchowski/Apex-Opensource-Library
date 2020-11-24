@@ -88,10 +88,10 @@ public inherited sharing class BusinessHoursQuery extends QueryObject {
     }
 
 
-    protected override Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>{
-                BusinessHours.Id,
-                BusinessHours.Name
+    protected override Set<String> getFieldsToCacheBy() {
+        return new Set<String>{
+                'Id',
+                'Name'
         };
     }
 }

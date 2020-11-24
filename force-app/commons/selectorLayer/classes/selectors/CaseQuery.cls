@@ -99,11 +99,4 @@ public inherited sharing class CaseQuery extends QueryObject {
     public CaseQuery byContactId(Set<Id> contactIds) {
         return (CaseQuery) byField(Case.ContactId, 'IN', contactIds);
     }
-
-
-    protected override Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>{
-                Case.Id
-        };
-    }
 }

@@ -84,9 +84,9 @@ public inherited sharing class OpportunityQuery extends QueryObject {
     }
 
 
-    protected override Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>{
-                Opportunity.Id
+    protected override Set<String> getFieldsToCacheBy() {
+        return new Set<String>{
+                'Id'
         };
     }
 }

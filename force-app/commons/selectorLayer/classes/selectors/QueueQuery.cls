@@ -81,10 +81,10 @@ public inherited sharing class QueueQuery extends QueryObject {
     }
 
 
-    protected override Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>{
-                Group.Id,
-                Group.DeveloperName
+    protected override Set<String> getFieldsToCacheBy() {
+        return new Set<String>{
+                'Id',
+                'DeveloperName'
         };
     }
 }

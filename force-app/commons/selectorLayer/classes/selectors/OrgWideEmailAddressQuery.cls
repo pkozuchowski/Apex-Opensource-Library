@@ -79,11 +79,11 @@ public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
     }
 
 
-    protected override Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>{
-                OrgWideEmailAddress.Id,
-                OrgWideEmailAddress.Address,
-                OrgWideEmailAddress.DisplayName
+    protected override Set<String> getFieldsToCacheBy() {
+        return new Set<String>{
+                'Id',
+                'Address',
+                'DisplayName'
         };
     }
 }

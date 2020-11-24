@@ -106,11 +106,4 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
         return (AccountQuery) byField(Account.Name, 'IN', names);
     }
 
-
-    protected override Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>{
-                Account.Id
-        };
-    }
-
 }

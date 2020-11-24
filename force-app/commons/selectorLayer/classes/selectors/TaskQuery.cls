@@ -96,9 +96,9 @@ public inherited sharing class TaskQuery extends QueryObject {
     }
 
 
-    protected override Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>{
-                Task.Id
+    protected override Set<String> getFieldsToCacheBy() {
+        return new Set<String>{
+                'Id'
         };
     }
 

@@ -71,10 +71,10 @@ public inherited sharing class ProfileQuery extends QueryObject {
     }
 
 
-    protected override Set<SObjectField> getFieldsToCacheBy() {
-        return new Set<SObjectField>{
-                Profile.Id,
-                Profile.Name
+    protected override Set<String> getFieldsToCacheBy() {
+        return new Set<String>{
+                'Id',
+                'Name'
         };
     }
 }

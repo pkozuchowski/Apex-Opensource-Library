@@ -28,66 +28,44 @@
  */
 public inherited sharing class QueryCache {
     private final static QueryCache instance = new QueryCache();
-    private Map<SObjectField, Map<Object, SObject>> storage = new Map<SObjectField, Map<Object, SObject>>();
+    private Map<String, Map<Object, SObject>> storage = new Map<String, Map<Object, SObject>>();
 
 
-    public static QueryCache getInstance(){
+    public static QueryCache getInstance() {
         return instance;
     }
 
-    private QueryCache(){
+    private QueryCache() {
     }
 
-
-    /**
-     * @return Cached SObject with given SObject field value.
-     */
-    public SObject get(SObjectField field, Object value) {
-        return storage.get(field).get(value);
-    }
-
-    /**
-    * @return True, if there are any sObjects cached under given key
-    */
-    public Boolean containsKey(SObjectField field, Object key) {
-        return storage.containsKey(field) && storage.get(field).containsKey(key);
-    }
 
     /**
      * Stores SObjects in internal storage and groups them by value in given SObject field.
+     * Blank values are not cached.
      */
-    public void put(Set<SObjectField> fields, List<SObject> records) {
-        for (SObjectField sObjectField : fields) {
-            Map<Object, SObject> valueMap = getFieldMap(sObjectField);
+    public void put(SObjectType sObjectType, Set<String> fields, List<SObject> records) {
+        for (String sObjectField : fields) {
+            Map<Object, SObject> valueMap = getFieldMap(sObjectType, sObjectField);
 
             for (Integer i = 0, size = records.size(); i < size; i++) {
                 SObject record = records[i];
                 Object fieldValue = record.get(sObjectField);
-                valueMap.put(fieldValue, record);
+
+                if (fieldValue != null || fieldValue != '') {
+                    valueMap.put(fieldValue, record);
+                }
             }
         }
     }
-
-    /**
-     * @return Map of SObjects by the given field value
-     */
-    private Map<Object, SObject> getFieldMap(SObjectField field) {
-        if (!storage.containsKey(field)) {
-            storage.put(field, new Map<Object, SObject>());
-        }
-
-        return storage.get(field);
-    }
-
 
     /**
       * @return Pair:
       * Map<Id, SObject> Cached objects
       * List<Object> remaining values
       */
-    public CacheResult getCachedRecords(SObjectField field, Object value) {
+    public CacheResult getCachedRecords(SObjectType sObjectType, String field, Object value) {
         Map<Id, SObject> cachedRecords = new Map<Id, SObject>();
-        Iterable<Object> iterable = getIterable(field, value);
+        Iterable<Object> iterable = getIterable(value);
 
         Type itemType = Runtime.getIterableItemType(iterable);
         List<Object> remainingValues = Runtime.newListOfItemType(itemType);
@@ -97,8 +75,8 @@ public inherited sharing class QueryCache {
         while (valueIt.hasNext()) {
             Object val = valueIt.next();
 
-            if (containsKey(field, val)) {
-                SObject record = get(field, val);
+            if (val != null && val != '' && containsKey(sObjectType, field, val)) {
+                SObject record = get(sObjectType, field, val);
                 cachedRecords.put(record.Id, record);
 
             } else {
@@ -110,13 +88,14 @@ public inherited sharing class QueryCache {
         return new CacheResult(cachedRecords, remainingValues);
     }
 
+
     /**
     * Transforms value into uniform iterable:
     * - primitive V is transformed into new List<T>{V}
     * - List or Sets are casted into Iterable<Object>
     * - SObject[] is changed into Iterable<Id>
     */
-    private Iterable<Object> getIterable(SObjectField field, Object value) {
+    private Iterable<Object> getIterable(Object value) {
         String typeName = Runtime.getTypeName(value);
 
         if (value instanceof SObject[]) {
@@ -126,10 +105,40 @@ public inherited sharing class QueryCache {
             return ((Iterable<Object>) value);
 
         } else {
-            List<Object> values = Runtime.newListOfFieldType(field);
+            Type valueType = Runtime.getType(value);
+            List<Object> values = Runtime.newListOfItemType(valueType);
             values.add(value);
             return values;
         }
+    }
+
+    /**
+     * @return Cached SObject with given SObject field value.
+     */
+    private SObject get(SObjectType sObjectType, String field, Object value) {
+        return storage.get('' + sObjectType + '.' + field).get(value);
+    }
+
+    /**
+    * @return True, if there are any sObjects cached under given key
+    */
+    private Boolean containsKey(SObjectType sObjectType, String field, Object key) {
+        String fieldKey = '' + sObjectType + '.' + field;
+        return storage.containsKey(fieldKey) && storage.get(fieldKey).containsKey(key);
+    }
+
+
+    /**
+     * @return Map of SObjects by the given field value
+     */
+    private Map<Object, SObject> getFieldMap(SObjectType sObjectType, String field) {
+        String key = '' + sObjectType + '.' + field;
+
+        if (!storage.containsKey(key)) {
+            storage.put(key, new Map<Object, SObject>());
+        }
+
+        return storage.get(key);
     }
 
 

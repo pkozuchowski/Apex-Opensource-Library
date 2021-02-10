@@ -128,6 +128,23 @@ private class CollectionTest {
         System.assertEquals(0, Collection.of(opportunities).clear().size());
     }
 
+    @IsTest
+    static void testSliceRange() {
+        List<Integer> ints = new List<Integer>{0, 1, 2, 3, 4, 5, 6};
+        List<Integer> slice = (List<Integer>) Collection.of(ints).slice(1, 3).get();
+        List<Integer> expected = new List<Integer>{1, 2, 3};
+
+        System.assertEquals(expected, slice);
+    }
+
+    @IsTest
+    static void testSliceIndexes() {
+        List<Integer> ints = new List<Integer>{0, 1, 2, 3, 4, 5, 6};
+        List<Integer> slice = (List<Integer>) Collection.of(ints).slice(new List<Integer>{0, 1, 3, 5}).get();
+        List<Integer> expected = new List<Integer>{0, 1, 3, 5};
+
+        System.assertEquals(expected, slice);
+    }
 
     @IsTest
     static void testAddRemove() {

@@ -72,6 +72,16 @@ public abstract inherited sharing class Collection {
     public abstract Collection clear();
 
     /**
+     * @return Slice of the collection from starting index to ending index inclusive.
+     */
+    public abstract Collection slice(Integer start, Integer stop);
+
+    /**
+     * @return Slice of th collection containing given indexes.
+     */
+    public abstract Collection slice(List<Integer> indexes);
+
+    /**
      * @return true when collection is not null or empty, false otherwise.
      */
     public abstract Boolean isNotEmpty();
@@ -85,6 +95,7 @@ public abstract inherited sharing class Collection {
      * @return Size of the wrapped collection, 0 if null.
      */
     public abstract Integer size();
+
 
 
     /**

@@ -119,6 +119,26 @@ public inherited sharing class CollectionImpl extends Collection {
         return this;
     }
 
+    public override Collection slice(Integer start, Integer stop) {
+        List<Object> other = Runtime.newListOfTheSameType(items);
+
+        for (Integer i = start; i <= stop; i++) {
+            other.add(items[i]);
+        }
+
+        return Collection.of(other);
+    }
+
+    public override Collection slice(List<Integer> indexes) {
+        List<Object> other = Runtime.newListOfTheSameType(items);
+
+        for (Integer i : indexes) {
+            other.add(this.get(i));
+        }
+
+        return Collection.of(other);
+    }
+
     public override Boolean isNotEmpty() {
         return !isEmpty();
     }

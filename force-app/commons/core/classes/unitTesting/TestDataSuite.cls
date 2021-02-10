@@ -32,31 +32,12 @@
  *
  * This is best used with UnitOfWork pattern to save DMLs.
  */
-public abstract class TestDataSuite {
-    /**
-     * Registers record in test data suite by unique name.
-     * Record Id can be later retrieved in unit test using getId() method.
-     */
-    public abstract void registerRecord(String uniqueName, SObject record);
-
-    /**
-     * Registers record in test data suite by unique name.
-     * Record Id can be later retrieved in unit test using getId() method.
-     */
-    public abstract void registerRecords(SObjectField field, SObject[] records);
-
-    /**
-     * @return Id of record registered in the test data suite under give unique name.
-     */
-    public abstract Id getId(String uniqueName);
-
-    /**
-     * @return Ids of all records of given SObjectType in suite.
-     */
-    public abstract Set<Id> getIds(SObjectType type);
-
-
+@IsTest
+public class TestDataSuite {
     private static Manager suitesManager = new Manager();
+
+    private Map<String, Id> recordIdsByUniqueName = new Map<String, Id>();
+    private Map<String, SObject> recordsByUniqueName = new Map<String, SObject>();
 
 
     /**
@@ -64,7 +45,7 @@ public abstract class TestDataSuite {
      * This method should be called in @TestSetup to create suite of data.
      */
     public static TestDataSuite registerSuite(String uniqueName) {
-        TestDataSuite suite = new TestDataSuiteImpl();
+        TestDataSuite suite = new TestDataSuite();
         suitesManager.registerSuite(uniqueName, suite);
 
         return suite;
@@ -87,53 +68,68 @@ public abstract class TestDataSuite {
     }
 
 
-    private class TestDataSuiteImpl extends TestDataSuite {
-        private Map<String, Id> recordIdsByUniqueName = new Map<String, Id>();
-        private Map<String, SObject> recordsByUniqueName = new Map<String, SObject>();
+    /**
+     * Suite should be created through TestDataSuite.registerSuite()
+     */
+    private TestDataSuite() {}
 
+    /**
+     * Registers record in test data suite by unique name.
+     * Record Id can be later retrieved in unit test using getId() method.
+     */
+    public void registerRecord(String uniqueName, SObject record) {
+        recordsByUniqueName.put(uniqueName, record);
+    }
 
-        public override void registerRecord(String uniqueName, SObject record) {
-            recordsByUniqueName.put(uniqueName, record);
-        }
-
-        public override void registerRecords(SObjectField field, SObject[] records) {
-            for (SObject record : records) {
-                String key = '' + record.get(field);
-                recordsByUniqueName.put(key, record);
-            }
-        }
-
-        public override Id getId(String uniqueName) {
-            return recordIdsByUniqueName.get(uniqueName);
-        }
-
-        public override Set<Id> getIds(SObjectType type) {
-            Set<Id> ids = new Set<Id>();
-
-            for (Id recordId : recordIdsByUniqueName.values()) {
-                if (recordId.getSobjectType() == type) {
-                    ids.add(recordId);
-                }
-            }
-
-            return ids;
-        }
-
-        /**
-         * Resolves ids of records for persisting after everything is inserted in @TestSetup
-         */
-        private void resolveIds() {
-            for (String key : recordsByUniqueName.keySet()) {
-                SObject record = recordsByUniqueName.get(key);
-
-                if (String.isEmpty(record.Id)) {
-                    throw new TestDataSuiteException('Suite cannot be saved until all records are inserted.');
-                }
-
-                recordIdsByUniqueName.put(key, record.Id);
-            }
+    /**
+     * Registers record in test data suite by unique name.
+     * Record Id can be later retrieved in unit test using getId() method.
+     */
+    public void registerRecords(SObjectField field, SObject[] records) {
+        for (SObject record : records) {
+            String key = '' + record.get(field);
+            recordsByUniqueName.put(key, record);
         }
     }
+
+    /**
+     * @return Id of record registered in the test data suite under give unique name.
+     */
+    public Id getId(String uniqueName) {
+        return recordIdsByUniqueName.get(uniqueName);
+    }
+
+    /**
+     * @return Ids of all records of given SObjectType in suite.
+     */
+    public Set<Id> getIds(SObjectType type) {
+        Set<Id> ids = new Set<Id>();
+
+        for (Id recordId : recordIdsByUniqueName.values()) {
+            if (recordId.getSobjectType() == type) {
+                ids.add(recordId);
+            }
+        }
+
+        return ids;
+    }
+
+    
+    /**
+     * Resolves ids of records for persisting after everything is inserted in @TestSetup
+     */
+    private void resolveIds() {
+        for (String key : recordsByUniqueName.keySet()) {
+            SObject record = recordsByUniqueName.get(key);
+
+            if (String.isEmpty(record.Id)) {
+                throw new TestDataSuiteException('Suite cannot be saved until all records are inserted.');
+            }
+
+            recordIdsByUniqueName.put(key, record.Id);
+        }
+    }
+
 
     /**
      * Manages and persistence of collection of data suites
@@ -160,7 +156,7 @@ public abstract class TestDataSuite {
 
         public void saveSuites() {
             for (TestDataSuite testDataSuite : suitesByName.values()) {
-                ((TestDataSuiteImpl) testDataSuite).resolveIds();
+                testDataSuite.resolveIds();
             }
 
             ContentVersion resource = new ContentVersion(
@@ -179,7 +175,7 @@ public abstract class TestDataSuite {
             ]?.VersionData?.toString();
 
             if (String.isNotEmpty(body)) {
-                return (Map<String, TestDataSuite>) JSON.deserialize(body, Map<String, TestDataSuiteImpl>.class);
+                return (Map<String, TestDataSuite>) JSON.deserialize(body, Map<String, TestDataSuite>.class);
             } else {
                 return new Map<String, TestDataSuite>();
             }

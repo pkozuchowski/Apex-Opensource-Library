@@ -21,6 +21,17 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
+
+/**
+ * Suite of test data which reassembles static map, but is persisted between test setup and test methods.
+ * Developer can use this to create several different test suites in single @TestSetup and later retrieve ids of
+ * records in particular test suite using unique name assigned to the record.
+ *
+ * The example usage of this class are Trigger Handler tests with many different scenarios,
+ * where we want to create all data in @TestSetup, but at the same time we want to segregate data into suites for different scenarios.
+ *
+ * This is best used with UnitOfWork pattern to save DMLs.
+ */
 public abstract class TestDataSuite {
     /**
      * Registers record in test data suite by unique name.

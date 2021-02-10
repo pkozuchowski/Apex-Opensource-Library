@@ -32,30 +32,24 @@ private class TestDataSuiteTest {
     static void testSetup() {
         TestDataBuilder dataBuilder = new TestDataBuilder();
 
-        {
-            TestDataSuite suite = TestDataSuite.registerSuite('Account with related');
+        List<Account> accounts = dataBuilder
+                .create(new Account(Name = '1'))
+                .create(new Account(Name = '2'))
+                .insertRecords();
 
-            Account account = (Account) dataBuilder
-                    .create(new Account(Name = '1'))
-                    .insertRecords()[0];
-            suite.registerRecord('Account', account);
+        Case[] cases = (Case[]) dataBuilder
+                .create(new Case(Subject = 'Case 1', AccountId = accounts[0].Id))
+                .similarly(new Case(Subject = 'Case 2'))
+                .similarly(new Case(Subject = 'Case 3'))
+                .insertRecords();
 
-            Case[] cases = (Case[]) dataBuilder
-                    .create(new Case(Subject = 'Case 1', AccountId = account.Id))
-                    .similarly(new Case(Subject = 'Case 2'))
-                    .similarly(new Case(Subject = 'Case 3'))
-                    .insertRecords();
-            suite.registerRecords(Case.Subject, cases);
-        }
 
-        {
-            TestDataSuite suite = TestDataSuite.registerSuite('Account without related');
+        TestDataSuite suite1 = TestDataSuite.registerSuite('Account with related');
+        suite1.registerRecord('Account', accounts[0]);
+        suite1.registerRecords(Case.Subject, cases);
 
-            Account account = (Account) dataBuilder
-                    .create(new Account(Name = '2'))
-                    .insertRecords()[0];
-            suite.registerRecord('Account', account);
-        }
+        TestDataSuite suite2 = TestDataSuite.registerSuite('Account without related');
+        suite2.registerRecord('Account', accounts[1]);
 
         TestDataSuite.saveSuites();
     }

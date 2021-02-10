@@ -27,6 +27,11 @@ public abstract class TestDataSuite {
 
     private static Manager suitesManager = new Manager();
 
+
+    /**
+     * Factory Method that creates TestDataSuite and registers it internally.
+     * This method should be called in @TestSetup to create suite of data.
+     */
     public static TestDataSuite registerSuite(String uniqueName) {
         TestDataSuite suite = new TestDataSuiteImpl();
         suitesManager.registerSuite(uniqueName, suite);
@@ -34,12 +39,20 @@ public abstract class TestDataSuite {
         return suite;
     }
 
-    public static TestDataSuite getSuite(String uniqueName) {
-        return suitesManager.getSuite(uniqueName);
-    }
-
+    /**
+     * This method persists TestDataSuites creates in @TestSetup.
+     * It should be called at the end of @TestSetup when all test data is already inserted.
+     */
     public static void saveSuites() {
         suitesManager.saveSuites();
+    }
+
+    /**
+     * @return Retrieves previously creates Data Suite by it's unique name.
+     * This method should be called in test methods.
+     */
+    public static TestDataSuite getSuite(String uniqueName) {
+        return suitesManager.getSuite(uniqueName);
     }
 
 
@@ -47,16 +60,26 @@ public abstract class TestDataSuite {
         private Map<String, Id> recordIdsByUniqueName = new Map<String, Id>();
         private Map<String, SObject> recordsByUniqueName = new Map<String, SObject>();
 
+        /**
+         * Registers record in test data suite by unique name.
+         * Record Id can be later retrieved in unit test using getId() method.
+         */
         public override void registerRecord(String uniqueName, SObject record) {
             String key = '' + record.getSObjectType() + '_' + uniqueName;
             recordsByUniqueName.put(key, record);
         }
 
+        /**
+         * @return Id of record registered in the test data suite under give unique name.
+         */
         public override Id getId(SObjectType type, String uniqueName) {
             String key = '' + type + '_' + uniqueName;
             return recordIdsByUniqueName.get(key);
         }
 
+        /**
+         * Resolves ids of records for persisting after everything is inserted in @TestSetup
+         */
         private void resolveIds() {
             for (String key : recordsByUniqueName.keySet()) {
                 SObject record = recordsByUniqueName.get(key);
@@ -70,13 +93,13 @@ public abstract class TestDataSuite {
         }
     }
 
-
+    /**
+     * Manages and persistence of collection of data suites
+     */
     private class Manager {
-        private String uniqueName;
         private Map<String, TestDataSuite> suitesByName;
 
         private Manager() {
-            this.uniqueName = 'TestSuites_' + Runtime.getCaller();
             this.suitesByName = getTestDataSuiteMap();
         }
 
@@ -99,7 +122,7 @@ public abstract class TestDataSuite {
             }
 
             ContentVersion resource = new ContentVersion(
-                    Title = this.uniqueName,
+                    Title = 'TestDataSuite',
                     VersionData = Blob.valueOf(JSON.serialize(suitesByName)),
                     PathOnClient = 'testSuite.json'
             );
@@ -110,7 +133,7 @@ public abstract class TestDataSuite {
             String body = [
                     SELECT VersionData
                     FROM ContentVersion
-                    WHERE Title = :uniqueName
+                    WHERE Title = 'TestDataSuite'
             ]?.VersionData?.toString();
 
             if (String.isNotEmpty(body)) {

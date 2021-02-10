@@ -37,7 +37,7 @@ public abstract class TestDataSuite {
     /**
      * @return Id of record registered in the test data suite under give unique name.
      */
-    public abstract Id getId(SObjectType type, String uniqueName);
+    public abstract Id getId(String uniqueName);
 
     /**
      * @return Ids of all records of given SObjectType in suite.
@@ -82,20 +82,18 @@ public abstract class TestDataSuite {
 
 
         public override void registerRecord(String uniqueName, SObject record) {
-            String key = '' + record.getSObjectType() + '_' + uniqueName;
-            recordsByUniqueName.put(key, record);
+            recordsByUniqueName.put(uniqueName, record);
         }
 
         public override void registerRecords(SObjectField field, SObject[] records) {
             for (SObject record : records) {
-                String key = '' + record.getSObjectType() + '_' + record.get(field);
+                String key = '' + record.get(field);
                 recordsByUniqueName.put(key, record);
             }
         }
 
-        public override Id getId(SObjectType type, String uniqueName) {
-            String key = '' + type + '_' + uniqueName;
-            return recordIdsByUniqueName.get(key);
+        public override Id getId(String uniqueName) {
+            return recordIdsByUniqueName.get(uniqueName);
         }
 
         public override Set<Id> getIds(SObjectType type) {

@@ -40,6 +40,19 @@ public with sharing class Runtime {
 
 
     /**
+     * Holds execution for given amount of time.
+     * Counts against CPU Time governor limit.
+     */
+    public static void sleep(Long milliSeconds) {
+        Long startTime = System.currentTimeMillis();
+        Long diff = 0;
+
+        while (diff < milliSeconds){
+            diff = System.currentTimeMillis() - startTime;
+        }
+    }
+
+    /**
      * @return Running type of object passed in parameter.
      * This method returns null if type is not accessible - when class is private
      * or when it's part of anonymous script. In that case, getRunningTypeName() should be used instead.

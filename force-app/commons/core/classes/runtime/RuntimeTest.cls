@@ -31,6 +31,19 @@ private class RuntimeTest {
 
     /**
      *@description
+     * Sleep should hold execution for given number of milliseconds
+     */
+    @IsTest
+    static void testSleep() {
+        Long start = System.currentTimeMillis();
+        Runtime.sleep(1000);
+        Long duration = System.currentTimeMillis() - start;
+
+        System.assert(duration >= 1000);
+    }
+
+    /**
+     *@description
      * getSObjectFieldType() should return type of value stored in SObject field
      */
     @IsTest

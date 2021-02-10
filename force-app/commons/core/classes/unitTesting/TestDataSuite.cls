@@ -22,8 +22,28 @@
 * SOFTWARE.
 */
 public abstract class TestDataSuite {
+    /**
+     * Registers record in test data suite by unique name.
+     * Record Id can be later retrieved in unit test using getId() method.
+     */
     public abstract void registerRecord(String uniqueName, SObject record);
+
+    /**
+     * Registers record in test data suite by unique name.
+     * Record Id can be later retrieved in unit test using getId() method.
+     */
+    public abstract void registerRecords(SObjectField field, SObject[] records);
+
+    /**
+     * @return Id of record registered in the test data suite under give unique name.
+     */
     public abstract Id getId(SObjectType type, String uniqueName);
+
+    /**
+     * @return Ids of all records of given SObjectType in suite.
+     */
+    public abstract Set<Id> getIds(SObjectType type);
+
 
     private static Manager suitesManager = new Manager();
 
@@ -60,21 +80,34 @@ public abstract class TestDataSuite {
         private Map<String, Id> recordIdsByUniqueName = new Map<String, Id>();
         private Map<String, SObject> recordsByUniqueName = new Map<String, SObject>();
 
-        /**
-         * Registers record in test data suite by unique name.
-         * Record Id can be later retrieved in unit test using getId() method.
-         */
+
         public override void registerRecord(String uniqueName, SObject record) {
             String key = '' + record.getSObjectType() + '_' + uniqueName;
             recordsByUniqueName.put(key, record);
         }
 
-        /**
-         * @return Id of record registered in the test data suite under give unique name.
-         */
+        public override void registerRecords(SObjectField field, SObject[] records) {
+            for (SObject record : records) {
+                String key = '' + record.getSObjectType() + '_' + record.get(field);
+                recordsByUniqueName.put(key, record);
+            }
+        }
+
         public override Id getId(SObjectType type, String uniqueName) {
             String key = '' + type + '_' + uniqueName;
             return recordIdsByUniqueName.get(key);
+        }
+
+        public override Set<Id> getIds(SObjectType type) {
+            Set<Id> ids = new Set<Id>();
+
+            for (Id recordId : recordIdsByUniqueName.values()) {
+                if (recordId.getSobjectType() == type) {
+                    ids.add(recordId);
+                }
+            }
+
+            return ids;
         }
 
         /**

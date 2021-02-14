@@ -35,6 +35,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
 
     /**
      * Registers static resource response for given endpoint.
+     * @param name Unique name of the mock, used to override the default mock in tests
      * @param methods Comma separated list of methods ('GET,POST')
      * @param endpointPattern Regexp pattern for endpoint
      * @param statusCode Status code of the response
@@ -47,6 +48,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
 
     /**
      * Registers JSON response for given endpoint.
+     * @param name Unique name of the mock, used to override the default mock in tests
      * @param methods Comma separated list of methods ('GET,POST')
      * @param endpointPattern Regexp pattern for endpoint
      * @param statusCode Status code of the response
@@ -59,6 +61,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
 
     /**
      * Registers string response for given endpoint.
+     * @param name Unique name of the mock, used to override the default mock in tests
      * @param methods Comma separated list of methods ('GET,POST')
      * @param endpointPattern Regexp pattern for endpoint
      * @param statusCode Status code of the response
@@ -71,6 +74,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
 
     /**
     * Register HttpCalloutMock for given Http method and endpoint pattern.
+    * @param name Unique name of the mock, used to override the default mock in tests
     * @param methods Comma separated list of methods ('GET,POST')
     * @param endpointPattern Regexp pattern for endpoint
     * @param mock Mock to respond with
@@ -97,7 +101,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
      *
      * Override uses Method and Endpoint routing (or handles method of HttpCalloutChainMock) of original mock.
      *
-     * @param name User defined identifier of the endpoint (ex. 'token', 'GET Account', 'Update Order')
+     * @param name Unique name of the mock, used to override the default mock in tests
      * @param statusCode Status code of the response
      * @param status Status of the response
      * @param resource Name of static resource file, which contains body of the response.
@@ -107,6 +111,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     }
 
     /**
+     * @param name Unique name of the mock, used to override the default mock in tests
      * @param methods Comma separated list of methods ('GET,POST')
      * @param endpointPattern Regexp pattern for endpoint
      * @param statusCode Status code of the response
@@ -118,7 +123,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     }
 
     /**
-     * @param name User defined identifier of the endpoint (ex. 'token', 'GET Account', 'Update Order')
+     * @param name Unique name of the mock, used to override the default mock in tests
      * @param statusCode Status code of the response
      * @param status Status of the response
      * @param body Body of the response
@@ -128,7 +133,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     }
 
     /**
-     * @param name User defined identifier of the endpoint (ex. 'token', 'GET Account', 'Update Order')
+     * @param name Unique name of the mock, used to override the default mock in tests
      * @param mock Mock to respond with
      */
     public HttpCalloutMockRouter overrideMock(String name, HttpCalloutMock mock) {
@@ -151,7 +156,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
      * router.registerStaticResourceMock('GET','{{endpoint}}/accounts/{{id}}', 200, 'OK', 'Mock_GetAccountResource');
      * </pre>
      *
-     * @param name Name of variable to be used in endpoints
+     * @param name Unique name of the mock, used to override the default mock in tests
      * @param regexp Regexp of the variable
      */
     public HttpCalloutMockRouter registerEndpointVariable(String name, String regexp) {

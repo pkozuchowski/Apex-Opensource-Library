@@ -98,8 +98,6 @@ public inherited sharing class TestDataSuiteManager {
     /**
      * Friendly constructor to limit construction of TestDataSuites to Manager alone
      */
-    private class TestDataSuiteImpl extends TestDataSuite {
-        public TestDataSuiteImpl() {}
-    }
+    private class TestDataSuiteImpl extends TestDataSuite {}
     private TestDataSuiteManager() {}
 }

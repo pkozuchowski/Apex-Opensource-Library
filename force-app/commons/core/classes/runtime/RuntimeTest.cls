@@ -126,8 +126,8 @@ private class RuntimeTest {
      */
     @IsTest
     static void testNewListOfItemType() {
-        List<Object> result = Runtime.newListOfItemType(Opportunity.class);
-        System.assert(result instanceof List<Opportunity>);
+        System.assert(Runtime.newListOfItemType(Opportunity.class) instanceof List<Opportunity>);
+        System.assert(Runtime.newListOfItemType(Opportunity.SObjectType) instanceof List<Opportunity>);
     }
 
 

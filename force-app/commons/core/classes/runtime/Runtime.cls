@@ -126,6 +126,15 @@ public with sharing class Runtime {
     }
 
     /**
+     * @param itemType SObject type of list
+     * @return New list of given item type (List<SObject>)
+     */
+    public static List<SObject> newListOfItemType(SObjectType itemType) {
+        Type t = Type.forName('' + itemType);
+        return (List<SObject>) newListOfItemType(t, new List<SObject>());
+    }
+
+    /**
      * @return New list with item type of SObject field.
      */
     public static List<Object> newListOfFieldType(SObjectField field) {

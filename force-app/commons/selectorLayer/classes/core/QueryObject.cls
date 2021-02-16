@@ -358,7 +358,7 @@ public inherited sharing abstract class QueryObject {
     * Executes query and caches results
     */
     protected SObject[] executeQuery() {
-        List<SObject> result = new List<SObject>();
+        List<SObject> result = Runtime.newListOfItemType(getSObjectType());
         Boolean doQuery = true;
 
         if (canUseCache()) {

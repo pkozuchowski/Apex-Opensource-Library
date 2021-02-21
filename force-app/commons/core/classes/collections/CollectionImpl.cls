@@ -263,6 +263,10 @@ public inherited sharing class CollectionImpl extends Collection {
     public override Object mapBy(Mapper keyMapper, Mapper valueMapper) {
         return mapToUntypedMap(keyMapper, valueMapper).toMap();
     }
+    public override Object mapByConcatenation(SObjectField field1, SObjectField field2) {
+        return mapBy(new ConcatenatedFieldsMapper(field1, field2));
+    }
+
     private UntypedMap mapToUntypedMap(Mapper keyMapper, Mapper valueMapper) {
         UntypedMap imap = newMap(keyMapper.valueType(), valueMapper.valueType());
 
@@ -292,6 +296,11 @@ public inherited sharing class CollectionImpl extends Collection {
     public override Object groupBy(Mapper keyMapper) {
         return groupBy(keyMapper, new ItemMapper(items));
     }
+
+    public override Object groupByConcatenation(SObjectField field1, SObjectField field2) {
+        return groupBy(new ConcatenatedFieldsMapper(field1, field2));
+    }
+
     public override Object groupBy(Mapper keyMapper, Mapper valueMapper) {
         UntypedMap groupMap = newMap(keyMapper.valueType(), Type.forName('List<' + valueMapper.valueType() + '>'));
         List<Object> emptyList = Runtime.newListOfItemType(valueMapper.valueType());

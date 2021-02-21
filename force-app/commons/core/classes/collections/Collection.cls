@@ -164,6 +164,12 @@ public abstract inherited sharing class Collection {
     public abstract Object mapBy(Mapper keyMapper, Mapper valueMapper);
 
     /**
+     * Maps by concatenation of two fields (without separator)
+     */
+    public abstract Object mapByConcatenation(SObjectField field1, SObjectField field2);
+
+
+    /**
      * Group records by field value.
      * @return Map<K, List<V>>, K - value type, V - collection item type
      */
@@ -173,6 +179,11 @@ public abstract inherited sharing class Collection {
     public abstract Object groupBy(String keyField, String valueField, Type keyType, Type valueType);
     public abstract Object groupBy(Mapper keyMapper);
     public abstract Object groupBy(Mapper keyMapper, Mapper valueMapper);
+
+    /**
+     * Maps by concatenation of two fields (without separator)
+     */
+    public abstract Object groupByConcatenation(SObjectField field1, SObjectField field2);
 
 
     /**

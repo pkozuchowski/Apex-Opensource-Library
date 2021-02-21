@@ -361,7 +361,25 @@ private class CollectionTest {
             expected.put('' + opp.AccountId + opp.OwnerId, opp);
         }
 
-        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collection.of(opportunities).mapBy(new CollectionImpl.ConcatenatedFieldsMapper(Opportunity.AccountId, Opportunity.OwnerId));
+        Map<String, Opportunity> actual = (Map<String, Opportunity>) Collection.of(opportunities).mapByConcatenation(Opportunity.AccountId, Opportunity.OwnerId);
+
+        System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void testGroupByFieldPair() {
+        Map<String, Opportunity[]> expected = new Map<String, Opportunity[]>();
+        for (Opportunity opp : opportunities) {
+            String key = '' + opp.AccountId + opp.OwnerId;
+
+            if(expected.containsKey(key)){
+                expected.get(key).add(opp);
+            } else {
+                expected.put(key, new List<Opportunity>{opp});
+            }
+        }
+
+        Map<String, Opportunity[]> actual = (Map<String, Opportunity[]>) Collection.of(opportunities).groupByConcatenation(Opportunity.AccountId, Opportunity.OwnerId);
 
         System.assertEquals(expected, actual);
     }

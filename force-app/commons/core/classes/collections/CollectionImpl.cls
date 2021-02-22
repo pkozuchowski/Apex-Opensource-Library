@@ -59,26 +59,11 @@ public inherited sharing class CollectionImpl extends Collection {
         this.items = items;
     }
 
-
-    public override List<Object> get() {
-        return items;
-    }
-
-    public override Object getFirst() {
-        return isEmpty() ? null : items[0];
-    }
-
-    public override Object getLast() {
-        return isEmpty() ? null : items[items.size() - 1];
-    }
-
-    public override Object getRandom() {
-        return isEmpty() ? null : items[(Integer) Math.floor(Math.random() * size())];
-    }
-
-    public override Object get(Integer i) {
-        return items[i];
-    }
+    public override List<Object> get() { return items; }
+    public override Object getFirst() { return isEmpty() ? null : items[0]; }
+    public override Object getLast() { return isEmpty() ? null : items[items.size() - 1]; }
+    public override Object getRandom() { return isEmpty() ? null : items[(Integer) Math.floor(Math.random() * size())]; }
+    public override Object get(Integer i) { return items[i]; }
 
     public override Collection add(Integer index, Object element) {
         items.add(index, element);
@@ -139,28 +124,15 @@ public inherited sharing class CollectionImpl extends Collection {
         return Collection.of(other);
     }
 
-    public override Boolean isNotEmpty() {
-        return !isEmpty();
-    }
-
-    public override Boolean isEmpty() {
-        return items == null || items.isEmpty();
-    }
-
-    public override Integer size() {
-        return items == null ? 0 : items.size();
-    }
+    public override Boolean isNotEmpty() { return !isEmpty(); }
+    public override Boolean isEmpty() { return items == null || items.isEmpty(); }
+    public override Integer size() { return items == null ? 0 : items.size(); }
 
 
-    public override Collection.FieldFilter filter(SObjectField field) {
-        return new FieldFilterImpl(this, '' + field);
-    }
-    public override Collection.FieldFilter filter(String field) {
-        return new FieldFilterImpl(this, field);
-    }
-    public override Collection filterAlike(SObject prototype) {
-        return filterUsing(new FilterByPrototype(prototype));
-    }
+    public override Collection.FieldFilter filter(SObjectField field) { return filter('' + field); }
+    public override Collection.FieldFilter filter(String field) { return new FieldFilterImpl(this, field); }
+    public override Collection filterAlike(SObject prototype) { return filterUsing(new FilterByPrototype(prototype)); }
+
     public override Collection filterUsing(Filter filter) {
         List<Object> filteredItems = Runtime.newListOfTheSameType(items);
 
@@ -184,33 +156,17 @@ public inherited sharing class CollectionImpl extends Collection {
         return previousValue;
     }
 
-    public override Decimal sum(SObjectField field) {
-        return sum('' + field);
-    }
-    public override Decimal sum(String field) {
-        return (Decimal) this.reduce(SUM.ofField(field), 0.0);
-    }
+    public override Decimal sum(SObjectField field) { return sum('' + field); }
+    public override Decimal sum(String field) { return (Decimal) this.reduce(SUM.ofField(field), 0.0); }
 
-    public override Decimal average(SObjectField field) {
-        return average('' + field);
-    }
-    public override Decimal average(String field) {
-        return (Decimal) this.reduce(AVERAGE.ofField(field), null);
-    }
+    public override Decimal average(SObjectField field) { return average('' + field); }
+    public override Decimal average(String field) { return (Decimal) this.reduce(AVERAGE.ofField(field), null); }
 
-    public override Decimal min(SObjectField field) {
-        return min('' + field);
-    }
-    public override Decimal min(String field) {
-        return (Decimal) this.reduce(MIN.ofField(field), null);
-    }
+    public override Decimal min(SObjectField field) { return min('' + field); }
+    public override Decimal min(String field) { return (Decimal) this.reduce(MIN.ofField(field), null); }
 
-    public override Decimal max(SObjectField field) {
-        return max('' + field);
-    }
-    public override Decimal max(String field) {
-        return (Decimal) this.reduce(MAX.ofField(field), 0.0);
-    }
+    public override Decimal max(SObjectField field) { return max('' + field); }
+    public override Decimal max(String field) { return (Decimal) this.reduce(MAX.ofField(field), 0.0); }
 
 
     public override List<Object> listOf(SObjectField field) {
@@ -718,28 +674,16 @@ public inherited sharing class CollectionImpl extends Collection {
             this.field = field;
         }
 
-        public Type valueType() {
-            return fieldType;
-        }
-
-        public Object value(Object item) {
-            return ((SObject) item).get(field);
-        }
+        public Type valueType() { return fieldType; }
+        public Object value(Object item) { return ((SObject) item).get(field); }
     }
 
     public class ItemMapper implements Collection.Mapper {
         private Type itemType;
 
-        public ItemMapper(List<Object> items) {
-            this.itemType = Runtime.getListItemType(items);
-        }
-
-        public Type valueType() {
-            return itemType;
-        }
-        public Object value(Object item) {
-            return item;
-        }
+        public ItemMapper(List<Object> items) { this.itemType = Runtime.getListItemType(items); }
+        public Type valueType() { return itemType; }
+        public Object value(Object item) { return item; }
     }
 
     /**
@@ -768,9 +712,7 @@ public inherited sharing class CollectionImpl extends Collection {
             return '' + ((SObject) item).get(fieldLeft) + ((SObject) item).get(fieldRight);
         }
 
-        public Type valueType() {
-            return String.class;
-        }
+        public Type valueType() { return String.class; }
     }
 
 
@@ -871,207 +813,99 @@ public inherited sharing class CollectionImpl extends Collection {
     private class MapByObject implements UntypedMap {
         private Map<Object, Object> mapInstance;
 
-        public MapByObject(Map<Object, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put(key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey(key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get(key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet().clone();
-        }
+        public MapByObject(Map<Object, Object> mapInstance) { this.mapInstance = mapInstance; }
+        public void put(Object key, Object value) { mapInstance.put(key, (Object) value); }
+        public Boolean containsKey(Object key) { return mapInstance.containsKey(key); }
+        public Object get(Object key) { return mapInstance.get(key); }
+        public Object toMap() { return mapInstance; }
+        public Object keySet() { return mapInstance.keySet().clone(); }
     }
 
     private class MapById implements UntypedMap {
         private Map<Id, Object> mapInstance;
 
-        public MapById(Map<Id, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Id) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Id) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Id) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet().clone();
-        }
+        public MapById(Map<Id, Object> mapInstance) { this.mapInstance = mapInstance; }
+        public void put(Object key, Object value) { mapInstance.put((Id) key, (Object) value); }
+        public Boolean containsKey(Object key) { return mapInstance.containsKey((Id) key); }
+        public Object get(Object key) { return mapInstance.get((Id) key); }
+        public Object toMap() { return mapInstance; }
+        public Object keySet() { return mapInstance.keySet().clone(); }
     }
 
     private class MapByString implements UntypedMap {
         private Map<String, Object> mapInstance;
 
-        public MapByString(Map<String, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((String) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((String) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((String) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet().clone();
-        }
+        public MapByString(Map<String, Object> mapInstance) { this.mapInstance = mapInstance; }
+        public void put(Object key, Object value) { mapInstance.put((String) key, (Object) value); }
+        public Boolean containsKey(Object key) { return mapInstance.containsKey((String) key); }
+        public Object get(Object key) { return mapInstance.get((String) key); }
+        public Object toMap() { return mapInstance; }
+        public Object keySet() { return mapInstance.keySet().clone(); }
     }
 
     private class MapByInteger implements UntypedMap {
         private Map<Integer, Object> mapInstance;
 
-        public MapByInteger(Map<Integer, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Integer) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Integer) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Integer) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet().clone();
-        }
+        public MapByInteger(Map<Integer, Object> mapInstance) { this.mapInstance = mapInstance; }
+        public void put(Object key, Object value) { mapInstance.put((Integer) key, (Object) value); }
+        public Boolean containsKey(Object key) { return mapInstance.containsKey((Integer) key); }
+        public Object get(Object key) { return mapInstance.get((Integer) key); }
+        public Object toMap() { return mapInstance; }
+        public Object keySet() { return mapInstance.keySet().clone(); }
     }
 
     private class MapByDecimal implements UntypedMap {
         private Map<Decimal, Object> mapInstance;
 
-        public MapByDecimal(Map<Decimal, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Decimal) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Decimal) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Decimal) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet().clone();
-        }
+        public MapByDecimal(Map<Decimal, Object> mapInstance) { this.mapInstance = mapInstance; }
+        public void put(Object key, Object value) { mapInstance.put((Decimal) key, (Object) value); }
+        public Boolean containsKey(Object key) { return mapInstance.containsKey((Decimal) key); }
+        public Object get(Object key) { return mapInstance.get((Decimal) key); }
+        public Object toMap() { return mapInstance; }
+        public Object keySet() { return mapInstance.keySet().clone(); }
     }
 
     private class MapByDate implements UntypedMap {
         private Map<Date, Object> mapInstance;
 
-        public MapByDate(Map<Date, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Date) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Date) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Date) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet().clone();
-        }
+        public MapByDate(Map<Date, Object> mapInstance) { this.mapInstance = mapInstance; }
+        public void put(Object key, Object value) { mapInstance.put((Date) key, (Object) value); }
+        public Boolean containsKey(Object key) { return mapInstance.containsKey((Date) key); }
+        public Object get(Object key) { return mapInstance.get((Date) key); }
+        public Object toMap() { return mapInstance; }
+        public Object keySet() { return mapInstance.keySet().clone(); }
     }
 
     private class MapByDatetime implements UntypedMap {
         private Map<Datetime, Object> mapInstance;
 
-        public MapByDatetime(Map<Datetime, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Datetime) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Datetime) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Datetime) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet().clone();
-        }
+        public MapByDatetime(Map<Datetime, Object> mapInstance) { this.mapInstance = mapInstance; }
+        public void put(Object key, Object value) { mapInstance.put((Datetime) key, (Object) value); }
+        public Boolean containsKey(Object key) { return mapInstance.containsKey((Datetime) key); }
+        public Object get(Object key) { return mapInstance.get((Datetime) key); }
+        public Object toMap() { return mapInstance; }
+        public Object keySet() { return mapInstance.keySet().clone(); }
     }
 
     private class MapByBoolean implements UntypedMap {
         private Map<Boolean, Object> mapInstance;
 
-        public MapByBoolean(Map<Boolean, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Boolean) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Boolean) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Boolean) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet().clone();
-        }
+        public MapByBoolean(Map<Boolean, Object> mapInstance) { this.mapInstance = mapInstance; }
+        public void put(Object key, Object value) { mapInstance.put((Boolean) key, (Object) value); }
+        public Boolean containsKey(Object key) { return mapInstance.containsKey((Boolean) key); }
+        public Object get(Object key) { return mapInstance.get((Boolean) key); }
+        public Object toMap() { return mapInstance; }
+        public Object keySet() { return mapInstance.keySet().clone(); }
     }
 
     private class MapByTime implements UntypedMap {
         private Map<Time, Object> mapInstance;
 
-        public MapByTime(Map<Time, Object> mapInstance) {
-            this.mapInstance = mapInstance;
-        }
-        public void put(Object key, Object value) {
-            mapInstance.put((Time) key, (Object) value);
-        }
-        public Boolean containsKey(Object key) {
-            return mapInstance.containsKey((Time) key);
-        }
-        public Object get(Object key) {
-            return mapInstance.get((Time) key);
-        }
-        public Object toMap() {
-            return mapInstance;
-        }
-        public Object keySet() {
-            return mapInstance.keySet().clone();
-        }
+        public MapByTime(Map<Time, Object> mapInstance) { this.mapInstance = mapInstance; }
+        public void put(Object key, Object value) { mapInstance.put((Time) key, (Object) value); }
+        public Boolean containsKey(Object key) { return mapInstance.containsKey((Time) key); }
+        public Object get(Object key) { return mapInstance.get((Time) key); }
+        public Object toMap() { return mapInstance; }
+        public Object keySet() { return mapInstance.keySet().clone(); }
     }
 }

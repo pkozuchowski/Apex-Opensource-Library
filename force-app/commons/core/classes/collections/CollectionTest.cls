@@ -466,12 +466,8 @@ private class CollectionTest {
     }
 
     private class MapperByCreatedDay implements Collection.Mapper {
-        public Object value(Object item) {
-            return ((Opportunity) item).CreatedDate.day();
-        }
-        public Type valueType() {
-            return Integer.class;
-        }
+        public Object value(Object item) { return ((Opportunity) item).CreatedDate.day(); }
+        public Type valueType() { return Integer.class; }
     }
 
 

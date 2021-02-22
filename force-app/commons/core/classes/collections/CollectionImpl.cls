@@ -169,6 +169,9 @@ public inherited sharing class CollectionImpl extends Collection {
     public override Decimal max(String field) { return (Decimal) this.reduce(MAX.ofField(field), 0.0); }
 
 
+    public override List<Object> listOf(String field) {
+        return listOf(getSObjectField(field));
+    }
     public override List<Object> listOf(SObjectField field) {
         return listOf('' + field, Runtime.getSObjectFieldType(field));
     }
@@ -187,6 +190,9 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
 
+    public override Object setOf(String field) {
+        return setOf(getSObjectField(field));
+    }
     public override Object setOf(SObjectField field) {
         return setOf('' + field, Runtime.getSObjectFieldType(field));
     }
@@ -199,6 +205,12 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
 
+    public override Object mapBy(String field) {
+        return mapBy(getSObjectField(field));
+    }
+    public override Object mapBy(String keyField, String valueField) {
+        return mapBy(getSObjectField(keyField), getSObjectField(valueField));
+    }
     public override Object mapBy(SObjectField field) {
         return mapBy('' + field, Runtime.getSObjectFieldType(field));
     }
@@ -235,6 +247,12 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
 
+    public override Object groupBy(String field) {
+        return groupBy(getSObjectField(field));
+    }
+    public override Object groupBy(String keyField, String valueField) {
+        return groupBy(getSObjectField(keyField), getSObjectField(valueField));
+    }
     public override Object groupBy(SObjectField field) {
         return groupBy('' + field, Runtime.getSObjectFieldType(field));
     }
@@ -380,6 +398,19 @@ public inherited sharing class CollectionImpl extends Collection {
 
     private static void assert(Boolean condition, String errorMsg) {
         if (!condition) throw new CollectionException(errorMsg);
+    }
+
+    private SObjectField getSObjectField(String field) {
+        SObjectType sObjectType = getSObjectType();
+        assert(sObjectType != null, 'Could not determine collection\'s SObject type, please provide field type');
+
+        String apiName = '' + sObjectType + '.' + field;
+        return SchemaDescriptions.getSObjectField(apiName);
+    }
+
+    private SObjectType getSObjectType() {
+        assertSObjectCollection();
+        return ((List<SObject>) items).getSObjectType();
     }
 
 

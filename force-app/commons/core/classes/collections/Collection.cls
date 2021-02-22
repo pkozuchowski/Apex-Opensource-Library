@@ -136,6 +136,7 @@ public abstract inherited sharing class Collection {
      * @return List<V>, V - value type of SObject field.
      */
     public abstract List<Object> listOf(SObjectField field);
+    public abstract List<Object> listOf(String field);
     public abstract List<Object> listOf(String field, Type fieldType);
     public abstract List<Object> listOf(Mapper valueMapper);
 
@@ -143,6 +144,7 @@ public abstract inherited sharing class Collection {
      * @return Set<V>, V - value type of SObject field.
      */
     public abstract Object setOf(SObjectField field);
+    public abstract Object setOf(String field);
     public abstract Object setOf(String field, Type fieldType);
     public abstract Object setOf(Mapper valueMapper);
 
@@ -151,6 +153,8 @@ public abstract inherited sharing class Collection {
      */
     public abstract Object mapBy(SObjectField field);
     public abstract Object mapBy(SObjectField keyField, SObjectField valueField);
+    public abstract Object mapBy(String field);
+    public abstract Object mapBy(String keyField, String valueField);
     public abstract Object mapBy(String field, Type fieldType);
     public abstract Object mapBy(String keyField, String valueField, Type keyType, Type valueType);
     public abstract Object mapBy(Mapper keyMapper);
@@ -168,6 +172,8 @@ public abstract inherited sharing class Collection {
      */
     public abstract Object groupBy(SObjectField field);
     public abstract Object groupBy(SObjectField keyField, SObjectField valueField);
+    public abstract Object groupBy(String field);
+    public abstract Object groupBy(String keyField, String valueField);
     public abstract Object groupBy(String field, Type fieldType);
     public abstract Object groupBy(String keyField, String valueField, Type keyType, Type valueType);
     public abstract Object groupBy(Mapper keyMapper);

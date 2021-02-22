@@ -110,7 +110,7 @@ public abstract inherited sharing class Collection {
 
     /**
      * Reduces collection of objects to single output value returned by Reducer implementation.
-     * @param reducer Reducer interface implementation. @see Collections.Reducer
+     * @param reducer Reducer interface implementation. @see Collection.Reducer
      * @param initialValue collection/object to which input is reduced.
      * @return accumulated value from all items
      */
@@ -187,7 +187,7 @@ public abstract inherited sharing class Collection {
 
     /**
      * Fills in the list with number of clones of provided prototype record.
-     * By default, clone is deep and Id, timestamps and autonumbers are not preserved.
+     * By default, clone is deep and Id, timestamps and autonumber are not preserved.
      *
      * @param count Number of clones in the list
      * @param prototype Prototype of the record. Clone of this record will be added to the list.
@@ -339,13 +339,13 @@ public abstract inherited sharing class Collection {
         public Boolean preserveId { get; private set; }
         public Boolean deepClone { get; private set; }
         public Boolean preserveReadonlyTimestamps { get; private set; }
-        public Boolean preserveAutonumer { get; private set; }
+        public Boolean preserveAutonumber { get; private set; }
 
-        public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumer) {
+        public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumber) {
             this.preserveId = preserveId;
             this.deepClone = deepClone;
             this.preserveReadonlyTimestamps = preserveReadonlyTimestamps;
-            this.preserveAutonumer = preserveAutonumer;
+            this.preserveAutonumber = preserveAutonumber;
         }
     }
 

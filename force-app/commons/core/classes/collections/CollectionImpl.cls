@@ -112,8 +112,8 @@ public inherited sharing class CollectionImpl extends Collection {
         return this;
     }
 
-    public override Collection clear(){
-        if(isNotEmpty()){
+    public override Collection clear() {
+        if (isNotEmpty()) {
             items.clear();
         }
         return this;
@@ -427,188 +427,107 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
 
-    public class FilterBuilderImpl implements Collection.FilterBuilder {
-        private List<Filter> filters;
-        private List<Boolean> isAND;
+    /**
+    * Filters
+    */
 
-        public FilterBuilderImpl() {
-            this.filters = new List<Filter>();
-            this.isAND = new List<Boolean>();
-        }
+    /**
+     * Returns true if any of the composite filters return true;
+     */
+    public class FilterAND implements Collection.Filter {
+        public Filter f1, f2, f3, f4, f5;
 
-        public FilterBuilder byUsing(Filter filter) {
-            addFilter(filter);
-            return this;
-        }
-
-        public FilterBuilderFieldFilter byField(SObjectField field) {
-            return byField('' + field);
-        }
-
-        public FilterBuilderFieldFilter byField(String field) {
-            return new FilterBuilderFieldFilterImpl(this, field);
-        }
-
-        public FilterBuilder alike(SObject prototype) {
-            addFilter(new FilterByPrototype(prototype));
-            return this;
-        }
-
-        public FilterBuilder andAlso() {
-            return this;
-        }
-
-        public FilterBuilder orElse() {
-            this.isAND.add(false);
-            return this;
+        public FilterAND(Filter f1, Filter f2, Filter f3, Filter f4, Filter f5) {
+            this.f1 = f1;
+            this.f2 = f2;
+            this.f3 = f3;
+            this.f4 = f4;
+            this.f5 = f5;
         }
 
         public Boolean accepts(Object item) {
-            Boolean accepted = true;
-            Integer size = filters.size();
-
-            if (size > 0) accepted = checkFilter(accepted, 0, item);
-            if (size > 1) accepted = checkFilter(accepted, 1, item);
-            if (size > 2) accepted = checkFilter(accepted, 2, item);
-            if (size > 3) accepted = checkFilter(accepted, 3, item);
-            if (size > 4) accepted = checkFilter(accepted, 4, item);
-
-            return accepted;
-        }
-
-        private Boolean checkFilter(Boolean previousFilter, Integer i, Object item) {
-            if (isAND[i]) {
-                return previousFilter && this.filters[i].accepts(item);
-            } else {
-                return previousFilter || this.filters[i].accepts(item);
-            }
-        }
-
-        private void addFilter(Filter filter) {
-            assert(filters.size() <= 5, 'Too complex filter will degrade performance. Implement Filter instead for the best performance.');
-            this.filters.add(filter);
-
-            if (isAND.size() < filters.size()) {
-                this.isAND.add(true);
-            }
+            return f1?.accepts(item) != false
+                    && f2?.accepts(item) != false
+                    && f3?.accepts(item) != false
+                    && f4?.accepts(item) != false
+                    && f5?.accepts(item) != false;
         }
     }
 
     /**
-     * Facade for Field value filters.
+     * Returns true if all of the composite filters return true;
      */
-    private class FilterBuilderFieldFilterImpl implements FilterBuilderFieldFilter {
-        private FilterBuilder filterFacade;
-        private String field;
+    public class FilterOR implements Collection.Filter {
+        public Filter f1, f2, f3, f4, f5;
 
-        private FilterBuilderFieldFilterImpl(FilterBuilder filterFacade, String field) {
-            this.filterFacade = filterFacade;
-            this.field = field;
+        public FilterOR(Filter f1, Filter f2, Filter f3, Filter f4, Filter f5) {
+            this.f1 = f1;
+            this.f2 = f2;
+            this.f3 = f3;
+            this.f4 = f4;
+            this.f5 = f5;
         }
 
-        public FilterBuilder equals(Object value) {
-            filterFacade.byUsing(new FilterByFieldValue(field, EQUALS, value));
-            return filterFacade;
-        }
-        public FilterBuilder notEquals(Object value) {
-            filterFacade.byUsing(new FilterByFieldValue(field, NOT_EQUALS, value));
-            return filterFacade;
-        }
-        public FilterBuilder greaterThan(Object value) {
-            filterFacade.byUsing(new FilterByFieldValue(field, GREATER_THAN, value));
-            return filterFacade;
-        }
-        public FilterBuilder greaterEqualsThan(Object value) {
-            filterFacade.byUsing(new FilterByFieldValue(field, GREATER_EQUAL_THAN, value));
-            return filterFacade;
-        }
-        public FilterBuilder lessThan(Object value) {
-            filterFacade.byUsing(new FilterByFieldValue(field, LESS_THAN, value));
-            return filterFacade;
-        }
-        public FilterBuilder lessEqualsThan(Object value) {
-            filterFacade.byUsing(new FilterByFieldValue(field, LESS_EQUAL_THAN, value));
-            return filterFacade;
-        }
-        public FilterBuilder isIn(Set<Object> values) {
-            filterFacade.byUsing(new FilterByFieldValues(field, true, values));
-            return filterFacade;
-        }
-        public FilterBuilder isIn(List<Object> values) {
-            filterFacade.byUsing(new FilterByFieldValues(field, true, values));
-            return filterFacade;
-        }
-        public FilterBuilder isNotIn(Set<Object> values) {
-            filterFacade.byUsing(new FilterByFieldValues(field, false, values));
-            return filterFacade;
-        }
-        public FilterBuilder isNotIn(List<Object> values) {
-            filterFacade.byUsing(new FilterByFieldValues(field, false, values));
-            return filterFacade;
-        }
-        public FilterBuilder relatedTo(List<SObject> parents) {
-            filterFacade.byUsing(new FilterRelatedTo(parents, field));
-            return filterFacade;
-        }
-        public FilterBuilder containing(String value) {
-            filterFacade.byUsing(new FilterFieldContaining(field, value));
-            return filterFacade;
+        public Boolean accepts(Object item) {
+            return f1?.accepts(item) == true
+                    || f2?.accepts(item) == true
+                    || f3?.accepts(item) == true
+                    || f4?.accepts(item) == true
+                    || f5?.accepts(item) == true;
         }
     }
+
 
     /**
     * Facade for Field value filters.
     */
     private class FieldFilterImpl implements FieldFilter {
         private Collection collection;
-        private String field;
+        private FieldFilterFactory filterFactory;
 
         private FieldFilterImpl(Collection filterFacade, String field) {
             this.collection = filterFacade;
+            this.filterFactory = new FieldFilterFactoryImpl(field);
+        }
+
+        public Collection equals(Object value) { return collection.filterUsing(filterFactory.equals(value)); }
+        public Collection notEquals(Object value) { return collection.filterUsing(filterFactory.notEquals(value)); }
+        public Collection greaterThan(Object value) { return collection.filterUsing(filterFactory.greaterThan(value)); }
+        public Collection greaterEqualsThan(Object value) { return collection.filterUsing(filterFactory.greaterEqualsThan(value)); }
+        public Collection lessThan(Object value) { return collection.filterUsing(filterFactory.lessThan(value)); }
+        public Collection lessEqualsThan(Object value) { return collection.filterUsing(filterFactory.lessEqualsThan(value)); }
+        public Collection isIn(Set<Object> values) { return collection.filterUsing(filterFactory.isIn(values)); }
+        public Collection isIn(List<Object> values) { return collection.filterUsing(filterFactory.isIn(values)); }
+        public Collection isNotIn(Set<Object> values) { return collection.filterUsing(filterFactory.isNotIn(values)); }
+        public Collection isNotIn(List<Object> values) { return collection.filterUsing(filterFactory.isNotIn(values)); }
+        public Collection relatedTo(List<SObject> parents) { return collection.filterUsing(filterFactory.relatedTo(parents)); }
+        public Collection containing(String value) { return collection.filterUsing(filterFactory.containing(value)); }
+    }
+
+    /**
+     * Creates instance of Field Filter using operator parameter
+     */
+    public class FieldFilterFactoryImpl implements FieldFilterFactory {
+        private String field;
+
+        public FieldFilterFactoryImpl(String field) {
             this.field = field;
         }
 
-        public Collection equals(Object value) {
-            return collection.filterUsing(new FilterByFieldValue(field, EQUALS, value));
-        }
-        public Collection notEquals(Object value) {
-            return collection.filterUsing(new FilterByFieldValue(field, NOT_EQUALS, value));
-        }
-        public Collection greaterThan(Object value) {
-            return collection.filterUsing(new FilterByFieldValue(field, GREATER_THAN, value));
-        }
-        public Collection greaterEqualsThan(Object value) {
-            return collection.filterUsing(new FilterByFieldValue(field, GREATER_EQUAL_THAN, value));
-        }
-        public Collection lessThan(Object value) {
-            return collection.filterUsing(new FilterByFieldValue(field, LESS_THAN, value));
-        }
-        public Collection lessEqualsThan(Object value) {
-            return collection.filterUsing(new FilterByFieldValue(field, LESS_EQUAL_THAN, value));
-        }
-        public Collection isIn(Set<Object> values) {
-            return collection.filterUsing(new FilterByFieldValues(field, true, values));
-        }
-        public Collection isIn(List<Object> values) {
-            return collection.filterUsing(new FilterByFieldValues(field, true, values));
-        }
-        public Collection isNotIn(Set<Object> values) {
-            return collection.filterUsing(new FilterByFieldValues(field, false, values));
-        }
-        public Collection isNotIn(List<Object> values) {
-            return collection.filterUsing(new FilterByFieldValues(field, false, values));
-        }
-        public Collection relatedTo(List<SObject> parents) {
-            return collection.filterUsing(new FilterRelatedTo(parents, field));
-        }
-        public Collection containing(String value) {
-            return collection.filterUsing(new FilterFieldContaining(field, value));
-        }
+        public Collection.Filter equals(Object value) { return new FilterByFieldValue(field, EQUALS, value); }
+        public Collection.Filter notEquals(Object value) { return new FilterByFieldValue(field, NOT_EQUALS, value); }
+        public Collection.Filter greaterThan(Object value) { return new FilterByFieldValue(field, GREATER_THAN, value); }
+        public Collection.Filter greaterEqualsThan(Object value) { return new FilterByFieldValue(field, GREATER_EQUAL_THAN, value); }
+        public Collection.Filter lessThan(Object value) { return new FilterByFieldValue(field, LESS_THAN, value); }
+        public Collection.Filter lessEqualsThan(Object value) { return new FilterByFieldValue(field, LESS_EQUAL_THAN, value); }
+        public Collection.Filter isIn(Set<Object> values) { return new FilterByFieldValues(field, true, values); }
+        public Collection.Filter isIn(List<Object> values) { return new FilterByFieldValues(field, true, values); }
+        public Collection.Filter isNotIn(Set<Object> values) { return new FilterByFieldValues(field, false, values); }
+        public Collection.Filter isNotIn(List<Object> values) { return new FilterByFieldValues(field, false, values); }
+        public Collection.Filter relatedTo(List<SObject> parents) { return new FilterRelatedTo(parents, field); }
+        public Collection.Filter containing(String value) { return new FilterFieldContaining(field, value); }
     }
 
-
-    /**
-    * Filters
     /**
      * Filters List of SObject by field value.
      */

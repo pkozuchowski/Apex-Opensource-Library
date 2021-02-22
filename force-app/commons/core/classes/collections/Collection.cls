@@ -44,13 +44,6 @@ public abstract inherited sharing class Collection {
         return new CollectionImpl(items);
     }
 
-    /**
-     * Filter Builder allows for building more complex filtering conditions and joining them using AND and OR operation
-     */
-    public static FilterBuilder FilterBuilder() {
-        return new CollectionImpl.FilterBuilderImpl();
-    }
-
     /** @return Salesforce List collection */
     public abstract List<Object> get();
 
@@ -190,7 +183,6 @@ public abstract inherited sharing class Collection {
      * Fills in the list with number of clones of provided prototype record.
      * By default, clone is deep and Id, timestamps and autonumbers are not preserved.
      *
-     * @param listToFill List to fill in.
      * @param count Number of clones in the list
      * @param prototype Prototype of the record. Clone of this record will be added to the list.
      */
@@ -200,7 +192,7 @@ public abstract inherited sharing class Collection {
      * Fills in the list with number of clones of provided prototype record.
      * @param count Number of clones in the list
      * @param prototype Prototype of the record. Clone of this record will be added to the list.
-     * @param opts Collection.CloneOptions instance which determine clone operation characteristics.
+     * @param cloneOptions Collection.CloneOptions instance which determine clone operation characteristics.
      */
     public abstract Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions);
 
@@ -272,47 +264,19 @@ public abstract inherited sharing class Collection {
         Collection containing(String value);
     }
 
-    public interface FilterBuilder extends Filter {
-        FilterBuilder byUsing(Filter filter);
-
-        /**
-        * Filters records that have field values matching all fields on given prototype.
-        * <p/>
-        *
-        * Example which returns Prospect Customer Accounts:
-        * <pre>
-        * Collection.of(accounts).filterAlike(new Account(
-        *   RecordTypeId = Constant.CUSTOMER_RT_ID,
-        *   Type = 'Prospect'
-        * ));
-        * </pre>
-        */
-        FilterBuilder alike(SObject prototype);
-        FilterBuilderFieldFilter byField(SObjectField field);
-
-        /**
-         * This method exists only for verbosity and can be omitted.
-         * Predicates use AND by default.
-         */
-        FilterBuilder andAlso();
-
-        /** Former and following predicate are joined using OR connective.*/
-        FilterBuilder orElse();
-    }
-
-    public interface FilterBuilderFieldFilter {
-        FilterBuilder equals(Object value);
-        FilterBuilder notEquals(Object value);
-        FilterBuilder greaterThan(Object value);
-        FilterBuilder greaterEqualsThan(Object value);
-        FilterBuilder lessThan(Object value);
-        FilterBuilder lessEqualsThan(Object value);
-        FilterBuilder isIn(Set<Object> values);
-        FilterBuilder isIn(List<Object> values);
-        FilterBuilder isNotIn(Set<Object> values);
-        FilterBuilder isNotIn(List<Object> values);
-        FilterBuilder relatedTo(List<SObject> parents);
-        FilterBuilder containing(String value);
+    public interface FieldFilterFactory {
+        Filter equals(Object value);
+        Filter notEquals(Object value);
+        Filter greaterThan(Object value);
+        Filter greaterEqualsThan(Object value);
+        Filter lessThan(Object value);
+        Filter lessEqualsThan(Object value);
+        Filter isIn(Set<Object> values);
+        Filter isIn(List<Object> values);
+        Filter isNotIn(Set<Object> values);
+        Filter isNotIn(List<Object> values);
+        Filter relatedTo(List<SObject> parents);
+        Filter containing(String value);
     }
 
 

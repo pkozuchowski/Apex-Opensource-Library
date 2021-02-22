@@ -503,13 +503,19 @@ private class CollectionTest {
 
         Test.startTest();
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
-                .filterUsing(Collection.FilterBuilder()
-                        .byField(Opportunity.NextStep).containing('Analysis')
-                        .andAlso().byField(Opportunity.HasOpenActivity).equals(true)
-                        .andAlso().byField(Opportunity.LastActivityDate).lessEqualsThan(Date.today())
-                        .andAlso().byField(Opportunity.LastActivityDate).greaterThan(Date.today().addDays(-2))
-                        .orElse().byField(Opportunity.NextStep).notEquals('Analysis')
-                ).get();
+                .filterUsing(
+                        CollectionFilters.ORs(
+                                CollectionFilters.ANDs(
+                                        CollectionFilters.field(Opportunity.NextStep).containing('Analysis'),
+                                        CollectionFilters.field(Opportunity.HasOpenActivity).equals(true),
+                                        CollectionFilters.field(Opportunity.LastActivityDate).lessEqualsThan(Date.today()),
+                                        CollectionFilters.field(Opportunity.LastActivityDate).greaterThan(Date.today().addDays(-2))
+                                ),
+                                CollectionFilters.field(Opportunity.NextStep).notEquals('Analysis')
+                        )
+                )
+                .get();
+
         Test.stopTest();
 
 
@@ -537,25 +543,68 @@ private class CollectionTest {
 
         Test.startTest();
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
-                .filterUsing(Collection.FilterBuilder()
-                        .byField(Opportunity.Name).notEquals(null)
-                        .andAlso().byField(Opportunity.NextStep).isIn(wantedSteps)
-                        .andAlso().byField(Opportunity.NextStep).isNotIn(unwantedSteps)
-                        .andAlso().byField(Opportunity.LastActivityDate).lessThan(Date.today())
-                ).get();
+                .filterUsing(
+                        CollectionFilters.ANDs(
+                                CollectionFilters.field(Opportunity.Name).notEquals(null),
+                                CollectionFilters.field(Opportunity.NextStep).isIn(wantedSteps),
+                                CollectionFilters.field(Opportunity.NextStep).isNotIn(unwantedSteps),
+                                CollectionFilters.field('LastActivityDate').lessThan(Date.today())
+                        )
+                )
+                .get();
+
         Test.stopTest();
 
 
         System.assertEquals(expected, actual);
     }
 
+    @IsTest
+    static void testFilterAND() {
+        System.assertEquals(true, CollectionFilters.ANDs(
+                new FilterTrueFalse(true),
+                new FilterTrueFalse(true)
+        ).accepts(null));
+
+        System.assertEquals(false, CollectionFilters.ANDs(
+                new FilterTrueFalse(true),
+                new FilterTrueFalse(false),
+                new FilterTrueFalse(false)
+        ).accepts(null));
+    }
+
+    @IsTest
+    static void testFilterOR() {
+        System.assertEquals(true, CollectionFilters.ORs(
+                new FilterTrueFalse(false),
+                new FilterTrueFalse(true)
+        ).accepts(null));
+
+        System.assertEquals(false, CollectionFilters.ORs(
+                new FilterTrueFalse(false),
+                new FilterTrueFalse(false),
+                new FilterTrueFalse(false)
+        ).accepts(null));
+    }
+
+    private class FilterTrueFalse implements Collection.Filter {
+        private Boolean value;
+
+        public FilterTrueFalse(Boolean value) {
+            this.value = value;
+        }
+
+        public Boolean accepts(Object item) {
+            return value;
+        }
+    }
 
     /**
      * @description
      * Collections.filterByFieldValues filters input records and return only those which field is one of specified values.
      */
     @IsTest
-    static void tesFiltertFilterByFieldValues() {
+    static void tesFilterByFieldValues() {
         Set<Object> acceptedStages = new Set<Object>{
                 'Analysis', 'Deal'
         };

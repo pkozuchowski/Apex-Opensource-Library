@@ -354,7 +354,7 @@ public inherited sharing class CollectionImpl extends Collection {
                     cloneOptions.preserveId,
                     cloneOptions.deepClone,
                     cloneOptions.preserveReadonlyTimestamps,
-                    cloneOptions.preserveAutonumer
+                    cloneOptions.preserveAutonumber
             );
             items.add(clone);
         }

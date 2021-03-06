@@ -394,4 +394,53 @@ private class TriggerDispatcherTest {
         System.assertEquals(false, setting.DisableTriggers__c);
         Test.stopTest();
     }
+
+
+    /**
+     *@description
+     * Custom Metadata defined triggers should have Parameters field which can be passed down to instance to reuse single class
+     * in many situations.
+     */
+    @IsTest
+    static void customMetadataTriggerShouldBeParameterizable() {
+        List<Account> accounts = new List<Account>{
+                new Account(Id = '001000000000000', Name = 'Test'),
+                new Account(Id = '001000000000001', Name = 'Test'),
+                new Account(Id = '001000000000002', Name = 'Test')
+        };
+        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_INSERT, accounts, null);
+        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
+                new TriggerLogic__mdt(
+                        Enabled__c = true,
+                        ApexClass__c = 'TriggerDispatcherTest.ParameterizableLogic',
+                        BeforeInsert__c = true,
+                        SObject__c = 'Account',
+                        Parameters__c = 'New Name'
+                )
+        };
+
+
+        Test.startTest();
+        TriggerDispatcher.runMetadataDefinedTriggers(tc);
+        Test.stopTest();
+
+
+        for (Account account : accounts) {
+            System.assertEquals('New Name', account.Name, 'Name should be updated to the value passed in custom metadata parameter.');
+        }
+    }
+
+    public class ParameterizableLogic implements TriggerHandler.Logic, TriggerHandler.Parameterizable {
+        private String parameterName;
+
+        public void execute(List<SObject> records, TriggerContext ctx) {
+            for (Account acc : (Account[]) records) {
+                acc.Name = parameterName;
+            }
+        }
+
+        public void setParameters(String parameters) {
+            this.parameterName = parameters;
+        }
+    }
 }

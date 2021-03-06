@@ -93,6 +93,15 @@ public virtual class TriggerHandler  {
 
 
     /**
+     * This interface marks classes which can be parametrized through TriggerLogic__mdt.Parameters__c field.
+     * Value of the field will be passed to setParameters method.
+     */
+    public interface Parameterizable {
+        void setParameters(String parameters);
+    }
+
+
+    /**
      * Adapter between TriggerAsyncLogic interface and Queueable interface
      */
     private class AsyncLogicQueueableAdapter implements Queueable, Database.AllowsCallouts {

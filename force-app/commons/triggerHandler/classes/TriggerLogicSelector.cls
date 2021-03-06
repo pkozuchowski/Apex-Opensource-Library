@@ -59,7 +59,13 @@ public with sharing class TriggerLogicSelector {
         for (TriggerLogic__mdt setting : getCustomMetadataRecords(String.valueOf(tc.sObjectType), tc.operationType, async)) {
             try {
                 Type ruleClass = Type.forName(setting.ApexClass__c);
-                instances.add(ruleClass.newInstance());
+                TriggerHandler.Logic logic = (TriggerHandler.Logic) ruleClass.newInstance();
+
+                if (logic instanceof TriggerHandler.Parameterizable) {
+                    ((TriggerHandler.Parameterizable) logic).setParameters(setting.Parameters__c);
+                }
+
+                instances.add(logic);
 
             } catch (Exception ex) {
                 System.debug('ex: ' + ex);
@@ -84,7 +90,7 @@ public with sharing class TriggerLogicSelector {
         }.get(op);
 
         if (mockMetadata == null) {
-            return Database.query('SELECT ApexClass__c, DeveloperName'
+            return Database.query('SELECT ApexClass__c, DeveloperName, Parameters__c'
                     + ' FROM TriggerLogic__mdt'
                     + ' WHERE Enabled__c = TRUE'
                     + ' AND SObject__c = :sObjectType'

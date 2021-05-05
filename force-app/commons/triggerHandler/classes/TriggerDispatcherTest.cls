@@ -22,8 +22,17 @@
 * SOFTWARE.
 */
 
+@SuppressWarnings('sf:CommentRequired')
 @IsTest(IsParallel=true)
 private class TriggerDispatcherTest {
+    private static final String
+            ID_1 = '001000000000000',
+            ID_2 = '001000000000001',
+            ID_3 = '001000000000002',
+            NAME_TEST = 'Test',
+            SOBJECT_ACCOUNT = 'Account',
+            COUNTRY_USA = 'USA',
+            CITY_NY = 'New York';
 
     /**
      * This constructor can be called in Unit Tests to mock trigger execution for certain
@@ -67,10 +76,9 @@ private class TriggerDispatcherTest {
      */
     public class TestTriggerLogic implements TriggerHandler.Logic {
         public void execute(List<SObject> records, TriggerContext ctx) {
-            System.debug('test');
             for (Account acc : (Account[]) records) {
                 if (String.isBlank(acc.BillingCountry)) {
-                    acc.BillingCountry = 'US';
+                    acc.BillingCountry = COUNTRY_USA;
                 }
 
                 if (ctx.isChanged(acc, Account.BillingCountry)) {
@@ -85,19 +93,19 @@ private class TriggerDispatcherTest {
     @IsTest
     static void triggerShouldExecuteTriggerLogicClassesDefinedInSettings() {
         List<Account> accounts = new List<Account>{
-                new Account(Id = '001000000000000', Name = 'Test'),
-                new Account(Id = '001000000000001', Name = 'Test'),
-                new Account(Id = '001000000000002', Name = 'Test')
+                new Account(Id = ID_1, Name = NAME_TEST),
+                new Account(Id = ID_2, Name = NAME_TEST),
+                new Account(Id = ID_3, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
-        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
+        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
                         BeforeUpdate__c = true,
-                        SObject__c = 'Account'
+                        SObject__c = SOBJECT_ACCOUNT
                 )
-        };
+        });
 
 
         Test.startTest();
@@ -106,26 +114,18 @@ private class TriggerDispatcherTest {
 
 
         for (Account acc : accounts) {
-            System.assertEquals('US', acc.BillingCountry);
+            System.assertEquals(COUNTRY_USA, acc.BillingCountry, 'TriggerHandler should set Billing country');
         }
     }
 
     @IsTest
     static void triggerShouldExecuteTriggerHandler() {
         List<Account> accounts = new List<Account>{
-                new Account(Id = '001000000000000', Name = 'Test'),
-                new Account(Id = '001000000000001', Name = 'Test'),
-                new Account(Id = '001000000000002', Name = 'Test')
+                new Account(Id = ID_1, Name = NAME_TEST),
+                new Account(Id = ID_2, Name = NAME_TEST),
+                new Account(Id = ID_3, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
-        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
-                new TriggerLogic__mdt(
-                        Enabled__c = true,
-                        ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
-                        BeforeUpdate__c = true,
-                        SObject__c = 'Account'
-                )
-        };
 
 
         Test.startTest();
@@ -134,7 +134,7 @@ private class TriggerDispatcherTest {
 
 
         for (Account acc : accounts) {
-            System.assertEquals('US', acc.BillingCountry);
+            System.assertEquals(COUNTRY_USA, acc.BillingCountry, 'TriggerHandler should set Billing country');
         }
     }
 
@@ -167,7 +167,8 @@ private class TriggerDispatcherTest {
     }
 
     private class AsyncCalloutMock implements HttpCalloutMock {
-        public List<Account> records;
+        @TestVisible
+        private List<Account> records;
 
         public HttpResponse respond(HttpRequest request) {
             this.records = (List<Account>) JSON.deserialize(request.getBody(), List<Account>.class);
@@ -181,21 +182,21 @@ private class TriggerDispatcherTest {
     @IsTest
     static void triggerShouldExecuteAsyncLogicDefinedInTriggerSettings() {
         List<Account> accounts = new List<Account>{
-                new Account(Id = '001000000000001', Name = 'Test'),
-                new Account(Id = '001000000000002', Name = 'Test', BillingCountry = 'USA')
+                new Account(Id = ID_2, Name = NAME_TEST),
+                new Account(Id = ID_3, Name = NAME_TEST, BillingCountry = COUNTRY_USA)
         };
         AsyncCalloutMock mock = new AsyncCalloutMock();
 
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_INSERT, accounts, null);
-        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
+        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestAsyncLogic',
                         AfterInsert__c = true,
-                        SObject__c = 'Account',
+                        SObject__c = SOBJECT_ACCOUNT,
                         Async__c = true
                 )
-        };
+        });
 
 
         Test.startTest();
@@ -206,8 +207,8 @@ private class TriggerDispatcherTest {
         Test.stopTest();
 
 
-        System.assertEquals(1, mock.records.size());
-        System.assertEquals('USA', mock.records[0].BillingCountry);
+        System.assertEquals(1, mock.records.size(), 'Async Logic should process 1 record');
+        System.assertEquals(COUNTRY_USA, mock.records[0].BillingCountry, 'Async logic should execute and update BillingCountry');
     }
 
 
@@ -217,19 +218,19 @@ private class TriggerDispatcherTest {
     @IsTest
     static void typeExceptionShouldBeThrownWhenInvalidClassIsDefinedInSettings() {
         List<Account> accounts = new List<Account>{
-                new Account(Id = '001000000000000'),
-                new Account(Id = '001000000000001'),
-                new Account(Id = '001000000000002')
+                new Account(Id = ID_1),
+                new Account(Id = ID_2),
+                new Account(Id = ID_3)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_DELETE, accounts, accounts);
-        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
+        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.InvalidClass',
                         BeforeDelete__c = true,
-                        SObject__c = 'Account'
+                        SObject__c = SOBJECT_ACCOUNT
                 )
-        };
+        });
         Exception ex;
 
 
@@ -242,8 +243,8 @@ private class TriggerDispatcherTest {
         Test.stopTest();
 
 
-        System.assert(ex instanceof TypeException);
-        System.assert(ex.getMessage().contains('(TriggerDispatcherTest.InvalidClass)'));
+        System.assert(ex instanceof TypeException && ex.getMessage().contains('(TriggerDispatcherTest.InvalidClass)'),
+                'If TriggerLogic cannot be constructed, TypeException should be thrown.');
     }
 
     @IsTest
@@ -252,6 +253,7 @@ private class TriggerDispatcherTest {
             TriggerDispatcher.run(new TestAccountTriggerHandler(), new TestTriggerContextImpl(triggerOperation, new List<SObject>(), new List<SObject>()));
         }
         TriggerDispatcher.runMetadataDefinedTriggers();
+        System.assert(true, 'No exception is expected to happen');
     }
 
 
@@ -259,18 +261,19 @@ private class TriggerDispatcherTest {
      * Coverage tests for TriggerContext helper methods
      */
     @IsTest
+    @SuppressWarnings('sf:UnitAssertionsShouldIncludeMessage')
     static void testIsChangedHelperMethods() {
         Account record = new Account(
-                Id = '001000000000000',
-                Name = 'Test Account',
-                BillingCountry = 'USA',
-                BillingCity = 'New York',
+                Id = ID_1,
+                Name = NAME_TEST,
+                BillingCountry = COUNTRY_USA,
+                BillingCity = CITY_NY,
                 NumberOfEmployees = 0,
                 Phone = '(541) 754-3010'
         );
         Account oldRecord = new Account(
-                Id = '001000000000000',
-                Name = 'Test Account',
+                Id = ID_1,
+                Name = NAME_TEST,
                 Phone = '(541) 754-3011'
         );
 
@@ -283,8 +286,8 @@ private class TriggerDispatcherTest {
         System.assertEquals(true, ctx.isChanged(record, Account.BillingCity));
         System.assertEquals(true, ctx.isChanged(record, Account.Phone));
 
-        System.assertEquals(true, ctx.isChangedTo(record, Account.BillingCountry, 'USA'));
-        System.assertEquals(true, ctx.isChangedTo(record, Account.BillingCity, 'New York'));
+        System.assertEquals(true, ctx.isChangedTo(record, Account.BillingCountry, COUNTRY_USA));
+        System.assertEquals(true, ctx.isChangedTo(record, Account.BillingCity, CITY_NY));
         System.assertEquals(true, ctx.isChangedTo(record, Account.Phone, '(541) 754-3010'));
         System.assertEquals(false, ctx.isChangedTo(record, Account.BillingCity, 'Washington'));
 
@@ -293,46 +296,46 @@ private class TriggerDispatcherTest {
         System.assertEquals(true, ctx.isChangedFrom(record, Account.Phone, '(541) 754-3011'));
         System.assertEquals(false, ctx.isChangedFrom(record, Account.Name, 'Washington'));
 
-        System.assertEquals(true, ctx.isChangedFromTo(record, Account.BillingCity, null, 'New York'));
+        System.assertEquals(true, ctx.isChangedFromTo(record, Account.BillingCity, null, CITY_NY));
 
 
         ctx = new TestTriggerContextImpl(TriggerOperation.AFTER_INSERT, new List<SObject>{record}, new List<SObject>{oldRecord});
         System.assertEquals(false, ctx.isChanged(record, Account.BillingCountry));
-        System.assertEquals(false, ctx.isChangedTo(record, Account.BillingCity, 'New York'));
+        System.assertEquals(false, ctx.isChangedTo(record, Account.BillingCity, CITY_NY));
         System.assertEquals(false, ctx.isChangedFrom(record, Account.BillingCity, null));
-        System.assert(ctx.getRecordsMap().containsKey('001000000000000'));
-        System.assert(ctx.getRecordsIds().contains('001000000000000'));
-        System.assert(ctx.getOldMap().containsKey('001000000000000'));
+        System.assert(ctx.getRecordsMap().containsKey(ID_1));
+        System.assert(ctx.getRecordsIds().contains(ID_1));
+        System.assert(ctx.getOldMap().containsKey(ID_1));
     }
 
     /**
-     * Trigger should not execute when it's disabled for transaction using TriggerDispatcher.disableTrigger() method
+     * Trigger should not execute when it's disabled for transaction using TriggerSettings.disableTrigger() method
      */
     @IsTest
     static void triggerShouldNotExecuteWhenDisabledForTransaction() {
         List<Account> accounts = new List<Account>{
-                new Account(Id = '001000000000000', Name = 'Test')
+                new Account(Id = ID_1, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
-        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
+        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
                         AfterUpdate__c = true,
-                        SObject__c = 'Account'
+                        SObject__c = SOBJECT_ACCOUNT
                 )
-        };
+        });
 
 
         Test.startTest();
-        TriggerDispatcher.disableTrigger(Account.SObjectType);
+        TriggerSettings.disableTrigger(Account.SObjectType);
         TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
-        TriggerDispatcher.enableTrigger(Account.SObjectType);
+        TriggerSettings.enableTrigger(Account.SObjectType);
         Test.stopTest();
 
 
         for (Account account : accounts) {
-            System.assertEquals(false, account.Name.startsWith('(Customer)'));
+            System.assertEquals(false, account.Name.startsWith('(Customer)'), 'Triggers should be disabled and do not update records');
         }
     }
 
@@ -347,17 +350,17 @@ private class TriggerDispatcherTest {
                 DisableTriggers__c = true
         );
         List<Account> accounts = new List<Account>{
-                new Account(Id = '001000000000000', Name = 'Test')
+                new Account(Id = ID_1, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
-        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
+        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
                         AfterUpdate__c = true,
-                        SObject__c = 'Account'
+                        SObject__c = SOBJECT_ACCOUNT
                 )
-        };
+        });
 
 
         Test.startTest();
@@ -366,7 +369,7 @@ private class TriggerDispatcherTest {
 
 
         for (Account account : accounts) {
-            System.assertEquals(false, account.Name.startsWith('(Customer)'));
+            System.assertEquals(false, account.Name.startsWith('(Customer)'), 'When triggers are disabled in LogicSwitch__c, triggers shouldn\'t process any records');
         }
     }
 
@@ -378,20 +381,22 @@ private class TriggerDispatcherTest {
     @IsTest
     static void disableLogicShouldDisableAllOptionsInLogicSwitch() {
         Test.startTest();
-        TriggerDispatcher.disableAllLogic();
+        TriggerSettings.disableAllLogic();
         LogicSwitch__c setting = LogicSwitch__c.getInstance();
-        System.assertEquals(true, setting.DisableWorkflowRules__c);
-        System.assertEquals(true, setting.DisableValidationRules__c);
-        System.assertEquals(true, setting.DisableProcessBuilders__c);
-        System.assertEquals(true, setting.DisableTriggers__c);
-        TriggerDispatcher.enableAllLogic();
+        String expectedDisabled = 'TriggerSettings.disableAllLogic() should check all checkboxes on LogicSwitch';
+        System.assertEquals(true, setting.DisableWorkflowRules__c, expectedDisabled);
+        System.assertEquals(true, setting.DisableValidationRules__c, expectedDisabled);
+        System.assertEquals(true, setting.DisableProcessBuilders__c, expectedDisabled);
+        System.assertEquals(true, setting.DisableTriggers__c, expectedDisabled);
 
 
+        TriggerSettings.enableAllLogic();
         setting = LogicSwitch__c.getInstance();
-        System.assertEquals(false, setting.DisableWorkflowRules__c);
-        System.assertEquals(false, setting.DisableValidationRules__c);
-        System.assertEquals(false, setting.DisableProcessBuilders__c);
-        System.assertEquals(false, setting.DisableTriggers__c);
+        String expectedEnabled = 'TriggerSettings.enableAllLogic() should uncheck all checkboxes on LogicSwitch';
+        System.assertEquals(false, setting.DisableWorkflowRules__c, expectedEnabled);
+        System.assertEquals(false, setting.DisableValidationRules__c, expectedEnabled);
+        System.assertEquals(false, setting.DisableProcessBuilders__c, expectedEnabled);
+        System.assertEquals(false, setting.DisableTriggers__c, expectedEnabled);
         Test.stopTest();
     }
 
@@ -404,20 +409,20 @@ private class TriggerDispatcherTest {
     @IsTest
     static void customMetadataTriggerShouldBeParameterizable() {
         List<Account> accounts = new List<Account>{
-                new Account(Id = '001000000000000', Name = 'Test'),
-                new Account(Id = '001000000000001', Name = 'Test'),
-                new Account(Id = '001000000000002', Name = 'Test')
+                new Account(Id = ID_1, Name = NAME_TEST),
+                new Account(Id = ID_2, Name = NAME_TEST),
+                new Account(Id = ID_3, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_INSERT, accounts, null);
-        TriggerLogicSelector.mockMetadata = new List<TriggerLogic__mdt>{
+        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
                 new TriggerLogic__mdt(
                         Enabled__c = true,
                         ApexClass__c = 'TriggerDispatcherTest.ParameterizableLogic',
                         BeforeInsert__c = true,
-                        SObject__c = 'Account',
+                        SObject__c = SOBJECT_ACCOUNT,
                         Parameters__c = 'New Name'
                 )
-        };
+        });
 
 
         Test.startTest();

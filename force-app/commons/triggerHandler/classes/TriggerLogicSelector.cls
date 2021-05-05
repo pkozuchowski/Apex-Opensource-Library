@@ -26,8 +26,7 @@
  * This class is responsible for querying custom metadata (TriggerLogic__mdt)
  * and creating instances of classes defined in ApexClass__c field.
  */
-public with sharing class TriggerLogicSelector {
-    @TestVisible static List<TriggerLogic__mdt> mockMetadata;
+public virtual with sharing class TriggerLogicSelector {
 
 
     /**
@@ -59,7 +58,7 @@ public with sharing class TriggerLogicSelector {
         for (TriggerLogic__mdt setting : getCustomMetadataRecords(String.valueOf(tc.sObjectType), tc.operationType, async)) {
             try {
                 Type ruleClass = Type.forName(setting.ApexClass__c);
-                TriggerHandler.Logic logic = (TriggerHandler.Logic) ruleClass.newInstance();
+                Object logic = ruleClass.newInstance();
 
                 if (logic instanceof TriggerHandler.Parameterizable) {
                     ((TriggerHandler.Parameterizable) logic).setParameters(setting.Parameters__c);
@@ -68,18 +67,36 @@ public with sharing class TriggerLogicSelector {
                 instances.add(logic);
 
             } catch (Exception ex) {
-                System.debug('ex: ' + ex);
-                throw new TypeException('Apex class defined in custom metadata TriggerLogic__mdt.' + setting.DeveloperName
+                TypeException typeException = new TypeException('Apex class defined in custom metadata TriggerLogic__mdt.' + setting.DeveloperName
                         + ' (' + setting.ApexClass__c + ') is invalid. Please check if corresponding class is public and implements correct interface.'
                 );
+                typeException.initCause(ex);
+                throw typeException;
             }
         }
 
         return instances;
     }
 
-    private List<TriggerLogic__mdt> getCustomMetadataRecords(String sObjectType, TriggerOperation op, Boolean async) {
-        SObjectField triggerField = new Map<TriggerOperation, SObjectField>{
+    /**
+     * @return List of trigger logic metadata for given trigger operation.
+     */
+    protected virtual List<TriggerLogic__mdt> getCustomMetadataRecords(String sObjectType, TriggerOperation op, Boolean async) {
+        return Database.query(String.escapeSingleQuotes('SELECT ApexClass__c, DeveloperName, Parameters__c'
+                + ' FROM TriggerLogic__mdt'
+                + ' WHERE Enabled__c = TRUE'
+                + ' AND SObject__c = :sObjectType'
+                + ' AND Async__c =:async'
+                + ' AND ' + getTriggerField(op) + ' = TRUE'
+                + ' ORDER BY Order__c ASC NULLS LAST, ApexClass__c ASC')
+        );
+    }
+
+    /**
+     * @return Checkbox field matching given Trigger Operation
+     */
+    protected SObjectField getTriggerField(TriggerOperation op) {
+        return new Map<TriggerOperation, SObjectField>{
                 TriggerOperation.BEFORE_INSERT => TriggerLogic__mdt.BeforeInsert__c,
                 TriggerOperation.BEFORE_UPDATE => TriggerLogic__mdt.BeforeUpdate__c,
                 TriggerOperation.BEFORE_DELETE => TriggerLogic__mdt.BeforeDelete__c,
@@ -88,21 +105,31 @@ public with sharing class TriggerLogicSelector {
                 TriggerOperation.AFTER_DELETE => TriggerLogic__mdt.AfterDelete__c,
                 TriggerOperation.AFTER_UNDELETE => TriggerLogic__mdt.AfterUndelete__c
         }.get(op);
+    }
 
-        if (mockMetadata == null) {
-            return Database.query('SELECT ApexClass__c, DeveloperName, Parameters__c'
-                    + ' FROM TriggerLogic__mdt'
-                    + ' WHERE Enabled__c = TRUE'
-                    + ' AND SObject__c = :sObjectType'
-                    + ' AND Async__c =:async'
-                    + ' AND ' + triggerField + ' = TRUE'
-                    + ' ORDER BY Order__c ASC NULLS LAST, ApexClass__c ASC'
-            );
-        } else {
+
+    /**
+     * Implementation of TriggerLogicSelector which returns set of predefined logic
+     */
+    public class MockSelector extends TriggerLogicSelector {
+        private List<TriggerLogic__mdt> mockMetadata;
+
+        /**
+         * @param mockedLogic List of metadata to mock
+         */
+        public MockSelector(List<TriggerLogic__mdt> mockMetadata) {
+            this.mockMetadata = mockMetadata;
+        }
+
+        /**
+         * @return Subset of mocked metadata that should be executed for current trigger sObject and operation
+         */
+        protected override List<TriggerLogic__mdt> getCustomMetadataRecords(String sObjectType, TriggerOperation op, Boolean async) {
             List<TriggerLogic__mdt> settings = new List<TriggerLogic__mdt>();
+            SObjectField triggerField = getTriggerField(op);
 
             for (TriggerLogic__mdt logic : mockMetadata) {
-                if (logic.Enabled__c = true
+                if (logic.Enabled__c == true
                         && logic.SObject__c == sObjectType
                         && logic.get(triggerField) == true
                         && logic.Async__c == async) {

@@ -44,6 +44,9 @@ public virtual class TriggerContext {
     protected Map<Id, SObject> triggerNewMap { get; protected set; }
     protected Map<Id, SObject> triggerOldMap { get; protected set; }
 
+    /**
+     * @return Instance of TriggerContext object if ran during trigger or test execution, null otherwise.
+     */
     public static TriggerContext getInstance() {
         if (Trigger.isExecuting || Test.isRunningTest()) {
             return new TriggerContext();

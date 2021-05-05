@@ -22,10 +22,6 @@
 * SOFTWARE.
 */
 public with sharing class TriggerDispatcher {
-    private static Set<SObjectType> disabledTriggers = new Set<SObjectType>();
-    private static TriggerLogicSelector logicSelector = new TriggerLogicSelector();
-    private static LogicSwitch__c logicSwitchSetting = LogicSwitch__c.getInstance();
-
 
     /**
      * Runs trigger field defaults, validations and logic defined in custom metadata
@@ -39,6 +35,7 @@ public with sharing class TriggerDispatcher {
         TriggerHandler metadataTrigger = new CustomMetadataTrigger();
 
         if (shouldRun(triggerContext)) {
+            TriggerLogicSelector logicSelector = TriggerSettings.getLogicSelector();
             metadataTrigger.execute(triggerContext.getRecords(), triggerContext, logicSelector.getLogic(triggerContext));
             metadataTrigger.executeAsync(triggerContext.getRecords(), triggerContext, logicSelector.getAsyncLogic(triggerContext));
         }
@@ -83,49 +80,6 @@ public with sharing class TriggerDispatcher {
 
 
     /**
-    * Disable all triggers execution for given sObjectType for current transaction or until enableTrigger is called
-    */
-    public static void disableTrigger(SObjectType sObjectType) {
-        disabledTriggers.add(sObjectType);
-    }
-
-    /**
-    * Enabled previously disabled trigger execution for given sObjectType
-    */
-    public static void enableTrigger(SObjectType sObjectType) {
-        disabledTriggers.remove(sObjectType);
-    }
-
-
-    /**
-    * Disable all logic (Workflow RUles, Triggers, Process Builders, Validation Rules) which handle LogicSwitch__c.
-    * Disablement is done by temporarily upserting LogicSwitch__c record for running user and restoring it later with enableAllAutomations.
-    * This action performs DML.
-    */
-    public static void disableAllLogic() {
-        LogicSwitch__c clone = logicSwitchSetting.clone(true);
-        clone.DisableWorkflowRules__c = true;
-        clone.DisableTriggers__c = true;
-        clone.DisableProcessBuilders__c = true;
-        clone.DisableValidationRules__c = true;
-        upsert clone;
-    }
-
-    /**
-    * Restores previous LogicSwitch values on the user.
-    * This action performs DML.
-    */
-    public static void enableAllLogic() {
-        if (String.isEmpty(logicSwitchSetting.Id)) {
-            delete [SELECT Id FROM LogicSwitch__c WHERE SetupOwnerId = :UserInfo.getUserId()];
-
-        } else {
-            upsert logicSwitchSetting;
-        }
-    }
-
-
-    /**
     * Trigger should run:
     * - Only in trigger context
     * - Only if it's not disabled in Bypass Triggers settings
@@ -133,8 +87,8 @@ public with sharing class TriggerDispatcher {
     */
     private static Boolean shouldRun(TriggerContext triggerContext) {
         return triggerContext.isExecuting
-                && !LogicSwitch__c.getInstance().DisableTriggers__c
-                && !disabledTriggers.contains(triggerContext.sObjectType);
+                && TriggerSettings.isSObjectTriggerEnabled(triggerContext.sObjectType)
+                && TriggerSettings.isTriggerSettingEnabled();
     }
 
     private TriggerDispatcher() {
@@ -142,7 +96,8 @@ public with sharing class TriggerDispatcher {
 
 
     /**
-     * Empty Implementation of Trigger Handler without any logic
+     * Empty Implementation of Trigger Handler without any explicitly defined logic.
+     * Trigger will use only logic defined in custom metadata
      */
     private class CustomMetadataTrigger extends TriggerHandler {
     }

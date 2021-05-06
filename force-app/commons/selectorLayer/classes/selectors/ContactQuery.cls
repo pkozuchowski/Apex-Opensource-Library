@@ -30,6 +30,7 @@ public inherited sharing class ContactQuery extends QueryObject {
     public override List<String> getFields() {
         return  new List<String>{
                 'Id',
+                'AccountId',
                 'FirstName',
                 'LastName',
                 'Name',

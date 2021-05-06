@@ -64,7 +64,7 @@ private class TriggerDispatcherTest {
      * Emulation of AccountTriggerHandler class
      */
     private class TestAccountTriggerHandler extends TriggerHandler {
-        public override void handleBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
+        public override void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
             this.execute(triggerNew, tc, new List<TriggerHandler.Logic>{
                     new TestTriggerLogic()
             });

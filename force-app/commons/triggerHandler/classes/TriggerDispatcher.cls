@@ -54,25 +54,25 @@ public with sharing class TriggerDispatcher {
         if (shouldRun(triggerContext)) {
             switch on triggerContext.operationType {
                 when BEFORE_INSERT {
-                    triggerHandler.handleBeforeInsert(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.onBeforeInsert(triggerContext.getRecords(), triggerContext);
                 }
                 when BEFORE_UPDATE {
-                    triggerHandler.handleBeforeUpdate(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.onBeforeUpdate(triggerContext.getRecords(), triggerContext);
                 }
                 when BEFORE_DELETE {
-                    triggerHandler.handleBeforeDelete(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.onBeforeDelete(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_INSERT {
-                    triggerHandler.handleAfterInsert(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.onAfterInsert(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_UPDATE {
-                    triggerHandler.handleAfterUpdate(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.onAfterUpdate(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_DELETE {
-                    triggerHandler.handleAfterDelete(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.onAfterDelete(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_UNDELETE {
-                    triggerHandler.handleAfterUndelete(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.onAfterUndelete(triggerContext.getRecords(), triggerContext);
                 }
             }
         }
@@ -80,10 +80,10 @@ public with sharing class TriggerDispatcher {
 
 
     /**
-    * Trigger should run:
-    * - Only in trigger context
-    * - Only if it's not disabled in Bypass Triggers settings
-    * - Only if it's not manually disabled in code via  disableTrigger();
+    * @return True when:
+    * - is in trigger context (can be mocked in unit tests)
+    * - if it's not disabled in Bypass Triggers settings
+    * - if it's not manually disabled in code via  disableTrigger();
     */
     private static Boolean shouldRun(TriggerContext triggerContext) {
         return triggerContext.isExecuting

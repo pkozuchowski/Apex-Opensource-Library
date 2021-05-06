@@ -32,16 +32,16 @@
  * Logic classes will see only workflow field updates changes.
  */
 public virtual class TriggerHandler {
-    public virtual void handleBeforeInsert(List<SObject> triggerNew, TriggerContext tc) {}
-    public virtual void handleAfterInsert(List<SObject> triggerNew, TriggerContext tc) {}
+    public virtual void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc) {}
+    public virtual void onAfterInsert(List<SObject> triggerNew, TriggerContext tc) {}
 
-    public virtual void handleBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {}
-    public virtual void handleAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {}
+    public virtual void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {}
+    public virtual void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {}
 
-    public virtual void handleBeforeDelete(List<SObject> triggerOld, TriggerContext tc) {}
-    public virtual void handleAfterDelete(List<SObject> triggerOld, TriggerContext tc) {}
+    public virtual void onBeforeDelete(List<SObject> triggerOld, TriggerContext tc) {}
+    public virtual void onAfterDelete(List<SObject> triggerOld, TriggerContext tc) {}
 
-    public virtual void handleAfterUndelete(List<SObject> triggerNew, TriggerContext tc) {}
+    public virtual void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc) {}
 
 
     /**

@@ -31,7 +31,7 @@
  * This class allows enabling and disabling triggers for single SObject type as well as enabling/disabling
  * all customizations (triggers, flows, validation rules) as long as they incorporate switch logic.
  */
-public with sharing class TriggerSettings {
+public inherited sharing class TriggerSettings {
     private final static LogicSwitch__c logicSwitchSetting = LogicSwitch__c.getInstance();
     private final static Set<SObjectType> disabledTriggers = new Set<SObjectType>();
     private static TriggerLogicSelector logicSelector = new TriggerLogicSelector();

@@ -21,7 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-public with sharing class TriggerDispatcher {
+public without sharing class TriggerDispatcher {
 
     /**
      * Runs trigger field defaults, validations and logic defined in custom metadata

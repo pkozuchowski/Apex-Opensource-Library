@@ -31,7 +31,7 @@
  * with original old map. This handler uses new map from previous trigger run for optimization.
  * Logic classes will see only workflow field updates changes.
  */
-public virtual class TriggerHandler {
+public virtual inherited sharing class TriggerHandler {
     public virtual void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc) {}
     public virtual void onAfterInsert(List<SObject> triggerNew, TriggerContext tc) {}
 

@@ -26,7 +26,7 @@
  * This class is responsible for querying custom metadata (TriggerLogic__mdt)
  * and creating instances of classes defined in ApexClass__c field.
  */
-public virtual with sharing class TriggerLogicSelector {
+public virtual inherited sharing class TriggerLogicSelector {
 
 
     /**

@@ -52,7 +52,7 @@ public virtual class TriggerContext {
             return new TriggerContext();
 
         } else {
-            throw null;
+            return null;
         }
     }
 

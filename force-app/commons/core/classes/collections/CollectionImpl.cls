@@ -434,7 +434,7 @@ public inherited sharing class CollectionImpl extends Collection {
         public Collection isNotIn(Set<Object> values) { return collection.filter(filterFactory.isNotIn(values)); }
         public Collection isNotIn(List<Object> values) { return collection.filter(filterFactory.isNotIn(values)); }
         public Collection relatedTo(List<SObject> parents) { return collection.filter(filterFactory.relatedTo(parents)); }
-        public Collection containing(String value) { return collection.filter(filterFactory.containing(value)); }
+        public Collection contains(String value) { return collection.filter(filterFactory.contains(value)); }
     }
 
 

@@ -263,7 +263,7 @@ public abstract inherited sharing class Collection {
         Collection isNotIn(Set<Object> values);
         Collection isNotIn(List<Object> values);
         Collection relatedTo(List<SObject> parents);
-        Collection containing(String value);
+        Collection contains(String value);
     }
 
 

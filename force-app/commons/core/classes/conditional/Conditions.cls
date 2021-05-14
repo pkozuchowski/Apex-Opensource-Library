@@ -168,7 +168,7 @@ public abstract inherited sharing class Conditions {
         public Condition isNotIn(Set<Object> values) { return new FieldValuesCondition(field, false, values); }
         public Condition isNotIn(List<Object> values) { return new FieldValuesCondition(field, false, values); }
         public Condition relatedTo(List<SObject> parents) { return new RelationCondition(parents, field); }
-        public Condition containing(String value) { return new FilterFieldContaining(field, value); }
+        public Condition contains(String value) { return new FilterFieldContaining(field, value); }
     }
 
 

@@ -502,7 +502,7 @@ private class CollectionTest {
                 .filter(
                         Conditions.ORs(
                                 Conditions.ANDs(
-                                        Conditions.field(Opportunity.NextStep).containing('Analysis'),
+                                        Conditions.field(Opportunity.NextStep).contains('Analysis'),
                                         Conditions.field(Opportunity.HasOpenActivity).equals(true),
                                         Conditions.field(Opportunity.LastActivityDate).lessEqualsThan(Date.today()),
                                         Conditions.field(Opportunity.LastActivityDate).greaterThan(Date.today().addDays(-2))

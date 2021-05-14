@@ -116,36 +116,4 @@ public with sharing class Comparators {
             return 0;
         }
     }
-
-
-    public class Equals implements Condition {
-        public Boolean isTrue(Object i) {
-            return i == 0;
-        }
-    }
-    public class NotEquals implements Condition {
-        public Boolean isTrue(Object i) {
-            return i != 0;
-        }
-    }
-    public class GreaterThan implements Condition {
-        public Boolean isTrue(Object i) {
-            return (Integer) i > 0;
-        }
-    }
-    public class GreaterEqualsThan implements Condition {
-        public Boolean isTrue(Object i) {
-            return (Integer) i >= 0;
-        }
-    }
-    public class LessThan implements Condition {
-        public Boolean isTrue(Object i) {
-            return (Integer) i < 0;
-        }
-    }
-    public class LessEqualsThan implements Condition {
-        public Boolean isTrue(Object i) {
-            return (Integer) i <= 0;
-        }
-    }
 }

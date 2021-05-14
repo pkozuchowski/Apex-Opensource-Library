@@ -26,13 +26,6 @@
  * Factory class for Condition implementations.
  */
 public abstract inherited sharing class Conditions {
-    private final static Condition
-            EQUALS = new Comparators.Equals(),
-            NOT_EQUALS = new Comparators.NotEquals(),
-            GREATER_THAN = new Comparators.GreaterThan(),
-            GREATER_EQUAL_THAN = new Comparators.GreaterEqualsThan(),
-            LESS_THAN = new Comparators.LessThan(),
-            LESS_EQUAL_THAN = new Comparators.LessEqualsThan();
 
     /**
      * Creates filter which returns true if all of the filters return true
@@ -153,12 +146,12 @@ public abstract inherited sharing class Conditions {
             this.field = field;
         }
 
-        public Condition equals(Object value) { return new FieldValueCondition(field, EQUALS, value); }
-        public Condition notEquals(Object value) { return new FieldValueCondition(field, NOT_EQUALS, value); }
-        public Condition greaterThan(Object value) { return new FieldValueCondition(field, GREATER_THAN, value); }
-        public Condition greaterEqualsThan(Object value) { return new FieldValueCondition(field, GREATER_EQUAL_THAN, value); }
-        public Condition lessThan(Object value) { return new FieldValueCondition(field, LESS_THAN, value); }
-        public Condition lessEqualsThan(Object value) { return new FieldValueCondition(field, LESS_EQUAL_THAN, value); }
+        public Condition equals(Object value) { return new FieldValueCondition(field, new IntegerEquals(), value); }
+        public Condition notEquals(Object value) { return new FieldValueCondition(field, new IntegerNotEquals(), value); }
+        public Condition greaterThan(Object value) { return new FieldValueCondition(field, new IntegerGreaterThan(), value); }
+        public Condition greaterEqualsThan(Object value) { return new FieldValueCondition(field, new IntegerGreaterEqualsThan(), value); }
+        public Condition lessThan(Object value) { return new FieldValueCondition(field, new IntegerLessThan(), value); }
+        public Condition lessEqualsThan(Object value) { return new FieldValueCondition(field, new IntegerLessEqualsThan(), value); }
         public Condition isIn(Set<Object> values) { return new FieldValuesCondition(field, true, values); }
         public Condition isIn(List<Object> values) { return new FieldValuesCondition(field, true, values); }
         public Condition isNotIn(Set<Object> values) { return new FieldValuesCondition(field, false, values); }
@@ -280,5 +273,25 @@ public abstract inherited sharing class Conditions {
             String fieldValue = (String) ((SObject) record).get(field);
             return fieldValue.contains(value);
         }
+    }
+
+
+    private class IntegerEquals implements Condition {
+        public Boolean isTrue(Object i) { return i == 0; }
+    }
+    private class IntegerNotEquals implements Condition {
+        public Boolean isTrue(Object i) { return i != 0; }
+    }
+    private class IntegerGreaterThan implements Condition {
+        public Boolean isTrue(Object i) { return (Integer) i > 0; }
+    }
+    private class IntegerGreaterEqualsThan implements Condition {
+        public Boolean isTrue(Object i) { return (Integer) i >= 0; }
+    }
+    private class IntegerLessThan implements Condition {
+        public Boolean isTrue(Object i) { return (Integer) i < 0; }
+    }
+    private class IntegerLessEqualsThan implements Condition {
+        public Boolean isTrue(Object i) { return (Integer) i <= 0; }
     }
 }

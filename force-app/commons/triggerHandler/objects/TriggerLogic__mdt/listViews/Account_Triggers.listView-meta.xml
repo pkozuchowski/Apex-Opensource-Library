@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Account_Triggers</fullName>
+    <columns>MasterLabel</columns>
+    <columns>Enabled__c</columns>
+    <columns>SObject__c</columns>
+    <columns>Order__c</columns>
+    <columns>Async__c</columns>
+    <columns>Description__c</columns>
+    <columns>BeforeInsert__c</columns>
+    <columns>AfterInsert__c</columns>
+    <columns>BeforeUpdate__c</columns>
+    <columns>AfterUpdate__c</columns>
+    <columns>BeforeDelete__c</columns>
+    <columns>AfterDelete__c</columns>
+    <columns>AfterUndelete__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>SObject__c</field>
+        <operation>equals</operation>
+        <value>Account</value>
+    </filters>
+    <label>Account Triggers</label>
+</ListView>

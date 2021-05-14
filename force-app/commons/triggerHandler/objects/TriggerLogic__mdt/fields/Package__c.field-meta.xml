@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Package__c</fullName>
+    <description>Name of package or functional prefix which corresponds to team in multi-team environments.
+Trigger Logic is executed by first by Package lexicographical order and then by Order field. 
+This allows each team/package to have independent Order sequence.</description>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Name of package or functional prefix which corresponds to team in multi-team environments.</inlineHelpText>
+    <label>Package</label>
+    <length>63</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

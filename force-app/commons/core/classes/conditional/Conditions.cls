@@ -164,7 +164,7 @@ public abstract inherited sharing class Conditions {
     /**
      * Filters List of SObject by field value.
      */
-    private class FieldValueCondition implements Condition, QueryCondition {
+    private class FieldValueCondition implements Condition {
         private Object value;
         private String field;
         private Comparator comparator;
@@ -182,14 +182,6 @@ public abstract inherited sharing class Conditions {
             Integer outcome = comparator.compare(fieldValue, value);
 
             return expectedResult.isTrue(outcome);
-        }
-
-        public String toSOQL() {
-            return '';
-        }
-
-        public Map<String, Object> getQueryParameters() {
-            return null;
         }
     }
 

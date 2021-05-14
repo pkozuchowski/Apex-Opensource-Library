@@ -31,33 +31,38 @@ public abstract inherited sharing class Conditions {
      * Creates filter which returns true if all of the filters return true
      */
     public static Condition ANDs(Condition f1, Condition f2) {
-        return ANDs(f1, f2, null);
+        return ANDs(new List<Condition>{f1, f2});
     }
     public static Condition ANDs(Condition f1, Condition f2, Condition f3) {
-        return ANDs(f1, f2, f3, null);
+        return ANDs(new List<Condition>{f1, f2, f3});
     }
     public static Condition ANDs(Condition f1, Condition f2, Condition f3, Condition f4) {
-        return ANDs(f1, f2, f3, f4, null);
+        return ANDs(new List<Condition>{f1, f2, f3, f4});
     }
     public static Condition ANDs(Condition f1, Condition f2, Condition f3, Condition f4, Condition f5) {
-        return new ANDCondition(f1, f2, f3, f4, f5);
+        return ANDs(new List<Condition>{f1, f2, f3, f4, f5});
     }
-
+    public static Condition ANDs(Condition[] conditions) {
+        return new ANDCondition(conditions);
+    }
 
     /**
      * Creates filter which returns true if any of the filters return true
      */
     public static Condition ORs(Condition f1, Condition f2) {
-        return ORs(f1, f2, null);
+        return ORs(new List<Condition>{f1, f2});
     }
     public static Condition ORs(Condition f1, Condition f2, Condition f3) {
-        return ORs(f1, f2, f3, null);
+        return ORs(new List<Condition>{f1, f2, f3});
     }
     public static Condition ORs(Condition f1, Condition f2, Condition f3, Condition f4) {
-        return ORs(f1, f2, f3, f4, null);
+        return ORs(new List<Condition>{f1, f2, f3, f4});
     }
     public static Condition ORs(Condition f1, Condition f2, Condition f3, Condition f4, Condition f5) {
-        return new ORCondition(f1, f2, f3, f4, f5);
+        return ORs(new List<Condition>{f1, f2, f3, f4, f5});
+    }
+    public static Condition ORs(Condition[] conditions) {
+        return new ORCondition(conditions);
     }
 
 
@@ -89,49 +94,55 @@ public abstract inherited sharing class Conditions {
     }
 
 
+    public abstract class GroupCondition implements Condition {
+        protected Condition[] conditions;
+
+        public GroupCondition(Condition[] conditions) {
+            this.conditions = conditions;
+        }
+
+        public void add(Condition c) {
+            this.conditions.add(c);
+        }
+
+        public Integer size() {
+            return this.conditions.size();
+        }
+    }
+
     /**
      * Returns true if any of the composite filters return true;
      */
-    private class ANDCondition implements Condition {
-        private Condition f1, f2, f3, f4, f5;
+    private class ANDCondition extends GroupCondition {
 
-        public ANDCondition(Condition f1, Condition f2, Condition f3, Condition f4, Condition f5) {
-            this.f1 = f1;
-            this.f2 = f2;
-            this.f3 = f3;
-            this.f4 = f4;
-            this.f5 = f5;
+        public ANDCondition(Condition[] conditions) {
+            super(conditions);
         }
 
         public Boolean isTrue(Object item) {
-            return f1?.isTrue(item) != false
-                    && f2?.isTrue(item) != false
-                    && f3?.isTrue(item) != false
-                    && f4?.isTrue(item) != false
-                    && f5?.isTrue(item) != false;
+            for (Integer i = 0, j = conditions.size(); i < j; ++i) {
+                if (!conditions[i].isTrue(item)) return false;
+            }
+
+            return true;
         }
     }
 
     /**
      * Returns true if all of the composite filters return true;
      */
-    private class ORCondition implements Condition {
-        private Condition f1, f2, f3, f4, f5;
+    private class ORCondition extends GroupCondition {
 
-        public ORCondition(Condition f1, Condition f2, Condition f3, Condition f4, Condition f5) {
-            this.f1 = f1;
-            this.f2 = f2;
-            this.f3 = f3;
-            this.f4 = f4;
-            this.f5 = f5;
+        public ORCondition(Condition[] conditions) {
+            super(conditions);
         }
 
         public Boolean isTrue(Object item) {
-            return f1?.isTrue(item) == true
-                    || f2?.isTrue(item) == true
-                    || f3?.isTrue(item) == true
-                    || f4?.isTrue(item) == true
-                    || f5?.isTrue(item) == true;
+            for (Integer i = 0, j = conditions.size(); i < j; ++i) {
+                if (conditions[i].isTrue(item)) return true;
+            }
+
+            return false;
         }
     }
 

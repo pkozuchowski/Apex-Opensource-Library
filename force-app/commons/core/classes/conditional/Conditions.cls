@@ -26,7 +26,7 @@
  * Factory class for Condition implementations.
  */
 public abstract inherited sharing class Conditions {
-    private final static Comparators.ComparisonOperator
+    private final static Condition
             EQUALS = new Comparators.Equals(),
             NOT_EQUALS = new Comparators.NotEquals(),
             GREATER_THAN = new Comparators.GreaterThan(),
@@ -158,9 +158,9 @@ public abstract inherited sharing class Conditions {
         private Object value;
         private String field;
         private Comparator comparator;
-        private final Comparators.ComparisonOperator expectedResult;
+        private final Condition expectedResult;
 
-        public FieldValueCondition(String field, Comparators.ComparisonOperator expectedResult, Object value) {
+        public FieldValueCondition(String field, Condition expectedResult, Object value) {
             this.field = field;
             this.value = value;
             this.expectedResult = expectedResult;

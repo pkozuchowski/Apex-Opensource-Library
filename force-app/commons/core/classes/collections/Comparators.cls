@@ -118,35 +118,35 @@ public with sharing class Comparators {
     }
 
 
-    public interface ComparisionOperator {
+    public interface ComparisonOperator {
         Boolean isTrue(Integer i);
     }
-    public class Equals implements ComparisionOperator {
+    public class Equals implements ComparisonOperator {
         public Boolean isTrue(Integer i) {
             return i == 0;
         }
     }
-    public class NotEquals implements ComparisionOperator {
+    public class NotEquals implements ComparisonOperator {
         public Boolean isTrue(Integer i) {
             return i != 0;
         }
     }
-    public class GreaterThan implements ComparisionOperator {
+    public class GreaterThan implements ComparisonOperator {
         public Boolean isTrue(Integer i) {
             return i > 0;
         }
     }
-    public class GreaterEqualsThan implements ComparisionOperator {
+    public class GreaterEqualsThan implements ComparisonOperator {
         public Boolean isTrue(Integer i) {
             return i >= 0;
         }
     }
-    public class LessThan implements ComparisionOperator {
+    public class LessThan implements ComparisonOperator {
         public Boolean isTrue(Integer i) {
             return i < 0;
         }
     }
-    public class LessEqualsThan implements ComparisionOperator {
+    public class LessEqualsThan implements ComparisonOperator {
         public Boolean isTrue(Integer i) {
             return i <= 0;
         }

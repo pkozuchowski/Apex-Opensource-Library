@@ -499,15 +499,15 @@ private class CollectionTest {
 
         Test.startTest();
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
-                .filterUsing(
-                        CollectionFilters.ORs(
-                                CollectionFilters.ANDs(
-                                        CollectionFilters.field(Opportunity.NextStep).containing('Analysis'),
-                                        CollectionFilters.field(Opportunity.HasOpenActivity).equals(true),
-                                        CollectionFilters.field(Opportunity.LastActivityDate).lessEqualsThan(Date.today()),
-                                        CollectionFilters.field(Opportunity.LastActivityDate).greaterThan(Date.today().addDays(-2))
+                .filter(
+                        Conditions.ORs(
+                                Conditions.ANDs(
+                                        Conditions.field(Opportunity.NextStep).containing('Analysis'),
+                                        Conditions.field(Opportunity.HasOpenActivity).equals(true),
+                                        Conditions.field(Opportunity.LastActivityDate).lessEqualsThan(Date.today()),
+                                        Conditions.field(Opportunity.LastActivityDate).greaterThan(Date.today().addDays(-2))
                                 ),
-                                CollectionFilters.field(Opportunity.NextStep).notEquals('Analysis')
+                                Conditions.field(Opportunity.NextStep).notEquals('Analysis')
                         )
                 )
                 .get();
@@ -539,12 +539,12 @@ private class CollectionTest {
 
         Test.startTest();
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
-                .filterUsing(
-                        CollectionFilters.ANDs(
-                                CollectionFilters.field(Opportunity.Name).notEquals(null),
-                                CollectionFilters.field(Opportunity.NextStep).isIn(wantedSteps),
-                                CollectionFilters.field(Opportunity.NextStep).isNotIn(unwantedSteps),
-                                CollectionFilters.field('LastActivityDate').lessThan(Date.today())
+                .filter(
+                        Conditions.ANDs(
+                                Conditions.field(Opportunity.Name).notEquals(null),
+                                Conditions.field(Opportunity.NextStep).isIn(wantedSteps),
+                                Conditions.field(Opportunity.NextStep).isNotIn(unwantedSteps),
+                                Conditions.field('LastActivityDate').lessThan(Date.today())
                         )
                 )
                 .get();
@@ -553,46 +553,6 @@ private class CollectionTest {
 
 
         System.assertEquals(expected, actual);
-    }
-
-    @IsTest
-    static void testFilterAND() {
-        System.assertEquals(true, CollectionFilters.ANDs(
-                new FilterTrueFalse(true),
-                new FilterTrueFalse(true)
-        ).accepts(null));
-
-        System.assertEquals(false, CollectionFilters.ANDs(
-                new FilterTrueFalse(true),
-                new FilterTrueFalse(false),
-                new FilterTrueFalse(false)
-        ).accepts(null));
-    }
-
-    @IsTest
-    static void testFilterOR() {
-        System.assertEquals(true, CollectionFilters.ORs(
-                new FilterTrueFalse(false),
-                new FilterTrueFalse(true)
-        ).accepts(null));
-
-        System.assertEquals(false, CollectionFilters.ORs(
-                new FilterTrueFalse(false),
-                new FilterTrueFalse(false),
-                new FilterTrueFalse(false)
-        ).accepts(null));
-    }
-
-    private class FilterTrueFalse implements Collection.Filter {
-        private Boolean value;
-
-        public FilterTrueFalse(Boolean value) {
-            this.value = value;
-        }
-
-        public Boolean accepts(Object item) {
-            return value;
-        }
     }
 
     /**
@@ -988,19 +948,19 @@ private class CollectionTest {
     @IsTest
     static void testFindByFilter() {
         Opportunity expected = opportunities[5];
-        Opportunity actual = (Opportunity) Collection.of(opportunities).filterUsing(new OpportunityNameContainsFilter('5')).getFirst();
+        Opportunity actual = (Opportunity) Collection.of(opportunities).filter(new OpportunityNameContainsFilter('5')).getFirst();
 
         System.assertEquals(expected, actual);
     }
 
-    private class OpportunityNameContainsFilter implements Collection.Filter {
+    private class OpportunityNameContainsFilter implements Condition {
         private String expr;
 
         public OpportunityNameContainsFilter(String expr) {
             this.expr = expr;
         }
 
-        public Boolean accepts(Object item) {
+        public Boolean isTrue(Object item) {
             return ((Opportunity) item).Name.contains(expr);
         }
     }

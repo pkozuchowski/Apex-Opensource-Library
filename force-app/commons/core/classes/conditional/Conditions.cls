@@ -80,6 +80,23 @@ public abstract inherited sharing class Conditions {
 
 
     /**
+     * @return Condition returns true if item has the same field values set as prototype.
+     * ex.
+     * <pre>
+     * Conditions.alike(new Account(
+     *     RecordTypeId = Constant.RecordTypeId_Account_PersonAccount,
+     *     BillingCity = 'London'
+     * ))
+     * </pre>
+     *
+     * Above would be true for all accounts that have these 2 fields set with same values.
+     */
+    public static Condition alike(SObject prototype) {
+        return new SimilarityCondition(prototype);
+    }
+
+
+    /**
      * Returns true if any of the composite filters return true;
      */
     private class ANDCondition implements Condition {

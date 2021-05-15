@@ -477,7 +477,7 @@ public inherited sharing abstract class QueryObject {
      */
     private Boolean getCachedRecords(List<SObject> result) {
         CacheableCondition condition = (CacheableCondition) conditions.get(0);
-        QueryCache.CacheResult cacheResult = cache.getCachedRecords(sObjectType, condition.getCacheKey(), condition.getCacheValue());
+        QueryCache.Result cacheResult = cache.getCachedRecords(sObjectType, condition.getCacheKey(), condition.getCacheValue());
 
         result.addAll(cacheResult.cachedRecords.values());
 

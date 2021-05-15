@@ -62,7 +62,7 @@ public inherited sharing abstract class QueryObject {
     protected void init() {
         this.sObjectType = getSObjectType();
         this.query.setFields(getFields())
-                .fromObject(sObjectType);
+            .fromObject(sObjectType);
     }
 
     /**
@@ -201,7 +201,7 @@ public inherited sharing abstract class QueryObject {
      * @return SObjects with field values in given value set.
      */
     public virtual QueryObject byField(String fieldAPIName, String operator, Object value) {
-        this.conditions.add(QueryWheres.field(fieldAPIName, operator, value));
+        this.conditions.add(new QueryWheres.FieldWhere(fieldAPIName, operator, value));
         return this;
     }
 
@@ -218,51 +218,57 @@ public inherited sharing abstract class QueryObject {
     * Composite query condition that joins inner where clauses with AND operator
     */
     protected QueryWhere ANDs(QueryWhere w1, QueryWhere w2) {
-        return QueryWheres.ANDs(new List<QueryWhere>{w1, w2});
+        return new QueryWheres.ANDWhere(new List<QueryWhere>{w1, w2});
     }
     protected QueryWhere ANDs(QueryWhere w1, QueryWhere w2, QueryWhere w3) {
-        return QueryWheres.ANDs(new List<QueryWhere>{w1, w2, w3});
+        return new QueryWheres.ANDWhere(new List<QueryWhere>{w1, w2, w3});
     }
     protected QueryWhere ANDs(QueryWhere w1, QueryWhere w2, QueryWhere w3, QueryWhere w4) {
-        return QueryWheres.ANDs(new List<QueryWhere>{w1, w2, w3, w4});
+        return new QueryWheres.ANDWhere(new List<QueryWhere>{w1, w2, w3, w4});
     }
     protected QueryWhere ANDs(QueryWhere w1, QueryWhere w2, QueryWhere w3, QueryWhere w4, QueryWhere w5) {
-        return QueryWheres.ANDs(new List<QueryWhere>{w1, w2, w3, w4, w5});
+        return new QueryWheres.ANDWhere(new List<QueryWhere>{w1, w2, w3, w4, w5});
     }
     protected QueryWhere ANDs(QueryWhere[] conditions) {
-        return QueryWheres.ANDs(conditions);
+        return new QueryWheres.ANDWhere(conditions);
     }
 
     /**
     * Composite query condition that joins inner where clauses with OR operator
     */
     protected QueryWhere ORs(QueryWhere w1, QueryWhere w2) {
-        return QueryWheres.ORs(new List<QueryWhere>{w1, w2});
+        return new QueryWheres.ORWhere(new List<QueryWhere>{w1, w2});
     }
     protected QueryWhere ORs(QueryWhere w1, QueryWhere w2, QueryWhere w3) {
-        return QueryWheres.ORs(new List<QueryWhere>{w1, w2, w3});
+        return new QueryWheres.ORWhere(new List<QueryWhere>{w1, w2, w3});
     }
     protected QueryWhere ORs(QueryWhere w1, QueryWhere w2, QueryWhere w3, QueryWhere w4) {
-        return QueryWheres.ORs(new List<QueryWhere>{w1, w2, w3, w4});
+        return new QueryWheres.ORWhere(new List<QueryWhere>{w1, w2, w3, w4});
     }
     protected QueryWhere ORs(QueryWhere w1, QueryWhere w2, QueryWhere w3, QueryWhere w4, QueryWhere w5) {
-        return QueryWheres.ORs(new List<QueryWhere>{w1, w2, w3, w4, w5});
+        return new QueryWheres.ORWhere(new List<QueryWhere>{w1, w2, w3, w4, w5});
     }
     protected QueryWhere ORs(QueryWhere[] conditions) {
-        return QueryWheres.ORs(conditions);
+        return new QueryWheres.ORWhere(conditions);
     }
 
-    protected QueryWhere field(SObjectField field, String operator, Object value) {
-        return QueryWheres.field(field, operator, value);
-    }
-    protected QueryWhere field(String field, String operator, Object value) {
-        return QueryWheres.field(field, operator, value);
-    }
+
+    /**
+     * Creates field WHERE condition
+     */
     protected QueryWheres.FieldWhereFactory field(SObjectField field) {
-        return QueryWheres.field(field);
+        return field('' + field);
     }
     protected QueryWheres.FieldWhereFactory field(String field) {
-        return QueryWheres.field(field);
+        return new QueryWheres.FieldWhereFactory(field);
+    }
+
+
+    /**
+     * Negates passed WHERE clause with NOT keyword
+     */
+    protected QueryWhere NOTs(QueryWhere condition) {
+        return new QueryWheres.NotWhere(condition);
     }
 
 
@@ -458,12 +464,13 @@ public inherited sharing abstract class QueryObject {
     * - Field is explicitly allowed for caching or Field is unique to use it for upsert (isIdLookup)
     */
     private Boolean canUseCache() {
-        return useCache
-                && criteria.size() == 1
-                && (criteria[0].operator == '=' || criteria[0].operator == 'IN')
-                && criteria[0].value != null
-                && criteria[0].value != ''
-                && getFieldsToCacheBy().contains(criteria[0].field);
+        return useCache;
+//        return useCache
+//            && conditions.size() == 1
+//            && (conditions[0].operator == '=' || conditions[0].operator == 'IN')
+//            && conditions[0].value != null
+//            && conditions[0].value != ''
+//            && getFieldsToCacheBy().contains(conditions[0].field);
     }
 
     /**
@@ -471,18 +478,19 @@ public inherited sharing abstract class QueryObject {
      * @return True if there's remainder with non-cached values and there has to be query on that.
      */
     private Boolean getCachedRecords(List<SObject> result) {
-        QueryCriteria criteria = criteria.get(0);
-        QueryCache.CacheResult cacheResult = cache.getCachedRecords(sObjectType, criteria.field, criteria.value);
-
-        result.addAll(cacheResult.cachedRecords.values());
-
-        if (!cacheResult.remainingValues.isEmpty()) {
-            this.query.setWhere(criteria.toString());
-            this.query.bindVariable('value', cacheResult.remainingValues);
-            return true;
-
-        } else {
-            return false;
-        }
+        return false;
+//        QueryCriteria criteria = conditions.get(0);
+//        QueryCache.CacheResult cacheResult = cache.getCachedRecords(sObjectType, criteria.field, criteria.value);
+//
+//        result.addAll(cacheResult.cachedRecords.values());
+//
+//        if (!cacheResult.remainingValues.isEmpty()) {
+//            this.query.setWhere(conditions.toString());
+//            this.query.bindVariable('value', cacheResult.remainingValues);
+//            return true;
+//
+//        } else {
+//            return false;
+//        }
     }
 }

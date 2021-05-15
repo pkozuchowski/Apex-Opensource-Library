@@ -29,94 +29,11 @@
 public with sharing class QueryWheres {
     private static Integer valueCounter = 0;
 
-    /**
-    * Creates filter which returns true if all of the filters return true
-    */
-    public static QueryWhere ANDs(QueryWhere f1, QueryWhere f2) {
-        return ANDs(new List<QueryWhere>{f1, f2});
-    }
-    public static QueryWhere ANDs(QueryWhere f1, QueryWhere f2, QueryWhere f3) {
-        return ANDs(new List<QueryWhere>{f1, f2, f3});
-    }
-    public static QueryWhere ANDs(QueryWhere f1, QueryWhere f2, QueryWhere f3, QueryWhere f4) {
-        return ANDs(new List<QueryWhere>{f1, f2, f3, f4});
-    }
-    public static QueryWhere ANDs(QueryWhere f1, QueryWhere f2, QueryWhere f3, QueryWhere f4, QueryWhere f5) {
-        return ANDs(new List<QueryWhere>{f1, f2, f3, f4, f5});
-    }
-    public static QueryWhere ANDs(QueryWhere[] conditions) {
-        return new ANDWhere(conditions);
-    }
-
-    /**
-     * Creates filter which returns true if any of the filters return true
-     */
-    public static QueryWhere ORs(QueryWhere f1, QueryWhere f2) {
-        return ORs(new List<QueryWhere>{f1, f2});
-    }
-    public static QueryWhere ORs(QueryWhere f1, QueryWhere f2, QueryWhere f3) {
-        return ORs(new List<QueryWhere>{f1, f2, f3});
-    }
-    public static QueryWhere ORs(QueryWhere f1, QueryWhere f2, QueryWhere f3, QueryWhere f4) {
-        return ORs(new List<QueryWhere>{f1, f2, f3, f4});
-    }
-    public static QueryWhere ORs(QueryWhere f1, QueryWhere f2, QueryWhere f3, QueryWhere f4, QueryWhere f5) {
-        return ORs(new List<QueryWhere>{f1, f2, f3, f4, f5});
-    }
-    public static QueryWhere ORs(QueryWhere[] conditions) {
-        return new ORWhere(conditions);
-    }
-
-
-    /**
-     * @param field API Name of the field
-     * @param op Operator -
-     * @param value
-     *
-     * @return
-     */
-    public static QueryWhere field(SObjectField field, String op, Object value) {
-        return field('' + field, op, value);
-    }
-    public static QueryWhere field(String field, String op, Object value) {
-        return new FieldWhere(field, op, value);
-    }
-
-    public static FieldWhereFactory field(SObjectField field) {
-        return field('' + field);
-    }
-    public static FieldWhereFactory field(String field) {
-        return new FieldWhereFactory(field);
-    }
-
-
-    public class FieldWhereFactory {
-        private String field;
-
-        public FieldWhereFactory(String field) {
-            this.field = field;
-        }
-
-        public FieldWhere equals(Object value) { return new FieldWhere(field, '=', value); }
-        public FieldWhere notEquals(Object value) { return new FieldWhere(field, '!=', value); }
-        public FieldWhere greaterThan(Object value) { return new FieldWhere(field, '>', value); }
-        public FieldWhere greaterEqualsThan(Object value) { return new FieldWhere(field, '>=', value); }
-        public FieldWhere lessThan(Object value) { return new FieldWhere(field, '<', value); }
-        public FieldWhere lessEqualsThan(Object value) { return new FieldWhere(field, '<=', value); }
-        public FieldWhere isIn(Set<Object> values) { return new FieldWhere(field, 'IN', values); }
-        public FieldWhere isIn(List<Object> values) { return new FieldWhere(field, 'IN', values); }
-        public FieldWhere isNotIn(Set<Object> values) { return new FieldWhere(field, 'NOT IN', values); }
-        public FieldWhere isNotIn(List<Object> values) { return new FieldWhere(field, 'NOT IN', values); }
-        public FieldWhere isLike(String value) { return new FieldWhere(field, 'LIKE', value); }
-        public FieldWhere includes(String value) { return new FieldWhere(field, 'INCLUDES', value); }
-        public FieldWhere excludes(String value) { return new FieldWhere(field, 'EXCLUDES', value); }
-    }
-
 
     /**
      * Composite WHERE condition for boolean
      */
-    public abstract class CompositeWhere implements QueryWhere {
+    private abstract class CompositeWhere implements QueryWhere {
         protected QueryWhere[] conditions;
         private String soql;
         private Map<String, Object> values;
@@ -171,16 +88,41 @@ public with sharing class QueryWheres {
     /**
      * Composite WHERE clause that concatenates other conditions with AND
      */
-    private class ANDWhere extends CompositeWhere {
+    public class ANDWhere extends CompositeWhere {
         public ANDWhere(QueryWhere[] conditions) { super(conditions); }
         protected override String getSeparator() { return ' AND '; }
     }
 
-    private class ORWhere extends CompositeWhere {
+    public class ORWhere extends CompositeWhere {
         public ORWhere(QueryWhere[] conditions) { super(conditions); }
         protected override String getSeparator() { return ' AND '; }
     }
 
+
+    /**
+     * Provides interface for building field WHERE clause.
+     */
+    public class FieldWhereFactory {
+        private String field;
+
+        public FieldWhereFactory(String field) {
+            this.field = field;
+        }
+
+        public FieldWhere equals(Object value) { return new FieldWhere(field, '=', value); }
+        public FieldWhere notEquals(Object value) { return new FieldWhere(field, '!=', value); }
+        public FieldWhere greaterThan(Object value) { return new FieldWhere(field, '>', value); }
+        public FieldWhere greaterEqualsThan(Object value) { return new FieldWhere(field, '>=', value); }
+        public FieldWhere lessThan(Object value) { return new FieldWhere(field, '<', value); }
+        public FieldWhere lessEqualsThan(Object value) { return new FieldWhere(field, '<=', value); }
+        public FieldWhere isIn(Set<Object> values) { return new FieldWhere(field, 'IN', values); }
+        public FieldWhere isIn(List<Object> values) { return new FieldWhere(field, 'IN', values); }
+        public FieldWhere isNotIn(Set<Object> values) { return new FieldWhere(field, 'NOT IN', values); }
+        public FieldWhere isNotIn(List<Object> values) { return new FieldWhere(field, 'NOT IN', values); }
+        public FieldWhere isLike(String value) { return new FieldWhere(field, 'LIKE', value); }
+        public FieldWhere includes(String value) { return new FieldWhere(field, 'INCLUDES', value); }
+        public FieldWhere excludes(String value) { return new FieldWhere(field, 'EXCLUDES', value); }
+    }
 
     /**
      * WHERE clause for simple field filter
@@ -208,6 +150,26 @@ public with sharing class QueryWheres {
             return new Map<String, Object>{
                 'value' => value
             };
+        }
+    }
+
+
+    /**
+     * Composite WHERE clause which negates inner conditions
+     */
+    public class NotWhere implements QueryWhere {
+        private QueryWhere innerWhere;
+
+        public NotWhere(QueryWhere innerWhere) {
+            this.innerWhere = innerWhere;
+        }
+
+        public String toSOQL() {
+            return 'NOT (' + innerWhere.toSOQL() + ')';
+        }
+
+        public Map<String, Object> getQueryParameters() {
+            return innerWhere.getQueryParameters();
         }
     }
 }

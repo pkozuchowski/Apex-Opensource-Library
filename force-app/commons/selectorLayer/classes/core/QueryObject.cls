@@ -252,6 +252,17 @@ public inherited sharing abstract class QueryObject {
         return val == null ? fallbackValue : val;
     }
 
+
+    /**
+     * @return First and only record returned by query
+     * @throws System.ListException if query did not return results
+     */
+    public SObject getFirst() {
+        this.query.setLimit(1);
+        List<SObject> result = executeQuery();
+        return result.get(0);
+    }
+
     /**
      * @return First record or null if list has no results
      */

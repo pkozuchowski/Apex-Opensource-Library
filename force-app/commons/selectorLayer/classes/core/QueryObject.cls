@@ -207,6 +207,20 @@ public inherited sharing abstract class QueryObject {
 
 
     /**
+     * Adds explicitly typed WHERE condition.
+     * Example:
+     * <pre>
+     * this.wheres('ParentId IN :parentIds', new Map<String,Object>{'parentIds' => parentIds});
+     * </pre>
+     *
+     * @param whereString Condition without WHERE keyword
+     * @param params Bind variables present in WHERE clause
+     */
+    protected QueryObject wheres(String whereString, Map<String, Object> params) {
+        return wheres(new QueryWheres.GenericExpr(whereString, params));
+    }
+
+    /**
      * Adds WHERE clause to query conditions
      */
     protected QueryObject wheres(Condition wheres) {

@@ -29,6 +29,31 @@
 public with sharing class QueryWheres {
     private static Integer valueCounter = 0;
 
+    /**
+     * Represents lack of WHERE clause expressions
+     */
+    public class NullExpr implements QueryObject.ConditionExpr {
+        public String toSOQL() { return ''; }
+        public Map<String, Object> getQueryParameters() { return new Map<String, Object>(); }
+    }
+
+
+    /**
+     * Generic WHERE expression which may have content and params freely defined.
+     */
+    public class GenericExpr implements QueryObject.ConditionExpr {
+        private String whereString;
+        private Map<String, Object> params;
+
+        public GenericExpr(String whereString, Map<String, Object> params) {
+            this.whereString = whereString;
+            this.params = params;
+        }
+
+        public String toSOQL() { return whereString; }
+        public Map<String, Object> getQueryParameters() { return params; }
+    }
+
 
     /**
      * Composite WHERE clause that concatenates other conditions with AND

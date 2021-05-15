@@ -40,7 +40,7 @@ public interface QueryMock {
      */
     SObject[] handleQuery(
             Type queryObject,
-            QueryCriteria[] criteria,
+            QueryObject.Condition[] criteria,
             SObject[] queryResult
     );
 }

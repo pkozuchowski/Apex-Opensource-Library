@@ -31,7 +31,7 @@ public inherited sharing abstract class QueryObject {
 
     protected final QueryBuilder query = new QueryBuilder();
     protected final DatabaseService databaseService = new DatabaseService();
-    protected final List<QueryWhere> conditions = new List<QueryWhere>();
+    protected final List<Condition> conditions = new List<Condition>();
 
     private Boolean useCache = true;
     private Boolean enforceSecurity = false;
@@ -209,7 +209,7 @@ public inherited sharing abstract class QueryObject {
     /**
      * Adds WHERE clause to query conditions
      */
-    protected QueryObject wheres(QueryWhere wheres) {
+    protected QueryObject wheres(Condition wheres) {
         this.conditions.add(wheres);
         return this;
     }
@@ -217,38 +217,38 @@ public inherited sharing abstract class QueryObject {
     /**
     * Composite query condition that joins inner where clauses with AND operator
     */
-    protected QueryWhere ANDs(QueryWhere w1, QueryWhere w2) {
-        return new QueryWheres.ANDWhere(new List<QueryWhere>{w1, w2});
+    protected Condition ANDs(Condition w1, Condition w2) {
+        return new QueryWheres.ANDWhere(new List<Condition>{w1, w2});
     }
-    protected QueryWhere ANDs(QueryWhere w1, QueryWhere w2, QueryWhere w3) {
-        return new QueryWheres.ANDWhere(new List<QueryWhere>{w1, w2, w3});
+    protected Condition ANDs(Condition w1, Condition w2, Condition w3) {
+        return new QueryWheres.ANDWhere(new List<Condition>{w1, w2, w3});
     }
-    protected QueryWhere ANDs(QueryWhere w1, QueryWhere w2, QueryWhere w3, QueryWhere w4) {
-        return new QueryWheres.ANDWhere(new List<QueryWhere>{w1, w2, w3, w4});
+    protected Condition ANDs(Condition w1, Condition w2, Condition w3, Condition w4) {
+        return new QueryWheres.ANDWhere(new List<Condition>{w1, w2, w3, w4});
     }
-    protected QueryWhere ANDs(QueryWhere w1, QueryWhere w2, QueryWhere w3, QueryWhere w4, QueryWhere w5) {
-        return new QueryWheres.ANDWhere(new List<QueryWhere>{w1, w2, w3, w4, w5});
+    protected Condition ANDs(Condition w1, Condition w2, Condition w3, Condition w4, Condition w5) {
+        return new QueryWheres.ANDWhere(new List<Condition>{w1, w2, w3, w4, w5});
     }
-    protected QueryWhere ANDs(QueryWhere[] conditions) {
+    protected Condition ANDs(Condition[] conditions) {
         return new QueryWheres.ANDWhere(conditions);
     }
 
     /**
     * Composite query condition that joins inner where clauses with OR operator
     */
-    protected QueryWhere ORs(QueryWhere w1, QueryWhere w2) {
-        return new QueryWheres.ORWhere(new List<QueryWhere>{w1, w2});
+    protected Condition ORs(Condition w1, Condition w2) {
+        return new QueryWheres.ORWhere(new List<Condition>{w1, w2});
     }
-    protected QueryWhere ORs(QueryWhere w1, QueryWhere w2, QueryWhere w3) {
-        return new QueryWheres.ORWhere(new List<QueryWhere>{w1, w2, w3});
+    protected Condition ORs(Condition w1, Condition w2, Condition w3) {
+        return new QueryWheres.ORWhere(new List<Condition>{w1, w2, w3});
     }
-    protected QueryWhere ORs(QueryWhere w1, QueryWhere w2, QueryWhere w3, QueryWhere w4) {
-        return new QueryWheres.ORWhere(new List<QueryWhere>{w1, w2, w3, w4});
+    protected Condition ORs(Condition w1, Condition w2, Condition w3, Condition w4) {
+        return new QueryWheres.ORWhere(new List<Condition>{w1, w2, w3, w4});
     }
-    protected QueryWhere ORs(QueryWhere w1, QueryWhere w2, QueryWhere w3, QueryWhere w4, QueryWhere w5) {
-        return new QueryWheres.ORWhere(new List<QueryWhere>{w1, w2, w3, w4, w5});
+    protected Condition ORs(Condition w1, Condition w2, Condition w3, Condition w4, Condition w5) {
+        return new QueryWheres.ORWhere(new List<Condition>{w1, w2, w3, w4, w5});
     }
-    protected QueryWhere ORs(QueryWhere[] conditions) {
+    protected Condition ORs(Condition[] conditions) {
         return new QueryWheres.ORWhere(conditions);
     }
 
@@ -267,7 +267,7 @@ public inherited sharing abstract class QueryObject {
     /**
      * Negates passed WHERE clause with NOT keyword
      */
-    protected QueryWhere NOTs(QueryWhere condition) {
+    protected Condition NOTs(Condition condition) {
         return new QueryWheres.NotWhere(condition);
     }
 
@@ -464,13 +464,11 @@ public inherited sharing abstract class QueryObject {
     * - Field is explicitly allowed for caching or Field is unique to use it for upsert (isIdLookup)
     */
     private Boolean canUseCache() {
-        return useCache;
-//        return useCache
-//            && conditions.size() == 1
-//            && (conditions[0].operator == '=' || conditions[0].operator == 'IN')
-//            && conditions[0].value != null
-//            && conditions[0].value != ''
-//            && getFieldsToCacheBy().contains(conditions[0].field);
+        return useCache
+            && conditions.size() == 1
+            && conditions[0] instanceOf CacheableCondition
+            && ((CacheableCondition) conditions[0]).isCacheable()
+            && getFieldsToCacheBy().contains(((CacheableCondition) conditions[0]).getCacheKey());
     }
 
     /**
@@ -478,19 +476,36 @@ public inherited sharing abstract class QueryObject {
      * @return True if there's remainder with non-cached values and there has to be query on that.
      */
     private Boolean getCachedRecords(List<SObject> result) {
-        return false;
-//        QueryCriteria criteria = conditions.get(0);
-//        QueryCache.CacheResult cacheResult = cache.getCachedRecords(sObjectType, criteria.field, criteria.value);
-//
-//        result.addAll(cacheResult.cachedRecords.values());
-//
-//        if (!cacheResult.remainingValues.isEmpty()) {
-//            this.query.setWhere(conditions.toString());
-//            this.query.bindVariable('value', cacheResult.remainingValues);
-//            return true;
-//
-//        } else {
-//            return false;
-//        }
+        CacheableCondition condition = (CacheableCondition) conditions.get(0);
+        QueryCache.CacheResult cacheResult = cache.getCachedRecords(sObjectType, condition.getCacheKey(), condition.getCacheValue());
+
+        result.addAll(cacheResult.cachedRecords.values());
+
+        if (!cacheResult.remainingValues.isEmpty()) {
+            this.query.setWhere(condition.toSOQL());
+            this.query.bindVariable('value', cacheResult.remainingValues);
+            return true;
+
+        } else {
+            return false;
+        }
+    }
+
+
+    /**
+     * Represents WHERE clause condition
+     */
+    public interface Condition {
+        String toSOQL();
+        Map<String, Object> getQueryParameters();
+    }
+
+    /**
+     * Represents WHERE clause condition that can be used in caching mechanism
+     */
+    public interface CacheableCondition extends Condition {
+        Boolean isCacheable();
+        String getCacheKey();
+        Object getCacheValue();
     }
 }

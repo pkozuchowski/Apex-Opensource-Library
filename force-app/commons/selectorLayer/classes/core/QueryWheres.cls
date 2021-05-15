@@ -31,15 +31,28 @@ public with sharing class QueryWheres {
 
 
     /**
-     * Composite WHERE condition for boolean
+     * Composite WHERE clause that concatenates other conditions with AND
      */
-    private abstract class CompositeWhere implements QueryWhere {
-        protected QueryWhere[] conditions;
+    public class ANDWhere extends CompositeWhere {
+        public ANDWhere(QueryObject.Condition[] conditions) { super(conditions); }
+        protected override String getSeparator() { return ' AND '; }
+    }
+
+    public class ORWhere extends CompositeWhere {
+        public ORWhere(QueryObject.Condition[] conditions) { super(conditions); }
+        protected override String getSeparator() { return ' AND '; }
+    }
+
+    /**
+     * Composite WHERE condition for group of conditions joined by boolean AND/OR
+     */
+    private abstract class CompositeWhere implements QueryObject.Condition {
+        protected QueryObject.Condition[] conditions;
         private String soql;
         private Map<String, Object> values;
         private Boolean isCompiled = false;
 
-        protected CompositeWhere(QueryWhere[] conditions) {
+        protected CompositeWhere(QueryObject.Condition[] conditions) {
             this.conditions = conditions;
             this.values = new Map<String, Object>();
         }
@@ -54,13 +67,13 @@ public with sharing class QueryWheres {
             return this.values;
         }
 
-        public void add(QueryWhere c) { this.conditions.add(c); }
+        public void add(QueryObject.Condition c) { this.conditions.add(c); }
         public Integer size() { return this.conditions.size(); }
 
         private void compile() {
             List<String> wheresStrings = new List<String>();
 
-            for (QueryWhere condition : conditions) {
+            for (QueryObject.Condition condition : conditions) {
                 String conditionString = condition.toSOQL();
                 Map<String, Object> conditionValues = condition.getQueryParameters();
 
@@ -82,20 +95,6 @@ public with sharing class QueryWheres {
         }
 
         protected abstract String getSeparator();
-    }
-
-
-    /**
-     * Composite WHERE clause that concatenates other conditions with AND
-     */
-    public class ANDWhere extends CompositeWhere {
-        public ANDWhere(QueryWhere[] conditions) { super(conditions); }
-        protected override String getSeparator() { return ' AND '; }
-    }
-
-    public class ORWhere extends CompositeWhere {
-        public ORWhere(QueryWhere[] conditions) { super(conditions); }
-        protected override String getSeparator() { return ' AND '; }
     }
 
 
@@ -127,7 +126,7 @@ public with sharing class QueryWheres {
     /**
      * WHERE clause for simple field filter
      */
-    public class FieldWhere implements QueryWhere {
+    public class FieldWhere implements QueryObject.CacheableCondition {
         public String field { get; private set; }
         public String operator { get; private set; }
         public Object value { get; private set; }
@@ -151,16 +150,30 @@ public with sharing class QueryWheres {
                 'value' => value
             };
         }
+
+        public Boolean isCacheable() {
+            return (operator == '=' || operator == 'IN')
+                && value != null
+                && value != '';
+        }
+
+        public String getCacheKey() {
+            return field;
+        }
+
+        public Object getCacheValue() {
+            return value;
+        }
     }
 
 
     /**
      * Composite WHERE clause which negates inner conditions
      */
-    public class NotWhere implements QueryWhere {
-        private QueryWhere innerWhere;
+    public class NotWhere implements QueryObject.Condition {
+        private QueryObject.Condition innerWhere;
 
-        public NotWhere(QueryWhere innerWhere) {
+        public NotWhere(QueryObject.Condition innerWhere) {
             this.innerWhere = innerWhere;
         }
 

@@ -31,7 +31,7 @@ public inherited sharing abstract class QueryObject {
 
     protected final QueryBuilder query = new QueryBuilder();
     protected final DatabaseService databaseService = new DatabaseService();
-    protected final List<QueryCriteria> criteria = new List<QueryCriteria>();
+    protected final List<QueryWhere> conditions = new List<QueryWhere>();
 
     private Boolean useCache = true;
     private Boolean enforceSecurity = false;
@@ -201,25 +201,68 @@ public inherited sharing abstract class QueryObject {
      * @return SObjects with field values in given value set.
      */
     public virtual QueryObject byField(String fieldAPIName, String operator, Object value) {
-        this.criteria.add(new QueryCriteria(fieldAPIName, operator, value));
+        this.conditions.add(QueryWheres.field(fieldAPIName, operator, value));
         return this;
     }
 
 
     /**
-    * @return SObjects which satisfy given query condition
-    */
-    public QueryObject byCriterion(QueryCriteria criterion) {
-        this.criteria.add(criterion);
+     * Adds WHERE clause to query conditions
+     */
+    protected QueryObject wheres(QueryWhere wheres) {
+        this.conditions.add(wheres);
         return this;
     }
 
     /**
-    * @return SObjects which satisfy all of given query condition
+    * Composite query condition that joins inner where clauses with AND operator
     */
-    public QueryObject byCriteria(QueryCriteria[] criteria) {
-        this.criteria.addAll(criteria);
-        return this;
+    protected QueryWhere ANDs(QueryWhere w1, QueryWhere w2) {
+        return QueryWheres.ANDs(new List<QueryWhere>{w1, w2});
+    }
+    protected QueryWhere ANDs(QueryWhere w1, QueryWhere w2, QueryWhere w3) {
+        return QueryWheres.ANDs(new List<QueryWhere>{w1, w2, w3});
+    }
+    protected QueryWhere ANDs(QueryWhere w1, QueryWhere w2, QueryWhere w3, QueryWhere w4) {
+        return QueryWheres.ANDs(new List<QueryWhere>{w1, w2, w3, w4});
+    }
+    protected QueryWhere ANDs(QueryWhere w1, QueryWhere w2, QueryWhere w3, QueryWhere w4, QueryWhere w5) {
+        return QueryWheres.ANDs(new List<QueryWhere>{w1, w2, w3, w4, w5});
+    }
+    protected QueryWhere ANDs(QueryWhere[] conditions) {
+        return QueryWheres.ANDs(conditions);
+    }
+
+    /**
+    * Composite query condition that joins inner where clauses with OR operator
+    */
+    protected QueryWhere ORs(QueryWhere w1, QueryWhere w2) {
+        return QueryWheres.ORs(new List<QueryWhere>{w1, w2});
+    }
+    protected QueryWhere ORs(QueryWhere w1, QueryWhere w2, QueryWhere w3) {
+        return QueryWheres.ORs(new List<QueryWhere>{w1, w2, w3});
+    }
+    protected QueryWhere ORs(QueryWhere w1, QueryWhere w2, QueryWhere w3, QueryWhere w4) {
+        return QueryWheres.ORs(new List<QueryWhere>{w1, w2, w3, w4});
+    }
+    protected QueryWhere ORs(QueryWhere w1, QueryWhere w2, QueryWhere w3, QueryWhere w4, QueryWhere w5) {
+        return QueryWheres.ORs(new List<QueryWhere>{w1, w2, w3, w4, w5});
+    }
+    protected QueryWhere ORs(QueryWhere[] conditions) {
+        return QueryWheres.ORs(conditions);
+    }
+
+    protected QueryWhere field(SObjectField field, String operator, Object value) {
+        return QueryWheres.field(field, operator, value);
+    }
+    protected QueryWhere field(String field, String operator, Object value) {
+        return QueryWheres.field(field, operator, value);
+    }
+    protected QueryWheres.FieldWhereFactory field(SObjectField field) {
+        return QueryWheres.field(field);
+    }
+    protected QueryWheres.FieldWhereFactory field(String field) {
+        return QueryWheres.field(field);
     }
 
 
@@ -281,12 +324,14 @@ public inherited sharing abstract class QueryObject {
         return result.isEmpty() ? getSObjectType().newSObject(null, false) : result.get(0);
     }
 
+
     /**
      * @return List of SObjects for given conditions
      */
     public SObject[] getList() {
         return executeQuery();
     }
+
 
     /**
      * @return Ids for SObjects
@@ -305,13 +350,14 @@ public inherited sharing abstract class QueryObject {
         return resultMap;
     }
 
+
     /**
      * @return Query Locator for current query
      */
     public Database.QueryLocator getQueryLocator() {
         this.query.addFields(getFields())
-                .fromObject(getSObjectType())
-                .setQueryCriteria(criteria);
+            .fromObject(getSObjectType())
+            .setQueryCriteria(conditions);
 
         return this.databaseService.getQueryLocator(query.toSOQL(), query.getVariables());
     }
@@ -376,7 +422,7 @@ public inherited sharing abstract class QueryObject {
             doQuery = getCachedRecords(result);
 
         } else {
-            this.query.setQueryCriteria(criteria);
+            this.query.setQueryCriteria(conditions);
         }
 
         if (doQuery) {
@@ -391,8 +437,7 @@ public inherited sharing abstract class QueryObject {
         Type thisQueryClass = Runtime.getType(this);
         if (mocker.isMocked(thisQueryClass)) {
             QueryMock mock = mocker.getMock(thisQueryClass);
-            result = mock.handleQuery(thisQueryClass, criteria, result);
-
+            result = mock.handleQuery(thisQueryClass, conditions, result);
         }
 
         if (enforceSecurity) {

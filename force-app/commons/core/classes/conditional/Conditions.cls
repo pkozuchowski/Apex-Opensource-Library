@@ -94,26 +94,21 @@ public abstract inherited sharing class Conditions {
     }
 
 
-    public abstract class GroupCondition implements Condition {
+    /**
+     * Composite Condition used for creating nested AND and ORs conditions
+     */
+    public abstract class CompositeCondition implements Condition {
         protected Condition[] conditions;
 
-        public GroupCondition(Condition[] conditions) {
+        public CompositeCondition(Condition[] conditions) {
             this.conditions = conditions;
-        }
-
-        public void add(Condition c) {
-            this.conditions.add(c);
-        }
-
-        public Integer size() {
-            return this.conditions.size();
         }
     }
 
     /**
      * Returns true if any of the composite filters return true;
      */
-    private class ANDCondition extends GroupCondition {
+    private class ANDCondition extends CompositeCondition {
 
         public ANDCondition(Condition[] conditions) {
             super(conditions);
@@ -131,7 +126,7 @@ public abstract inherited sharing class Conditions {
     /**
      * Returns true if all of the composite filters return true;
      */
-    private class ORCondition extends GroupCondition {
+    private class ORCondition extends CompositeCondition {
 
         public ORCondition(Condition[] conditions) {
             super(conditions);

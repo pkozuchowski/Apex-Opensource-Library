@@ -55,13 +55,25 @@ public abstract class QueryCondition {
          * @return True if condition can be used in cache mechanism
          */
         Boolean isCacheable();
+
+        /**
+         * @return Key under which Cache saves value-record pairs. Usually it's a field API Name.
+         */
         String getCacheKey();
+
+        /**
+         * @return Key value udner which SObject instance is cached - usually unique id field value.
+         */
         Object getCacheValue();
+
+        /**
+         * @param remainder Cache values that did not have cached records.
+         * @return Instance of QueryCondition that can retrieve records that were not found in cache.
+         */
         QueryCondition getRemainderCondition(List<Object> remainder);
     }
 
 
-    private static Integer valueCounter = 0;
 
     /**
      * Represents lack of WHERE clause expressions
@@ -101,6 +113,9 @@ public abstract class QueryCondition {
         public ORExpr(QueryCondition[] conditions) { super(conditions); }
         protected override String getSeparator() { return ' OR '; }
     }
+
+
+    private static Integer valueCounter = 0;
 
     /**
      * Composite WHERE condition for group of conditions joined by boolean AND/OR

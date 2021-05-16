@@ -88,7 +88,7 @@ public virtual inherited sharing class TriggerLogicSelector {
                 + ' AND SObject__c = :sObjectType'
                 + ' AND Async__c =:async'
                 + ' AND ' + getTriggerField(op) + ' = TRUE'
-                + ' ORDER BY Order__c ASC NULLS LAST, ApexClass__c ASC')
+                + ' ORDER BY Package__c ASC NULL FIRST, Order__c ASC NULLS LAST, ApexClass__c ASC')
         );
     }
 

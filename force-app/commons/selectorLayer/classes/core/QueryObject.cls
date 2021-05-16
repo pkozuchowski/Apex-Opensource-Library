@@ -375,11 +375,12 @@ public inherited sharing abstract class QueryObject {
      * @return Query Locator for current query
      */
     public Database.QueryLocator getQueryLocator() {
+        QueryCondition compiledExp = getCompiledConditions();
         this.query.addFields(getFields())
             .fromObject(getSObjectType())
-            .setQueryCriteria(conditions);
+            .setWhere(compiledExp.toSOQL());
 
-        return this.databaseService.getQueryLocator(query.toSOQL(), query.getVariables());
+        return this.databaseService.getQueryLocator(query.toSOQL(), compiledExp.getQueryParameters());
     }
 
     /**
@@ -403,7 +404,10 @@ public inherited sharing abstract class QueryObject {
         }
 
         this.query.fromObject(getSObjectType());
-        return this.databaseService.query(query.toSOQL(), query.getVariables());
+
+        QueryCondition compiledExp = getCompiledConditions();
+        this.query.setWhere(compiledExp.toSOQL());
+        return this.databaseService.query(query.toSOQL(), compiledExp.getQueryParameters());
     }
 
 
@@ -436,17 +440,18 @@ public inherited sharing abstract class QueryObject {
     */
     protected SObject[] executeQuery() {
         List<SObject> result = Runtime.newListOfItemType(getSObjectType());
+        QueryCondition compiledExpr = getCompiledConditions();
         Boolean doQuery = true;
 
         if (canUseCache()) {
             doQuery = getCachedRecords(result);
 
         } else {
-            this.query.setQueryCriteria(conditions);
+            this.query.setWhere(compiledExpr.toSOQL());
         }
 
         if (doQuery) {
-            SObject[] records = this.databaseService.query(query.toSOQL(), query.getVariables());
+            SObject[] records = this.databaseService.query(query.toSOQL(), compiledExpr.getQueryParameters());
             result.addAll(records);
 
             if (!(records instanceof AggregateResult[])) {
@@ -503,6 +508,16 @@ public inherited sharing abstract class QueryObject {
 
         } else {
             return false;
+        }
+    }
+
+    private QueryCondition getCompiledConditions() {
+        if (conditions.isEmpty()) {
+            return new QueryCondition.NullExpr();
+        } else if (conditions.size() == 1) {
+            return conditions.get(0);
+        } else {
+            return ANDs(conditions);
         }
     }
 

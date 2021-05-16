@@ -439,8 +439,25 @@ public inherited sharing abstract class QueryObject {
     * Executes query and caches results
     */
     protected SObject[] executeQuery() {
+        Type thisQueryClass = Runtime.getType(this);
+
+        if (mocker.isMocked(thisQueryClass)) {
+            return mocker.getMock(thisQueryClass).handleQuery(getCompiledCondition());
+        }
+
+        List<SObject> result = getQueryResult();
+
+        if (enforceSecurity) {
+            SObjectAccessDecision decision = Security.stripInaccessible(AccessType.READABLE, result);
+            result = decision.getRecords();
+        }
+
+        return result;
+    }
+
+    private List<SObject> getQueryResult() {
         List<SObject> result = Runtime.newListOfItemType(getSObjectType());
-        QueryCondition compiledExpr = getCompiledConditions();
+        QueryCondition compiledExpr = getCompiledCondition();
         Boolean doQuery = true;
 
         if (canUseCache()) {
@@ -456,17 +473,6 @@ public inherited sharing abstract class QueryObject {
             if (!(records instanceof AggregateResult[])) {
                 cache.put(sObjectType, getFieldsToCacheBy(), records);
             }
-        }
-
-        Type thisQueryClass = Runtime.getType(this);
-        if (mocker.isMocked(thisQueryClass)) {
-            QueryMock mock = mocker.getMock(thisQueryClass);
-            result = mock.handleQuery(thisQueryClass, conditions, result);
-        }
-
-        if (enforceSecurity) {
-            SObjectAccessDecision decision = Security.stripInaccessible(AccessType.READABLE, result);
-            result = decision.getRecords();
         }
 
         return result;

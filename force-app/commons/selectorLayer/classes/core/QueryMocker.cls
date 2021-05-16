@@ -90,7 +90,7 @@ public with sharing class QueryMocker {
             this.mockRecords = mockRecords;
         }
 
-        public SObject[] handleQuery(Type queryObject, QueryCondition[] criteria, SObject[] queryResult) {
+        public SObject[] handleQuery(QueryCondition condition) {
             return mockRecords;
         }
     }

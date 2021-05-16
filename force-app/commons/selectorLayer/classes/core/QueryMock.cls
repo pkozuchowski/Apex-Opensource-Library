@@ -30,17 +30,10 @@ public interface QueryMock {
 
     /**
      * When mock is set for selector, this method will be called to determine the query result.
-     * Mock is supplied with information about caller class of selector, called selector and method, query bound variables and original result.
+     * Mock is supplied with information about query conditions
      *
-     * @param queryObject  Name of query object class (ex. 'AccountQuery')
-     * @param criteria Query criteria
-     * @param queryResult Real result of the executed query
-     *
+     * @param condition Query condition - either single or composite
      * @return Mocked query result
      */
-    SObject[] handleQuery(
-            Type queryObject,
-            QueryCondition[] criteria,
-            SObject[] queryResult
-    );
+    SObject[] handleQuery(QueryCondition condition);
 }

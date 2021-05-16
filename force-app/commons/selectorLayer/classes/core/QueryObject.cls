@@ -506,4 +506,18 @@ public inherited sharing abstract class QueryObject {
         }
     }
 
+
+    /**
+     * @return String representation of the Query
+     */
+    public override String toString() {
+        QueryCondition compiledExpr = getCompiledConditions();
+
+        QueryBuilder copy = this.query.clone();
+        copy.setWhere(compiledExpr.toSOQL());
+        return new List<Object>{
+            copy.toSOQL(),
+            compiledExpr.getQueryParameters()
+        }.toString();
+    }
 }

@@ -57,6 +57,7 @@ public abstract class QueryCondition {
         Boolean isCacheable();
         String getCacheKey();
         Object getCacheValue();
+        QueryCondition getRemainderCondition(List<Object> remainder);
     }
 
 
@@ -220,6 +221,10 @@ public abstract class QueryCondition {
 
         public Object getCacheValue() {
             return value;
+        }
+
+        public QueryCondition getRemainderCondition(List<Object> remainder) {
+            return new FieldExpr(field, operator, remainder);
         }
     }
 

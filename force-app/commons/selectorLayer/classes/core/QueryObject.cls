@@ -444,13 +444,12 @@ public inherited sharing abstract class QueryObject {
         Boolean doQuery = true;
 
         if (canUseCache()) {
-            doQuery = getCachedRecords(result);
-
-        } else {
-            this.query.setWhere(compiledExpr.toSOQL());
+            compiledExpr = getCachedRecordsAndReturnRemainderCondition(result);
+            doQuery = compiledExpr != null;
         }
 
         if (doQuery) {
+            this.query.setWhere(compiledExpr.toSOQL());
             SObject[] records = this.databaseService.query(query.toSOQL(), compiledExpr.getQueryParameters());
             result.addAll(records);
 
@@ -494,20 +493,18 @@ public inherited sharing abstract class QueryObject {
      * @param result Query result to append cached records to
      * @return True if there's remainder with non-cached values and there has to be query on that.
      */
-    private Boolean getCachedRecords(List<SObject> result) {
+    private QueryCondition getCachedRecordsAndReturnRemainderCondition(List<SObject> result) {
         QueryCondition condition = conditions.get(0);
-        QueryCondition.Cacheable cachable = (QueryCondition.Cacheable) condition;
-        QueryCache.Result cacheResult = cache.getCachedRecords(sObjectType, cachable.getCacheKey(), cachable.getCacheValue());
+        QueryCondition.Cacheable cacheable = (QueryCondition.Cacheable) condition;
+        QueryCache.Result cacheResult = cache.getCachedRecords(sObjectType, cacheable.getCacheKey(), cacheable.getCacheValue());
 
         result.addAll(cacheResult.cachedRecords.values());
 
         if (!cacheResult.remainingValues.isEmpty()) {
-            this.query.setWhere(condition.toSOQL());
-            this.query.bindVariable('value', cacheResult.remainingValues);
-            return true;
+            return cacheable.getRemainderCondition(cacheResult.remainingValues);
 
         } else {
-            return false;
+            return null;
         }
     }
 

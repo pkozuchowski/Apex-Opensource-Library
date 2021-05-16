@@ -102,7 +102,7 @@ private class QueryMockerTest {
 
     private class AccountQueryMock implements QueryMock {
 
-        public SObject[] handleQuery(Type queryObject, QueryCriteria[] criteria, SObject[] queryResult) {
+        public SObject[] handleQuery(Type queryObject, QueryCondition[] conditions, SObject[] queryResult) {
             System.assertEquals(TestAccountQuery.class, queryObject);
             System.assertEquals(criteria[0], new QueryCriteria(Account.Name, '=', 'Mock Result'));
 

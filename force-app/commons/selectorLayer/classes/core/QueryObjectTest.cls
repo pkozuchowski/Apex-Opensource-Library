@@ -117,21 +117,6 @@ public class QueryObjectTest {
         );
     }
 
-    @IsTest
-    static void testSelectByCondition() {
-        assertEquals(
-                ([SELECT Id FROM User WHERE Name = :UserInfo.getUserName()]),
-                new TestUserQuery().byCriterion(new QueryCriteria(User.Name, '=', UserInfo.getUserName())).getList()
-        );
-        assertEquals(
-                ([SELECT Id FROM User WHERE Name = :UserInfo.getUserName() AND ProfileId = :UserInfo.getProfileId()]),
-                new TestUserQuery().byCriteria(new List<QueryCriteria>{
-                        new QueryCriteria(User.Name, '=', UserInfo.getUserName()),
-                        new QueryCriteria(User.ProfileId, '=', UserInfo.getProfileId())
-                })
-                        .getList()
-        );
-    }
 
     @IsTest
     static void testCountBy() {

@@ -375,7 +375,7 @@ public inherited sharing abstract class QueryObject {
      * @return Query Locator for current query
      */
     public Database.QueryLocator getQueryLocator() {
-        QueryCondition compiledExp = getCompiledConditions();
+        QueryCondition compiledExp = getCompiledCondition();
         this.query.addFields(getFields())
             .fromObject(getSObjectType())
             .setWhere(compiledExp.toSOQL());
@@ -405,7 +405,7 @@ public inherited sharing abstract class QueryObject {
 
         this.query.fromObject(getSObjectType());
 
-        QueryCondition compiledExp = getCompiledConditions();
+        QueryCondition compiledExp = getCompiledCondition();
         this.query.setWhere(compiledExp.toSOQL());
         return this.databaseService.query(query.toSOQL(), compiledExp.getQueryParameters());
     }
@@ -506,15 +506,15 @@ public inherited sharing abstract class QueryObject {
 
         result.addAll(cacheResult.cachedRecords.values());
 
-        if (!cacheResult.remainingValues.isEmpty()) {
-            return cacheable.getRemainderCondition(cacheResult.remainingValues);
+        if (cacheResult.remainingValues.isEmpty()) {
+            return null;
 
         } else {
-            return null;
+            return cacheable.getRemainderCondition(cacheResult.remainingValues);
         }
     }
 
-    private QueryCondition getCompiledConditions() {
+    private QueryCondition getCompiledCondition() {
         if (conditions.isEmpty()) {
             return new QueryCondition.NullExpr();
         } else if (conditions.size() == 1) {
@@ -529,7 +529,7 @@ public inherited sharing abstract class QueryObject {
      * @return String representation of the Query
      */
     public override String toString() {
-        QueryCondition compiledExpr = getCompiledConditions();
+        QueryCondition compiledExpr = getCompiledCondition();
 
         QueryBuilder copy = this.query.clone();
         copy.setWhere(compiledExpr.toSOQL());

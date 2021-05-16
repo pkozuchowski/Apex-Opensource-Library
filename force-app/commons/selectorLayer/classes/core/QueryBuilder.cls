@@ -139,7 +139,9 @@ public inherited sharing class QueryBuilder {
 
 
     public QueryBuilder setWhere(String condition) {
-        this.whereConditions = 'WHERE ' + condition;
+        if (String.isNotEmpty(condition)) {
+            this.whereConditions = 'WHERE ' + condition;
+        }
         return this;
     }
 

@@ -34,28 +34,19 @@ public virtual inherited sharing class TriggerLogicSelector {
      * @return Trigger Logic for currently executing trigger
      */
     public List<TriggerHandler.Logic> getLogic(TriggerContext tc) {
-        return (List<TriggerHandler.Logic>) getInstances(tc, new List<TriggerHandler.Logic>(), false);
-    }
-
-    /**
-     * @param tc Trigger Context of running trigger
-     * @return Trigger Logic for currently executing trigger
-     */
-    public List<TriggerHandler.AsyncLogic> getAsyncLogic(TriggerContext tc) {
-        return (List<TriggerHandler.AsyncLogic>) getInstances(tc, new List<TriggerHandler.AsyncLogic>(), true);
+        return (List<TriggerHandler.Logic>) getInstances(tc, new List<TriggerHandler.Logic>());
     }
 
 
     /**
      * @param tc Current Trigger Context
      * @param instances Empty list of desired result type ex. `new List<TriggerValidationRule> ()`
-     * @param async return sync/async logic
      *
      * @return New instances of classes defined in ApexClass__c field of the custom metadata.
      * @throws TypeException if Type.newInstance() failed.
      */
-    private List<Object> getInstances(TriggerContext tc, List<Object> instances, Boolean async) {
-        for (TriggerLogic__mdt setting : getCustomMetadataRecords(String.valueOf(tc.sObjectType), tc.operationType, async)) {
+    private List<Object> getInstances(TriggerContext tc, List<Object> instances) {
+        for (TriggerLogic__mdt setting : getCustomMetadataRecords(String.valueOf(tc.sObjectType), tc.operationType)) {
             try {
                 Type ruleClass = Type.forName(setting.ApexClass__c);
                 Object logic = ruleClass.newInstance();
@@ -81,12 +72,11 @@ public virtual inherited sharing class TriggerLogicSelector {
     /**
      * @return List of trigger logic metadata for given trigger operation.
      */
-    protected virtual List<TriggerLogic__mdt> getCustomMetadataRecords(String sObjectType, TriggerOperation op, Boolean async) {
+    protected virtual List<TriggerLogic__mdt> getCustomMetadataRecords(String sObjectType, TriggerOperation op) {
         return Database.query(String.escapeSingleQuotes('SELECT ApexClass__c, DeveloperName, Parameters__c'
                 + ' FROM TriggerLogic__mdt'
                 + ' WHERE Enabled__c = TRUE'
                 + ' AND SObject__c = :sObjectType'
-                + ' AND Async__c =:async'
                 + ' AND ' + getTriggerField(op) + ' = TRUE'
                 + ' ORDER BY Package__c ASC NULL FIRST, Order__c ASC NULLS LAST, ApexClass__c ASC')
         );
@@ -124,15 +114,14 @@ public virtual inherited sharing class TriggerLogicSelector {
         /**
          * @return Subset of mocked metadata that should be executed for current trigger sObject and operation
          */
-        protected override List<TriggerLogic__mdt> getCustomMetadataRecords(String sObjectType, TriggerOperation op, Boolean async) {
+        protected override List<TriggerLogic__mdt> getCustomMetadataRecords(String sObjectType, TriggerOperation op) {
             List<TriggerLogic__mdt> settings = new List<TriggerLogic__mdt>();
             SObjectField triggerField = getTriggerField(op);
 
             for (TriggerLogic__mdt logic : mockMetadata) {
                 if (logic.Enabled__c == true
                         && logic.SObject__c == sObjectType
-                        && logic.get(triggerField) == true
-                        && logic.Async__c == async) {
+                        && logic.get(triggerField) == true) {
                     settings.add(logic);
                 }
             }

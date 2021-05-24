@@ -26,13 +26,13 @@
 @IsTest(IsParallel=true)
 private class TriggerDispatcherTest {
     private static final String
-            ID_1 = '001000000000000',
-            ID_2 = '001000000000001',
-            ID_3 = '001000000000002',
-            NAME_TEST = 'Test',
-            SOBJECT_ACCOUNT = 'Account',
-            COUNTRY_USA = 'USA',
-            CITY_NY = 'New York';
+        ID_1 = '001000000000000',
+        ID_2 = '001000000000001',
+        ID_3 = '001000000000002',
+        NAME_TEST = 'Test',
+        SOBJECT_ACCOUNT = 'Account',
+        COUNTRY_USA = 'USA',
+        CITY_NY = 'New York';
 
     /**
      * This constructor can be called in Unit Tests to mock trigger execution for certain
@@ -66,7 +66,7 @@ private class TriggerDispatcherTest {
     private class TestAccountTriggerHandler extends TriggerHandler {
         public override void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
             this.execute(triggerNew, tc, new List<TriggerHandler.Logic>{
-                    new TestTriggerLogic()
+                new TestTriggerLogic()
             });
         }
     }
@@ -93,18 +93,18 @@ private class TriggerDispatcherTest {
     @IsTest
     static void triggerShouldExecuteTriggerLogicClassesDefinedInSettings() {
         List<Account> accounts = new List<Account>{
-                new Account(Id = ID_1, Name = NAME_TEST),
-                new Account(Id = ID_2, Name = NAME_TEST),
-                new Account(Id = ID_3, Name = NAME_TEST)
+            new Account(Id = ID_1, Name = NAME_TEST),
+            new Account(Id = ID_2, Name = NAME_TEST),
+            new Account(Id = ID_3, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
         TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
-                new TriggerLogic__mdt(
-                        Enabled__c = true,
-                        ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
-                        BeforeUpdate__c = true,
-                        SObject__c = SOBJECT_ACCOUNT
-                )
+            new TriggerLogic__mdt(
+                Enabled__c = true,
+                ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
+                BeforeUpdate__c = true,
+                SObject__c = SOBJECT_ACCOUNT
+            )
         });
 
 
@@ -121,9 +121,9 @@ private class TriggerDispatcherTest {
     @IsTest
     static void triggerShouldExecuteTriggerHandler() {
         List<Account> accounts = new List<Account>{
-                new Account(Id = ID_1, Name = NAME_TEST),
-                new Account(Id = ID_2, Name = NAME_TEST),
-                new Account(Id = ID_3, Name = NAME_TEST)
+            new Account(Id = ID_1, Name = NAME_TEST),
+            new Account(Id = ID_2, Name = NAME_TEST),
+            new Account(Id = ID_3, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
 
@@ -140,96 +140,23 @@ private class TriggerDispatcherTest {
 
 
     /**
-     * Example of metadata defined Async logic which filters records and does callout
-     */
-    public class TestAsyncLogic implements TriggerHandler.AsyncLogic {
-
-        public List<SObject> filter(List<SObject> records, TriggerContext ctx) {
-            List<SObject> filtered = new List<SObject>();
-
-            for (Account account : (List<Account>) records) {
-                if (String.isNotBlank(account.BillingCountry)) {
-                    filtered.add(account);
-                }
-            }
-
-            return filtered;
-        }
-
-        public void execute(List<SObject> records, QueueableContext ctx) {
-            HttpRequest request = new HttpRequest();
-            request.setMethod('POST');
-            request.setEndpoint('https://example.com');
-            request.setBody(JSON.serialize(records));
-
-            new Http().send(request);
-        }
-    }
-
-    private class AsyncCalloutMock implements HttpCalloutMock {
-        @TestVisible
-        private List<Account> records;
-
-        public HttpResponse respond(HttpRequest request) {
-            this.records = (List<Account>) JSON.deserialize(request.getBody(), List<Account>.class);
-            return new HttpResponse();
-        }
-    }
-
-    /**
-     * Trigger should execute logic described in Async Logic setting in separate transaction using Queueable
-     */
-    @IsTest
-    static void triggerShouldExecuteAsyncLogicDefinedInTriggerSettings() {
-        List<Account> accounts = new List<Account>{
-                new Account(Id = ID_2, Name = NAME_TEST),
-                new Account(Id = ID_3, Name = NAME_TEST, BillingCountry = COUNTRY_USA)
-        };
-        AsyncCalloutMock mock = new AsyncCalloutMock();
-
-        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_INSERT, accounts, null);
-        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
-                new TriggerLogic__mdt(
-                        Enabled__c = true,
-                        ApexClass__c = 'TriggerDispatcherTest.TestAsyncLogic',
-                        AfterInsert__c = true,
-                        SObject__c = SOBJECT_ACCOUNT,
-                        Async__c = true
-                )
-        });
-
-
-        Test.startTest();
-        Test.setMock(HttpCalloutMock.class, mock);
-        TriggerDispatcher.runMetadataDefinedTriggers(tc);
-
-        System.assertEquals(null, mock.records, 'Async logic should be executed only after Test.stopTest()');
-        Test.stopTest();
-
-
-        System.assertEquals(1, mock.records.size(), 'Async Logic should process 1 record');
-        System.assertEquals(COUNTRY_USA, mock.records[0].BillingCountry, 'Async logic should execute and update BillingCountry');
-    }
-
-
-    /**
      * When invalid or unreachable type is specified in custom metadata, TypeException should be thrown with meaningful message.
      */
     @IsTest
     static void typeExceptionShouldBeThrownWhenInvalidClassIsDefinedInSettings() {
         List<Account> accounts = new List<Account>{
-                new Account(Id = ID_1),
-                new Account(Id = ID_2),
-                new Account(Id = ID_3)
+            new Account(Id = ID_1),
+            new Account(Id = ID_2),
+            new Account(Id = ID_3)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_DELETE, accounts, accounts);
         TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
-                new TriggerLogic__mdt(
-                        Enabled__c = true,
-                        ApexClass__c = 'TriggerDispatcherTest.InvalidClass',
-                        BeforeDelete__c = true,
-                        SObject__c = SOBJECT_ACCOUNT
-                )
+            new TriggerLogic__mdt(
+                Enabled__c = true,
+                ApexClass__c = 'TriggerDispatcherTest.InvalidClass',
+                BeforeDelete__c = true,
+                SObject__c = SOBJECT_ACCOUNT
+            )
         });
         Exception ex;
 
@@ -244,7 +171,7 @@ private class TriggerDispatcherTest {
 
 
         System.assert(ex instanceof TypeException && ex.getMessage().contains('(TriggerDispatcherTest.InvalidClass)'),
-                'If TriggerLogic cannot be constructed, TypeException should be thrown.');
+            'If TriggerLogic cannot be constructed, TypeException should be thrown.');
     }
 
     @IsTest
@@ -264,17 +191,17 @@ private class TriggerDispatcherTest {
     @SuppressWarnings('sf:UnitAssertionsShouldIncludeMessage')
     static void testIsChangedHelperMethods() {
         Account record = new Account(
-                Id = ID_1,
-                Name = NAME_TEST,
-                BillingCountry = COUNTRY_USA,
-                BillingCity = CITY_NY,
-                NumberOfEmployees = 0,
-                Phone = '(541) 754-3010'
+            Id = ID_1,
+            Name = NAME_TEST,
+            BillingCountry = COUNTRY_USA,
+            BillingCity = CITY_NY,
+            NumberOfEmployees = 0,
+            Phone = '(541) 754-3010'
         );
         Account oldRecord = new Account(
-                Id = ID_1,
-                Name = NAME_TEST,
-                Phone = '(541) 754-3011'
+            Id = ID_1,
+            Name = NAME_TEST,
+            Phone = '(541) 754-3011'
         );
 
         TriggerContext ctx = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, new List<SObject>{record}, new List<SObject>{oldRecord});
@@ -314,16 +241,16 @@ private class TriggerDispatcherTest {
     @IsTest
     static void triggerShouldNotExecuteWhenDisabledForTransaction() {
         List<Account> accounts = new List<Account>{
-                new Account(Id = ID_1, Name = NAME_TEST)
+            new Account(Id = ID_1, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
         TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
-                new TriggerLogic__mdt(
-                        Enabled__c = true,
-                        ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
-                        AfterUpdate__c = true,
-                        SObject__c = SOBJECT_ACCOUNT
-                )
+            new TriggerLogic__mdt(
+                Enabled__c = true,
+                ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
+                AfterUpdate__c = true,
+                SObject__c = SOBJECT_ACCOUNT
+            )
         });
 
 
@@ -346,20 +273,20 @@ private class TriggerDispatcherTest {
     @IsTest
     static void triggerShouldNotExecuteWhenDisabledInCustomSetting() {
         upsert new LogicSwitch__c(
-                SetupOwnerId = UserInfo.getUserId(),
-                DisableTriggers__c = true
+            SetupOwnerId = UserInfo.getUserId(),
+            DisableTriggers__c = true
         );
         List<Account> accounts = new List<Account>{
-                new Account(Id = ID_1, Name = NAME_TEST)
+            new Account(Id = ID_1, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
         TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
-                new TriggerLogic__mdt(
-                        Enabled__c = true,
-                        ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
-                        AfterUpdate__c = true,
-                        SObject__c = SOBJECT_ACCOUNT
-                )
+            new TriggerLogic__mdt(
+                Enabled__c = true,
+                ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
+                AfterUpdate__c = true,
+                SObject__c = SOBJECT_ACCOUNT
+            )
         });
 
 
@@ -409,19 +336,19 @@ private class TriggerDispatcherTest {
     @IsTest
     static void customMetadataTriggerShouldBeParameterizable() {
         List<Account> accounts = new List<Account>{
-                new Account(Id = ID_1, Name = NAME_TEST),
-                new Account(Id = ID_2, Name = NAME_TEST),
-                new Account(Id = ID_3, Name = NAME_TEST)
+            new Account(Id = ID_1, Name = NAME_TEST),
+            new Account(Id = ID_2, Name = NAME_TEST),
+            new Account(Id = ID_3, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_INSERT, accounts, null);
         TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
-                new TriggerLogic__mdt(
-                        Enabled__c = true,
-                        ApexClass__c = 'TriggerDispatcherTest.ParameterizableLogic',
-                        BeforeInsert__c = true,
-                        SObject__c = SOBJECT_ACCOUNT,
-                        Parameters__c = 'New Name'
-                )
+            new TriggerLogic__mdt(
+                Enabled__c = true,
+                ApexClass__c = 'TriggerDispatcherTest.ParameterizableLogic',
+                BeforeInsert__c = true,
+                SObject__c = SOBJECT_ACCOUNT,
+                Parameters__c = 'New Name'
+            )
         });
 
 

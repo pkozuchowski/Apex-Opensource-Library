@@ -37,7 +37,6 @@ public without sharing class TriggerDispatcher {
         if (shouldRun(triggerContext)) {
             TriggerLogicSelector logicSelector = TriggerSettings.getLogicSelector();
             metadataTrigger.execute(triggerContext.getRecords(), triggerContext, logicSelector.getLogic(triggerContext));
-            metadataTrigger.executeAsync(triggerContext.getRecords(), triggerContext, logicSelector.getAsyncLogic(triggerContext));
         }
     }
 

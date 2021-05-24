@@ -53,23 +53,6 @@ public virtual inherited sharing class TriggerHandler {
         }
     }
 
-    /**
-     * Executes given trigger logic implementations asynchronously, each logic in separate Queueable.
-     */
-    public void executeAsync(List<SObject> records, TriggerContext tc, List<AsyncLogic> triggerLogics) {
-        for (AsyncLogic logic : triggerLogics) {
-            List<SObject> filtered = logic.filter(records, tc);
-
-            if (!filtered.isEmpty()) {
-                if (logic instanceof Queueable) {
-                    System.enqueueJob(logic);
-                } else {
-                    System.enqueueJob(new AsyncLogicQueueableAdapter(filtered, logic));
-                }
-            }
-        }
-    }
-
 
     /**
      * This interface marks classes which should execute on trigger event.
@@ -81,39 +64,10 @@ public virtual inherited sharing class TriggerHandler {
 
 
     /**
-     * This interface marks classes which should execute asynchronously (using Queueable) on trigger event.
-     * Implementing classes does not have to implement Queueable interface, but may do that if needed.
-     * Implementing classes are defined in TriggerLogic custom metadata.
-     */
-    public interface AsyncLogic {
-        List<SObject> filter(List<SObject> records, TriggerContext ctx);
-        void execute(List<SObject> records, QueueableContext ctx);
-    }
-
-
-    /**
      * This interface marks classes which can be parametrized through TriggerLogic__mdt.Parameters__c field.
      * Value of the field will be passed to setParameters method.
      */
     public interface Parameterizable {
         void setParameters(String parameters);
-    }
-
-
-    /**
-     * Adapter between TriggerAsyncLogic interface and Queueable interface
-     */
-    private class AsyncLogicQueueableAdapter implements Queueable, Database.AllowsCallouts {
-        private List<SObject> records;
-        private AsyncLogic asyncLogic;
-
-        public AsyncLogicQueueableAdapter(List<SObject> records, AsyncLogic asyncLogic) {
-            this.records = records;
-            this.asyncLogic = asyncLogic;
-        }
-
-        public void execute(QueueableContext qc) {
-            this.asyncLogic.execute(records, qc);
-        }
     }
 }

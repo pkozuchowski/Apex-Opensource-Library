@@ -86,8 +86,7 @@ public without sharing class TriggerDispatcher {
     */
     private static Boolean shouldRun(TriggerContext triggerContext) {
         return triggerContext.isExecuting
-                && TriggerSettings.isSObjectTriggerEnabled(triggerContext.sObjectType)
-                && TriggerSettings.isTriggerSettingEnabled();
+            && TriggerSettings.isSObjectTriggerEnabled(triggerContext.sObjectType);
     }
 
     private TriggerDispatcher() {

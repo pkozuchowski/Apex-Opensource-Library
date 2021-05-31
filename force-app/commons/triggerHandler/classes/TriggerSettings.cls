@@ -32,9 +32,25 @@
  * all customizations (triggers, flows, validation rules) as long as they incorporate switch logic.
  */
 public inherited sharing class TriggerSettings {
+    private static Boolean triggersEnabled = true;
     private final static LogicSwitch__c logicSwitchSetting = LogicSwitch__c.getInstance();
     private final static Set<SObjectType> disabledTriggers = new Set<SObjectType>();
     private static TriggerLogicSelector logicSelector = new TriggerLogicSelector();
+
+
+    /**
+     * Disables triggers on all SObjects
+     */
+    public static void disableTriggers() {
+        triggersEnabled = false;
+    }
+
+    /**
+     * Enables triggers on all SObjects
+     */
+    public static void enableTriggers() {
+        triggersEnabled = true;
+    }
 
     /**
     * Disable all triggers execution for given sObjectType for current transaction or until enableTrigger is called
@@ -54,14 +70,9 @@ public inherited sharing class TriggerSettings {
      * @return True, if triggers for given SObject Type are enabled.
      */
     public static Boolean isSObjectTriggerEnabled(SObjectType sObjectType) {
-        return disabledTriggers.contains(sObjectType) == false;
-    }
-
-    /**
-     * @return True, if Triggers are enabled at custom setting level for current user, profile or organization.
-     */
-    public static Boolean isTriggerSettingEnabled() {
-        return logicSwitchSetting.DisableTriggers__c == false;
+        return disabledTriggers.contains(sObjectType) == false
+            && logicSwitchSetting.DisableTriggers__c == false
+            && triggersEnabled == true;
     }
 
     /**
@@ -106,12 +117,7 @@ public inherited sharing class TriggerSettings {
     * This action performs DML.
     */
     public static void enableAllLogic() {
-        if (String.isEmpty(logicSwitchSetting.Id)) {
-            delete [SELECT Id FROM LogicSwitch__c WHERE SetupOwnerId = :UserInfo.getUserId()];
-
-        } else {
-            upsert logicSwitchSetting;
-        }
+        delete [SELECT Id FROM LogicSwitch__c WHERE SetupOwnerId = :UserInfo.getUserId()];
     }
 
     private TriggerSettings() {}

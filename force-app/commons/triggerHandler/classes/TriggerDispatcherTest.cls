@@ -302,6 +302,38 @@ private class TriggerDispatcherTest {
 
 
     /**
+     * TriggerSettings.disableTriggers();  and TriggerSettings.enableTriggers(); can be used to switch on/off all trigger execution.
+     */
+    @IsTest
+    static void triggerShouldNotRunWhenAllTriggersDisabled() {
+        List<Account> accounts = new List<Account>{
+            new Account(Id = ID_1, Name = NAME_TEST)
+        };
+        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
+        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
+            new TriggerLogic__mdt(
+                Enabled__c = true,
+                ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
+                AfterUpdate__c = true,
+                SObject__c = SOBJECT_ACCOUNT
+            )
+        });
+
+
+        Test.startTest();
+        TriggerSettings.disableTriggers();
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        TriggerSettings.enableTriggers();
+        Test.stopTest();
+
+
+        for (Account account : accounts) {
+            System.assertEquals(false, account.Name.startsWith('(Customer)'), 'Triggers should be disabled and do not update records');
+        }
+    }
+
+
+    /**
      * .disableLogic() should insert LogicSwitch__c setting for current user with all logic disabled
      * .enableAllLogic() should delete that setting afterwards.
      */
@@ -362,6 +394,10 @@ private class TriggerDispatcherTest {
         }
     }
 
+
+    /**
+     * Example of TriggerHandler.Logic class which can be parametrized through custom metadata.
+     */
     public class ParameterizableLogic implements TriggerHandler.Logic, TriggerHandler.Parameterizable {
         private String parameterName;
 

@@ -5,7 +5,7 @@
 Trigger Logic is executed by first by Package lexicographical order and then by Order field. 
 This allows each team/package to have independent Order sequence.</description>
     <externalId>false</externalId>
-    <fieldManageability>SubscriberControlled</fieldManageability>
+    <fieldManageability>DeveloperControlled</fieldManageability>
     <inlineHelpText>Name of package or functional prefix which corresponds to team in multi-team environments.</inlineHelpText>
     <label>Package</label>
     <length>63</length>

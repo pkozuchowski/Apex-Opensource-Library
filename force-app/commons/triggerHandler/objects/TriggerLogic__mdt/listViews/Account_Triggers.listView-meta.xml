@@ -5,7 +5,6 @@
     <columns>Enabled__c</columns>
     <columns>SObject__c</columns>
     <columns>Order__c</columns>
-    <columns>Async__c</columns>
     <columns>Description__c</columns>
     <columns>BeforeInsert__c</columns>
     <columns>AfterInsert__c</columns>

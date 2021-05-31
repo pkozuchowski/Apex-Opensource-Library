@@ -30,18 +30,18 @@ private class ContactQueryTest {
         insert account;
 
         insert new List<Contact>{
-                new Contact(AccountId = account.Id, LastName = 'Name 1', Email = '1@example.com'),
-                new Contact(AccountId = account.Id, LastName = 'Name 2', Email = '2@example.com'),
-                new Contact(AccountId = account.Id, LastName = 'Name 3', Email = '3@example.com')
+            new Contact(AccountId = account.Id, LastName = 'Name 1', Email = '1@example.com', Phone = '121'),
+            new Contact(AccountId = account.Id, LastName = 'Name 2', Email = '2@example.com', Phone = '122'),
+            new Contact(AccountId = account.Id, LastName = 'Name 3', Email = '3@example.com', Phone = '123')
         };
     }
 
     @IsTest
     static void testSelectWithParentAccount() {
         Contact c = (Contact) new ContactQuery()
-                .withParentAccount()
-                .byName(new Set<String>{'Name 1'})
-                .getFirstOrNull();
+            .withParentAccount()
+            .byName(new Set<String>{'Name 1'})
+            .getFirstOrNull();
 
         System.assertEquals('Parent Account', c.Account.Name);
     }
@@ -49,15 +49,15 @@ private class ContactQueryTest {
     @IsTest
     static void testSelectByName() {
         QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Contact WHERE Name = 'Name 1']),
-                new ContactQuery().byName('Name 1').getList());
+            ([SELECT Id FROM Contact WHERE Name = 'Name 1']),
+            new ContactQuery().byName('Name 1').getList());
     }
 
     @IsTest
     static void testSelectByEmail() {
         QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Contact WHERE Email = '1@example.com']),
-                new ContactQuery().byEmail('1@example.com').getList());
+            ([SELECT Id FROM Contact WHERE Email = '1@example.com']),
+            new ContactQuery().byEmail('1@example.com').getList());
     }
 
     @IsTest
@@ -65,7 +65,14 @@ private class ContactQueryTest {
         Account account = [SELECT Id FROM Account];
 
         QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Contact WHERE AccountId = :account.Id]),
-                new ContactQuery().byAccountId(account.Id).getList());
+            ([SELECT Id FROM Contact WHERE AccountId = :account.Id]),
+            new ContactQuery().byAccountId(account.Id).getList());
+    }
+
+    @IsTest
+    static void testSelectByPhone() {
+        QueryObjectTest.assertEquals(
+            ([SELECT Id FROM Contact WHERE Phone = '121']),
+            new ContactQuery().byPhone('121').getList());
     }
 }

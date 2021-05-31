@@ -69,14 +69,14 @@ public inherited sharing class ContactQuery extends QueryObject {
 
 
     /**
-     * Filters Contacts with given names (List or Set)
+     * Filters Contacts with given name
      */
     public ContactQuery byName(String name) {
         return byName(new Set<String>{name});
     }
 
     /**
-     * Filters Contacts with given names (List or Set)
+     * Filters Contacts with given names
      */
     public ContactQuery byName(Set<String> names) {
         return (ContactQuery) byField(Contact.Name, 'IN', names);
@@ -84,14 +84,14 @@ public inherited sharing class ContactQuery extends QueryObject {
 
 
     /**
-     * Filters Contacts with given emails (List or Set)
+     * Filters Contacts with given email
      */
     public ContactQuery byEmail(String email) {
         return byEmail(new Set<String>{email});
     }
 
     /**
-     * Filters Contacts with given emails (List or Set)
+     * Filters Contacts with given emails
      */
     public ContactQuery byEmail(Set<String> emails) {
         return (ContactQuery) byField(Contact.Email, 'IN', emails);
@@ -99,19 +99,33 @@ public inherited sharing class ContactQuery extends QueryObject {
 
 
     /**
-     * Filters Contacts related to given account Ids (List or Set)
+     * Filters Contacts related to given account Ids
      */
     public ContactQuery byAccountId(Id accountId) {
         return byAccountId(new Set<Id>{accountId});
     }
 
     /**
-     * Filters Contacts related to given account Ids (List or Set)
+     * Filters Contacts related to given account Ids
      */
     public ContactQuery byAccountId(Set<Id> accountIds) {
         return (ContactQuery) byField(Contact.AccountId, 'IN', accountIds);
     }
 
+
+    /**
+     * Filters Contacts with given Phone
+     */
+    public ContactQuery byPhone(String phone) {
+        return byPhone(new Set<String>{phone});
+    }
+
+    /**
+     * Filters Contacts with given Phone
+     */
+    public ContactQuery byPhone(Set<String> phone) {
+        return (ContactQuery) byField(Contact.Phone, 'IN', phone);
+    }
 
     protected override Set<String> getFieldsToCacheBy() {
         return new Set<String>{

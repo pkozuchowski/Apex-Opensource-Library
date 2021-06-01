@@ -8,6 +8,7 @@ package.xml
 **/jsconfig.json
 **/.eslintrc.json
 **/profiles/
+docs/**
 
 # LWC Jest
 **/__tests__/**

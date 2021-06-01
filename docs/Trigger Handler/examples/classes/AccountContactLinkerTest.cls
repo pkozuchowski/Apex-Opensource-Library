@@ -27,22 +27,18 @@
  * /
  */
 
-/**
- * Created by piotr on 06.05.2021.
- */
-
 @IsTest
 private class AccountContactLinkerTest {
     private static final TestDataBuilder testDataBuilder = new TestDataBuilder();
     private static final String
-            EMAIL_1 = 'TestEmail_1@gmail.com',
-            EMAIL_2 = 'TestEmail_2@gmail.com',
-            EMAIL_3 = 'TestEmail_3@gmail.com',
-            USERNAME = 'AccountContactLinkerTest@client.test.com',
-            EXISTING_ACCOUNT_NAME = 'Existing Account';
+        PHONE_1 = '121',
+        PHONE_2 = '122',
+        PHONE_3 = '123',
+        USERNAME = 'AccountAssistantContactLinkerTest@client.test.com',
+        EXISTING_ACCOUNT_NAME = 'Existing Account';
 
     private static final User
-            STD_USER = (User) Query.Users.byUsername(USERNAME).getFirstOrNull();
+        STD_USER = (User) Query.Users.byUsername(USERNAME).getFirstOrNull();
 
 
     @TestSetup
@@ -52,18 +48,18 @@ private class AccountContactLinkerTest {
 
         System.runAs(usr) {
             testDataBuilder
-                    .create(new Account(Name = EXISTING_ACCOUNT_NAME, Email__c = EMAIL_3))
-                    .create(new Contact(LastName = 'Test 1', Email = EMAIL_1))
-                    .create(new Contact(LastName = 'Test 2', Email = EMAIL_2))
-                    .insertRecords();
+                .create(new Account(Name = EXISTING_ACCOUNT_NAME, Phone = PHONE_3))
+                .create(new Contact(LastName = 'Test 1', Phone = PHONE_1))
+                .create(new Contact(LastName = 'Test 2', Phone = PHONE_2))
+                .insertRecords();
         }
     }
 
 
     @IsTest
-    static void whenAccountIsInsertedThenAllContactsWithSameEmailShouldLink() {
+    static void whenAccountIsInsertedThenAllContactsWithSamePhoneShouldLink() {
         System.runAs(STD_USER) {
-            Account acc = (Account) testDataBuilder.create(new Account(Email__c = EMAIL_1)).get(0);
+            Account acc = (Account) testDataBuilder.create(new Account(Phone = PHONE_1)).get(0);
 
 
             Test.startTest();
@@ -71,26 +67,26 @@ private class AccountContactLinkerTest {
             Test.stopTest();
 
 
-            Contact contact = (Contact) Query.Contacts.byEmail(acc.Email__c).getFirstOrNull();
-            System.assertEquals(acc.Id, contact.AccountId, 'Contact should link to created Account with same email.');
+            Contact contact = (Contact) Query.Contacts.byPhone(acc.Phone).getFirstOrNull();
+            System.assertEquals(acc.Id, contact.AccountId, 'Contact should link to created Account with same phone.');
         }
     }
 
 
     @IsTest
-    static void whenAccountChangesEmailThenAllContactsWithNewEmailShouldLink() {
+    static void whenAccountChangesPhoneThenAllContactsWithNewPhoneShouldLink() {
         System.runAs(STD_USER) {
             Account acc = (Account) Query.Accounts.byName(EXISTING_ACCOUNT_NAME).getFirstOrNull();
 
 
             Test.startTest();
-            acc.Email__c = EMAIL_2;
+            acc.Phone = PHONE_2;
             update acc;
             Test.stopTest();
 
 
-            Contact contact = (Contact) Query.Contacts.byEmail(acc.Email__c).getFirstOrNull();
-            System.assertEquals(acc.Id, contact.AccountId, 'Contact should link to created Account with same email.');
+            Contact contact = (Contact) Query.Contacts.byPhone(acc.Phone).getFirstOrNull();
+            System.assertEquals(acc.Id, contact.AccountId, 'Contact should link to created Account with same phone.');
         }
     }
 }

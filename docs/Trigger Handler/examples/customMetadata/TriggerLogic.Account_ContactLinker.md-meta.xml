@@ -23,10 +23,6 @@
         <value xsi:type="xsd:string">AccountContactLinker</value>
     </values>
     <values>
-        <field>Async__c</field>
-        <value xsi:type="xsd:boolean">false</value>
-    </values>
-    <values>
         <field>BeforeDelete__c</field>
         <value xsi:type="xsd:boolean">false</value>
     </values>

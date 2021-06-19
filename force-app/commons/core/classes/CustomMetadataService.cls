@@ -51,6 +51,7 @@ public with sharing class CustomMetadataService {
             customMetadata.label = (String) record.get('Label');
 
             Map<String, Object> populatedFields = record.getPopulatedFieldsAsMap().clone();
+            populatedFields.remove('Id');
             populatedFields.remove('Label');
             populatedFields.remove('DeveloperName');
 

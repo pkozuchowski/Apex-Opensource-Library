@@ -94,7 +94,8 @@ public inherited sharing virtual class QueryObject {
      * Select all fields. Fields are retrieved from sObjectType describe and is different from selecting FIELDS(ALL) as the FIELDS(*) is restricted to 200 records
      */
     public QueryObject selectAllFields() {
-        this.query.addFields(sObjectType.getDescribe().fields.getMap().keySet());
+        Set<String> allFields = sObjectType.getDescribe().fields.getMap().keySet();
+        this.query.setFields(new List<String>(allFields));
         return this;
     }
 

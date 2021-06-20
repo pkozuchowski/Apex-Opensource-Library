@@ -127,7 +127,11 @@ public class QueryObjectTest {
     @IsTest
     static void coverage() {
         new TestUserQuery()
+            .selectField('Name')
+            .selectFields(new List<String>{'Name'})
+            .selectAdditionalFields(new List<String>{'Name'})
             .selectField(Query.Fields.STANDARD)
+            .selectAllFields()
             .withSharing(Sharing.WITHOUT_SHARING)
             .usingCache(true)
             .withStrippedFields(AccessType.READABLE)
@@ -153,7 +157,7 @@ public class QueryObjectTest {
             .addField('Name')
             .addFields(new List<SObjectField>{Account.Id})
             .addFields(new List<String>{'Id'})
-            .addChildFields(new List<SObjectField>{Contact.Id}, 'Contacts')
+            .addChildFields(new List<String>{'Id'}, 'Contacts')
             .fromObject(Account.SObjectType)
             .setWhere('Name != NULL')
             .setGroupBy('Name')

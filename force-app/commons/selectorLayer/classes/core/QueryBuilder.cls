@@ -106,13 +106,6 @@ public inherited sharing class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder addChildFields(List<SObjectField> fields, String relationshipField) {
-        return addSubquery(new QueryBuilder()
-            .addFields(fields)
-            .fromObject(relationshipField)
-        );
-    }
-
     public QueryBuilder addChildFields(List<String> fields, String relationshipField) {
         return addSubquery(new QueryBuilder()
             .addFields(fields)

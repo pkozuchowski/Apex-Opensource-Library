@@ -28,6 +28,7 @@
 public inherited sharing virtual class QueryObject {
     private final static QueryMocker mocker = QueryMocker.getInstance();
     private final static QueryCache cache = QueryCache.getInstance();
+    private final static QueryConditionFactory conditionFactory = new QueryConditionFactory();
 
     protected final QueryBuilder query = new QueryBuilder();
     protected final DatabaseService databaseService = new DatabaseService();
@@ -196,7 +197,7 @@ public inherited sharing virtual class QueryObject {
      * @return SObjects with field values in given value set.
      */
     public virtual QueryObject byField(String fieldAPIName, String operator, Object value) {
-        this.conditions.add(QueryWhere.field(fieldAPIName, operator, value));
+        this.conditions.add(conditionFactory.field(fieldAPIName, operator, value));
         return this;
     }
 
@@ -212,7 +213,7 @@ public inherited sharing virtual class QueryObject {
      * @param params Bind variables present in WHERE clause
      */
     public QueryObject wheres(String whereString, Map<String, Object> params) {
-        return wheres(QueryWhere.wheres(whereString, params));
+        return wheres(conditionFactory.wheres(whereString, params));
     }
 
     /**
@@ -441,13 +442,13 @@ public inherited sharing virtual class QueryObject {
 
     private Query.Condition getCompiledCondition() {
         if (conditions.isEmpty()) {
-            return QueryWhere.blank();
+            return conditionFactory.blank();
 
         } else if (conditions.size() == 1) {
             return conditions.get(0);
 
         } else {
-            return QueryWhere.ANDs(conditions);
+            return conditionFactory.ANDs(conditions);
         }
     }
 

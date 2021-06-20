@@ -30,43 +30,43 @@
 /**
  * Created by piotr on 19.06.2021.
  */
-public with sharing class QueryWhere {
+public with sharing class QueryConditionFactory {
 
     /**
     * Composite query condition that joins inner where clauses with AND operator
     */
-    public static Query.Condition ANDs(Query.Condition w1, Query.Condition w2) {
+    public Query.Condition ANDs(Query.Condition w1, Query.Condition w2) {
         return new ANDExpr(new List<Query.Condition>{w1, w2});
     }
-    public static Query.Condition ANDs(Query.Condition w1, Query.Condition w2, Query.Condition w3) {
+    public Query.Condition ANDs(Query.Condition w1, Query.Condition w2, Query.Condition w3) {
         return new ANDExpr(new List<Query.Condition>{w1, w2, w3});
     }
-    public static Query.Condition ANDs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4) {
+    public Query.Condition ANDs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4) {
         return new ANDExpr(new List<Query.Condition>{w1, w2, w3, w4});
     }
-    public static Query.Condition ANDs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4, Query.Condition w5) {
+    public Query.Condition ANDs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4, Query.Condition w5) {
         return new ANDExpr(new List<Query.Condition>{w1, w2, w3, w4, w5});
     }
-    public static Query.Condition ANDs(Query.Condition[] conditions) {
+    public Query.Condition ANDs(Query.Condition[] conditions) {
         return new ANDExpr(conditions);
     }
 
     /**
     * Composite query condition that joins inner where clauses with OR operator
     */
-    public static Query.Condition ORs(Query.Condition w1, Query.Condition w2) {
+    public Query.Condition ORs(Query.Condition w1, Query.Condition w2) {
         return new ORExpr(new List<Query.Condition>{w1, w2});
     }
-    public static Query.Condition ORs(Query.Condition w1, Query.Condition w2, Query.Condition w3) {
+    public Query.Condition ORs(Query.Condition w1, Query.Condition w2, Query.Condition w3) {
         return new ORExpr(new List<Query.Condition>{w1, w2, w3});
     }
-    public static Query.Condition ORs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4) {
+    public Query.Condition ORs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4) {
         return new ORExpr(new List<Query.Condition>{w1, w2, w3, w4});
     }
-    public static Query.Condition ORs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4, Query.Condition w5) {
+    public Query.Condition ORs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4, Query.Condition w5) {
         return new ORExpr(new List<Query.Condition>{w1, w2, w3, w4, w5});
     }
-    public static Query.Condition ORs(Query.Condition[] conditions) {
+    public Query.Condition ORs(Query.Condition[] conditions) {
         return new ORExpr(conditions);
     }
 
@@ -74,33 +74,39 @@ public with sharing class QueryWhere {
     /**
      * Creates field WHERE condition
      */
-    public static FieldExprFactory field(SObjectField field) {
+    public FieldExprFactory field(SObjectField field) {
         return field('' + field);
     }
-    public static FieldExprFactory field(String field) {
+    public FieldExprFactory field(String field) {
         return new FieldExprFactory(field);
     }
-    public static Query.Condition field(String field, String operator, Object value) {
+    public Query.Condition field(String field, String operator, Object value) {
         return new FieldExpr(field, operator, value);
     }
-    public static Query.Condition field(SObjectField field, String operator, Object value) {
+    public Query.Condition field(SObjectField field, String operator, Object value) {
         return new FieldExpr(field, operator, value);
     }
 
     /**
      * Negates passed WHERE clause with NOT keyword
      */
-    public static Query.Condition NOTs(Query.Condition condition) {
+    public Query.Condition NOTs(Query.Condition condition) {
         return new NotExpr(condition);
     }
 
 
-    public static Query.Condition wheres(String whereString, Map<String, Object> params) {
+    /**
+     * @return Generic where condition defined by whereString and values to bind
+     */
+    public Query.Condition wheres(String whereString, Map<String, Object> params) {
         return new GenericExpr(whereString, params);
     }
 
 
-    public static Query.Condition blank(){
+    /**
+     * @return No query condition - used internally.
+     */
+    public Query.Condition blank() {
         return new NullExpr();
     }
 
@@ -206,24 +212,24 @@ public with sharing class QueryWhere {
     /**
      * Provides interface for building field WHERE clause.
      */
-    private class FieldExprFactory {
+    public class FieldExprFactory {
         private String field;
 
         public FieldExprFactory(String field) {
             this.field = field;
         }
 
-        public FieldExpr equals(Object value) { return new FieldExpr(field, '=', value); }
-        public FieldExpr notEquals(Object value) { return new FieldExpr(field, '!=', value); }
-        public FieldExpr greaterThan(Object value) { return new FieldExpr(field, '>', value); }
-        public FieldExpr greaterEqualsThan(Object value) { return new FieldExpr(field, '>=', value); }
-        public FieldExpr lessThan(Object value) { return new FieldExpr(field, '<', value); }
-        public FieldExpr lessEqualsThan(Object value) { return new FieldExpr(field, '<=', value); }
-        public FieldExpr isIn(Object values) { return new FieldExpr(field, 'IN', values); }
-        public FieldExpr isNotIn(Object values) { return new FieldExpr(field, 'NOT IN', values); }
-        public FieldExpr isLike(String value) { return new FieldExpr(field, 'LIKE', value); }
-        public FieldExpr includes(String value) { return new FieldExpr(field, 'INCLUDES', value); }
-        public FieldExpr excludes(String value) { return new FieldExpr(field, 'EXCLUDES', value); }
+        public Query.Condition equals(Object value) { return new FieldExpr(field, '=', value); }
+        public Query.Condition notEquals(Object value) { return new FieldExpr(field, '!=', value); }
+        public Query.Condition greaterThan(Object value) { return new FieldExpr(field, '>', value); }
+        public Query.Condition greaterEqualsThan(Object value) { return new FieldExpr(field, '>=', value); }
+        public Query.Condition lessThan(Object value) { return new FieldExpr(field, '<', value); }
+        public Query.Condition lessEqualsThan(Object value) { return new FieldExpr(field, '<=', value); }
+        public Query.Condition isIn(Object values) { return new FieldExpr(field, 'IN', values); }
+        public Query.Condition isNotIn(Object values) { return new FieldExpr(field, 'NOT IN', values); }
+        public Query.Condition isLike(String value) { return new FieldExpr(field, 'LIKE', value); }
+        public Query.Condition includes(String value) { return new FieldExpr(field, 'INCLUDES', value); }
+        public Query.Condition excludes(String value) { return new FieldExpr(field, 'EXCLUDES', value); }
     }
 
     /**

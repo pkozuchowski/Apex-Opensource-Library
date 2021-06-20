@@ -66,9 +66,9 @@ public inherited sharing class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder addField(Query.Field field) {
+    public QueryBuilder addField(Query.Fields field) {
         if (field != null) {
-            this.fields.add('FIELDS(' + field.name() + ')');
+            this.fields = new Set<String>{'FIELDS(' + field.name() + ')'};
         }
         return this;
     }
@@ -81,6 +81,11 @@ public inherited sharing class QueryBuilder {
     }
 
     public QueryBuilder addFields(String[] fields) {
+        this.fields.addAll(fields);
+        return this;
+    }
+
+    public QueryBuilder addFields(Set<String> fields) {
         this.fields.addAll(fields);
         return this;
     }

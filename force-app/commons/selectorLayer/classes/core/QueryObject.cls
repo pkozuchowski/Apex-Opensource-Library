@@ -57,18 +57,44 @@ public inherited sharing virtual class QueryObject {
     }
 
 
+    /**
+     * Adds given field to the query
+     */
     public QueryObject selectField(String field) {
         this.query.addField(field);
         return this;
     }
 
-    public QueryObject selectField(Query.Field field) {
+    /**
+     * Selects All, Custom or Standard fields.
+     * Query is restricted to 200 records in case of ALL and CUSTOM fields.
+     */
+    public QueryObject selectField(Query.Fields field) {
         this.query.addField(field);
         return this;
     }
 
+    /**
+     * Selects given fields
+     */
     public QueryObject selectFields(List<String> fields) {
+        this.query.setFields(fields);
+        return this;
+    }
+
+    /**
+     * Selects given fields
+     */
+    public QueryObject selectAdditionalFields(List<String> fields) {
         this.query.addFields(fields);
+        return this;
+    }
+
+    /**
+     * Select all fields. Fields are retrieved from sObjectType describe and is different from selecting FIELDS(ALL) as the FIELDS(*) is restricted to 200 records
+     */
+    public QueryObject selectAllFields() {
+        this.query.addFields(sObjectType.getDescribe().fields.getMap().keySet());
         return this;
     }
 
@@ -365,20 +391,27 @@ public inherited sharing virtual class QueryObject {
     * Executes query and caches results
     */
     protected SObject[] executeQuery() {
-        Type thisQueryClass = Runtime.getType(this);
+        try {
+            Type thisQueryClass = Runtime.getType(this);
 
-        if (mocker.isMocked(thisQueryClass)) {
-            return mocker.getMock(thisQueryClass).mockQuery(getCompiledCondition());
+            if (mocker.isMocked(thisQueryClass)) {
+                return mocker.getMock(thisQueryClass).mockQuery(getCompiledCondition());
+            }
+
+            List<SObject> result = getQueryResult();
+
+            if (accessType != null) {
+                SObjectAccessDecision decision = Security.stripInaccessible(accessType, result);
+                result = decision.getRecords();
+            }
+
+            return result;
+        } catch (Exception e) {
+            QueryException queryException = new QueryException();
+            queryException.initCause(e);
+            queryException.setMessage(e.getMessage() + '\n' + this.toString());
+            throw queryException;
         }
-
-        List<SObject> result = getQueryResult();
-
-        if (accessType != null) {
-            SObjectAccessDecision decision = Security.stripInaccessible(accessType, result);
-            result = decision.getRecords();
-        }
-
-        return result;
     }
 
     private List<SObject> getQueryResult() {
@@ -393,6 +426,7 @@ public inherited sharing virtual class QueryObject {
 
         if (doQuery) {
             this.query.setWhere(compiledExpr.toSOQL());
+            this.query.fromObject(sObjectType);
             SObject[] records = this.databaseService.query(query.toSOQL(), compiledExpr.getQueryParameters());
             result.addAll(records);
 

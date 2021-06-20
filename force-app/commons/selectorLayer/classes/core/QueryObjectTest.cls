@@ -127,7 +127,7 @@ public class QueryObjectTest {
     @IsTest
     static void coverage() {
         new TestUserQuery()
-            .selectField(Query.Field.STANDARD)
+            .selectField(Query.Fields.STANDARD)
             .withSharing(Sharing.WITHOUT_SHARING)
             .usingCache(true)
             .withStrippedFields(AccessType.READABLE)

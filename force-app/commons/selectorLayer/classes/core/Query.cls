@@ -69,7 +69,7 @@ public inherited sharing class Query {
      * Represents SOQL FIELDS() token which can be used to select group of fields
      * without knowing their names in advance.
      */
-    public enum Field {
+    public enum Fields {
         ALL,
         CUSTOM,
         STANDARD

@@ -26,7 +26,7 @@
  * Selector Layer class for Permission Set Assignments.
  * @see PermissionSetQueryTest
  */
-public inherited sharing class PermissionSetAssignmentQuery extends QueryObject {
+public inherited sharing class PermissionSetAssignmentQuery extends Query {
 
     public PermissionSetAssignmentQuery() {
         super(new List<String>{

@@ -24,7 +24,7 @@
 @IsTest
 private class QueryMockerTest {
 
-    public class TestAccountQuery extends QueryObject {
+    public class TestAccountQuery extends Query {
         public TestAccountQuery() {
             super(new List<String>{
                 'Id',

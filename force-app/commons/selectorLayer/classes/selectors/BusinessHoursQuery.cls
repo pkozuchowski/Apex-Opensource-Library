@@ -27,7 +27,7 @@
  * Results are cached for better performance and SOQL Limits savings.
  * @see BusinessHoursQueryTest
  */
-public inherited sharing class BusinessHoursQuery extends QueryObject {
+public inherited sharing class BusinessHoursQuery extends Query {
 
     /**
      * Cache all Business Hours on first query to save SOQL limits

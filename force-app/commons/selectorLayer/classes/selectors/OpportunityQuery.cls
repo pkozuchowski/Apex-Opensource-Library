@@ -25,7 +25,7 @@
 /**
  * Selector layer for Opportunity SObjects
  */
-public inherited sharing class OpportunityQuery extends QueryObject {
+public inherited sharing class OpportunityQuery extends Query {
 
     public OpportunityQuery() {
         super(new List<String>{

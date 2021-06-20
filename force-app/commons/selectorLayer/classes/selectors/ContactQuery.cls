@@ -25,7 +25,7 @@
 /**
  * Selector layer for Contact SObjects
  */
-public inherited sharing class ContactQuery extends QueryObject {
+public inherited sharing class ContactQuery extends Query {
 
     public ContactQuery() {
         super(new List<String>{

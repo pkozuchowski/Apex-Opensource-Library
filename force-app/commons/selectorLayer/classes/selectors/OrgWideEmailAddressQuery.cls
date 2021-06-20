@@ -26,7 +26,7 @@
  * Selector Layer for Org wide email addresses.
  * Cached for limits savings.
  */
-public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
+public inherited sharing class OrgWideEmailAddressQuery extends Query {
 
     /**
      * Cache all records on first initialization

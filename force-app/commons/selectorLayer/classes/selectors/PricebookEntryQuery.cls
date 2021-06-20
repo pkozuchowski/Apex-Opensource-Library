@@ -25,7 +25,7 @@
 /**
  * Selector layer for PricebookEntry SObject.
  */
-public inherited sharing class PricebookEntryQuery extends QueryObject {
+public inherited sharing class PricebookEntryQuery extends Query {
 
     public PricebookEntryQuery() {
         super(new List<String>{

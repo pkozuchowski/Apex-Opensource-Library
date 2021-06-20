@@ -25,7 +25,7 @@
 /**
  * Selector layer for Lead SObjects
  */
-public inherited sharing class LeadQuery extends QueryObject {
+public inherited sharing class LeadQuery extends Query {
 
     public LeadQuery() {
         super(new List<String>{

@@ -26,7 +26,7 @@
  * Selector layer for User sObject
  * @see UserQueryTest
  */
-public inherited sharing class UserQuery extends QueryObject {
+public inherited sharing class UserQuery extends Query {
 
     public UserQuery() {
         super(new List<String>{

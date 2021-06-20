@@ -25,7 +25,7 @@
 /**
  * Selector layer for Case SObjects
  */
-public inherited sharing class CaseQuery extends QueryObject {
+public inherited sharing class CaseQuery extends Query {
 
     public CaseQuery() {
         super(new List<String>{

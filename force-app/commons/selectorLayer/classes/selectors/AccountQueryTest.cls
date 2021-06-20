@@ -32,10 +32,10 @@ private without sharing class AccountQueryTest {
     @TestSetup
     static void testSetup() {
         List<Account> accounts = new List<Account>{
-                new Account(Name = 'Name 0'),
-                new Account(Name = 'Name 1'),
-                new Account(Name = 'Name 2'),
-                new Account(Name = 'Name 3')
+            new Account(Name = 'Name 0'),
+            new Account(Name = 'Name 1'),
+            new Account(Name = 'Name 2'),
+            new Account(Name = 'Name 3')
         };
         insert accounts;
 
@@ -50,6 +50,17 @@ private without sharing class AccountQueryTest {
     @IsTest
     static void testSelectByName() {
         Account account = (Account) new AccountQuery()
+            .withCases()
+            .withChildAccounts()
+            .withContacts()
+            .withOpportunities()
+            .withParentAccount()
+            .byName('Test Child Account')
+            .withSharing(Sharing.WITHOUT_SHARING)
+            .getFirstOrNull();
+
+        System.debug(
+            new AccountQuery()
                 .withCases()
                 .withChildAccounts()
                 .withContacts()
@@ -57,8 +68,8 @@ private without sharing class AccountQueryTest {
                 .byName('Test Child Account')
                 .withOpportunities()
                 .withSharing(Sharing.WITHOUT_SHARING)
-                .getFirstOrNull();
-
+                .toString()
+        );
 
 
         System.assertEquals(1, account.Contacts.size());

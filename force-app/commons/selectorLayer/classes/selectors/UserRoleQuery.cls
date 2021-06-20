@@ -26,7 +26,7 @@
  * Selector Layer class for UserRoles.
  * @see UserRoleQueryTest
  */
-public inherited sharing class UserRoleQuery extends QueryObject {
+public inherited sharing class UserRoleQuery extends Query {
 
     public UserRoleQuery() {
         super(new List<String>{

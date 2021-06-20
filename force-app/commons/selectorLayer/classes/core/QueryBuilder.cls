@@ -27,6 +27,7 @@
  */
 public inherited sharing class QueryBuilder {
     private Set<String> fields = new Set<String>();
+    private Set<String> subqueries = new Set<String>();
     private String fromObject = '';
     private String orderBy = '';
     private String groupBy = '';
@@ -40,7 +41,10 @@ public inherited sharing class QueryBuilder {
      * Builds and returns SOQL query
      */
     public String toSOQL() {
-        String fieldsQueryPart = 'SELECT ' + String.join(new List<String>(fields), ', ');
+        List<String> fieldsWithSubqueries = new List<String>(fields);
+        fieldsWithSubqueries.addAll(subqueries);
+
+        String fieldsQueryPart = 'SELECT ' + String.join(new List<String>(fieldsWithSubqueries), ', ');
 
         String[] query = new String[]{
             fieldsQueryPart,
@@ -102,7 +106,7 @@ public inherited sharing class QueryBuilder {
                 '(', subqueryBuilder.toSOQL(), ')'
             }, ' ');
 
-        this.fields.add(subQuery);
+        this.subqueries.add(subQuery);
         return this;
     }
 

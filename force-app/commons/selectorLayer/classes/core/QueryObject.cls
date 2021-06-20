@@ -25,7 +25,7 @@
 /**
  * Base class for selectors. Contains query builder and common query methods.
  */
-public inherited sharing virtual class QueryObject {
+public abstract inherited sharing class QueryObject {
     private final static QueryMocker mocker = QueryMocker.getInstance();
     private final static QueryCache cache = QueryCache.getInstance();
 
@@ -58,18 +58,10 @@ public inherited sharing virtual class QueryObject {
 
 
     /**
-     * Adds given field to the query
-     */
-    public QueryObject selectField(String field) {
-        this.queryBuilder.addField(field);
-        return this;
-    }
-
-    /**
      * Selects All, Custom or Standard fields.
      * Query is restricted to 200 records in case of ALL and CUSTOM fields.
      */
-    public QueryObject selectField(Query.Fields field) {
+    public QueryObject selectFields(Query.Fields field) {
         this.queryBuilder.addField(field);
         return this;
     }
@@ -79,6 +71,16 @@ public inherited sharing virtual class QueryObject {
      */
     public QueryObject selectFields(List<String> fields) {
         this.queryBuilder.setFields(fields);
+        return this;
+    }
+
+    /**
+     * Selects given fields
+     * @param fields Comma separated fields ex. selectFields('Id, Name, Username')
+     */
+    public QueryObject selectFields(String fields) {
+        List<String> fieldsSplit = fields.deleteWhitespace().split(',');
+        this.queryBuilder.setFields(fieldsSplit);
         return this;
     }
 
@@ -139,7 +141,7 @@ public inherited sharing virtual class QueryObject {
     * Since there is no proper way to handle method chaining of builder pattern with inheritance in Apex,
     * this method should be reimplemented where it's needed as public XXXSelector withoutCache();
     */
-    public QueryObject usingCache(Boolean useCache) {
+    public QueryObject useCache(Boolean useCache) {
         this.useCache = useCache;
         return this;
     }
@@ -151,7 +153,7 @@ public inherited sharing virtual class QueryObject {
      *
      * @throws System.NoAccessException No access to entity
      */
-    public QueryObject withStrippedFields(AccessType accessType) {
+    public QueryObject stripInaccessible(AccessType accessType) {
         this.accessType = accessType;
         return this;
     }

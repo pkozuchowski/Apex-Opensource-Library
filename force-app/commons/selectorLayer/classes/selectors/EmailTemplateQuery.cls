@@ -26,7 +26,7 @@
  * Selector layer for Email Templates.
  * By default templates are queried without body for saving heap space.
  */
-public inherited sharing class EmailTemplateQuery extends QueryObject {
+public inherited sharing class EmailTemplateQuery extends Query {
 
     public EmailTemplateQuery() {
         super(new List<String>{

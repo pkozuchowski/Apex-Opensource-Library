@@ -26,7 +26,7 @@
  * Selector layer for Pricebook2 SObject.
  * @see PricebookQueryTest
  */
-public inherited sharing class PricebookQuery extends QueryObject {
+public inherited sharing class PricebookQuery extends Query {
 
     public PricebookQuery() {
         super(new List<String>{

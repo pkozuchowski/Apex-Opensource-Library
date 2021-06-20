@@ -27,7 +27,7 @@
 * Queues are cached to save SOQL queries in subsequent calls.
 * @see QueueQueryTest.cls
 * */
-public inherited sharing class QueueQuery extends QueryObject {
+public inherited sharing class QueueQuery extends Query {
 
     /**
      * Caches all Queues to save SOQL limits

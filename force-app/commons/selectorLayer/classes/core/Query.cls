@@ -27,7 +27,7 @@
  * Query.Accounts.byId(...);
  * Query.EmailTemplates.byDeveloperName('FirmQuote');
  */
-public inherited sharing class Query {
+public inherited sharing virtual class Query extends QueryObject {
     public final static AccountQuery Accounts { get {return new AccountQuery();} }
     public final static AttachmentQuery Attachments { get {return new AttachmentQuery();} }
     public final static BusinessHoursQuery BusinessHours { get {return new BusinessHoursQuery();} }
@@ -61,7 +61,31 @@ public inherited sharing class Query {
         return new HistoryQuery(shareSObjectType);
     }
 
-    private Query() {
+
+    /**
+     * @return Query instance for generic SObjectType
+     *
+     */
+    public static Query fromSObject(SObjectType sObjectType) {
+        return new Query(sObjectType);
+    }
+
+
+    /**
+     * Constructs Query for given sObjectType without any fields selected.
+     * @param sObjectType to query from
+     */
+    protected Query(SObjectType sObjectType) {
+        super(sObjectType);
+    }
+
+    /**
+     * Constructs QueryObject for given sObjectType and given fields selected.
+     * @param fields to select
+     * @param sObjectType to query from
+     */
+    protected Query(List<String> fields, SObjectType sObjectType) {
+        super(fields, sObjectType);
     }
 
 

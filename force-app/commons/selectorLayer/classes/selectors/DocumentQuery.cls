@@ -25,7 +25,7 @@
 /**
  * Selector layer for Document SObjects
  */
-public inherited sharing class DocumentQuery extends QueryObject {
+public inherited sharing class DocumentQuery extends Query {
 
     public DocumentQuery() {
         super(new List<String>{

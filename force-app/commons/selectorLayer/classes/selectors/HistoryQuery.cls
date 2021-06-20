@@ -25,7 +25,7 @@
 /**
  * General selector for History records (AccountHistory, CustomObject__History etc).
  */
-public inherited sharing class HistoryQuery extends QueryObject {
+public inherited sharing class HistoryQuery extends Query {
     private SObjectField parentField;
 
     /**
@@ -34,7 +34,7 @@ public inherited sharing class HistoryQuery extends QueryObject {
     public HistoryQuery(SObjectType historySObjectType) {
         super(historySObjectType);
         this.parentField = getParentField();
-        this.selectField(Query.Fields.STANDARD);
+        this.selectFields(Query.Fields.STANDARD);
     }
 
 

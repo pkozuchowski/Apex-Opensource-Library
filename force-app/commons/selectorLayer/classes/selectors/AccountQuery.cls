@@ -32,7 +32,7 @@
  * Use through Query facade:
  * Query.Accounts.byName(...);
  */
-public virtual inherited sharing class AccountQuery extends QueryObject {
+public virtual inherited sharing class AccountQuery extends Query {
 
     public AccountQuery() {
         super(new List<String>{
@@ -56,7 +56,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
      * Accounts will be queried with related Contact records
      */
     public AccountQuery withContacts() {
-        this.queryBuilder.addChildFields(new List<String>{
+        selectSubquery(new List<String>{
             'Id'
         }, 'Contacts');
         return this;
@@ -66,7 +66,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
      * Accounts will be queried with related Opportunity records
      */
     public AccountQuery withOpportunities() {
-        this.queryBuilder.addChildFields(new List<String>{
+        selectSubquery(new List<String>{
             'Id'
         }, 'Opportunities');
         return this;
@@ -76,7 +76,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
      * Accounts will be queried with related Contact records
      */
     public AccountQuery withCases() {
-        this.queryBuilder.addChildFields(new List<String>{
+        selectSubquery(new List<String>{
             'Id'
         }, 'Cases');
         return this;
@@ -86,7 +86,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
      * Accounts will be queried with related child Account records
      */
     public AccountQuery withChildAccounts() {
-        this.queryBuilder.addChildFields(new List<String>{
+        selectSubquery(new List<String>{
             'Name'
         }, 'ChildAccounts');
         return this;
@@ -97,7 +97,7 @@ public virtual inherited sharing class AccountQuery extends QueryObject {
      */
     public AccountQuery withParentAccount() {
         return (AccountQuery) this.selectFields(new List<String>{
-            'Name'
+            'Parent.Name'
         });
     }
 

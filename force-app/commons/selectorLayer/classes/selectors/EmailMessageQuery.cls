@@ -25,7 +25,7 @@
 /**
  * Selector layer for Email Message SObjects
  */
-public inherited sharing class EmailMessageQuery extends QueryObject {
+public inherited sharing class EmailMessageQuery extends Query {
 
     public EmailMessageQuery() {
         super(new List<String>{

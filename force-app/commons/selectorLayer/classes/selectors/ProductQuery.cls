@@ -27,7 +27,7 @@
  * Use through Query facade:
  * Query.Products.byName(...);
  */
-public virtual inherited sharing class ProductQuery extends QueryObject {
+public virtual inherited sharing class ProductQuery extends Query {
 
     public ProductQuery() {
         super(new List<String>{

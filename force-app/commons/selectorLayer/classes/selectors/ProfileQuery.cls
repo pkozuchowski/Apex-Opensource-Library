@@ -26,7 +26,7 @@
  * Selector Layer class for Profiles. Records are queried only once and cached to minimize SOQL limits usage.
  * @see ProfileQueryTest
  */
-public inherited sharing class ProfileQuery extends QueryObject {
+public inherited sharing class ProfileQuery extends Query {
 
     /**
      * Cache all profiles

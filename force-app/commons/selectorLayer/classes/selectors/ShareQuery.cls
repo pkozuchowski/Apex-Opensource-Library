@@ -25,13 +25,13 @@
 /**
  * General selector for Share records (AccountShare, Share__History etc).
  */
-public inherited sharing class ShareQuery extends QueryObject {
+public inherited sharing class ShareQuery extends Query {
     private String parentField;
 
     public ShareQuery(SObjectType shareObjectType) {
         super(shareObjectType);
         this.parentField = getParentField();
-        this.selectField(Query.Fields.STANDARD);
+        this.selectFields(Query.Fields.STANDARD);
     }
 
 

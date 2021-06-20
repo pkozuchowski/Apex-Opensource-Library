@@ -25,7 +25,7 @@
 /**
  * Selector layer for Static Resources.
  */
-public inherited sharing class StaticResourceQuery extends QueryObject {
+public inherited sharing class StaticResourceQuery extends Query {
 
     public StaticResourceQuery() {
         super(new List<String>{

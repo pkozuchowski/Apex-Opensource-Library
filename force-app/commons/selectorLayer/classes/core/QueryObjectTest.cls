@@ -24,7 +24,7 @@
 @IsTest(IsParallel=true)
 public class QueryObjectTest {
 
-    private class TestUserQuery extends QueryObject {
+    private class TestUserQuery extends Query {
 
         private TestUserQuery() {
             super(new List<String>{
@@ -127,14 +127,14 @@ public class QueryObjectTest {
     @IsTest
     static void coverage() {
         new TestUserQuery()
-            .selectField('Name')
+            .selectFields('Name')
             .selectFields(new List<String>{'Name'})
             .selectAdditionalFields(new List<String>{'Name'})
-            .selectField(Query.Fields.STANDARD)
+            .selectFields(Query.Fields.STANDARD)
             .selectAllFields()
             .withSharing(Sharing.WITHOUT_SHARING)
-            .usingCache(true)
-            .withStrippedFields(AccessType.READABLE)
+            .useCache(true)
+            .stripInaccessible(AccessType.READABLE)
             .byId(UserInfo.getUserId())
             .getFirstOrNull();
 

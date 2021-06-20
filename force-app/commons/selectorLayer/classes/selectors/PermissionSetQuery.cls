@@ -26,7 +26,7 @@
  * Selector Layer class for Permission Sets. Records are queried only once and cached to minimize SOQL limits usage.
  * @see PermissionSetQueryTest
  */
-public inherited sharing class PermissionSetQuery extends QueryObject {
+public inherited sharing class PermissionSetQuery extends Query {
 
     /**
      * Cache all Permission Sets on first initialization

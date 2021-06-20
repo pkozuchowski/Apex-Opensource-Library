@@ -25,7 +25,7 @@
 /**
  * Selector layer for Task SObjects
  */
-public inherited sharing class TaskQuery extends QueryObject {
+public inherited sharing class TaskQuery extends Query {
 
     public TaskQuery() {
         super(new List<String>{

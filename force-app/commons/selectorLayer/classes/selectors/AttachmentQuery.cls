@@ -25,7 +25,7 @@
 /**
  * Selector layer for Attachment SObjects
  */
-public inherited sharing class AttachmentQuery extends QueryObject {
+public inherited sharing class AttachmentQuery extends Query {
 
     public AttachmentQuery() {
         super(new List<String>{

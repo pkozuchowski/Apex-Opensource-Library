@@ -25,7 +25,7 @@
 /**
  * Selector layer for Event SObjects
  */
-public inherited sharing class EventQuery extends QueryObject {
+public inherited sharing class EventQuery extends Query {
 
     public EventQuery() {
         super(new List<String>{

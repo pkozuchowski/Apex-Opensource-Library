@@ -25,32 +25,28 @@
 /**
  * Selector layer for Email Message SObjects
  */
-public inherited sharing class EmailMessageQuery extends QueryObject {
+public inherited sharing class EmailMessageQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'ActivityId',
-                'BccAddress',
-                'CcAddress',
-                'EmailTemplateId',
-                'FromAddress',
-                'FromName',
-                'HasAttachment',
-                'HtmlBody',
-                'Incoming',
-                'IsBounced',
-                'ParentId',
-                'Status',
-                'Subject',
-                'Subject',
-                'TextBody',
-                'ToAddress'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return EmailMessage.SObjectType;
+    public EmailMessageQuery() {
+        super(new List<String>{
+            'Id',
+            'ActivityId',
+            'BccAddress',
+            'CcAddress',
+            'EmailTemplateId',
+            'FromAddress',
+            'FromName',
+            'HasAttachment',
+            'HtmlBody',
+            'Incoming',
+            'IsBounced',
+            'ParentId',
+            'Status',
+            'Subject',
+            'Subject',
+            'TextBody',
+            'ToAddress'
+        }, EmailMessage.SObjectType);
     }
 
 
@@ -62,7 +58,7 @@ public inherited sharing class EmailMessageQuery extends QueryObject {
     }
 
     /**
-     * Filters Email Messages associated with given records (List or Set)
+     * Filters Email Messages associated with given records
      */
     public EmailMessageQuery byParentId(Set<Id> parentIds) {
         return (EmailMessageQuery) byField(EmailMessage.ParentId, 'IN', parentIds);

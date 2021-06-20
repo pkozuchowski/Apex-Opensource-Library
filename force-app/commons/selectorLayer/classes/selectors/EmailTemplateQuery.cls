@@ -26,20 +26,16 @@
  * Selector layer for Email Templates.
  * By default templates are queried without body for saving heap space.
  */
-public inherited sharing class EmailTemplateQuery extends QueryObject {
+public inherited sharing class EmailTemplateQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Name',
-                'DeveloperName',
-                'Subject',
-                'IsActive'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return EmailTemplate.SObjectType;
+    public EmailTemplateQuery() {
+        super(new List<String>{
+            'Id',
+            'Name',
+            'DeveloperName',
+            'Subject',
+            'IsActive'
+        }, EmailTemplate.SObjectType);
     }
 
 
@@ -48,7 +44,7 @@ public inherited sharing class EmailTemplateQuery extends QueryObject {
      * By default, this field is omitted for Heap saving.
      */
     public EmailTemplateQuery withHtmlBody() {
-        this.query.addField(EmailTemplate.HtmlValue);
+        this.queryBuilder.addField(EmailTemplate.HtmlValue);
         return this;
     }
 
@@ -57,7 +53,7 @@ public inherited sharing class EmailTemplateQuery extends QueryObject {
      * By default, this field is omitted for Heap saving.
      */
     public EmailTemplateQuery withTextBody() {
-        this.query.addField(EmailTemplate.Body);
+        this.queryBuilder.addField(EmailTemplate.Body);
         return this;
     }
 
@@ -70,7 +66,7 @@ public inherited sharing class EmailTemplateQuery extends QueryObject {
     }
 
     /**
-     * @return Email Templates By given names (List or Set)
+     * @return Email Templates By given names
      */
     public EmailTemplateQuery byDeveloperName(Set<String> developerNames) {
         return (EmailTemplateQuery) byField(EmailTemplate.DeveloperName, 'IN', developerNames);

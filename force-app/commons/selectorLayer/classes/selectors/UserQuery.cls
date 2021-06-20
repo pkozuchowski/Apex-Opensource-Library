@@ -26,21 +26,17 @@
  * Selector layer for User sObject
  * @see UserQueryTest
  */
-public inherited sharing class UserQuery extends QueryObject {
+public inherited sharing class UserQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Name',
-                'FirstName',
-                'LastName',
-                'Username',
-                'Email'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return User.SObjectType;
+    public UserQuery() {
+        super(new List<String>{
+            'Id',
+            'Name',
+            'FirstName',
+            'LastName',
+            'Username',
+            'Email'
+        }, User.SObjectType);
     }
 
 
@@ -95,8 +91,8 @@ public inherited sharing class UserQuery extends QueryObject {
 
     protected override Set<String> getFieldsToCacheBy() {
         return new Set<String>{
-                'Id',
-                'Username'
+            'Id',
+            'Username'
         };
     }
 

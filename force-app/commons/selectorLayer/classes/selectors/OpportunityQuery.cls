@@ -25,23 +25,19 @@
 /**
  * Selector layer for Opportunity SObjects
  */
-public inherited sharing class OpportunityQuery extends QueryObject {
+public inherited sharing class OpportunityQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Name',
-                'AccountId',
-                'CloseDate',
-                'Description',
-                'NextStep',
-                'StageName',
-                'Type'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Opportunity.SObjectType;
+    public OpportunityQuery() {
+        super(new List<String>{
+            'Id',
+            'Name',
+            'AccountId',
+            'CloseDate',
+            'Description',
+            'NextStep',
+            'StageName',
+            'Type'
+        }, Opportunity.SObjectType);
     }
 
 
@@ -49,7 +45,9 @@ public inherited sharing class OpportunityQuery extends QueryObject {
      * Opportunities will include information about parent Account field through Opportunity.AccountId field.
      */
     public OpportunityQuery withParentAccount() {
-        this.query.addParentFields(new AccountQuery().getFields(), Opportunity.AccountId);
+        selectAdditionalFields(new List<String>{
+            'Account.Name'
+        });
         return this;
     }
 
@@ -62,7 +60,7 @@ public inherited sharing class OpportunityQuery extends QueryObject {
     }
 
     /**
-     * Filters Opportunities by given names (List or Set)
+     * Filters Opportunities by given names
      */
     public OpportunityQuery byName(Set<String> names) {
         return (OpportunityQuery) byField(Opportunity.Name, 'IN', names);
@@ -70,14 +68,14 @@ public inherited sharing class OpportunityQuery extends QueryObject {
 
 
     /**
-     * Filters Opportunities related to given account Ids (List or Set)
+     * Filters Opportunities related to given account Ids
      */
     public OpportunityQuery byAccountId(Id accountId) {
         return byAccountId(new Set<Id>{accountId});
     }
 
     /**
-     * Filters Opportunities related to given account Ids (List or Set)
+     * Filters Opportunities related to given account Ids
      */
     public OpportunityQuery byAccountId(Set<Id> accountIds) {
         return (OpportunityQuery) byField(Opportunity.AccountId, 'IN', accountIds);
@@ -86,7 +84,7 @@ public inherited sharing class OpportunityQuery extends QueryObject {
 
     protected override Set<String> getFieldsToCacheBy() {
         return new Set<String>{
-                'Id'
+            'Id'
         };
     }
 }

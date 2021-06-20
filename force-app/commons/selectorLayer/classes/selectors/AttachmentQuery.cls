@@ -25,22 +25,18 @@
 /**
  * Selector layer for Attachment SObjects
  */
-public inherited sharing class AttachmentQuery extends QueryObject {
+public inherited sharing class AttachmentQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Body',
-                'BodyLength',
-                'ContentType',
-                'Description',
-                'Name',
-                'ParentId'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Attachment.SObjectType;
+    public AttachmentQuery() {
+        super(new List<String>{
+            'Id',
+            'Body',
+            'BodyLength',
+            'ContentType',
+            'Description',
+            'Name',
+            'ParentId'
+        }, Attachment.SObjectType);
     }
 
     /**
@@ -48,7 +44,7 @@ public inherited sharing class AttachmentQuery extends QueryObject {
      */
     public AttachmentQuery byParentIdAndName(Id parentId, String name) {
         return (AttachmentQuery) byParentId(parentId)
-                .byField(Attachment.Name, '=', name);
+            .byField(Attachment.Name, '=', name);
     }
 
     /**
@@ -59,7 +55,7 @@ public inherited sharing class AttachmentQuery extends QueryObject {
     }
 
     /**
-     * Filters Attachments associated with given records (List or Set)
+     * Filters Attachments associated with given records
      */
     public AttachmentQuery byParentId(Set<Id> parentIds) {
         return (AttachmentQuery) byField(Attachment.ParentId, 'IN', parentIds);

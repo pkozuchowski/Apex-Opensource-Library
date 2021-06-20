@@ -37,13 +37,6 @@
  */
 public inherited sharing class CollectionImpl extends Collection {
     private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
-    private final static Comparators.ComparisionOperator
-            EQUALS = new Comparators.Equals(),
-            NOT_EQUALS = new Comparators.NotEquals(),
-            GREATER_THAN = new Comparators.GreaterThan(),
-            GREATER_EQUAL_THAN = new Comparators.GreaterEqualsThan(),
-            LESS_THAN = new Comparators.LessThan(),
-            LESS_EQUAL_THAN = new Comparators.LessEqualsThan();
 
     /*Flyweights for reducers*/
     private final static ArithmeticReducer
@@ -131,13 +124,13 @@ public inherited sharing class CollectionImpl extends Collection {
 
     public override Collection.FieldFilter filter(SObjectField field) { return filter('' + field); }
     public override Collection.FieldFilter filter(String field) { return new FieldFilterImpl(this, field); }
-    public override Collection filterAlike(SObject prototype) { return filterUsing(new FilterByPrototype(prototype)); }
+    public override Collection filterAlike(SObject prototype) { return filter(Conditions.alike(prototype)); }
 
-    public override Collection filterUsing(Filter filter) {
+    public override Collection filter(Condition condition) {
         List<Object> filteredItems = Runtime.newListOfTheSameType(items);
 
         for (Integer i = 0, size = this.size(); i < size; i++) {
-            if (filter.accepts(items[i])) {
+            if (condition.isTrue(items[i])) {
                 filteredItems.add(items[i]);
             }
         }
@@ -362,9 +355,9 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
 
-    public override Collection assert(Filter filter, String message) {
+    public override Collection assert(Condition condition, String message) {
         for (Integer i = 0, size = this.size(); i < size; i++) {
-            System.assert(filter.accepts(items[i]), message);
+            System.assert(condition.isTrue(items[i]), message);
         }
 
         return this;
@@ -419,206 +412,29 @@ public inherited sharing class CollectionImpl extends Collection {
     */
 
     /**
-     * Returns true if any of the composite filters return true;
-     */
-    public class FilterAND implements Collection.Filter {
-        public Filter f1, f2, f3, f4, f5;
-
-        public FilterAND(Filter f1, Filter f2, Filter f3, Filter f4, Filter f5) {
-            this.f1 = f1;
-            this.f2 = f2;
-            this.f3 = f3;
-            this.f4 = f4;
-            this.f5 = f5;
-        }
-
-        public Boolean accepts(Object item) {
-            return f1?.accepts(item) != false
-                    && f2?.accepts(item) != false
-                    && f3?.accepts(item) != false
-                    && f4?.accepts(item) != false
-                    && f5?.accepts(item) != false;
-        }
-    }
-
-    /**
-     * Returns true if all of the composite filters return true;
-     */
-    public class FilterOR implements Collection.Filter {
-        public Filter f1, f2, f3, f4, f5;
-
-        public FilterOR(Filter f1, Filter f2, Filter f3, Filter f4, Filter f5) {
-            this.f1 = f1;
-            this.f2 = f2;
-            this.f3 = f3;
-            this.f4 = f4;
-            this.f5 = f5;
-        }
-
-        public Boolean accepts(Object item) {
-            return f1?.accepts(item) == true
-                    || f2?.accepts(item) == true
-                    || f3?.accepts(item) == true
-                    || f4?.accepts(item) == true
-                    || f5?.accepts(item) == true;
-        }
-    }
-
-
-    /**
     * Facade for Field value filters.
     */
     private class FieldFilterImpl implements FieldFilter {
         private Collection collection;
-        private FieldFilterFactory filterFactory;
+        private Conditions.FieldValueConditionFactory filterFactory;
 
         private FieldFilterImpl(Collection filterFacade, String field) {
             this.collection = filterFacade;
-            this.filterFactory = new FieldFilterFactoryImpl(field);
+            this.filterFactory = new Conditions.FieldValueConditionFactory(field);
         }
 
-        public Collection equals(Object value) { return collection.filterUsing(filterFactory.equals(value)); }
-        public Collection notEquals(Object value) { return collection.filterUsing(filterFactory.notEquals(value)); }
-        public Collection greaterThan(Object value) { return collection.filterUsing(filterFactory.greaterThan(value)); }
-        public Collection greaterEqualsThan(Object value) { return collection.filterUsing(filterFactory.greaterEqualsThan(value)); }
-        public Collection lessThan(Object value) { return collection.filterUsing(filterFactory.lessThan(value)); }
-        public Collection lessEqualsThan(Object value) { return collection.filterUsing(filterFactory.lessEqualsThan(value)); }
-        public Collection isIn(Set<Object> values) { return collection.filterUsing(filterFactory.isIn(values)); }
-        public Collection isIn(List<Object> values) { return collection.filterUsing(filterFactory.isIn(values)); }
-        public Collection isNotIn(Set<Object> values) { return collection.filterUsing(filterFactory.isNotIn(values)); }
-        public Collection isNotIn(List<Object> values) { return collection.filterUsing(filterFactory.isNotIn(values)); }
-        public Collection relatedTo(List<SObject> parents) { return collection.filterUsing(filterFactory.relatedTo(parents)); }
-        public Collection containing(String value) { return collection.filterUsing(filterFactory.containing(value)); }
-    }
-
-    /**
-     * Creates instance of Field Filter using operator parameter
-     */
-    public class FieldFilterFactoryImpl implements FieldFilterFactory {
-        private String field;
-
-        public FieldFilterFactoryImpl(String field) {
-            this.field = field;
-        }
-
-        public Collection.Filter equals(Object value) { return new FilterByFieldValue(field, EQUALS, value); }
-        public Collection.Filter notEquals(Object value) { return new FilterByFieldValue(field, NOT_EQUALS, value); }
-        public Collection.Filter greaterThan(Object value) { return new FilterByFieldValue(field, GREATER_THAN, value); }
-        public Collection.Filter greaterEqualsThan(Object value) { return new FilterByFieldValue(field, GREATER_EQUAL_THAN, value); }
-        public Collection.Filter lessThan(Object value) { return new FilterByFieldValue(field, LESS_THAN, value); }
-        public Collection.Filter lessEqualsThan(Object value) { return new FilterByFieldValue(field, LESS_EQUAL_THAN, value); }
-        public Collection.Filter isIn(Set<Object> values) { return new FilterByFieldValues(field, true, values); }
-        public Collection.Filter isIn(List<Object> values) { return new FilterByFieldValues(field, true, values); }
-        public Collection.Filter isNotIn(Set<Object> values) { return new FilterByFieldValues(field, false, values); }
-        public Collection.Filter isNotIn(List<Object> values) { return new FilterByFieldValues(field, false, values); }
-        public Collection.Filter relatedTo(List<SObject> parents) { return new FilterRelatedTo(parents, field); }
-        public Collection.Filter containing(String value) { return new FilterFieldContaining(field, value); }
-    }
-
-    /**
-     * Filters List of SObject by field value.
-     */
-    private class FilterByFieldValue implements Collection.Filter {
-        private Object value;
-        private String field;
-        private Comparator comparator;
-        private final Comparators.ComparisionOperator expectedResult;
-
-        public FilterByFieldValue(String field, Comparators.ComparisionOperator expectedResult, Object value) {
-            this.field = field;
-            this.value = value;
-            this.expectedResult = expectedResult;
-            this.comparator = Comparators.getForPrimitive(value);
-        }
-
-        public Boolean accepts(Object record) {
-            Object fieldValue = ((SObject) record).get(field);
-            Integer outcome = comparator.compare(fieldValue, value);
-
-            return expectedResult.isTrue(outcome);
-        }
-    }
-
-    /**
-     * Filters SObject collection by SObject prototype.
-     * Collection sobject that have the same field values as prototype are accepted.
-     */
-    private class FilterByPrototype implements Collection.Filter {
-        private Map<String, Object> fieldsValues;
-
-        public FilterByPrototype(SObject prototype) {
-            this.fieldsValues = prototype.getPopulatedFieldsAsMap();
-        }
-
-        public Boolean accepts(Object item) {
-            SObject record = (SObject) item;
-
-            for (String field : fieldsValues.keySet()) {
-                if (record.get(field) != fieldsValues.get(field)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-    }
-
-    /**
-     * Filters List of SObject by one of many possible field values.
-     */
-    private class FilterByFieldValues implements Collection.Filter {
-        private Set<Object> values;
-        private String field;
-        private Boolean valueIn;
-
-        public FilterByFieldValues(String field, Boolean valueIn, List<Object> values) {
-            this(field, valueIn, new Set<Object>(values));
-        }
-
-        public FilterByFieldValues(String field, Boolean valueIn, Set<Object> values) {
-            this.values = values;
-            this.field = field;
-            this.valueIn = valueIn;
-        }
-
-        public Boolean accepts(Object record) {
-            return valueIn == (values.contains(((SObject) record).get(field)));
-        }
-    }
-
-    /**
-     * Filters SObject list to those related to given parents by given relationship field.
-     */
-    private class FilterRelatedTo implements Collection.Filter {
-        private Map<Id, SObject> parents;
-        private String relationshipField;
-
-        public FilterRelatedTo(List<SObject> parents, String relationshipField) {
-            this.parents = new Map<Id, SObject>(parents);
-            this.relationshipField = relationshipField;
-        }
-
-        public Boolean accepts(Object record) {
-            return parents.containsKey((Id) ((SObject) record).get(relationshipField));
-        }
-    }
-
-    /**
-     * Filters SObject list to those related to given parents by given relationship field.
-     */
-    private class FilterFieldContaining implements Collection.Filter {
-        private String field;
-        private String value;
-
-        public FilterFieldContaining(String field, String value) {
-            this.field = field;
-            this.value = value;
-        }
-
-        public Boolean accepts(Object record) {
-            String fieldValue = (String) ((SObject) record).get(field);
-            return fieldValue.contains(value);
-        }
+        public Collection equals(Object value) { return collection.filter(filterFactory.equals(value)); }
+        public Collection notEquals(Object value) { return collection.filter(filterFactory.notEquals(value)); }
+        public Collection greaterThan(Object value) { return collection.filter(filterFactory.greaterThan(value)); }
+        public Collection greaterEqualsThan(Object value) { return collection.filter(filterFactory.greaterEqualsThan(value)); }
+        public Collection lessThan(Object value) { return collection.filter(filterFactory.lessThan(value)); }
+        public Collection lessEqualsThan(Object value) { return collection.filter(filterFactory.lessEqualsThan(value)); }
+        public Collection isIn(Set<Object> values) { return collection.filter(filterFactory.isIn(values)); }
+        public Collection isIn(List<Object> values) { return collection.filter(filterFactory.isIn(values)); }
+        public Collection isNotIn(Set<Object> values) { return collection.filter(filterFactory.isNotIn(values)); }
+        public Collection isNotIn(List<Object> values) { return collection.filter(filterFactory.isNotIn(values)); }
+        public Collection relatedTo(List<SObject> parents) { return collection.filter(filterFactory.relatedTo(parents)); }
+        public Collection contains(String value) { return collection.filter(filterFactory.contains(value)); }
     }
 
 

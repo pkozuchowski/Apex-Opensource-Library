@@ -25,31 +25,21 @@
 /**
  * General selector for History records (AccountHistory, CustomObject__History etc).
  */
-public inherited sharing class HistoryQuery extends QueryObject {
+public inherited sharing class HistoryQuery extends Query {
     private SObjectField parentField;
-    private SObjectType historySObjectType;
 
     /**
      * @param historySObjectType History SObjectType ex. AccountHistory
      */
     public HistoryQuery(SObjectType historySObjectType) {
-        super(false);
-        this.historySObjectType = historySObjectType;
+        super(historySObjectType);
         this.parentField = getParentField();
-        init();
-    }
-
-    public override List<String> getFields() {
-        return getAllFieldsList();
-    }
-
-    public override SObjectType getSObjectType() {
-        return historySObjectType;
+        this.selectFields(Query.Fields.STANDARD);
     }
 
 
     /**
-     * @return Share records for given records (List or Set of parent ids)
+     * @return Share records for given records
      */
     public HistoryQuery byParentId(Set<Id> parentIds) {
         return (HistoryQuery) byField(parentField, 'IN', parentIds);
@@ -61,10 +51,11 @@ public inherited sharing class HistoryQuery extends QueryObject {
      * This method checks for ParentId field.
      */
     private SObjectField getParentField() {
-        Map<String, SObjectField> fields = getAllFieldsMap();
+        Map<String, SObjectField> fields = sObjectType.getDescribe().fields.getMap();
 
         if (fields.containsKey('ParentId')) {
             return fields.get('ParentId');
+
         } else {
             Set<String> excluded = new Set<String>{'id', 'lastmodifiedbyid', 'createdbyid'};
 

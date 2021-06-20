@@ -27,7 +27,7 @@
 * Queues are cached to save SOQL queries in subsequent calls.
 * @see QueueQueryTest.cls
 * */
-public inherited sharing class QueueQuery extends QueryObject {
+public inherited sharing class QueueQuery extends Query {
 
     /**
      * Caches all Queues to save SOQL limits
@@ -37,17 +37,13 @@ public inherited sharing class QueueQuery extends QueryObject {
     }
 
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Type',
-                'DeveloperName',
-                'Name'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Group.SObjectType;
+    public QueueQuery() {
+        super(new List<String>{
+            'Id',
+            'Type',
+            'DeveloperName',
+            'Name'
+        }, Group.SObjectType);
     }
 
 
@@ -83,8 +79,8 @@ public inherited sharing class QueueQuery extends QueryObject {
 
     protected override Set<String> getFieldsToCacheBy() {
         return new Set<String>{
-                'Id',
-                'DeveloperName'
+            'Id',
+            'DeveloperName'
         };
     }
 }

@@ -27,50 +27,52 @@
  * Use through Query facade:
  * Query.Products.byName(...);
  */
-public virtual inherited sharing class ProductQuery extends QueryObject {
+public virtual inherited sharing class ProductQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Description',
-                'ExternalId',
-                'IsActive',
-                'Name',
-                'ProductCode'
-        };
+    public ProductQuery() {
+        super(new List<String>{
+            'Id',
+            'Description',
+            'ExternalId',
+            'IsActive',
+            'Name',
+            'ProductCode'
+        }, Product2.SObjectType);
     }
 
-    public override SObjectType getSObjectType() {
-        return Product2.SObjectType;
-    }
 
     /**
      * Adds pricebook entries to all Pricebooks
      */
     public ProductQuery withPricebookEntries() {
-        this.query.addChildFields(new PricebookEntryQuery().getFields(), 'PricebookEntries');
+        selectSubquery(new List<String>{
+            'Id'
+        }, 'PricebookEntries');
         return this;
     }
-
-    /**
+/*
+TODO: This will be finished whenc composite subqueries are added
+    *//**
      * Adds pricebook entries to given pricebook
-     */
+     *//*
     public ProductQuery withPricebookEntries(Id pricebookId) {
         return withPricebookEntries(new Set<Id>{pricebookId});
     }
 
-    /**
+    *//**
      * Adds pricebook entries to given pricebooks
-     */
+     *//*
     public ProductQuery withPricebookEntries(Set<Id> pricebookIds) {
-        this.query.bindVariable('pricebookIds', pricebookIds);
-        this.query.addSubquery(new QueryBuilder()
-                .addFields(new PricebookEntryQuery().getFields())
-                .fromObject('PricebookEntries')
-                .setWhere('Pricebook2Id IN :pricebookIds')
+        this.queryBuilder.bindVariable('pricebookIds', pricebookIds);
+        this.queryBuilder.addSubquery(new QueryBuilder()
+            .addFields(new List<String>{
+                'Id'
+            })
+            .fromObject('PricebookEntries')
+            .setWhere('Pricebook2Id IN :pricebookIds')
         );
         return this;
-    }
+    }*/
 
 
     /**
@@ -81,7 +83,7 @@ public virtual inherited sharing class ProductQuery extends QueryObject {
     }
 
     /**
-     * Filters Product2s with given names (List or Set)
+     * Filters Product2s with given names
      */
     public ProductQuery byName(Set<String> names) {
         return (ProductQuery) byField(Product2.Name, 'IN', names);
@@ -95,7 +97,7 @@ public virtual inherited sharing class ProductQuery extends QueryObject {
     }
 
     /**
-     * Filters Product2s with given names (List or Set)
+     * Filters Product2s with given names
      */
     public ProductQuery byProductCode(Set<String> productCodes) {
         return (ProductQuery) byField(Product2.ProductCode, 'IN', productCodes);
@@ -109,7 +111,7 @@ public virtual inherited sharing class ProductQuery extends QueryObject {
     }
 
     /**
-     * Filters Product2s with given names (List or Set)
+     * Filters Product2s with given names
      */
     public ProductQuery byExternalId(Set<String> externalIds) {
         return (ProductQuery) byField(Product2.ExternalId, 'IN', externalIds);

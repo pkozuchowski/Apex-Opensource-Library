@@ -26,19 +26,15 @@
  * Selector Layer class for UserRoles.
  * @see UserRoleQueryTest
  */
-public inherited sharing class UserRoleQuery extends QueryObject {
+public inherited sharing class UserRoleQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Name',
-                'DeveloperName'
+    public UserRoleQuery() {
+        super(new List<String>{
+            'Id',
+            'Name',
+            'DeveloperName'
 
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return UserRole.SObjectType;
+        }, UserRole.SObjectType);
     }
 
 
@@ -67,8 +63,8 @@ public inherited sharing class UserRoleQuery extends QueryObject {
 
     protected override Set<String> getFieldsToCacheBy() {
         return new Set<String>{
-                'Id',
-                'DeveloperName'
+            'Id',
+            'DeveloperName'
         };
     }
 

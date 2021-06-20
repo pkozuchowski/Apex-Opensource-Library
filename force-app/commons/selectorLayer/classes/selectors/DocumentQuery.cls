@@ -25,26 +25,22 @@
 /**
  * Selector layer for Document SObjects
  */
-public inherited sharing class DocumentQuery extends QueryObject {
+public inherited sharing class DocumentQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'AuthorId',
-                'Body',
-                'BodyLength',
-                'ContentType',
-                'Description',
-                'DeveloperName',
-                'FolderId',
-                'Name',
-                'Type',
-                'Url'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Document.SObjectType;
+    public DocumentQuery() {
+        super(new List<String>{
+            'Id',
+            'AuthorId',
+            'Body',
+            'BodyLength',
+            'ContentType',
+            'Description',
+            'DeveloperName',
+            'FolderId',
+            'Name',
+            'Type',
+            'Url'
+        }, Document.SObjectType);
     }
 
 
@@ -56,7 +52,7 @@ public inherited sharing class DocumentQuery extends QueryObject {
     }
 
     /**
-     * @return Documents by given developer names (List or Set)
+     * @return Documents by given developer names
      */
     public DocumentQuery byDeveloperName(Set<String> developerNames) {
         return (DocumentQuery) byField(Document.DeveloperName, 'IN', developerNames);

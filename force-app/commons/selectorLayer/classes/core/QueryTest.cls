@@ -54,4 +54,14 @@ private class QueryTest {
         System.assertNotEquals(null, Query.UserRoles);
         System.assertNotEquals(null, Query.Users);
     }
+
+    @IsTest
+    static void testGenericQuery() {
+        List<User> users = Query.fromSObject(User.SObjectType)
+            .selectFields('Id, Username')
+            .limits(1)
+            .getList();
+
+        System.assertEquals(1, users.size());
+    }
 }

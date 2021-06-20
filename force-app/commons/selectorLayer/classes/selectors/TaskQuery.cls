@@ -25,29 +25,25 @@
 /**
  * Selector layer for Task SObjects
  */
-public inherited sharing class TaskQuery extends QueryObject {
+public inherited sharing class TaskQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'AccountId',
-                'CompletedDateTime',
-                'Description',
-                'IsClosed',
-                'IsRecurrence',
-                'IsReminderSet',
-                'OwnerId',
-                'Status',
-                'Subject',
-                'TaskSubtype',
-                'Type',
-                'WhatId',
-                'WhoId'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Task.SObjectType;
+    public TaskQuery() {
+        super(new List<String>{
+            'Id',
+            'AccountId',
+            'CompletedDateTime',
+            'Description',
+            'IsClosed',
+            'IsRecurrence',
+            'IsReminderSet',
+            'OwnerId',
+            'Status',
+            'Subject',
+            'TaskSubtype',
+            'Type',
+            'WhatId',
+            'WhoId'
+        }, Task.SObjectType);
     }
 
 
@@ -59,7 +55,7 @@ public inherited sharing class TaskQuery extends QueryObject {
     }
 
     /**
-     * Filters Tasks associated with given Accounts (List or Set)
+     * Filters Tasks associated with given Accounts
      */
     public TaskQuery byAccountId(Set<Id> accountIds) {
         return (TaskQuery) byField(Task.AccountId, 'IN', accountIds);
@@ -74,7 +70,7 @@ public inherited sharing class TaskQuery extends QueryObject {
     }
 
     /**
-     * Filters Tasks associated with given Accounts (List or Set)
+     * Filters Tasks associated with given Accounts
      */
     public TaskQuery byWhatId(Set<Id> whatIds) {
         return (TaskQuery) byField(Task.WhatId, 'IN', whatIds);
@@ -89,7 +85,7 @@ public inherited sharing class TaskQuery extends QueryObject {
     }
 
     /**
-     * Filters Tasks associated with given Accounts (List or Set)
+     * Filters Tasks associated with given Accounts
      */
     public TaskQuery byWhoId(Set<Id> whoIds) {
         return (TaskQuery) byField(Task.WhoId, 'IN', whoIds);
@@ -98,7 +94,7 @@ public inherited sharing class TaskQuery extends QueryObject {
 
     protected override Set<String> getFieldsToCacheBy() {
         return new Set<String>{
-                'Id'
+            'Id'
         };
     }
 

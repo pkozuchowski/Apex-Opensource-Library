@@ -25,26 +25,18 @@
 /**
  * Selector layer for PricebookEntry SObject.
  */
-public inherited sharing class PricebookEntryQuery extends QueryObject {
+public inherited sharing class PricebookEntryQuery extends Query {
 
     public PricebookEntryQuery() {
-        this.query.addParentFields(new ProductQuery().getFields(), PricebookEntry.Product2Id);
-    }
-
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'IsActive',
-                'Name',
-                'Pricebook2Id',
-                'Product2Id',
-                'UnitPrice',
-                'UseStandardPrice'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return PricebookEntry.SObjectType;
+        super(new List<String>{
+            'Id',
+            'IsActive',
+            'Name',
+            'Pricebook2Id',
+            'Product2Id',
+            'UnitPrice',
+            'UseStandardPrice'
+        }, PricebookEntry.SObjectType);
     }
 
 

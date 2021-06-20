@@ -26,18 +26,14 @@
  * Selector layer for Pricebook2 SObject.
  * @see PricebookQueryTest
  */
-public inherited sharing class PricebookQuery extends QueryObject {
+public inherited sharing class PricebookQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Name',
-                'IsStandard'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Pricebook2.SObjectType;
+    public PricebookQuery() {
+        super(new List<String>{
+            'Id',
+            'Name',
+            'IsStandard'
+        }, Pricebook2.SObjectType);
     }
 
 
@@ -45,11 +41,10 @@ public inherited sharing class PricebookQuery extends QueryObject {
      * Add Pricebook Entries to query
      */
     public PricebookQuery withEntries() {
-        this.query.addSubquery(new QueryBuilder()
-                .addFields(new PricebookEntryQuery().getFields())
-                .addParentFields(new ProductQuery().getFields(), PricebookEntry.Product2Id)
-                .fromObject('PricebookEntries')
-        );
+        selectSubquery(new List<String>{
+            'Id',
+            'Product2Id'
+        }, 'PricebookEntries');
         return this;
     }
 

@@ -26,8 +26,8 @@
  * Very simple query builder used in Selector layer
  */
 public inherited sharing class QueryBuilder {
-    public Map<String, Object> boundVars = new Map<String, Object>();
     private Set<String> fields = new Set<String>();
+    private Set<String> subqueries = new Set<String>();
     private String fromObject = '';
     private String orderBy = '';
     private String groupBy = '';
@@ -41,34 +41,23 @@ public inherited sharing class QueryBuilder {
      * Builds and returns SOQL query
      */
     public String toSOQL() {
-        String fieldsQueryPart = 'SELECT ' + String.join(new List<String>(fields), ', ');
+        List<String> fieldsWithSubqueries = new List<String>(fields);
+        fieldsWithSubqueries.addAll(subqueries);
+
+        String fieldsQueryPart = 'SELECT ' + String.join(new List<String>(fieldsWithSubqueries), ', ');
 
         String[] query = new String[]{
-                fieldsQueryPart,
-                fromObject,
-                whereConditions,
-                groupBy,
-                havingConditions,
-                orderBy,
-                limitQueryPart,
-                offsetQueryPart
+            fieldsQueryPart,
+            fromObject,
+            whereConditions,
+            groupBy,
+            havingConditions,
+            orderBy,
+            limitQueryPart,
+            offsetQueryPart
         };
 
         return String.join(query, ' ').trim();
-    }
-
-    public QueryBuilder bindVariable(String name, Object value) {
-        this.boundVars.put(name, value);
-        return this;
-    }
-
-    public QueryBuilder bindVariables(Map<String, Object> boundVars) {
-        this.boundVars.putAll(boundVars);
-        return this;
-    }
-
-    public Map<String, Object> getVariables() {
-        return this.boundVars;
     }
 
     public QueryBuilder addField(SObjectField field) {
@@ -78,6 +67,13 @@ public inherited sharing class QueryBuilder {
 
     public QueryBuilder addField(String field) {
         this.fields.add(field);
+        return this;
+    }
+
+    public QueryBuilder addField(Query.Fields field) {
+        if (field != null) {
+            this.fields = new Set<String>{'FIELDS(' + field.name() + ')'};
+        }
         return this;
     }
 
@@ -93,6 +89,11 @@ public inherited sharing class QueryBuilder {
         return this;
     }
 
+    public QueryBuilder addFields(Set<String> fields) {
+        this.fields.addAll(fields);
+        return this;
+    }
+
     public QueryBuilder setFields(String[] fields) {
         this.fields = new Set<String>(fields);
         return this;
@@ -101,46 +102,19 @@ public inherited sharing class QueryBuilder {
 
     public QueryBuilder addSubquery(QueryBuilder subqueryBuilder) {
         String subQuery = String.join(
-                new String[]{
-                        '(', subqueryBuilder.toSOQL(), ')'
-                }, ' ');
+            new String[]{
+                '(', subqueryBuilder.toSOQL(), ')'
+            }, ' ');
 
-        this.fields.add(subQuery);
+        this.subqueries.add(subQuery);
         return this;
-    }
-
-    public QueryBuilder addChildFields(List<SObjectField> fields, String relationshipField) {
-        return addSubquery(new QueryBuilder()
-                .addFields(fields)
-                .fromObject(relationshipField)
-        );
     }
 
     public QueryBuilder addChildFields(List<String> fields, String relationshipField) {
         return addSubquery(new QueryBuilder()
-                .addFields(fields)
-                .fromObject(relationshipField)
+            .addFields(fields)
+            .fromObject(relationshipField)
         );
-    }
-
-    public QueryBuilder addParentFields(List<SObjectField> fields, SObjectField relationshipField) {
-        String relation = relationshipField.getDescribe().getRelationshipName() + '.';
-
-        for (SObjectField field : fields) {
-            addField(relation + field);
-        }
-
-        return this;
-    }
-
-    public QueryBuilder addParentFields(List<String> fields, SObjectField relationshipField) {
-        String relation = relationshipField.getDescribe().getRelationshipName() + '.';
-
-        for (String field : fields) {
-            addField(relation + field);
-        }
-
-        return this;
     }
 
     public QueryBuilder fromObject(SObjectType fromObject) {
@@ -154,7 +128,9 @@ public inherited sharing class QueryBuilder {
 
 
     public QueryBuilder setWhere(String condition) {
-        this.whereConditions = 'WHERE ' + condition;
+        if (String.isNotEmpty(condition)) {
+            this.whereConditions = 'WHERE ' + condition;
+        }
         return this;
     }
 
@@ -181,22 +157,5 @@ public inherited sharing class QueryBuilder {
     public QueryBuilder setOffset(Integer offsetOf) {
         this.offsetQueryPart = 'OFFSET ' + offsetOf;
         return this;
-    }
-
-    /**
-     * Adds query criteria to query builder and binds variable
-     */
-    public void setQueryCriteria(List<QueryCriteria> criteria) {
-        List<String> conditionStrings = new List<String>();
-
-        for (Integer i = 0, size = criteria.size(); i < size; i++) {
-            String valueBinding = 'value' + i;
-            conditionStrings.add(criteria[i].toString(valueBinding));
-            this.bindVariable(valueBinding, criteria[i].value);
-        }
-
-        if (!conditionStrings.isEmpty()) {
-            this.setWhere(String.join(conditionStrings, ' AND '));
-        }
     }
 }

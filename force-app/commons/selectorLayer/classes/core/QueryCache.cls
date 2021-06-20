@@ -63,7 +63,7 @@ public inherited sharing class QueryCache {
       * Map<Id, SObject> Cached objects
       * List<Object> remaining values
       */
-    public CacheResult getCachedRecords(SObjectType sObjectType, String field, Object value) {
+    public Result getCachedRecords(SObjectType sObjectType, String field, Object value) {
         Map<Id, SObject> cachedRecords = new Map<Id, SObject>();
         Iterable<Object> iterable = getIterable(value);
 
@@ -85,7 +85,7 @@ public inherited sharing class QueryCache {
         }
 
 
-        return new CacheResult(cachedRecords, remainingValues);
+        return new Result(cachedRecords, remainingValues);
     }
 
 
@@ -142,11 +142,14 @@ public inherited sharing class QueryCache {
     }
 
 
-    public class CacheResult {
+    /**
+     * Result of Cache retrieve operation - a pair of cached records and remaining values that were not found in cache.
+     */
+    public class Result {
         public Map<Id, SObject> cachedRecords;
         public List<Object> remainingValues;
 
-        private CacheResult(Map<Id, SObject> cachedRecords, List<Object> remainingValues) {
+        private Result(Map<Id, SObject> cachedRecords, List<Object> remainingValues) {
             this.cachedRecords = cachedRecords;
             this.remainingValues = remainingValues;
         }

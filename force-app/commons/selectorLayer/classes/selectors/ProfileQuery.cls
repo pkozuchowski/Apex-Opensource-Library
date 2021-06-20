@@ -26,7 +26,7 @@
  * Selector Layer class for Profiles. Records are queried only once and cached to minimize SOQL limits usage.
  * @see ProfileQueryTest
  */
-public inherited sharing class ProfileQuery extends QueryObject {
+public inherited sharing class ProfileQuery extends Query {
 
     /**
      * Cache all profiles
@@ -35,16 +35,11 @@ public inherited sharing class ProfileQuery extends QueryObject {
         new ProfileQuery().getList();
     }
 
-
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Name'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Profile.SObjectType;
+    public ProfileQuery() {
+        super(new List<String>{
+            'Id',
+            'Name'
+        }, Profile.SObjectType);
     }
 
 
@@ -73,8 +68,8 @@ public inherited sharing class ProfileQuery extends QueryObject {
 
     protected override Set<String> getFieldsToCacheBy() {
         return new Set<String>{
-                'Id',
-                'Name'
+            'Id',
+            'Name'
         };
     }
 }

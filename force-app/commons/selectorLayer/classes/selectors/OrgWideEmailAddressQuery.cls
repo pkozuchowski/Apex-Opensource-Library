@@ -26,7 +26,7 @@
  * Selector Layer for Org wide email addresses.
  * Cached for limits savings.
  */
-public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
+public inherited sharing class OrgWideEmailAddressQuery extends Query {
 
     /**
      * Cache all records on first initialization
@@ -35,17 +35,13 @@ public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
         new OrgWideEmailAddressQuery().getList();
     }
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'DisplayName',
-                'Address',
-                'IsAllowAllProfiles'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return OrgWideEmailAddress.SObjectType;
+    public OrgWideEmailAddressQuery() {
+        super(new List<String>{
+            'Id',
+            'DisplayName',
+            'Address',
+            'IsAllowAllProfiles'
+        }, OrgWideEmailAddress.SObjectType);
     }
 
 
@@ -57,7 +53,7 @@ public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
     }
 
     /**
-     * @return OrgWideEmailAddress by given Display Names (List or Set)
+     * @return OrgWideEmailAddress by given Display Names
      */
     public OrgWideEmailAddressQuery byDisplayName(Set<String> names) {
         return (OrgWideEmailAddressQuery) byField(OrgWideEmailAddress.DisplayName, 'IN', names);
@@ -72,7 +68,7 @@ public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
     }
 
     /**
-     * @return OrgWideEmailAddress by given Email Addresses (List or Set)
+     * @return OrgWideEmailAddress by given Email Addresses
      */
     public OrgWideEmailAddressQuery byAddress(Set<String> names) {
         return (OrgWideEmailAddressQuery) byField(OrgWideEmailAddress.Address, 'IN', names);
@@ -81,9 +77,9 @@ public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
 
     protected override Set<String> getFieldsToCacheBy() {
         return new Set<String>{
-                'Id',
-                'Address',
-                'DisplayName'
+            'Id',
+            'Address',
+            'DisplayName'
         };
     }
 }

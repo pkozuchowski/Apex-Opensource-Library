@@ -25,22 +25,18 @@
 /**
  * Selector layer for Static Resources.
  */
-public inherited sharing class StaticResourceQuery extends QueryObject {
+public inherited sharing class StaticResourceQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Body',
-                'BodyLength',
-                'ContentType',
-                'Description',
-                'Name',
-                'NamespacePrefix'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return StaticResource.SObjectType;
+    public StaticResourceQuery() {
+        super(new List<String>{
+            'Id',
+            'Body',
+            'BodyLength',
+            'ContentType',
+            'Description',
+            'Name',
+            'NamespacePrefix'
+        }, StaticResource.SObjectType);
     }
 
 
@@ -52,7 +48,7 @@ public inherited sharing class StaticResourceQuery extends QueryObject {
     }
 
     /**
-     * Filters Static Resource by given names (List or Set)
+     * Filters Static Resource by given names
      */
     public StaticResourceQuery byName(Set<String> names) {
         return (StaticResourceQuery) byField(StaticResource.Name, 'IN', names);

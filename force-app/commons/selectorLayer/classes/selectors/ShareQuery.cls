@@ -25,28 +25,18 @@
 /**
  * General selector for Share records (AccountShare, Share__History etc).
  */
-public inherited sharing class ShareQuery extends QueryObject {
+public inherited sharing class ShareQuery extends Query {
     private String parentField;
-    private SObjectType shareObjectType;
 
     public ShareQuery(SObjectType shareObjectType) {
-        super(false);
-        this.shareObjectType = shareObjectType;
+        super(shareObjectType);
         this.parentField = getParentField();
-        init();
-    }
-
-    public override List<String> getFields() {
-        return new List<String>(getAllFieldsMap().keySet());
-    }
-
-    public override SObjectType getSObjectType() {
-        return shareObjectType;
+        this.selectFields(Query.Fields.STANDARD);
     }
 
 
     /**
-     * @return Share records for given user or group ids (List or Set)
+     * @return Share records for given user or group ids
      */
     public ShareQuery byUserOrGroupId(Set<Id> userOrGroupIds) {
         return (ShareQuery) byField('UserOrGroupId', 'IN', userOrGroupIds);
@@ -60,12 +50,13 @@ public inherited sharing class ShareQuery extends QueryObject {
     }
 
     /**
-     * @return Share records for given records and users/groups (List or cast Set may be supplied as iterable)
+     * @return Share records for given records and users/groups
      */
     public ShareQuery byParentIdAndUserOrGroupId(Set<Id> parentIds, Set<Id> userOrGroupIds) {
-        this.query.setWhere('' + parentField + ' IN :parentIds AND UserOrGroupId IN :userOrGroupIds')
-                .bindVariable('parentIds', parentIds)
-                .bindVariable('userOrGroupIds', userOrGroupIds);
+        wheres(conditionFactory.ANDs(
+            conditionFactory.field(parentField).isIn(parentIds),
+            conditionFactory.field('UserOrGroupId').isIn(userOrGroupIds)
+        ));
         return this;
     }
 
@@ -75,8 +66,8 @@ public inherited sharing class ShareQuery extends QueryObject {
      * This method checks for ParentId field.
      */
     private String getParentField() {
-        Map<String, SObjectField> allFields = getAllFieldsMap();
-        String sobjectType = '' + shareObjectType;
+        Map<String, SObjectField> allFields = sObjectType.getDescribe().fields.getMap();
+        String sobjectType = '' + sObjectType;
 
         if (allFields.containsKey('ParentId')) {
             return '' + allFields.get('ParentId');

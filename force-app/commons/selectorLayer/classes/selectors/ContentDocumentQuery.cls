@@ -25,27 +25,23 @@
 /**
  * Selector layer for Content Document (Files)
  */
-public inherited sharing class ContentDocumentQuery extends QueryObject {
+public inherited sharing class ContentDocumentQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Title',
-                'FileType',
+    public ContentDocumentQuery() {
+        super(new List<String>{
+            'Id',
+            'Title',
+            'FileType',
 
-                'LatestPublishedVersion.Id',
-                'LatestPublishedVersion.ContentSize',
-                'LatestPublishedVersion.ContentUrl',
-                'LatestPublishedVersion.Description',
-                'LatestPublishedVersion.FileType',
-                'LatestPublishedVersion.TagCsv',
-                'LatestPublishedVersion.Title',
-                'LatestPublishedVersion.VersionData'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return ContentDocument.SObjectType;
+            'LatestPublishedVersion.Id',
+            'LatestPublishedVersion.ContentSize',
+            'LatestPublishedVersion.ContentUrl',
+            'LatestPublishedVersion.Description',
+            'LatestPublishedVersion.FileType',
+            'LatestPublishedVersion.TagCsv',
+            'LatestPublishedVersion.Title',
+            'LatestPublishedVersion.VersionData'
+        }, ContentDocument.SObjectType);
     }
 
 
@@ -57,7 +53,7 @@ public inherited sharing class ContentDocumentQuery extends QueryObject {
     }
 
     /**
-     * Filters Content Document with Latest Version linked to given records (List of Set of ids)
+     * Filters Content Document with Latest Version linked to given records
      */
     public ContentDocumentQuery byLinkedEntityId(Set<Id> linkedEntityId) {
         List<ContentDocumentLink> links = Database.query('SELECT ContentDocumentId FROM ContentDocumentLink WHERE LinkedEntityId IN :linkedEntityId');

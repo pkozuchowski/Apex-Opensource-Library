@@ -27,7 +27,7 @@
  * Results are cached for better performance and SOQL Limits savings.
  * @see BusinessHoursQueryTest
  */
-public inherited sharing class BusinessHoursQuery extends QueryObject {
+public inherited sharing class BusinessHoursQuery extends Query {
 
     /**
      * Cache all Business Hours on first query to save SOQL limits
@@ -36,32 +36,27 @@ public inherited sharing class BusinessHoursQuery extends QueryObject {
         new BusinessHoursQuery().byField(BusinessHours.IsActive, '=', true).getList();
     }
 
-
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Name',
-                'IsDefault',
-                'IsActive',
-                'MondayStartTime',
-                'MondayEndTime',
-                'TuesdayStartTime',
-                'TuesdayEndTime',
-                'WednesdayStartTime',
-                'WednesdayEndTime',
-                'ThursdayStartTime',
-                'ThursdayEndTime',
-                'FridayStartTime',
-                'FridayEndTime',
-                'SaturdayStartTime',
-                'SaturdayEndTime',
-                'SundayStartTime',
-                'SundayEndTime'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return BusinessHours.SObjectType;
+    public BusinessHoursQuery() {
+        super(new List<String>{
+            'Id',
+            'Name',
+            'IsDefault',
+            'IsActive',
+            'MondayStartTime',
+            'MondayEndTime',
+            'TuesdayStartTime',
+            'TuesdayEndTime',
+            'WednesdayStartTime',
+            'WednesdayEndTime',
+            'ThursdayStartTime',
+            'ThursdayEndTime',
+            'FridayStartTime',
+            'FridayEndTime',
+            'SaturdayStartTime',
+            'SaturdayEndTime',
+            'SundayStartTime',
+            'SundayEndTime'
+        }, BusinessHours.SObjectType);
     }
 
 
@@ -90,8 +85,8 @@ public inherited sharing class BusinessHoursQuery extends QueryObject {
 
     protected override Set<String> getFieldsToCacheBy() {
         return new Set<String>{
-                'Id',
-                'Name'
+            'Id',
+            'Name'
         };
     }
 }

@@ -26,19 +26,15 @@
  * Selector Layer class for Permission Set Assignments.
  * @see PermissionSetQueryTest
  */
-public inherited sharing class PermissionSetAssignmentQuery extends QueryObject {
+public inherited sharing class PermissionSetAssignmentQuery extends Query {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'AssigneeId',
-                'PermissionSetId',
-                'PermissionSet.Name'
+    public PermissionSetAssignmentQuery() {
+        super(new List<String>{
+            'AssigneeId',
+            'PermissionSetId',
+            'PermissionSet.Name'
 
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return PermissionSetAssignment.SObjectType;
+        }, PermissionSetAssignment.SObjectType);
     }
 
 

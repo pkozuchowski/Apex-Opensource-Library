@@ -90,7 +90,6 @@ public abstract inherited sharing class Collection {
     public abstract Integer size();
 
 
-
     /**
      * Filters collection by SObjects field values
      */
@@ -98,14 +97,15 @@ public abstract inherited sharing class Collection {
     public abstract FieldFilter filter(String field);
 
     /**
+     * @return Collection of items filtered by Condition implementation
+     */
+    public abstract Collection filter(Condition filter);
+
+
+    /**
      * @return Collection of items which have fields populated similarly to given prototype record
      */
     public abstract Collection filterAlike(SObject prototype);
-
-    /**
-     * @return Collection of items filtered by Filter implementation
-     */
-    public abstract Collection filterUsing(Filter filter);
 
 
     /**
@@ -238,7 +238,7 @@ public abstract inherited sharing class Collection {
     /**
      * Simplifies batch unit testing by performing assertion on entire collection
      */
-    public abstract Collection assert(Filter filter, String message);
+    public abstract Collection assert(Condition filter, String message);
     public abstract Collection assertEquals(SObjectField field, Object value, String message);
     public abstract Collection assertNotEquals(SObjectField field, Object value, String message);
 
@@ -251,10 +251,6 @@ public abstract inherited sharing class Collection {
     /**
     * Filter determines whether collection item should be included into result set.
     * */
-    public interface Filter {
-        Boolean accepts(Object item);
-    }
-
     public interface FieldFilter {
         Collection equals(Object value);
         Collection notEquals(Object value);
@@ -267,22 +263,7 @@ public abstract inherited sharing class Collection {
         Collection isNotIn(Set<Object> values);
         Collection isNotIn(List<Object> values);
         Collection relatedTo(List<SObject> parents);
-        Collection containing(String value);
-    }
-
-    public interface FieldFilterFactory {
-        Filter equals(Object value);
-        Filter notEquals(Object value);
-        Filter greaterThan(Object value);
-        Filter greaterEqualsThan(Object value);
-        Filter lessThan(Object value);
-        Filter lessEqualsThan(Object value);
-        Filter isIn(Set<Object> values);
-        Filter isIn(List<Object> values);
-        Filter isNotIn(Set<Object> values);
-        Filter isNotIn(List<Object> values);
-        Filter relatedTo(List<SObject> parents);
-        Filter containing(String value);
+        Collection contains(String value);
     }
 
 

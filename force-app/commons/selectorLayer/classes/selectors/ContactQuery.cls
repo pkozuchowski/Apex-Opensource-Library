@@ -25,37 +25,33 @@
 /**
  * Selector layer for Contact SObjects
  */
-public inherited sharing class ContactQuery extends QueryObject {
+public inherited sharing class ContactQuery extends Query {
 
-    public override List<String> getFields() {
-        return  new List<String>{
-                'Id',
-                'AccountId',
-                'FirstName',
-                'LastName',
-                'Name',
-                'Email',
-                'MailingAddress',
-                'MailingCity',
-                'MailingCountry',
-                'MailingPostalCode',
-                'MailingState',
-                'MailingStreet',
-                'OtherCity',
-                'OtherCountry',
-                'OtherPhone',
-                'OtherPostalCode',
-                'OtherState',
-                'OtherStreet',
-                'OwnerId',
-                'Phone',
-                'Salutation',
-                'Title'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Contact.SObjectType;
+    public ContactQuery() {
+        super(new List<String>{
+            'Id',
+            'AccountId',
+            'FirstName',
+            'LastName',
+            'Name',
+            'Email',
+            'MailingAddress',
+            'MailingCity',
+            'MailingCountry',
+            'MailingPostalCode',
+            'MailingState',
+            'MailingStreet',
+            'OtherCity',
+            'OtherCountry',
+            'OtherPhone',
+            'OtherPostalCode',
+            'OtherState',
+            'OtherStreet',
+            'OwnerId',
+            'Phone',
+            'Salutation',
+            'Title'
+        }, Contact.SObjectType);
     }
 
 
@@ -63,7 +59,9 @@ public inherited sharing class ContactQuery extends QueryObject {
      * Contacts will include information about parent Account field through Contact.AccountId field.
      */
     public ContactQuery withParentAccount() {
-        this.query.addParentFields(new AccountQuery().getFields(), Contact.AccountId);
+        selectAdditionalFields(new List<String>{
+            'Account.Name'
+        });
         return this;
     }
 
@@ -129,8 +127,8 @@ public inherited sharing class ContactQuery extends QueryObject {
 
     protected override Set<String> getFieldsToCacheBy() {
         return new Set<String>{
-                'Id',
-                'Email'
+            'Id',
+            'Email'
         };
     }
 }

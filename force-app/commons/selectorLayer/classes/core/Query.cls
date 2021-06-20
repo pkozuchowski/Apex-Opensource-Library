@@ -27,7 +27,7 @@
  * Query.Accounts.byId(...);
  * Query.EmailTemplates.byDeveloperName('FirmQuote');
  */
-public inherited sharing class Query {
+public inherited sharing virtual class Query extends QueryObject {
     public final static AccountQuery Accounts { get {return new AccountQuery();} }
     public final static AttachmentQuery Attachments { get {return new AttachmentQuery();} }
     public final static BusinessHoursQuery BusinessHours { get {return new BusinessHoursQuery();} }
@@ -61,6 +61,104 @@ public inherited sharing class Query {
         return new HistoryQuery(shareSObjectType);
     }
 
-    private Query() {
+
+    /**
+     * @return Query instance for generic SObjectType
+     *
+     */
+    public static Query fromSObject(SObjectType sObjectType) {
+        return new Query(sObjectType);
+    }
+
+
+    /**
+     * Constructs Query for given sObjectType without any fields selected.
+     * @param sObjectType to query from
+     */
+    protected Query(SObjectType sObjectType) {
+        super(sObjectType);
+    }
+
+    /**
+     * Constructs QueryObject for given sObjectType and given fields selected.
+     * @param fields to select
+     * @param sObjectType to query from
+     */
+    protected Query(List<String> fields, SObjectType sObjectType) {
+        super(fields, sObjectType);
+    }
+
+
+    /**
+     * Represents SOQL FIELDS() token which can be used to select group of fields
+     * without knowing their names in advance.
+     */
+    public enum Fields {
+        ALL,
+        CUSTOM,
+        STANDARD
+    }
+
+    public interface Condition {
+
+        /**
+         * @return String representation of WHERE condition.
+         * Example: 'AccountId IN :recordIds'
+         */
+        String toSOQL();
+
+        /**
+         * @return Map of variables to bind to WHERE condition
+         * Example for 'AccountId IN :recordIds':
+         * <pre>
+         *     new Map<String,Object>{
+         *         'recordIds' => new Map<Id, Account>(accounts).keySet();
+         *     }
+         * </pre>
+         */
+        Map<String, Object> getQueryParameters();
+    }
+
+
+    /**
+     * Represents WHERE clause condition expression that can be used in caching mechanism
+     */
+    public interface CacheableCondition {
+        /**
+         * @return True if condition can be used in cache mechanism
+         */
+        Boolean isCacheable();
+
+        /**
+         * @return Key under which Cache saves value-record pairs. Usually it's a field API Name.
+         */
+        String getCacheKey();
+
+        /**
+         * @return Key value udner which SObject instance is cached - usually unique id field value.
+         */
+        Object getCacheValue();
+
+        /**
+         * @param remainder Cache values that did not have cached records.
+         * @return Instance of Query.Condition that can retrieve records that were not found in cache.
+         */
+        Query.Condition getRemainderCondition(List<Object> remainder);
+    }
+
+
+    /**
+     * Implement this interface to mock selector query results in unit tests
+     */
+    public interface Mock {
+
+        /**
+         * When mock is set for selector, this method will be called to determine the query result.
+         * Mock is supplied with information about query conditions
+         *
+         * @param condition Query condition - either single or composite
+         * @return Mocked query result
+         */
+        SObject[] mockQuery(Query.Condition condition);
     }
 }

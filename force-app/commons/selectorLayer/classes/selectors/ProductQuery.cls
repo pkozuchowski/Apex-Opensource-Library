@@ -83,7 +83,7 @@ public virtual inherited sharing class ProductQuery extends Query {
     }
 
     /**
-     * Filters Product2s with given names (List or Set)
+     * Filters Product2s with given names
      */
     public ProductQuery byName(Set<String> names) {
         return (ProductQuery) byField(Product2.Name, 'IN', names);
@@ -97,7 +97,7 @@ public virtual inherited sharing class ProductQuery extends Query {
     }
 
     /**
-     * Filters Product2s with given names (List or Set)
+     * Filters Product2s with given names
      */
     public ProductQuery byProductCode(Set<String> productCodes) {
         return (ProductQuery) byField(Product2.ProductCode, 'IN', productCodes);
@@ -111,7 +111,7 @@ public virtual inherited sharing class ProductQuery extends Query {
     }
 
     /**
-     * Filters Product2s with given names (List or Set)
+     * Filters Product2s with given names
      */
     public ProductQuery byExternalId(Set<String> externalIds) {
         return (ProductQuery) byField(Product2.ExternalId, 'IN', externalIds);

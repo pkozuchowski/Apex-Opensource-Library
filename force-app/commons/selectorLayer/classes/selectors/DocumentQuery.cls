@@ -52,7 +52,7 @@ public inherited sharing class DocumentQuery extends Query {
     }
 
     /**
-     * @return Documents by given developer names (List or Set)
+     * @return Documents by given developer names
      */
     public DocumentQuery byDeveloperName(Set<String> developerNames) {
         return (DocumentQuery) byField(Document.DeveloperName, 'IN', developerNames);

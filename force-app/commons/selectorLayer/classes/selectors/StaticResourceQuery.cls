@@ -48,7 +48,7 @@ public inherited sharing class StaticResourceQuery extends Query {
     }
 
     /**
-     * Filters Static Resource by given names (List or Set)
+     * Filters Static Resource by given names
      */
     public StaticResourceQuery byName(Set<String> names) {
         return (StaticResourceQuery) byField(StaticResource.Name, 'IN', names);

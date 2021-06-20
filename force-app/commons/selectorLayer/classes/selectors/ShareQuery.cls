@@ -36,7 +36,7 @@ public inherited sharing class ShareQuery extends Query {
 
 
     /**
-     * @return Share records for given user or group ids (List or Set)
+     * @return Share records for given user or group ids
      */
     public ShareQuery byUserOrGroupId(Set<Id> userOrGroupIds) {
         return (ShareQuery) byField('UserOrGroupId', 'IN', userOrGroupIds);
@@ -50,7 +50,7 @@ public inherited sharing class ShareQuery extends Query {
     }
 
     /**
-     * @return Share records for given records and users/groups (List or cast Set may be supplied as iterable)
+     * @return Share records for given records and users/groups
      */
     public ShareQuery byParentIdAndUserOrGroupId(Set<Id> parentIds, Set<Id> userOrGroupIds) {
         wheres(conditionFactory.ANDs(

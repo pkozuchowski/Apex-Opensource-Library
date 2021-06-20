@@ -55,7 +55,7 @@ public inherited sharing class TaskQuery extends Query {
     }
 
     /**
-     * Filters Tasks associated with given Accounts (List or Set)
+     * Filters Tasks associated with given Accounts
      */
     public TaskQuery byAccountId(Set<Id> accountIds) {
         return (TaskQuery) byField(Task.AccountId, 'IN', accountIds);
@@ -70,7 +70,7 @@ public inherited sharing class TaskQuery extends Query {
     }
 
     /**
-     * Filters Tasks associated with given Accounts (List or Set)
+     * Filters Tasks associated with given Accounts
      */
     public TaskQuery byWhatId(Set<Id> whatIds) {
         return (TaskQuery) byField(Task.WhatId, 'IN', whatIds);
@@ -85,7 +85,7 @@ public inherited sharing class TaskQuery extends Query {
     }
 
     /**
-     * Filters Tasks associated with given Accounts (List or Set)
+     * Filters Tasks associated with given Accounts
      */
     public TaskQuery byWhoId(Set<Id> whoIds) {
         return (TaskQuery) byField(Task.WhoId, 'IN', whoIds);

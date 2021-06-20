@@ -66,6 +66,13 @@ public inherited sharing class QueryBuilder {
         return this;
     }
 
+    public QueryBuilder addField(Query.Field field) {
+        if (field != null) {
+            this.fields.add('FIELDS(' + field.name() + ')');
+        }
+        return this;
+    }
+
     public QueryBuilder addFields(SObjectField[] fields) {
         for (SObjectField sObjectField : fields) {
             this.fields.add('' + sObjectField);
@@ -106,26 +113,6 @@ public inherited sharing class QueryBuilder {
             .addFields(fields)
             .fromObject(relationshipField)
         );
-    }
-
-    public QueryBuilder addParentFields(List<SObjectField> fields, SObjectField relationshipField) {
-        String relation = relationshipField.getDescribe().getRelationshipName() + '.';
-
-        for (SObjectField field : fields) {
-            addField(relation + field);
-        }
-
-        return this;
-    }
-
-    public QueryBuilder addParentFields(List<String> fields, SObjectField relationshipField) {
-        String relation = relationshipField.getDescribe().getRelationshipName() + '.';
-
-        for (String field : fields) {
-            addField(relation + field);
-        }
-
-        return this;
     }
 
     public QueryBuilder fromObject(SObjectType fromObject) {

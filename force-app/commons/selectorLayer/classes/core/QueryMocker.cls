@@ -27,7 +27,7 @@
 */
 public with sharing class QueryMocker {
     private final static QueryMocker instance = new QueryMocker();
-    private final Map<Type, QueryMock> mocksByQueryClass = new Map<Type, QueryMock>();
+    private final Map<Type, Query.Mock> mocksByQueryClass = new Map<Type, Query.Mock>();
 
     public static QueryMocker getInstance() {
         return instance;
@@ -40,7 +40,7 @@ public with sharing class QueryMocker {
     /**
      * Mocks selector method with given results
      */
-    public QueryMock getMock(Type queryClass) {
+    public Query.Mock getMock(Type queryClass) {
         return this.mocksByQueryClass.get(queryClass);
     }
 
@@ -54,7 +54,7 @@ public with sharing class QueryMocker {
     /**
      * Mocks query result for given selector type
      */
-    public void setMock(Type queryClass, QueryMock mock) {
+    public void setMock(Type queryClass, Query.Mock mock) {
         if (Test.isRunningTest()) {
             getInstance().mocksByQueryClass.put(queryClass, mock);
 
@@ -83,14 +83,14 @@ public with sharing class QueryMocker {
     /**
      * Mocks selector's method with given result.
      */
-    private class SimpleQueryMock implements QueryMock {
+    private class SimpleQueryMock implements Query.Mock {
         private SObject[] mockRecords;
 
         private SimpleQueryMock(SObject[] mockRecords) {
             this.mockRecords = mockRecords;
         }
 
-        public SObject[] handleQuery(QueryCondition condition) {
+        public SObject[] mockQuery(Query.Condition condition) {
             return mockRecords;
         }
     }

@@ -25,15 +25,11 @@
 private class QueryMockerTest {
 
     public class TestAccountQuery extends QueryObject {
-        public override List<String> getFields() {
-            return new List<String>{
+        public TestAccountQuery() {
+            super(new List<String>{
                 'Id',
                 'Name'
-            };
-        }
-
-        public override SObjectType getSObjectType() {
-            return Account.SObjectType;
+            }, Account.SObjectType);
         }
 
         public TestAccountQuery byName(String name) {
@@ -101,9 +97,9 @@ private class QueryMockerTest {
         System.assertEquals('Mock Result 3', resultAfterMock[2].Name);
     }
 
-    private class AccountQueryMock implements QueryMock {
+    private class AccountQueryMock implements Query.Mock {
 
-        public SObject[] handleQuery(QueryCondition condition) {
+        public SObject[] mockQuery(Query.Condition condition) {
             System.assertEquals(condition.toSOQL(), '(Name = :value)', 'Mock should be able to check query condition');
 
             return new List<Account>{

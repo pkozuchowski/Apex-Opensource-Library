@@ -27,67 +27,97 @@
  * /
  */
 
-public abstract class QueryCondition {
+/**
+ * Created by piotr on 19.06.2021.
+ */
+public with sharing class QueryWhere {
 
     /**
-     * @return String representation of WHERE condition.
-     * Example: 'AccountId IN :recordIds'
-     */
-    public abstract String toSOQL();
-
-    /**
-     * @return Map of variables to bind to WHERE condition
-     * Example for 'AccountId IN :recordIds':
-     * <pre>
-     *     new Map<String,Object>{
-     *         'recordIds' => new Map<Id, Account>(accounts).keySet();
-     *     }
-     * </pre>
-     */
-    public abstract Map<String, Object> getQueryParameters();
-
-
-    /**
-     * Represents WHERE clause condition expression that can be used in caching mechanism
-     */
-    public interface Cacheable {
-        /**
-         * @return True if condition can be used in cache mechanism
-         */
-        Boolean isCacheable();
-
-        /**
-         * @return Key under which Cache saves value-record pairs. Usually it's a field API Name.
-         */
-        String getCacheKey();
-
-        /**
-         * @return Key value udner which SObject instance is cached - usually unique id field value.
-         */
-        Object getCacheValue();
-
-        /**
-         * @param remainder Cache values that did not have cached records.
-         * @return Instance of QueryCondition that can retrieve records that were not found in cache.
-         */
-        QueryCondition getRemainderCondition(List<Object> remainder);
+    * Composite query condition that joins inner where clauses with AND operator
+    */
+    public static Query.Condition ANDs(Query.Condition w1, Query.Condition w2) {
+        return new ANDExpr(new List<Query.Condition>{w1, w2});
+    }
+    public static Query.Condition ANDs(Query.Condition w1, Query.Condition w2, Query.Condition w3) {
+        return new ANDExpr(new List<Query.Condition>{w1, w2, w3});
+    }
+    public static Query.Condition ANDs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4) {
+        return new ANDExpr(new List<Query.Condition>{w1, w2, w3, w4});
+    }
+    public static Query.Condition ANDs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4, Query.Condition w5) {
+        return new ANDExpr(new List<Query.Condition>{w1, w2, w3, w4, w5});
+    }
+    public static Query.Condition ANDs(Query.Condition[] conditions) {
+        return new ANDExpr(conditions);
     }
 
+    /**
+    * Composite query condition that joins inner where clauses with OR operator
+    */
+    public static Query.Condition ORs(Query.Condition w1, Query.Condition w2) {
+        return new ORExpr(new List<Query.Condition>{w1, w2});
+    }
+    public static Query.Condition ORs(Query.Condition w1, Query.Condition w2, Query.Condition w3) {
+        return new ORExpr(new List<Query.Condition>{w1, w2, w3});
+    }
+    public static Query.Condition ORs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4) {
+        return new ORExpr(new List<Query.Condition>{w1, w2, w3, w4});
+    }
+    public static Query.Condition ORs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4, Query.Condition w5) {
+        return new ORExpr(new List<Query.Condition>{w1, w2, w3, w4, w5});
+    }
+    public static Query.Condition ORs(Query.Condition[] conditions) {
+        return new ORExpr(conditions);
+    }
+
+
+    /**
+     * Creates field WHERE condition
+     */
+    public static FieldExprFactory field(SObjectField field) {
+        return field('' + field);
+    }
+    public static FieldExprFactory field(String field) {
+        return new FieldExprFactory(field);
+    }
+    public static Query.Condition field(String field, String operator, Object value) {
+        return new FieldExpr(field, operator, value);
+    }
+    public static Query.Condition field(SObjectField field, String operator, Object value) {
+        return new FieldExpr(field, operator, value);
+    }
+
+    /**
+     * Negates passed WHERE clause with NOT keyword
+     */
+    public static Query.Condition NOTs(Query.Condition condition) {
+        return new NotExpr(condition);
+    }
+
+
+    public static Query.Condition wheres(String whereString, Map<String, Object> params) {
+        return new GenericExpr(whereString, params);
+    }
+
+
+    public static Query.Condition blank(){
+        return new NullExpr();
+    }
 
 
     /**
      * Represents lack of WHERE clause expressions
      */
-    public class NullExpr extends QueryCondition {
-        public override String toSOQL() { return ''; }
-        public override Map<String, Object> getQueryParameters() { return new Map<String, Object>(); }
+    private class NullExpr implements Query.Condition {
+        public String toSOQL() { return ''; }
+        public Map<String, Object> getQueryParameters() { return new Map<String, Object>(); }
     }
 
 
     /**
      * Generic WHERE expression which may have content and params freely defined.
      */
-    public class GenericExpr extends QueryCondition {
+    private class GenericExpr implements Query.Condition {
         private String whereString;
         private Map<String, Object> params;
 
@@ -96,21 +126,21 @@ public abstract class QueryCondition {
             this.params = params;
         }
 
-        public override String toSOQL() { return whereString; }
-        public override Map<String, Object> getQueryParameters() { return params; }
+        public String toSOQL() { return whereString; }
+        public Map<String, Object> getQueryParameters() { return params; }
     }
 
 
     /**
      * Composite WHERE clause that concatenates other conditions with AND
      */
-    public class ANDExpr extends CompositeExpr {
-        public ANDExpr(QueryCondition[] conditions) { super(conditions); }
+    private class ANDExpr extends CompositeExpr {
+        public ANDExpr(Query.Condition[] conditions) { super(conditions); }
         protected override String getSeparator() { return ' AND '; }
     }
 
-    public class ORExpr extends CompositeExpr {
-        public ORExpr(QueryCondition[] conditions) { super(conditions); }
+    private class ORExpr extends CompositeExpr {
+        public ORExpr(Query.Condition[] conditions) { super(conditions); }
         protected override String getSeparator() { return ' OR '; }
     }
 
@@ -120,35 +150,35 @@ public abstract class QueryCondition {
     /**
      * Composite WHERE condition for group of conditions joined by boolean AND/OR
      */
-    private abstract class CompositeExpr extends QueryCondition {
-        protected QueryCondition[] conditions;
+    private abstract class CompositeExpr implements Query.Condition {
+        protected Query.Condition[] conditions;
         private String soql;
         private Map<String, Object> values;
         private Boolean isCompiled = false;
 
-        protected CompositeExpr(QueryCondition[] conditions) {
+        protected CompositeExpr(Query.Condition[] conditions) {
             this.conditions = conditions;
             this.values = new Map<String, Object>();
         }
 
-        public override String toSOQL() {
+        public String toSOQL() {
             if (!isCompiled) compile();
             return this.soql;
         }
 
-        public override Map<String, Object> getQueryParameters() {
+        public Map<String, Object> getQueryParameters() {
             if (!isCompiled) compile();
             return this.values;
         }
 
-        public void add(QueryCondition c) { this.conditions.add(c); }
-        public QueryCondition get(Integer i) { return this.conditions.get(i); }
+        public void add(Query.Condition c) { this.conditions.add(c); }
+        public Query.Condition get(Integer i) { return this.conditions.get(i); }
         public Integer size() { return this.conditions.size(); }
 
         private void compile() {
             List<String> wheresStrings = new List<String>();
 
-            for (QueryCondition condition : conditions) {
+            for (Query.Condition condition : conditions) {
                 String conditionString = condition.toSOQL();
                 Map<String, Object> conditionValues = condition.getQueryParameters();
 
@@ -176,7 +206,7 @@ public abstract class QueryCondition {
     /**
      * Provides interface for building field WHERE clause.
      */
-    public class FieldExprFactory {
+    private class FieldExprFactory {
         private String field;
 
         public FieldExprFactory(String field) {
@@ -199,7 +229,7 @@ public abstract class QueryCondition {
     /**
      * WHERE clause for simple field filter
      */
-    public class FieldExpr extends QueryCondition implements Cacheable {
+    private class FieldExpr implements Query.Condition, Query.CacheableCondition {
         public String field { get; private set; }
         public String operator { get; private set; }
         public Object value { get; private set; }
@@ -214,11 +244,11 @@ public abstract class QueryCondition {
             this.value = value;
         }
 
-        public override String toSOQL() {
+        public String toSOQL() {
             return '(' + field + ' ' + operator + ' :value' + ')';
         }
 
-        public override Map<String, Object> getQueryParameters() {
+        public Map<String, Object> getQueryParameters() {
             return new Map<String, Object>{
                 'value' => value
             };
@@ -238,7 +268,7 @@ public abstract class QueryCondition {
             return value;
         }
 
-        public QueryCondition getRemainderCondition(List<Object> remainder) {
+        public Query.Condition getRemainderCondition(List<Object> remainder) {
             return new FieldExpr(field, operator, remainder);
         }
     }
@@ -247,18 +277,18 @@ public abstract class QueryCondition {
     /**
      * Composite WHERE clause which negates inner conditions
      */
-    public class NotExpr extends QueryCondition {
-        private QueryCondition innerWhere;
+    private class NotExpr implements Query.Condition {
+        private Query.Condition innerWhere;
 
-        public NotExpr(QueryCondition innerWhere) {
+        public NotExpr(Query.Condition innerWhere) {
             this.innerWhere = innerWhere;
         }
 
-        public override String toSOQL() {
+        public String toSOQL() {
             return 'NOT (' + innerWhere.toSOQL() + ')';
         }
 
-        public override Map<String, Object> getQueryParameters() {
+        public Map<String, Object> getQueryParameters() {
             return innerWhere.getQueryParameters();
         }
     }

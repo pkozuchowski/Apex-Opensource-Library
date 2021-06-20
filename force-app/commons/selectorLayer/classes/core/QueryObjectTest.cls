@@ -25,17 +25,14 @@
 public class QueryObjectTest {
 
     private class TestUserQuery extends QueryObject {
-        public override List<String> getFields() {
-            return new List<String>{
-                    'Id',
-                    'Name',
-                    'Email',
-                    'Username'
-            };
-        }
 
-        public override SObjectType getSObjectType() {
-            return User.SObjectType;
+        private TestUserQuery() {
+            super(new List<String>{
+                'Id',
+                'Name',
+                'Email',
+                'Username'
+            }, User.SObjectType);
         }
 
         protected override Set<String> getFieldsToCacheBy() {
@@ -57,7 +54,7 @@ public class QueryObjectTest {
     @IsTest
     static void testSelectByIdSObject() {
         User user = (User) new TestUserQuery().byId(new List<User>{
-                new User(Id = UserInfo.getUserId())
+            new User(Id = UserInfo.getUserId())
         }).getFirstOrNull();
 
         System.assertEquals(UserInfo.getUserId(), user.Id);
@@ -77,8 +74,8 @@ public class QueryObjectTest {
     @IsTest
     static void testSelectAll() {
         assertEquals(
-                ([SELECT Id FROM User]),
-                new TestUserQuery().getList()
+            ([SELECT Id FROM User]),
+            new TestUserQuery().getList()
         );
     }
 
@@ -88,8 +85,8 @@ public class QueryObjectTest {
         List<User> users = new TestUserQuery().relatedToChildren(loginHistories, LoginHistory.UserId).getList();
 
         assertEquals(
-                ([SELECT Id FROM User WHERE Id IN (SELECT UserId FROM LoginHistory WHERE Id IN :loginHistories)]),
-                users
+            ([SELECT Id FROM User WHERE Id IN (SELECT UserId FROM LoginHistory WHERE Id IN :loginHistories)]),
+            users
         );
     }
 
@@ -99,8 +96,8 @@ public class QueryObjectTest {
         List<User> users = new TestUserQuery().relatedToParent(profiles, User.ProfileId).getList();
 
         assertEquals(
-                ([SELECT Id FROM User WHERE ProfileId IN :profiles]),
-                users
+            ([SELECT Id FROM User WHERE ProfileId IN :profiles]),
+            users
         );
     }
 
@@ -112,8 +109,8 @@ public class QueryObjectTest {
 
     public static void assertEquals(SObject[] expected, SObject[] actual) {
         System.assertEquals(
-                new Map<Id, SObject>(expected).keySet(),
-                new Map<Id, SObject>(actual).keySet()
+            new Map<Id, SObject>(expected).keySet(),
+            new Map<Id, SObject>(actual).keySet()
         );
     }
 
@@ -122,23 +119,23 @@ public class QueryObjectTest {
     static void testCountBy() {
         Integer cnt = (Integer) [SELECT COUNT(Id) cnt FROM User].get(0).get('cnt');
         System.assertEquals(
-                cnt,
-                new TestUserQuery().getCount()
+            cnt,
+            new TestUserQuery().getCount()
         );
     }
 
     @IsTest
     static void coverage() {
         new TestUserQuery()
-                .withoutSharing()
-                .withoutCache()
-                .withEnforcedSecurity()
-                .withAllFields()
-                .byId(UserInfo.getUserId())
-                .getFirstOrNull();
+            .selectField(Query.Field.STANDARD)
+            .withSharing(Sharing.WITHOUT_SHARING)
+            .usingCache(true)
+            .withStrippedFields(AccessType.READABLE)
+            .byId(UserInfo.getUserId())
+            .getFirstOrNull();
 
         new TestUserQuery().byId(UserInfo.getUserId()).getCount();
-        new TestUserQuery().byId(UserInfo.getUserId()).getCountBy(new List<String>{'' + User.Name});
+        new TestUserQuery().byId(UserInfo.getUserId()).getAggregatedResults('COUNT(ID)', 'Name');
         new TestUserQuery().byId(UserInfo.getUserId()).getMapById();
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrEmpty();
@@ -152,17 +149,17 @@ public class QueryObjectTest {
     @IsTest
     static void queryBuilderCoverage() {
         new QueryBuilder()
-                .addField(Account.Id)
-                .addField('Name')
-                .addFields(new List<SObjectField>{Account.Id})
-                .addFields(new List<String>{'Id'})
-                .addChildFields(new List<SObjectField>{Contact.Id}, 'Contacts')
-                .fromObject(Account.SObjectType)
-                .setWhere('Name != NULL')
-                .setGroupBy('Name')
-                .setHaving('')
-                .setOrderBy('Name')
-                .setOffset(0)
-                .setLimit(100);
+            .addField(Account.Id)
+            .addField('Name')
+            .addFields(new List<SObjectField>{Account.Id})
+            .addFields(new List<String>{'Id'})
+            .addChildFields(new List<SObjectField>{Contact.Id}, 'Contacts')
+            .fromObject(Account.SObjectType)
+            .setWhere('Name != NULL')
+            .setGroupBy('Name')
+            .setHaving('')
+            .setOrderBy('Name')
+            .setOffset(0)
+            .setLimit(100);
     }
 }

@@ -166,4 +166,27 @@ public class QueryObjectTest {
             .setOffset(0)
             .setLimit(100);
     }
+
+
+    @IsTest
+    static void conditionFactoryCoverage() {
+        QueryConditionFactory c = new QueryConditionFactory();
+        c.ANDs(null, null);
+        c.ANDs(null, null, null);
+        c.ANDs(null, null, null, null);
+        c.ANDs(null, null, null, null, null);
+        c.ANDs(new List<Query.Condition>{null});
+
+        c.ORs(null, null);
+        c.ORs(null, null, null);
+        c.ORs(null, null, null, null);
+        c.ORs(null, null, null, null, null);
+        c.ORs(new List<Query.Condition>{null});
+
+        c.field(Account.Name).equals('Test');
+        c.field(Account.Name, '=', 'Test');
+        c.blank();
+        c.wheres('Name IN :names', new Map<String, Object>{'names' => new List<String>{'Test'}});
+        c.NOTs(c.field(Account.Name).equals('Test'));
+    }
 }

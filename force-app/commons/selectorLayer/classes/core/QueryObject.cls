@@ -117,6 +117,14 @@ public abstract inherited sharing class QueryObject {
         return this;
     }
 
+    /**
+     * Sets limit on query
+     */
+    public QueryObject limits(Integer l) {
+        this.queryBuilder.setLimit(l);
+        return this;
+    }
+
 
     /**
     * Extenders

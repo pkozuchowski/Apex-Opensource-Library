@@ -80,12 +80,14 @@ public with sharing class QueryConditionFactory {
     public FieldExprFactory field(String field) {
         return new FieldExprFactory(field);
     }
+
+    public Query.Condition field(SObjectField field, String operator, Object value) {
+        return field('' + field, operator, value);
+    }
     public Query.Condition field(String field, String operator, Object value) {
         return new FieldExpr(field, operator, value);
     }
-    public Query.Condition field(SObjectField field, String operator, Object value) {
-        return new FieldExpr(field, operator, value);
-    }
+
 
     /**
      * Negates passed WHERE clause with NOT keyword

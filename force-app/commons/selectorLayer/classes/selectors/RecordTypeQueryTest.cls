@@ -29,7 +29,7 @@ private class RecordTypeQueryTest {
         Map<String, RecordTypeInfo> accountRTs = Account.SObjectType.getDescribe().getRecordTypeInfosByDeveloperName();
 
         for (String devName : accountRTs.keySet()) {
-            System.assertEquals(accountRTs.get(devName).getRecordTypeId(), new RecordTypeQuery().idByDeveloperName(Account.SObjectType, devName));
+            System.assertEquals(accountRTs.get(devName).getRecordTypeId(), new RecordTypeQuery().byDeveloperName(Account.SObjectType, devName)?.recordTypeId);
         }
     }
 }

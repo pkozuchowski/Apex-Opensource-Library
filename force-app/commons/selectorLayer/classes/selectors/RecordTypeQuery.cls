@@ -33,14 +33,6 @@ public inherited sharing class RecordTypeQuery {
     /**
      * @return Id of Record Type for given sObjectType and Record Type's Developer Name
      */
-    public Id idByDeveloperName(SObjectType sObjType, String devName) {
-        RecordTypeInfo recordTypeInfo = byDeveloperName(sObjType, devName);
-        return recordTypeInfo == null ? null : recordTypeInfo.getRecordTypeId();
-    }
-
-    /**
-     * @return Id of Record Type for given sObjectType and Record Type's Developer Name
-     */
     public RecordTypeInfo byDeveloperName(SObjectType sObjType, String devName) {
         if (!recordTypeInfoMap.containsKey(sObjType)) {
             recordTypeInfoMap.put(sObjType, sObjType.getDescribe().getRecordTypeInfosByDeveloperName());

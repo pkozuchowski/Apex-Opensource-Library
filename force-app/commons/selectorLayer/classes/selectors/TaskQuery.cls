@@ -27,27 +27,23 @@
  */
 public inherited sharing class TaskQuery extends QueryObject {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'AccountId',
-                'CompletedDateTime',
-                'Description',
-                'IsClosed',
-                'IsRecurrence',
-                'IsReminderSet',
-                'OwnerId',
-                'Status',
-                'Subject',
-                'TaskSubtype',
-                'Type',
-                'WhatId',
-                'WhoId'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Task.SObjectType;
+    public TaskQuery() {
+        super(new List<String>{
+            'Id',
+            'AccountId',
+            'CompletedDateTime',
+            'Description',
+            'IsClosed',
+            'IsRecurrence',
+            'IsReminderSet',
+            'OwnerId',
+            'Status',
+            'Subject',
+            'TaskSubtype',
+            'Type',
+            'WhatId',
+            'WhoId'
+        }, Task.SObjectType);
     }
 
 
@@ -98,7 +94,7 @@ public inherited sharing class TaskQuery extends QueryObject {
 
     protected override Set<String> getFieldsToCacheBy() {
         return new Set<String>{
-                'Id'
+            'Id'
         };
     }
 

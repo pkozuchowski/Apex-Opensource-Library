@@ -27,23 +27,19 @@
  */
 public inherited sharing class CaseQuery extends QueryObject {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'AccountId',
-                'CaseNumber',
-                'Description',
-                'Origin',
-                'Priority',
-                'Reason',
-                'Status',
-                'Subject',
-                'Type'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Case.SObjectType;
+    public CaseQuery() {
+        super(new List<String>{
+            'Id',
+            'AccountId',
+            'CaseNumber',
+            'Description',
+            'Origin',
+            'Priority',
+            'Reason',
+            'Status',
+            'Subject',
+            'Type'
+        }, Case.SObjectType);
     }
 
 
@@ -51,7 +47,9 @@ public inherited sharing class CaseQuery extends QueryObject {
      * Cases will include information about parent Account field through Case.AccountId field.
      */
     public CaseQuery withParentAccount() {
-        this.query.addParentFields(new AccountQuery().getFields(), Case.AccountId);
+        selectAdditionalFields(new List<String>{
+            'Account.Name'
+        });
         return this;
     }
 
@@ -64,7 +62,7 @@ public inherited sharing class CaseQuery extends QueryObject {
     }
 
     /**
-     * Filters Cases by given names (List or Set)
+     * Filters Cases by given names
      */
     public CaseQuery bySubject(Set<String> names) {
         return (CaseQuery) byField(Case.Subject, 'IN', names);
@@ -72,14 +70,14 @@ public inherited sharing class CaseQuery extends QueryObject {
 
 
     /**
-     * Filters Cases related to given account Ids (List or Set)
+     * Filters Cases related to given account Ids
      */
     public CaseQuery byAccountId(Id accountId) {
         return byAccountId(new Set<Id>{accountId});
     }
 
     /**
-     * Filters Cases related to given account Ids (List or Set)
+     * Filters Cases related to given account Ids
      */
     public CaseQuery byAccountId(Set<Id> accountIds) {
         return (CaseQuery) byField(Case.AccountId, 'IN', accountIds);
@@ -87,14 +85,14 @@ public inherited sharing class CaseQuery extends QueryObject {
 
 
     /**
-     * Filters Cases related to given contact Ids (List or Set)
+     * Filters Cases related to given contact Ids
      */
     public CaseQuery byContactId(Id contactId) {
         return byContactId(new Set<Id>{contactId});
     }
 
     /**
-     * Filters Cases related to given contact Ids (List or Set)
+     * Filters Cases related to given contact Ids
      */
     public CaseQuery byContactId(Set<Id> contactIds) {
         return (CaseQuery) byField(Case.ContactId, 'IN', contactIds);

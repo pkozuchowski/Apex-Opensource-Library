@@ -27,24 +27,20 @@
  */
 public inherited sharing class DocumentQuery extends QueryObject {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'AuthorId',
-                'Body',
-                'BodyLength',
-                'ContentType',
-                'Description',
-                'DeveloperName',
-                'FolderId',
-                'Name',
-                'Type',
-                'Url'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Document.SObjectType;
+    public DocumentQuery() {
+        super(new List<String>{
+            'Id',
+            'AuthorId',
+            'Body',
+            'BodyLength',
+            'ContentType',
+            'Description',
+            'DeveloperName',
+            'FolderId',
+            'Name',
+            'Type',
+            'Url'
+        }, Document.SObjectType);
     }
 
 

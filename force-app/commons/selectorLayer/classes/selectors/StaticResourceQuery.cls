@@ -27,20 +27,16 @@
  */
 public inherited sharing class StaticResourceQuery extends QueryObject {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'Body',
-                'BodyLength',
-                'ContentType',
-                'Description',
-                'Name',
-                'NamespacePrefix'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return StaticResource.SObjectType;
+    public StaticResourceQuery() {
+        super(new List<String>{
+            'Id',
+            'Body',
+            'BodyLength',
+            'ContentType',
+            'Description',
+            'Name',
+            'NamespacePrefix'
+        }, StaticResource.SObjectType);
     }
 
 

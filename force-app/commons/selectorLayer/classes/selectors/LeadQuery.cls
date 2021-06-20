@@ -27,23 +27,19 @@
  */
 public inherited sharing class LeadQuery extends QueryObject {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'FirstName',
-                'LastName',
-                'Name',
-                'Phone',
-                'Country',
-                'City',
-                'Street',
-                'PostalCode',
-                'Industry'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Lead.SObjectType;
+    public LeadQuery() {
+        super(new List<String>{
+            'Id',
+            'FirstName',
+            'LastName',
+            'Name',
+            'Phone',
+            'Country',
+            'City',
+            'Street',
+            'PostalCode',
+            'Industry'
+        }, Lead.SObjectType);
     }
 
 
@@ -55,7 +51,7 @@ public inherited sharing class LeadQuery extends QueryObject {
     }
 
     /**
-     * Filters Leads by given names (List or Set)
+     * Filters Leads by given names
      */
     public LeadQuery byName(Set<String> names) {
         return (LeadQuery) byField(Lead.Name, 'IN', names);
@@ -69,7 +65,7 @@ public inherited sharing class LeadQuery extends QueryObject {
     }
 
     /**
-     * Filters Leads by given emails (List or Set)
+     * Filters Leads by given emails
      */
     public LeadQuery byEmail(Set<String> emails) {
         return (LeadQuery) byField(Lead.Email, 'IN', emails);
@@ -83,7 +79,7 @@ public inherited sharing class LeadQuery extends QueryObject {
     }
 
     /**
-     * Filters Leads by given companies (List or Set)
+     * Filters Leads by given companies
      */
     public LeadQuery byCompany(Set<String> companies) {
         return (LeadQuery) byField(Lead.Company, 'IN', companies);
@@ -92,7 +88,7 @@ public inherited sharing class LeadQuery extends QueryObject {
 
     protected override Set<String> getFieldsToCacheBy() {
         return new Set<String>{
-                'Id'
+            'Id'
         };
     }
 }

@@ -27,25 +27,21 @@
  */
 public inherited sharing class EventQuery extends QueryObject {
 
-    public override List<String> getFields() {
-        return new List<String>{
-                'Id',
-                'AccountId',
-                'Description',
-                'IsPrivate',
-                'IsRecurrence',
-                'IsReminderSet',
-                'OwnerId',
-                'Subject',
-                'EventSubtype',
-                'Type',
-                'WhatId',
-                'WhoId'
-        };
-    }
-
-    public override SObjectType getSObjectType() {
-        return Event.SObjectType;
+    public EventQuery() {
+        super(new List<String>{
+            'Id',
+            'AccountId',
+            'Description',
+            'IsPrivate',
+            'IsRecurrence',
+            'IsReminderSet',
+            'OwnerId',
+            'Subject',
+            'EventSubtype',
+            'Type',
+            'WhatId',
+            'WhoId'
+        }, Event.SObjectType);
     }
 
 
@@ -57,7 +53,7 @@ public inherited sharing class EventQuery extends QueryObject {
     }
 
     /**
-     * Filters Events associated with given Accounts (List or Set)
+     * Filters Events associated with given Accounts
      */
     public EventQuery byAccountId(Set<Id> accountIds) {
         return (EventQuery) byField(Event.AccountId, 'IN', accountIds);
@@ -72,7 +68,7 @@ public inherited sharing class EventQuery extends QueryObject {
     }
 
     /**
-     * Filters Events associated with given Accounts (List or Set)
+     * Filters Events associated with given Accounts
      */
     public EventQuery byWhatId(Set<Id> whatIds) {
         return (EventQuery) byField(Event.WhatId, 'IN', whatIds);
@@ -87,16 +83,9 @@ public inherited sharing class EventQuery extends QueryObject {
     }
 
     /**
-     * Filters Events associated with given Accounts (List or Set)
+     * Filters Events associated with given Accounts
      */
     public EventQuery byWhoId(Set<Id> whoIds) {
         return (EventQuery) byField(Event.WhoId, 'IN', whoIds);
-    }
-
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-                'Id'
-        };
     }
 }

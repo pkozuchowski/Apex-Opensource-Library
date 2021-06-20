@@ -27,21 +27,11 @@
  */
 public inherited sharing class ShareQuery extends QueryObject {
     private String parentField;
-    private SObjectType shareObjectType;
 
     public ShareQuery(SObjectType shareObjectType) {
-        super(false);
-        this.shareObjectType = shareObjectType;
+        super(shareObjectType);
         this.parentField = getParentField();
-        init();
-    }
-
-    public override List<String> getFields() {
-        return new List<String>(getAllFieldsMap().keySet());
-    }
-
-    public override SObjectType getSObjectType() {
-        return shareObjectType;
+        this.selectField(Query.Fields.STANDARD);
     }
 
 
@@ -63,9 +53,10 @@ public inherited sharing class ShareQuery extends QueryObject {
      * @return Share records for given records and users/groups (List or cast Set may be supplied as iterable)
      */
     public ShareQuery byParentIdAndUserOrGroupId(Set<Id> parentIds, Set<Id> userOrGroupIds) {
-        this.query.setWhere('' + parentField + ' IN :parentIds AND UserOrGroupId IN :userOrGroupIds')
-                .bindVariable('parentIds', parentIds)
-                .bindVariable('userOrGroupIds', userOrGroupIds);
+        wheres(conditionFactory.ANDs(
+            conditionFactory.field(parentField).isIn(parentIds),
+            conditionFactory.field('UserOrGroupId').isIn(userOrGroupIds)
+        ));
         return this;
     }
 
@@ -75,8 +66,8 @@ public inherited sharing class ShareQuery extends QueryObject {
      * This method checks for ParentId field.
      */
     private String getParentField() {
-        Map<String, SObjectField> allFields = getAllFieldsMap();
-        String sobjectType = '' + shareObjectType;
+        Map<String, SObjectField> allFields = sObjectType.getDescribe().fields.getMap();
+        String sobjectType = '' + sObjectType;
 
         if (allFields.containsKey('ParentId')) {
             return '' + allFields.get('ParentId');

@@ -28,14 +28,14 @@
 public inherited sharing virtual class QueryObject {
     private final static QueryMocker mocker = QueryMocker.getInstance();
     private final static QueryCache cache = QueryCache.getInstance();
-    private final static QueryConditionFactory conditionFactory = new QueryConditionFactory();
 
-    protected final QueryBuilder query = new QueryBuilder();
+    protected final QueryConditionFactory conditionFactory = new QueryConditionFactory();
+    protected final QueryBuilder queryBuilder = new QueryBuilder();
     protected final DatabaseService databaseService = new DatabaseService();
     protected final List<Query.Condition> conditions = new List<Query.Condition>();
+    protected final SObjectType sObjectType;
 
     private Boolean useCache = !Test.isRunningTest();
-    private SObjectType sObjectType;
     private AccessType accessType = null;
 
     /**
@@ -53,7 +53,7 @@ public inherited sharing virtual class QueryObject {
      */
     public QueryObject(List<String> fields, SObjectType sObjectType) {
         this(sObjectType);
-        this.query.addFields(fields);
+        this.queryBuilder.addFields(fields);
     }
 
 
@@ -61,7 +61,7 @@ public inherited sharing virtual class QueryObject {
      * Adds given field to the query
      */
     public QueryObject selectField(String field) {
-        this.query.addField(field);
+        this.queryBuilder.addField(field);
         return this;
     }
 
@@ -70,7 +70,7 @@ public inherited sharing virtual class QueryObject {
      * Query is restricted to 200 records in case of ALL and CUSTOM fields.
      */
     public QueryObject selectField(Query.Fields field) {
-        this.query.addField(field);
+        this.queryBuilder.addField(field);
         return this;
     }
 
@@ -78,7 +78,7 @@ public inherited sharing virtual class QueryObject {
      * Selects given fields
      */
     public QueryObject selectFields(List<String> fields) {
-        this.query.setFields(fields);
+        this.queryBuilder.setFields(fields);
         return this;
     }
 
@@ -86,7 +86,7 @@ public inherited sharing virtual class QueryObject {
      * Selects given fields
      */
     public QueryObject selectAdditionalFields(List<String> fields) {
-        this.query.addFields(fields);
+        this.queryBuilder.addFields(fields);
         return this;
     }
 
@@ -95,7 +95,23 @@ public inherited sharing virtual class QueryObject {
      */
     public QueryObject selectAllFields() {
         Set<String> allFields = sObjectType.getDescribe().fields.getMap().keySet();
-        this.query.setFields(new List<String>(allFields));
+        this.queryBuilder.setFields(new List<String>(allFields));
+        return this;
+    }
+
+
+    /**
+     * Adds subquery with given fields and relationship name
+     */
+    public QueryObject selectSubquery(List<String> fields, String relationshipName) {
+        this.queryBuilder.addChildFields(fields, relationshipName);
+        return this;
+    }
+
+    /**
+     * Adds another query as subquery
+     */
+    public QueryObject selectSubquery(QueryObject query, String relationshipName) {
         return this;
     }
 
@@ -287,7 +303,7 @@ public inherited sharing virtual class QueryObject {
      * @throws System.ListException if query did not return results
      */
     public SObject getFirst() {
-        this.query.setLimit(1);
+        this.queryBuilder.setLimit(1);
         List<SObject> result = executeQuery();
         return result.get(0);
     }
@@ -296,7 +312,7 @@ public inherited sharing virtual class QueryObject {
      * @return First record or null if list has no results
      */
     public SObject getFirstOrNull() {
-        this.query.setLimit(1);
+        this.queryBuilder.setLimit(1);
         List<SObject> result = executeQuery();
         return result.isEmpty() ? null : result.get(0);
     }
@@ -305,7 +321,7 @@ public inherited sharing virtual class QueryObject {
      * @return First record or empty record instance if list has no results
      */
     public SObject getFirstOrEmpty() {
-        this.query.setLimit(1);
+        this.queryBuilder.setLimit(1);
         List<SObject> result = executeQuery();
         return result.isEmpty() ? sObjectType.newSObject(null, false) : result.get(0);
     }
@@ -342,10 +358,10 @@ public inherited sharing virtual class QueryObject {
      */
     public Database.QueryLocator getQueryLocator() {
         Query.Condition compiledExp = getCompiledCondition();
-        this.query.fromObject(sObjectType)
+        this.queryBuilder.fromObject(sObjectType)
             .setWhere(compiledExp.toSOQL());
 
-        return this.databaseService.getQueryLocator(query.toSOQL(), compiledExp.getQueryParameters());
+        return this.databaseService.getQueryLocator(queryBuilder.toSOQL(), compiledExp.getQueryParameters());
     }
 
     /**
@@ -367,15 +383,15 @@ public inherited sharing virtual class QueryObject {
     }
 
     public AggregateResult[] getAggregatedResults(String fields, String groupBy, String havingClause) {
-        if (String.isNotBlank(fields)) this.query.setFields(new List<String>{fields});
-        if (String.isNotBlank(groupBy))this.query.setGroupBy(groupBy);
-        if (String.isNotBlank(havingClause)) this.query.setHaving(havingClause);
+        if (String.isNotBlank(fields)) this.queryBuilder.setFields(new List<String>{fields});
+        if (String.isNotBlank(groupBy))this.queryBuilder.setGroupBy(groupBy);
+        if (String.isNotBlank(havingClause)) this.queryBuilder.setHaving(havingClause);
 
-        this.query.fromObject(sObjectType);
+        this.queryBuilder.fromObject(sObjectType);
 
         Query.Condition compiledExp = getCompiledCondition();
-        this.query.setWhere(compiledExp.toSOQL());
-        return this.databaseService.query(query.toSOQL(), compiledExp.getQueryParameters());
+        this.queryBuilder.setWhere(compiledExp.toSOQL());
+        return this.databaseService.query(queryBuilder.toSOQL(), compiledExp.getQueryParameters());
     }
 
 
@@ -426,9 +442,9 @@ public inherited sharing virtual class QueryObject {
         }
 
         if (doQuery) {
-            this.query.setWhere(compiledExpr.toSOQL());
-            this.query.fromObject(sObjectType);
-            SObject[] records = this.databaseService.query(query.toSOQL(), compiledExpr.getQueryParameters());
+            this.queryBuilder.setWhere(compiledExpr.toSOQL());
+            this.queryBuilder.fromObject(sObjectType);
+            SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), compiledExpr.getQueryParameters());
             result.addAll(records);
 
             if (!(records instanceof AggregateResult[])) {
@@ -494,7 +510,7 @@ public inherited sharing virtual class QueryObject {
     public override String toString() {
         Query.Condition compiledExpr = getCompiledCondition();
 
-        QueryBuilder copy = this.query.clone();
+        QueryBuilder copy = this.queryBuilder.clone();
         copy.setWhere(compiledExpr.toSOQL());
         return new List<Object>{
             copy.toSOQL(),

@@ -112,10 +112,11 @@ public abstract inherited sharing class QueryObject {
 
     /**
      * Adds another query as subquery
+     * TODO: To be added later
      */
-    public QueryObject selectSubquery(QueryObject query, String relationshipName) {
+/*    public QueryObject selectSubquery(QueryObject query, String relationshipName) {
         return this;
-    }
+    }*/
 
     /**
      * Sets limit on query

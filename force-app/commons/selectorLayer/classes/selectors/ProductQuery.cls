@@ -50,20 +50,20 @@ public virtual inherited sharing class ProductQuery extends Query {
         }, 'PricebookEntries');
         return this;
     }
-
-    /**
+/*
+TODO: This will be finished whenc composite subqueries are added
+    *//**
      * Adds pricebook entries to given pricebook
-     */
+     *//*
     public ProductQuery withPricebookEntries(Id pricebookId) {
         return withPricebookEntries(new Set<Id>{pricebookId});
     }
 
-    /**
+    *//**
      * Adds pricebook entries to given pricebooks
-     */
+     *//*
     public ProductQuery withPricebookEntries(Set<Id> pricebookIds) {
-        /*TODO*/
-//        this.queryBuilder.bindVariable('pricebookIds', pricebookIds);
+        this.queryBuilder.bindVariable('pricebookIds', pricebookIds);
         this.queryBuilder.addSubquery(new QueryBuilder()
             .addFields(new List<String>{
                 'Id'
@@ -72,7 +72,7 @@ public virtual inherited sharing class ProductQuery extends Query {
             .setWhere('Pricebook2Id IN :pricebookIds')
         );
         return this;
-    }
+    }*/
 
 
     /**

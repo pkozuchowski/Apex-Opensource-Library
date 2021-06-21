@@ -349,6 +349,15 @@ public abstract inherited sharing class QueryObject {
 
 
     /**
+     * @return Collection of sObjects.
+     * Remove this method if you are deploying Query without Collection library
+     */
+    public Collection getCollection() {
+        return Collection.of(getList());
+    }
+
+
+    /**
      * @return Ids for SObjects
      */
     public Set<Id> getIds() {

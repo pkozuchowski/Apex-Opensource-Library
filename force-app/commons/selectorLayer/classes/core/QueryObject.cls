@@ -31,6 +31,7 @@ public abstract inherited sharing class QueryObject {
 
     protected final QueryConditionFactory conditionFactory = new QueryConditionFactory();
     protected final QueryBuilder queryBuilder = new QueryBuilder();
+    protected final QueryBindings bindings = new QueryBindings();
     protected final DatabaseService databaseService = new DatabaseService();
     protected final List<Query.Condition> conditions = new List<Query.Condition>();
     protected final SObjectType sObjectType;
@@ -370,9 +371,9 @@ public abstract inherited sharing class QueryObject {
     public Database.QueryLocator getQueryLocator() {
         Query.Condition compiledExp = getCompiledCondition();
         this.queryBuilder.fromObject(sObjectType)
-            .setWhere(compiledExp.toSOQL());
+            .setWhere(compiledExp.toSOQL(bindings));
 
-        return this.databaseService.getQueryLocator(queryBuilder.toSOQL(), compiledExp.getQueryParameters());
+        return this.databaseService.getQueryLocator(queryBuilder.toSOQL(), bindings.getMap());
     }
 
     /**
@@ -401,8 +402,8 @@ public abstract inherited sharing class QueryObject {
         this.queryBuilder.fromObject(sObjectType);
 
         Query.Condition compiledExp = getCompiledCondition();
-        this.queryBuilder.setWhere(compiledExp.toSOQL());
-        return this.databaseService.query(queryBuilder.toSOQL(), compiledExp.getQueryParameters());
+        this.queryBuilder.setWhere(compiledExp.toSOQL(bindings));
+        return this.databaseService.query(queryBuilder.toSOQL(), bindings.getMap());
     }
 
 
@@ -453,9 +454,9 @@ public abstract inherited sharing class QueryObject {
         }
 
         if (doQuery) {
-            this.queryBuilder.setWhere(compiledExpr.toSOQL());
+            this.queryBuilder.setWhere(compiledExpr.toSOQL(bindings));
             this.queryBuilder.fromObject(sObjectType);
-            SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), compiledExpr.getQueryParameters());
+            SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), bindings.getMap());
             result.addAll(records);
 
             if (!(records instanceof AggregateResult[])) {
@@ -522,10 +523,10 @@ public abstract inherited sharing class QueryObject {
         Query.Condition compiledExpr = getCompiledCondition();
 
         QueryBuilder copy = this.queryBuilder.clone();
-        copy.setWhere(compiledExpr.toSOQL());
+        copy.setWhere(compiledExpr.toSOQL(bindings));
         return new List<Object>{
             copy.toSOQL(),
-            compiledExpr.getQueryParameters()
+            bindings.getMap()
         }.toString();
     }
 }

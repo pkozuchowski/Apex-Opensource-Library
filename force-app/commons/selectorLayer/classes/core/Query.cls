@@ -105,18 +105,7 @@ public inherited sharing virtual class Query extends QueryObject {
          * @return String representation of WHERE condition.
          * Example: 'AccountId IN :recordIds'
          */
-        String toSOQL();
-
-        /**
-         * @return Map of variables to bind to WHERE condition
-         * Example for 'AccountId IN :recordIds':
-         * <pre>
-         *     new Map<String,Object>{
-         *         'recordIds' => new Map<Id, Account>(accounts).keySet();
-         *     }
-         * </pre>
-         */
-        Map<String, Object> getQueryParameters();
+        String toSOQL(QueryBindings bindings);
     }
 
 

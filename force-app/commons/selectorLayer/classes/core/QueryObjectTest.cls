@@ -157,7 +157,7 @@ public class QueryObjectTest {
             .addField('Name')
             .addFields(new List<SObjectField>{Account.Id})
             .addFields(new List<String>{'Id'})
-            .addChildFields(new List<String>{'Id'}, 'Contacts')
+            .addSubquery(new List<String>{'Id'}, 'Contacts')
             .fromObject(Account.SObjectType)
             .setWhere('Name != NULL')
             .setGroupBy('Name')

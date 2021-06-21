@@ -110,7 +110,18 @@ public inherited sharing class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder addChildFields(List<String> fields, String relationshipField) {
+    public QueryBuilder addSubquery(String subquery) {
+        String soql = subquery;
+
+        if (!subquery.startsWith('(')) {
+            soql = '(' + subquery + ')';
+        }
+
+        this.subqueries.add(soql);
+        return this;
+    }
+
+    public QueryBuilder addSubquery(String relationshipField, List<String> fields) {
         return addSubquery(new QueryBuilder()
             .addFields(fields)
             .fromObject(relationshipField)

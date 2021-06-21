@@ -32,13 +32,15 @@ public abstract inherited sharing class QueryObject {
 
     protected final QueryConditionFactory conditionFactory = new QueryConditionFactory();
     protected final QueryBuilder queryBuilder = new QueryBuilder();
-    protected final QueryBindings bindings = new QueryBindings();
     protected final DatabaseService databaseService = new DatabaseService();
     protected final List<Query.Condition> conditions = new List<Query.Condition>();
     protected final SObjectType sObjectType;
+    protected QueryBindings bindings = new QueryBindings();
 
     private Boolean useCache = !Test.isRunningTest();
     private AccessType accessType = null;
+    private String subqueryRelationshipName;
+
 
     /**
      * Constructs QueryObject for given sObjectType without any fields selected.
@@ -105,20 +107,35 @@ public abstract inherited sharing class QueryObject {
 
 
     /**
-     * Adds subquery with given fields and relationship name
+     * Adds subquery with given fields and relationship name.
+     * Disables caching.
      */
-    public QueryObject selectSubquery(List<String> fields, String relationshipName) {
-        this.queryBuilder.addChildFields(fields, relationshipName);
+    public QueryObject selectSubquery(String relationshipName, String fieldsCSV) {
+        return selectSubquery(relationshipName, fieldsCSV.deleteWhitespace().split(','));
+    }
+
+    /**
+     * Adds subquery with given fields and relationship name
+     * Disables caching.
+     */
+    public QueryObject selectSubquery(String relationshipName, List<String> fields) {
+        this.useCache = false;
+        this.queryBuilder.addSubquery(relationshipName, fields);
         return this;
     }
 
     /**
      * Adds another query as subquery
-     * TODO: To be added later
+     * Disables caching.
      */
-/*    public QueryObject selectSubquery(QueryObject query, String relationshipName) {
+    public QueryObject selectSubquery(String relationshipName, QueryObject subquery) {
+        this.useCache = false;
+        subquery.subqueryRelationshipName = relationshipName;
+        subquery.bindings = this.bindings;
+        queryBuilder.addSubquery(subquery.toSOQL());
         return this;
-    }*/
+    }
+
 
     /**
      * Sets limit on query
@@ -224,6 +241,7 @@ public abstract inherited sharing class QueryObject {
         byId(parentIds);
         return this;
     }
+
 
     /**
      * @example
@@ -525,17 +543,30 @@ public abstract inherited sharing class QueryObject {
         }
     }
 
-
     /**
-     * @return String representation of the Query
+     * @return SOQL representation of the Query
      */
-    public override String toString() {
+    public String toSOQL() {
         Query.Condition compiledExpr = getCompiledCondition();
 
         QueryBuilder copy = this.queryBuilder.clone();
         copy.setWhere(compiledExpr.toSOQL(bindings));
+
+        if (String.isNotBlank(subqueryRelationshipName)) {
+            copy.fromObject(subqueryRelationshipName);
+        } else {
+            copy.fromObject(sObjectType);
+        }
+
+        return copy.toSOQL();
+    }
+
+    /**
+     * @return String representation of the Query (SQOL + Bindings)
+     */
+    public override String toString() {
         return new List<Object>{
-            copy.toSOQL(),
+            this.toSOQL(),
             bindings.getMap()
         }.toString();
     }

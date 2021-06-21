@@ -25,6 +25,7 @@
 /**
  * Base class for selectors. Contains query builder and common query methods.
  */
+@JsonAccess(Serializable='never' Deserializable='never')
 public abstract inherited sharing class QueryObject {
     private final static QueryMocker mocker = QueryMocker.getInstance();
     private final static QueryCache cache = QueryCache.getInstance();

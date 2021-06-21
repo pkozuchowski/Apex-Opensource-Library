@@ -27,6 +27,7 @@
  * Query.Accounts.byId(...);
  * Query.EmailTemplates.byDeveloperName('FirmQuote');
  */
+@JsonAccess(Serializable='never' Deserializable='never')
 public inherited sharing virtual class Query extends QueryObject {
     public final static AccountQuery Accounts { get {return new AccountQuery();} }
     public final static AttachmentQuery Attachments { get {return new AttachmentQuery();} }

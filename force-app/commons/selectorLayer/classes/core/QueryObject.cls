@@ -110,17 +110,17 @@ public abstract inherited sharing class QueryObject {
      * Adds subquery with given fields and relationship name.
      * Disables caching.
      */
-    public QueryObject selectSubquery(String relationshipName, String fieldsCSV) {
-        return selectSubquery(relationshipName, fieldsCSV.deleteWhitespace().split(','));
+    public QueryObject selectSubquery(String fieldsCSV, String relationshipName) {
+        return selectSubquery(fieldsCSV.deleteWhitespace().split(','), relationshipName);
     }
 
     /**
      * Adds subquery with given fields and relationship name
      * Disables caching.
      */
-    public QueryObject selectSubquery(String relationshipName, List<String> fields) {
+    public QueryObject selectSubquery(List<String> fields, String relationshipName) {
         this.useCache = false;
-        this.queryBuilder.addSubquery(relationshipName, fields);
+        this.queryBuilder.addSubquery(fields, relationshipName);
         return this;
     }
 
@@ -128,7 +128,7 @@ public abstract inherited sharing class QueryObject {
      * Adds another query as subquery
      * Disables caching.
      */
-    public QueryObject selectSubquery(String relationshipName, QueryObject subquery) {
+    public QueryObject selectSubquery(QueryObject subquery, String relationshipName) {
         this.useCache = false;
         subquery.subqueryRelationshipName = relationshipName;
         subquery.bindings = this.bindings;

@@ -121,7 +121,7 @@ public inherited sharing class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder addSubquery(String relationshipField, List<String> fields) {
+    public QueryBuilder addSubquery(List<String> fields, String relationshipField) {
         return addSubquery(new QueryBuilder()
             .addFields(fields)
             .fromObject(relationshipField)

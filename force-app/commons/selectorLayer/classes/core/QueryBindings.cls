@@ -48,4 +48,27 @@ public with sharing class QueryBindings {
     public Map<String, Object> getMap() {
         return bindings;
     }
+
+    /**
+     * Registers bindings and replaces bindging names in SOQL string to unique values.
+     */
+    public String replaceReferences(String soql, Map<String, Object> params) {
+        String newSOQL = soql;
+
+        for (String paramName : params.keySet()) {
+            Object paramValue = params.get(paramName);
+
+            String uniqueName = registerBinding(paramValue);
+            newSOQL = replaceReferences(newSOQL, paramName, uniqueName);
+        }
+
+        return newSOQL;
+    }
+
+    /**
+     * Replaces bindings from old to new name in SOQL string
+     */
+    public String replaceReferences(String soql, String oldVariable, String newVariable) {
+        return soql.replaceAll(':\\s*' + oldVariable, newVariable);
+    }
 }

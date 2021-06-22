@@ -126,7 +126,6 @@ public with sharing class QueryConditionFactory {
 
     /**
      * Generic WHERE expression which may have content and params freely defined.
-     * TODO:
      */
     private class GenericExpr implements Query.Condition {
         private String whereString;
@@ -138,14 +137,7 @@ public with sharing class QueryConditionFactory {
         }
 
         public String toSOQL(QueryBindings bindings) {
-            for (String paramName : params.keySet()) {
-                Object paramValue = params.get(paramName);
-
-                String uniqueName = bindings.registerBinding(paramValue);
-                whereString.replaceAll(':\\s*' + paramName, uniqueName);
-            }
-
-            return whereString;
+            return bindings.replaceReferences(whereString, params);
         }
     }
 

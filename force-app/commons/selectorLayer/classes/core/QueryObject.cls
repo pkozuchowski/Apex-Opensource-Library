@@ -144,6 +144,38 @@ public virtual inherited sharing class QueryObject {
         return this;
     }
 
+    /**
+     * Sets group by on query
+     */
+    public QueryObject groupBy(String fields) {
+        this.useCache = false;
+        this.queryBuilder.setGroupBy(fields);
+        return this;
+    }
+
+    /**
+     * Sets HAVING clause on group without any bindings
+     */
+    public QueryObject havingGroupings(String fields) {
+        return havingGroupings(fields, null);
+    }
+
+    /**
+     * Sets HAVING clause on group with explicit bindings
+     * ex `.havingGroupings('COUNT(Id) < :i', new Map<String, Object>{'i' => 5})`
+     */
+    public QueryObject havingGroupings(String fields, Map<String, Object> params) {
+        this.useCache = false;
+        String newClause = fields;
+
+        if (params != null) {
+            newClause = this.bindings.replaceReferences(fields, params);
+        }
+
+        this.queryBuilder.setHaving(newClause);
+        return this;
+    }
+
 
     /**
     * Extenders
@@ -407,30 +439,10 @@ public virtual inherited sharing class QueryObject {
     * @return Count of records
     */
     public Integer getCount() {
-        return (Integer) getAggregatedResults('COUNT(Id) cnt').get(0).get('cnt');
-    }
-
-    /**
-    * @return Records counted by given SObject field
-    */
-    public AggregateResult[] getAggregatedResults(String fields) {
-        return getAggregatedResults(fields, null);
-    }
-
-    public AggregateResult[] getAggregatedResults(String fields, String groupBy) {
-        return getAggregatedResults(fields, groupBy, null);
-    }
-
-    public AggregateResult[] getAggregatedResults(String fields, String groupBy, String havingClause) {
-        if (String.isNotBlank(fields)) this.queryBuilder.setFields(new List<String>{fields});
-        if (String.isNotBlank(groupBy))this.queryBuilder.setGroupBy(groupBy);
-        if (String.isNotBlank(havingClause)) this.queryBuilder.setHaving(havingClause);
-
-        this.queryBuilder.fromObject(sObjectType);
-
-        Query.Condition compiledExp = getCompiledCondition();
-        this.queryBuilder.setWhere(compiledExp.toSOQL(bindings));
-        return this.databaseService.query(queryBuilder.toSOQL(), bindings.getMap());
+        return (Integer) selectFields('COUNT(Id) cnt')
+            .getList()
+            .get(0)
+            .get('cnt');
     }
 
 
@@ -484,11 +496,13 @@ public virtual inherited sharing class QueryObject {
             this.queryBuilder.setWhere(compiledExpr.toSOQL(bindings));
             this.queryBuilder.fromObject(sObjectType);
             SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), bindings.getMap());
-            result.addAll(records);
 
             if (!(records instanceof AggregateResult[])) {
                 cache.put(sObjectType, getFieldsToCacheBy(), records);
             }
+
+            records.addAll(result);
+            return records;
         }
 
         return result;

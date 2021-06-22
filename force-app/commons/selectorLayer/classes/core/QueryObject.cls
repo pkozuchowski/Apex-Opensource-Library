@@ -26,7 +26,7 @@
  * Base class for selectors. Contains query builder and common query methods.
  */
 @JsonAccess(Serializable='never' Deserializable='never')
-public abstract inherited sharing class QueryObject {
+public virtual inherited sharing class QueryObject {
     private final static QueryMocker mocker = QueryMocker.getInstance();
     private final static QueryCache cache = QueryCache.getInstance();
 
@@ -35,7 +35,7 @@ public abstract inherited sharing class QueryObject {
     protected final DatabaseService databaseService = new DatabaseService();
     protected final List<Query.Condition> conditions = new List<Query.Condition>();
     protected final SObjectType sObjectType;
-    protected QueryBindings bindings = new QueryBindings();
+    protected final QueryBindings bindings = new QueryBindings();
 
     private Boolean useCache = !Test.isRunningTest();
     private AccessType accessType = null;
@@ -46,7 +46,7 @@ public abstract inherited sharing class QueryObject {
      * Constructs QueryObject for given sObjectType without any fields selected.
      * @param sObjectType to query from
      */
-    public QueryObject(SObjectType sObjectType) {
+    protected QueryObject(SObjectType sObjectType) {
         this.sObjectType = sObjectType;
     }
 
@@ -55,7 +55,7 @@ public abstract inherited sharing class QueryObject {
      * @param fields to select
      * @param sObjectType to query from
      */
-    public QueryObject(List<String> fields, SObjectType sObjectType) {
+    protected QueryObject(List<String> fields, SObjectType sObjectType) {
         this(sObjectType);
         this.queryBuilder.addFields(fields);
     }
@@ -131,8 +131,7 @@ public abstract inherited sharing class QueryObject {
     public QueryObject selectSubquery(QueryObject subquery, String relationshipName) {
         this.useCache = false;
         subquery.subqueryRelationshipName = relationshipName;
-        subquery.bindings = this.bindings;
-        queryBuilder.addSubquery(subquery.toSOQL());
+        queryBuilder.addSubquery(subquery.toSOQL(this.bindings));
         return this;
     }
 
@@ -547,6 +546,10 @@ public abstract inherited sharing class QueryObject {
      * @return SOQL representation of the Query
      */
     public String toSOQL() {
+        return toSOQL(bindings);
+    }
+
+    private String toSOQL(QueryBindings bindings) {
         Query.Condition compiledExpr = getCompiledCondition();
 
         QueryBuilder copy = this.queryBuilder.clone();

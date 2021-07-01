@@ -40,6 +40,7 @@ public virtual inherited sharing class QueryObject {
     private Boolean useCache = !Test.isRunningTest();
     private AccessType accessType = null;
     private String subqueryRelationshipName;
+    private String mockName;
 
 
     /**
@@ -135,6 +136,14 @@ public virtual inherited sharing class QueryObject {
         return this;
     }
 
+
+    /**
+     * Give this query unique name, which can be referenced in Unit Tests in QueryMocker to mock results for named query.
+     */
+    public QueryObject setMockName(String mockName) {
+        this.mockName = mockName;
+        return this;
+    }
 
     /**
      * Sets limit on query
@@ -462,8 +471,8 @@ public virtual inherited sharing class QueryObject {
         try {
             Type thisQueryClass = Runtime.getType(this);
 
-            if (mocker.isMocked(thisQueryClass)) {
-                return mocker.getMock(thisQueryClass).mockQuery(getCompiledCondition());
+            if (mocker.isMocked(mockName)) {
+                return mocker.getMock(mockName).mockQuery();
             }
 
             List<SObject> result = getQueryResult();

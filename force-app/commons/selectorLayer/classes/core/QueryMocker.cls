@@ -27,7 +27,7 @@
 */
 public with sharing class QueryMocker {
     private final static QueryMocker instance = new QueryMocker();
-    private final Map<Type, Query.Mock> mocksByQueryClass = new Map<Type, Query.Mock>();
+    private final Map<String, Query.Mock> mocksByName = new Map<String, Query.Mock>();
 
     public static QueryMocker getInstance() {
         return instance;
@@ -40,23 +40,23 @@ public with sharing class QueryMocker {
     /**
      * Mocks selector method with given results
      */
-    public Query.Mock getMock(Type queryClass) {
-        return this.mocksByQueryClass.get(queryClass);
+    public Query.Mock getMock(String name) {
+        return this.mocksByName.get(name);
     }
 
     /**
      * Mocks selector method with given results
      */
-    public void setMock(Type queryClass, SObject[] mockRecords) {
-        this.mocksByQueryClass.put(queryClass, new SimpleQueryMock(mockRecords));
+    public void setMock(String queryName, SObject[] mockRecords) {
+        this.mocksByName.put(queryName, new SimpleQueryMock(mockRecords));
     }
 
     /**
      * Mocks query result for given selector type
      */
-    public void setMock(Type queryClass, Query.Mock mock) {
+    public void setMock(String queryName, Query.Mock mock) {
         if (Test.isRunningTest()) {
-            getInstance().mocksByQueryClass.put(queryClass, mock);
+            getInstance().mocksByName.put(queryName, mock);
 
         } else {
             throw new QueryException('Query mock can be only set in test methods');
@@ -67,16 +67,16 @@ public with sharing class QueryMocker {
     /**
      * Removes mocks set on given SObjectType
      */
-    public void removeMock(Type queryClass) {
-        mocksByQueryClass.remove(queryClass);
+    public void removeMock(String name) {
+        mocksByName.remove(name);
     }
 
 
     /**
     * @return True, if given sObjectType should be mocked
     */
-    public Boolean isMocked(Type queryClass) {
-        return mocksByQueryClass.containsKey(queryClass);
+    public Boolean isMocked(String name) {
+        return String.isNotBlank(name) && mocksByName.containsKey(name);
     }
 
 
@@ -90,7 +90,7 @@ public with sharing class QueryMocker {
             this.mockRecords = mockRecords;
         }
 
-        public SObject[] mockQuery(Query.Condition condition) {
+        public SObject[] mockQuery() {
             return mockRecords;
         }
     }

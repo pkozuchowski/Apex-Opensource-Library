@@ -139,7 +139,6 @@ public class QueryObjectTest {
             .getFirstOrNull();
 
         new TestUserQuery().byId(UserInfo.getUserId()).getCount();
-        new TestUserQuery().byId(UserInfo.getUserId()).getAggregatedResults('COUNT(ID)', 'Name');
         new TestUserQuery().byId(UserInfo.getUserId()).getMapById();
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrEmpty();

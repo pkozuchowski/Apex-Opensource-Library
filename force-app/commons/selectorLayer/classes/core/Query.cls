@@ -149,6 +149,6 @@ public inherited sharing virtual class Query extends QueryObject {
          * @param condition Query condition - either single or composite
          * @return Mocked query result
          */
-        SObject[] mockQuery(Query.Condition condition);
+        SObject[] mockQuery();
     }
 }

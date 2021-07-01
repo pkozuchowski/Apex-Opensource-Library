@@ -29,11 +29,8 @@
 public inherited sharing class PricebookQuery extends Query {
 
     public PricebookQuery() {
-        super(new List<String>{
-            'Id',
-            'Name',
-            'IsStandard'
-        }, Pricebook2.SObjectType);
+        super(Pricebook2.SObjectType);
+        selectFields(Query.Fields.STANDARD);
     }
 
 

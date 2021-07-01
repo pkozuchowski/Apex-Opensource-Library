@@ -28,15 +28,8 @@
 public inherited sharing class AttachmentQuery extends Query {
 
     public AttachmentQuery() {
-        super(new List<String>{
-            'Id',
-            'Body',
-            'BodyLength',
-            'ContentType',
-            'Description',
-            'Name',
-            'ParentId'
-        }, Attachment.SObjectType);
+        super(Attachment.SObjectType);
+        selectFields(Query.Fields.STANDARD);
     }
 
     /**

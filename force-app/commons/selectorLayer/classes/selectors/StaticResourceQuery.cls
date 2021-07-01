@@ -28,15 +28,8 @@
 public inherited sharing class StaticResourceQuery extends Query {
 
     public StaticResourceQuery() {
-        super(new List<String>{
-            'Id',
-            'Body',
-            'BodyLength',
-            'ContentType',
-            'Description',
-            'Name',
-            'NamespacePrefix'
-        }, StaticResource.SObjectType);
+        super(StaticResource.SObjectType);
+        selectFields(Query.Fields.STANDARD);
     }
 
 

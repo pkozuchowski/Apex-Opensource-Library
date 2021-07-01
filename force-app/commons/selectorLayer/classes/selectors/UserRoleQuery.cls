@@ -29,12 +29,8 @@
 public inherited sharing class UserRoleQuery extends Query {
 
     public UserRoleQuery() {
-        super(new List<String>{
-            'Id',
-            'Name',
-            'DeveloperName'
-
-        }, UserRole.SObjectType);
+        super(UserRole.SObjectType);
+        selectFields(Query.Fields.STANDARD);
     }
 
 

@@ -50,29 +50,28 @@ public virtual inherited sharing class ProductQuery extends Query {
         }, 'PricebookEntries');
         return this;
     }
-/*
-TODO: This will be finished whenc composite subqueries are added
-    *//**
+
+    /**
      * Adds pricebook entries to given pricebook
-     *//*
+     */
     public ProductQuery withPricebookEntries(Id pricebookId) {
         return withPricebookEntries(new Set<Id>{pricebookId});
     }
 
-    *//**
+    /**
      * Adds pricebook entries to given pricebooks
-     *//*
+     */
     public ProductQuery withPricebookEntries(Set<Id> pricebookIds) {
-        this.queryBuilder.bindVariable('pricebookIds', pricebookIds);
-        this.queryBuilder.addSubquery(new QueryBuilder()
-            .addFields(new List<String>{
-                'Id'
-            })
-            .fromObject('PricebookEntries')
-            .setWhere('Pricebook2Id IN :pricebookIds')
-        );
+        this.selectSubquery(
+            Query.fromSObject(PricebookEntry.SObjectType)
+                 .selectFields(new List<String>{
+                    'Id'
+                 })
+                 .byField('Pricebook2Id', 'IN', pricebookIds),
+            'PricebookEntries');
+
         return this;
-    }*/
+    }
 
 
     /**

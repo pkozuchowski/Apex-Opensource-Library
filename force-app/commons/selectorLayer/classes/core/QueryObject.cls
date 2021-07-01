@@ -57,7 +57,7 @@ public virtual inherited sharing class QueryObject {
      */
     protected QueryObject(List<String> fields, SObjectType sObjectType) {
         this(sObjectType);
-        this.queryBuilder.addFields(fields);
+        this.selectFields(fields);
     }
 
 

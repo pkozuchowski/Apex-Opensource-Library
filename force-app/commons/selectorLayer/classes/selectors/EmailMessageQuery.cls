@@ -28,25 +28,8 @@
 public inherited sharing class EmailMessageQuery extends Query {
 
     public EmailMessageQuery() {
-        super(new List<String>{
-            'Id',
-            'ActivityId',
-            'BccAddress',
-            'CcAddress',
-            'EmailTemplateId',
-            'FromAddress',
-            'FromName',
-            'HasAttachment',
-            'HtmlBody',
-            'Incoming',
-            'IsBounced',
-            'ParentId',
-            'Status',
-            'Subject',
-            'Subject',
-            'TextBody',
-            'ToAddress'
-        }, EmailMessage.SObjectType);
+        super(EmailMessage.SObjectType);
+        selectFields(Query.Fields.STANDARD);
     }
 
 

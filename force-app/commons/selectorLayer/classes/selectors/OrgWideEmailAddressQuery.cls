@@ -36,12 +36,8 @@ public inherited sharing class OrgWideEmailAddressQuery extends Query {
     }
 
     public OrgWideEmailAddressQuery() {
-        super(new List<String>{
-            'Id',
-            'DisplayName',
-            'Address',
-            'IsAllowAllProfiles'
-        }, OrgWideEmailAddress.SObjectType);
+        super(OrgWideEmailAddress.SObjectType);
+        this.selectFields(Query.Fields.STANDARD);
     }
 
 

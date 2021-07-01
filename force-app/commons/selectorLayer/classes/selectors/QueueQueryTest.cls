@@ -41,10 +41,12 @@ private class QueueQueryTest {
         /*Dev names are cached*/
         System.assertEquals(queues.size(), new QueueQuery().byDeveloperName(developerNames).useCache(true).getList().size());
         System.assertEquals(queues.size(), new QueueQuery().byDeveloperName(developerNames).useCache(true).getList().size());
+        System.assertEquals(queues.values()[0].Id, new QueueQuery().byDeveloperName(queues.values()[0].DeveloperName).getFirstIdOrNull());
 
         /*+ 2 SOQL queries*/
         System.assertEquals(queues.size(), new QueueQuery().byName(names).useCache(true).getList().size());
         System.assertEquals(queues.size(), new QueueQuery().byName(names).useCache(true).getList().size());
+        System.assertEquals(queues.values()[0].Id, new QueueQuery().byName(queues.values()[0].Name).getFirstIdOrNull());
 
         /*Ids are cached*/
         System.assertEquals(queues.size(), new QueueQuery().useCache(true).byId((Set<Id>) queues.keySet()).getList().size());

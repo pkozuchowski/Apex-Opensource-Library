@@ -187,5 +187,21 @@ public class QueryObjectTest {
         c.blank();
         c.wheres('Name IN :names', new Map<String, Object>{'names' => new List<String>{'Test'}});
         c.NOTs(c.field(Account.Name).equals('Test'));
+
+
+        QueryBindings b1 = new QueryBindings();
+        String soql = c.field(Account.Id).equals('test').toSOQL(b1);
+        System.assertEquals('(Id = :var0)', soql);
+        System.assertEquals('test', b1.getMap().get(':var0'));
+
+
+        c.field(Account.Id).notEquals('test');
+        c.field(Account.Id).includes('test');
+        c.field(Account.Id).excludes('test');
+        c.field(Account.Id).isIn('test');
+        c.field(Account.Id).greaterThan('test');
+        c.field(Account.Id).greaterEqualsThan('test');
+        c.field(Account.Id).lessEqualsThan('test');
+        c.field(Account.Id).lessThan('test');
     }
 }

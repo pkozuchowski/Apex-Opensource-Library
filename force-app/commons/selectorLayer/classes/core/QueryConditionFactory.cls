@@ -203,10 +203,6 @@ public with sharing class QueryConditionFactory {
         public String operator { get; private set; }
         public Object value { get; private set; }
 
-        public FieldExpr(SObjectField field, String operator, Object value) {
-            this('' + field, operator, value);
-        }
-
         public FieldExpr(String field, String operator, Object value) {
             this.field = field;
             this.operator = operator;

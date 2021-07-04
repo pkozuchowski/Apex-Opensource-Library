@@ -469,8 +469,6 @@ public virtual inherited sharing class QueryObject {
     */
     protected SObject[] executeQuery() {
         try {
-            Type thisQueryClass = Runtime.getType(this);
-
             if (mocker.isMocked(mockName)) {
                 return mocker.getMock(mockName).mockQuery();
             }

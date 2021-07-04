@@ -21,37 +21,38 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest(IsParallel=true)
+@IsTest
 private class QueueQueryTest {
+    private static final String QUERY_NAME = 'Queue Query Test';
+    private static final String QUERY_DEV_NAME = 'QueueQueryTest';
+
+    @TestSetup
+    static void testSetup() {
+        insert new Group(
+            Type = 'Queue',
+            DeveloperName = QUERY_DEV_NAME,
+            Name = QUERY_NAME
+        );
+    }
 
     @IsTest
     static void testQueueSelector() {
-        Map<Id, Group> queues = new Map<Id, Group>([SELECT Id,Name,DeveloperName FROM Group WHERE Type = 'Queue' LIMIT 10]);
+        Group queue = [SELECT Id, Name, DeveloperName FROM Group WHERE DeveloperName = :QUERY_DEV_NAME];
+        Integer queryCounts = 1;
 
-        Set<String> developerNames = new Set<String>();
-        Set<String> names = new Set<String>();
-        for (Group queue : queues.values()) {
-            developerNames.add(queue.DeveloperName);
-            names.add(queue.Name);
+        new QueueQuery();
+        queryCounts += 1;
+        System.assertEquals(queryCounts, Limits.getQueries(), 'There should be 2 queries - one in test and another one caching all Queues in static block');
 
-            System.assertEquals(queue.DeveloperName, new QueueQuery().useCache(true).byId(queue.Id).getFirstOrNull().get('DeveloperName'));
-            System.assertEquals(queue.Id, new QueueQuery().byDeveloperName(queue.DeveloperName).useCache(false).getFirstOrNull().Id);
-        }
 
-        /*Dev names are cached*/
-        System.assertEquals(queues.size(), new QueueQuery().byDeveloperName(developerNames).useCache(true).getList().size());
-        System.assertEquals(queues.size(), new QueueQuery().byDeveloperName(developerNames).useCache(true).getList().size());
-        System.assertEquals(queues.values()[0].Id, new QueueQuery().byDeveloperName(queues.values()[0].DeveloperName).getFirstIdOrNull());
+        System.assertEquals(queue.Id, new QueueQuery().byId(queue.Id).useCache(true).getFirstIdOrNull());
+        System.assertEquals(queryCounts, Limits.getQueries(), 'Query by Id should use cache');
 
-        /*+ 2 SOQL queries*/
-        System.assertEquals(queues.size(), new QueueQuery().byName(names).useCache(true).getList().size());
-        System.assertEquals(queues.size(), new QueueQuery().byName(names).useCache(true).getList().size());
-        System.assertEquals(queues.values()[0].Id, new QueueQuery().byName(queues.values()[0].Name).getFirstIdOrNull());
+        System.assertEquals(queue.Id, new QueueQuery().byDeveloperName(queue.DeveloperName).useCache(true).getFirstIdOrNull());
+        System.assertEquals(queryCounts, Limits.getQueries(), 'Query by DeveloperName should use cache');
 
-        /*Ids are cached*/
-        System.assertEquals(queues.size(), new QueueQuery().useCache(true).byId((Set<Id>) queues.keySet()).getList().size());
-        System.assertEquals(queues.size(), new QueueQuery().useCache(true).byId((Set<Id>) queues.keySet()).getList().size());
-
-        System.assertEquals(4, Limits.getQueries());
+        System.assertEquals(queue.Id, new QueueQuery().byName(queue.Name).useCache(true).getFirstIdOrNull());
+        queryCounts += 1;
+        System.assertEquals(queryCounts, Limits.getQueries(), 'Query by Name should NOT use cache, because Name is not unique');
     }
 }

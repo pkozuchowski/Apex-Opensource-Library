@@ -32,42 +32,45 @@
  */
 public with sharing class QueryConditionFactory {
 
+    private static final String SEPARATOR_OR = ' OR ';
+    private static final String SEPARATOR_AND = ' AND ';
+
     /**
     * Composite query condition that joins inner where clauses with AND operator
     */
     public Query.Condition ANDs(Query.Condition w1, Query.Condition w2) {
-        return new ANDExpr(new List<Query.Condition>{w1, w2});
+        return new CompositeExpr(new List<Query.Condition>{w1, w2}, SEPARATOR_AND);
     }
     public Query.Condition ANDs(Query.Condition w1, Query.Condition w2, Query.Condition w3) {
-        return new ANDExpr(new List<Query.Condition>{w1, w2, w3});
+        return new CompositeExpr(new List<Query.Condition>{w1, w2, w3}, SEPARATOR_AND);
     }
     public Query.Condition ANDs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4) {
-        return new ANDExpr(new List<Query.Condition>{w1, w2, w3, w4});
+        return new CompositeExpr(new List<Query.Condition>{w1, w2, w3, w4}, SEPARATOR_AND);
     }
     public Query.Condition ANDs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4, Query.Condition w5) {
-        return new ANDExpr(new List<Query.Condition>{w1, w2, w3, w4, w5});
+        return new CompositeExpr(new List<Query.Condition>{w1, w2, w3, w4, w5}, SEPARATOR_AND);
     }
     public Query.Condition ANDs(Query.Condition[] conditions) {
-        return new ANDExpr(conditions);
+        return new CompositeExpr(conditions, SEPARATOR_AND);
     }
 
     /**
     * Composite query condition that joins inner where clauses with OR operator
     */
     public Query.Condition ORs(Query.Condition w1, Query.Condition w2) {
-        return new ORExpr(new List<Query.Condition>{w1, w2});
+        return new CompositeExpr(new List<Query.Condition>{w1, w2}, SEPARATOR_OR);
     }
     public Query.Condition ORs(Query.Condition w1, Query.Condition w2, Query.Condition w3) {
-        return new ORExpr(new List<Query.Condition>{w1, w2, w3});
+        return new CompositeExpr(new List<Query.Condition>{w1, w2, w3}, SEPARATOR_OR);
     }
     public Query.Condition ORs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4) {
-        return new ORExpr(new List<Query.Condition>{w1, w2, w3, w4});
+        return new CompositeExpr(new List<Query.Condition>{w1, w2, w3, w4}, SEPARATOR_OR);
     }
     public Query.Condition ORs(Query.Condition w1, Query.Condition w2, Query.Condition w3, Query.Condition w4, Query.Condition w5) {
-        return new ORExpr(new List<Query.Condition>{w1, w2, w3, w4, w5});
+        return new CompositeExpr(new List<Query.Condition>{w1, w2, w3, w4, w5}, SEPARATOR_OR);
     }
     public Query.Condition ORs(Query.Condition[] conditions) {
-        return new ORExpr(conditions);
+        return new CompositeExpr(conditions, SEPARATOR_OR);
     }
 
 
@@ -117,8 +120,7 @@ public with sharing class QueryConditionFactory {
      * Represents lack of WHERE clause expressions
      */
     private class NullExpr implements Query.Condition {
-        public String toSOQL() { return ''; }
-        public Map<String, Object> getQueryParameters() { return new Map<String, Object>(); }
+        public String toSOQL(QueryBindings bindings) { return ''; }
     }
 
 
@@ -134,80 +136,39 @@ public with sharing class QueryConditionFactory {
             this.params = params;
         }
 
-        public String toSOQL() { return whereString; }
-        public Map<String, Object> getQueryParameters() { return params; }
+        public String toSOQL(QueryBindings bindings) {
+            return bindings.replaceReferences(whereString, params);
+        }
     }
 
-
-    /**
-     * Composite WHERE clause that concatenates other conditions with AND
-     */
-    private class ANDExpr extends CompositeExpr {
-        public ANDExpr(Query.Condition[] conditions) { super(conditions); }
-        protected override String getSeparator() { return ' AND '; }
-    }
-
-    private class ORExpr extends CompositeExpr {
-        public ORExpr(Query.Condition[] conditions) { super(conditions); }
-        protected override String getSeparator() { return ' OR '; }
-    }
-
-
-    private static Integer valueCounter = 0;
 
     /**
      * Composite WHERE condition for group of conditions joined by boolean AND/OR
      */
-    private abstract class CompositeExpr implements Query.Condition {
-        protected Query.Condition[] conditions;
-        private String soql;
-        private Map<String, Object> values;
-        private Boolean isCompiled = false;
+    private class CompositeExpr implements Query.Condition {
+        private Query.Condition[] conditions;
+        private String separator;
 
-        protected CompositeExpr(Query.Condition[] conditions) {
+        public CompositeExpr(Query.Condition[] conditions, String separator) {
             this.conditions = conditions;
-            this.values = new Map<String, Object>();
+            this.separator = separator;
         }
 
-        public String toSOQL() {
-            if (!isCompiled) compile();
-            return this.soql;
-        }
-
-        public Map<String, Object> getQueryParameters() {
-            if (!isCompiled) compile();
-            return this.values;
-        }
-
-        public void add(Query.Condition c) { this.conditions.add(c); }
-        public Query.Condition get(Integer i) { return this.conditions.get(i); }
-        public Integer size() { return this.conditions.size(); }
-
-        private void compile() {
+        public String toSOQL(QueryBindings bindings) {
             List<String> wheresStrings = new List<String>();
 
             for (Query.Condition condition : conditions) {
-                String conditionString = condition.toSOQL();
-                Map<String, Object> conditionValues = condition.getQueryParameters();
+                String conditionSOQL = condition.toSOQL(bindings);
 
-                for (String varName : conditionValues.keySet()) {
-                    Object varValue = conditionValues.get(varName);
-
-                    Integer varUniqueId = valueCounter++;
-                    String newVarName = varName + varUniqueId;
-
-                    conditionString = conditionString.replaceAll(':' + varName, ':' + newVarName);
-                    values.put(newVarName, varValue);
+                if (!conditionSOQL.startsWith('(')) {
+                    conditionSOQL = '(' + conditionSOQL + ')';
                 }
 
-                wheresStrings.add(conditionString);
+                wheresStrings.add(conditionSOQL);
             }
 
-            this.soql = '(' + String.join(wheresStrings, getSeparator()) + ')';
-            this.isCompiled = true;
+            return '(' + String.join(wheresStrings, separator) + ')';
         }
-
-        protected abstract String getSeparator();
     }
 
 
@@ -242,25 +203,17 @@ public with sharing class QueryConditionFactory {
         public String operator { get; private set; }
         public Object value { get; private set; }
 
-        public FieldExpr(SObjectField field, String operator, Object value) {
-            this('' + field, operator, value);
-        }
-
         public FieldExpr(String field, String operator, Object value) {
             this.field = field;
             this.operator = operator;
             this.value = value;
         }
 
-        public String toSOQL() {
-            return '(' + field + ' ' + operator + ' :value' + ')';
+        public String toSOQL(QueryBindings bindings) {
+            String binding = bindings.registerBinding(value);
+            return '(' + field + ' ' + operator + ' ' + binding + ')';
         }
 
-        public Map<String, Object> getQueryParameters() {
-            return new Map<String, Object>{
-                'value' => value
-            };
-        }
 
         public Boolean isCacheable() {
             return (operator == '=' || operator == 'IN')
@@ -292,12 +245,8 @@ public with sharing class QueryConditionFactory {
             this.innerWhere = innerWhere;
         }
 
-        public String toSOQL() {
-            return 'NOT (' + innerWhere.toSOQL() + ')';
-        }
-
-        public Map<String, Object> getQueryParameters() {
-            return innerWhere.getQueryParameters();
+        public String toSOQL(QueryBindings bindings) {
+            return 'NOT (' + innerWhere.toSOQL(bindings) + ')';
         }
     }
 }

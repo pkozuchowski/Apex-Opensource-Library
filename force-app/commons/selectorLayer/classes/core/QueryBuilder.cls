@@ -110,7 +110,18 @@ public inherited sharing class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder addChildFields(List<String> fields, String relationshipField) {
+    public QueryBuilder addSubquery(String subquery) {
+        String soql = subquery;
+
+        if (!subquery.startsWith('(')) {
+            soql = '(' + subquery + ')';
+        }
+
+        this.subqueries.add(soql);
+        return this;
+    }
+
+    public QueryBuilder addSubquery(List<String> fields, String relationshipField) {
         return addSubquery(new QueryBuilder()
             .addFields(fields)
             .fromObject(relationshipField)
@@ -140,7 +151,9 @@ public inherited sharing class QueryBuilder {
     }
 
     public QueryBuilder setHaving(String havingConditionExpression) {
-        this.havingConditions = 'HAVING ' + havingConditionExpression;
+        if (String.isNotEmpty(havingConditionExpression)) {
+            this.havingConditions = 'HAVING ' + havingConditionExpression;
+        }
         return this;
     }
 

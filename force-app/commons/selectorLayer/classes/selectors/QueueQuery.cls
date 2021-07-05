@@ -38,12 +38,8 @@ public inherited sharing class QueueQuery extends Query {
 
 
     public QueueQuery() {
-        super(new List<String>{
-            'Id',
-            'Type',
-            'DeveloperName',
-            'Name'
-        }, Group.SObjectType);
+        super(Group.SObjectType);
+        selectFields(Query.Fields.STANDARD);
     }
 
 

@@ -38,6 +38,6 @@ public inherited sharing class RecordTypeQuery {
             recordTypeInfoMap.put(sObjType, sObjType.getDescribe().getRecordTypeInfosByDeveloperName());
         }
 
-        return recordTypeInfoMap.get(sObjType).get(devName);
+        return recordTypeInfoMap.get(sObjType)?.get(devName);
     }
 }

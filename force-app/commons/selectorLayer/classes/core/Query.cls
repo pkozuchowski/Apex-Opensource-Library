@@ -27,6 +27,7 @@
  * Query.Accounts.byId(...);
  * Query.EmailTemplates.byDeveloperName('FirmQuote');
  */
+@JsonAccess(Serializable='never' Deserializable='never')
 public inherited sharing virtual class Query extends QueryObject {
     public final static AccountQuery Accounts { get {return new AccountQuery();} }
     public final static AttachmentQuery Attachments { get {return new AttachmentQuery();} }
@@ -105,18 +106,7 @@ public inherited sharing virtual class Query extends QueryObject {
          * @return String representation of WHERE condition.
          * Example: 'AccountId IN :recordIds'
          */
-        String toSOQL();
-
-        /**
-         * @return Map of variables to bind to WHERE condition
-         * Example for 'AccountId IN :recordIds':
-         * <pre>
-         *     new Map<String,Object>{
-         *         'recordIds' => new Map<Id, Account>(accounts).keySet();
-         *     }
-         * </pre>
-         */
-        Map<String, Object> getQueryParameters();
+        String toSOQL(QueryBindings bindings);
     }
 
 
@@ -159,6 +149,6 @@ public inherited sharing virtual class Query extends QueryObject {
          * @param condition Query condition - either single or composite
          * @return Mocked query result
          */
-        SObject[] mockQuery(Query.Condition condition);
+        SObject[] mockQuery();
     }
 }

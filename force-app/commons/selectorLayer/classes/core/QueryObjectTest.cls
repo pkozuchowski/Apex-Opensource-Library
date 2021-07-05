@@ -37,10 +37,19 @@ public class QueryObjectTest {
 
         protected override Set<String> getFieldsToCacheBy() {
             return new Set<String>{
-                'Id'
+                'Id', 'Username'
             };
         }
     }
+
+
+    public static void assertEquals(SObject[] expected, SObject[] actual) {
+        System.assertEquals(
+            new Map<Id, SObject>(expected).keySet(),
+            new Map<Id, SObject>(actual).keySet()
+        );
+    }
+
 
     @IsTest
     static void testSelectById() {
@@ -72,14 +81,6 @@ public class QueryObjectTest {
     }
 
     @IsTest
-    static void testSelectAll() {
-        assertEquals(
-            ([SELECT Id FROM User]),
-            new TestUserQuery().getList()
-        );
-    }
-
-    @IsTest
     static void testSelectByChild() {
         List<LoginHistory> loginHistories = [SELECT Id, UserId FROM LoginHistory LIMIT 100];
         List<User> users = new TestUserQuery().relatedToChildren(loginHistories, LoginHistory.UserId).getList();
@@ -104,24 +105,16 @@ public class QueryObjectTest {
     @IsTest
     static void testSelectOne() {
         User usr = (User) new TestUserQuery().getFirstOrEmpty();
-        System.assertNotEquals(null, usr);
-    }
-
-    public static void assertEquals(SObject[] expected, SObject[] actual) {
-        System.assertEquals(
-            new Map<Id, SObject>(expected).keySet(),
-            new Map<Id, SObject>(actual).keySet()
-        );
+        System.assertNotEquals(null, usr, 'Should query one user');
+        System.assertEquals(1, Limits.getQueryRows(), 'Should limit query to 1');
     }
 
 
     @IsTest
     static void testCountBy() {
         Integer cnt = (Integer) [SELECT COUNT(Id) cnt FROM User].get(0).get('cnt');
-        System.assertEquals(
-            cnt,
-            new TestUserQuery().getCount()
-        );
+        Integer queryCount = new TestUserQuery().getCount();
+        System.assertEquals(cnt, queryCount, 'getCount() should return Integer');
     }
 
     @IsTest
@@ -136,10 +129,10 @@ public class QueryObjectTest {
             .useCache(true)
             .stripInaccessible(AccessType.READABLE)
             .byId(UserInfo.getUserId())
+            .limits(100)
             .getFirstOrNull();
 
         new TestUserQuery().byId(UserInfo.getUserId()).getCount();
-        new TestUserQuery().byId(UserInfo.getUserId()).getAggregatedResults('COUNT(ID)', 'Name');
         new TestUserQuery().byId(UserInfo.getUserId()).getMapById();
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrEmpty();
@@ -157,7 +150,7 @@ public class QueryObjectTest {
             .addField('Name')
             .addFields(new List<SObjectField>{Account.Id})
             .addFields(new List<String>{'Id'})
-            .addChildFields(new List<String>{'Id'}, 'Contacts')
+            .addSubquery(new List<String>{'Id'}, 'Contacts')
             .fromObject(Account.SObjectType)
             .setWhere('Name != NULL')
             .setGroupBy('Name')
@@ -188,5 +181,68 @@ public class QueryObjectTest {
         c.blank();
         c.wheres('Name IN :names', new Map<String, Object>{'names' => new List<String>{'Test'}});
         c.NOTs(c.field(Account.Name).equals('Test'));
+
+
+        QueryBindings b1 = new QueryBindings();
+        String soql = c.field(Account.Id).equals('test').toSOQL(b1);
+        System.assertEquals('(Id = :var0)', soql);
+        System.assertEquals('test', b1.getMap().get(':var0'));
+
+
+        c.field(Account.Id).notEquals('test');
+        c.field(Account.Id).includes('test');
+        c.field(Account.Id).excludes('test');
+        c.field(Account.Id).isIn('test');
+        c.field(Account.Id).greaterThan('test');
+        c.field(Account.Id).greaterEqualsThan('test');
+        c.field(Account.Id).lessEqualsThan('test');
+        c.field(Account.Id).lessThan('test');
+    }
+
+    @IsTest
+    static void bindingsCoverage() {
+        QueryBindings bindings = new QueryBindings();
+        List<String> queryValues = new List<String>{
+            '1', '2', '3'
+        };
+
+        String name = bindings.registerBinding(queryValues);
+
+        System.assertEquals(':var0', name, 'registerBinding() should return unique variable name that can be inserted into soql string');
+        System.assertEquals(':var1', bindings.registerBinding(1), 'Each binding should get unique name');
+    }
+
+    @IsTest
+    static void testBindingsReplaceReferences() {
+        QueryBindings bindings = new QueryBindings();
+
+        String soql = 'Name IN :names';
+        Map<String, Object> vars = new Map<String, Object>{
+            'names' => new List<String>{'Acount 1', 'Account 2'}
+        };
+
+        String newSoql = bindings.replaceReferences(soql, vars);
+        System.assertEquals('Name IN :var0', newSoql, 'Should replace all manually-typed variables with unique names');
+        System.assertEquals(bindings.getMap().get(':var0'), vars.get('names'), 'Values should be registered in bindings');
+    }
+
+    @IsTest
+    static void testAggregateQuery() {
+        QueryConditionFactory c = new QueryConditionFactory();
+        String soql = Query.fromSObject(User.SObjectType)
+            .selectFields('COUNT(ID), Email')
+            .groupBy('Email')
+            .havingCondition(
+                c.ANDs(
+                    c.field('COUNT(ID)').greaterThan(0),
+                    c.field('COUNT(ID)').lessThan(10)
+                )
+            )
+            .toString();
+
+        System.assertEquals(
+            '(SELECT COUNT(ID), Email FROM User  GROUP BY Email HAVING ((COUNT(ID) > :var0) AND (COUNT(ID) < :var1)), {:var0=0, :var1=10})',
+            soql
+        );
     }
 }

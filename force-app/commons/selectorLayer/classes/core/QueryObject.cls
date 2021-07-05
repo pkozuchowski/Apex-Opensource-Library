@@ -25,24 +25,31 @@
 /**
  * Base class for selectors. Contains query builder and common query methods.
  */
-public abstract inherited sharing class QueryObject {
+@JsonAccess(Serializable='never' Deserializable='never')
+public virtual inherited sharing class QueryObject {
     private final static QueryMocker mocker = QueryMocker.getInstance();
     private final static QueryCache cache = QueryCache.getInstance();
 
     protected final QueryConditionFactory conditionFactory = new QueryConditionFactory();
     protected final QueryBuilder queryBuilder = new QueryBuilder();
     protected final DatabaseService databaseService = new DatabaseService();
-    protected final List<Query.Condition> conditions = new List<Query.Condition>();
+    protected final List<Query.Condition> whereConditions = new List<Query.Condition>();
+    protected final List<Query.Condition> havingConditions = new List<Query.Condition>();
     protected final SObjectType sObjectType;
+    protected final QueryBindings bindings = new QueryBindings();
 
-    private Boolean useCache = !Test.isRunningTest();
     private AccessType accessType = null;
+    private Boolean useCache = !Test.isRunningTest();
+    private Boolean saveResultsToCache = true;
+    private String subqueryRelationshipName;
+    private String mockName;
+
 
     /**
      * Constructs QueryObject for given sObjectType without any fields selected.
      * @param sObjectType to query from
      */
-    public QueryObject(SObjectType sObjectType) {
+    protected QueryObject(SObjectType sObjectType) {
         this.sObjectType = sObjectType;
     }
 
@@ -51,9 +58,9 @@ public abstract inherited sharing class QueryObject {
      * @param fields to select
      * @param sObjectType to query from
      */
-    public QueryObject(List<String> fields, SObjectType sObjectType) {
+    protected QueryObject(List<String> fields, SObjectType sObjectType) {
         this(sObjectType);
-        this.queryBuilder.addFields(fields);
+        this.selectFields(fields);
     }
 
 
@@ -103,26 +110,97 @@ public abstract inherited sharing class QueryObject {
 
 
     /**
+     * Adds subquery with given fields and relationship name.
+     * Disables caching.
+     */
+    public QueryObject selectSubquery(String fieldsCSV, String relationshipName) {
+        return selectSubquery(fieldsCSV.deleteWhitespace().split(','), relationshipName);
+    }
+
+    /**
      * Adds subquery with given fields and relationship name
+     * Disables caching.
      */
     public QueryObject selectSubquery(List<String> fields, String relationshipName) {
-        this.queryBuilder.addChildFields(fields, relationshipName);
+        this.useCache = false;
+        this.queryBuilder.addSubquery(fields, relationshipName);
         return this;
     }
 
     /**
      * Adds another query as subquery
-     * TODO: To be added later
+     * Disables caching.
      */
-/*    public QueryObject selectSubquery(QueryObject query, String relationshipName) {
+    public QueryObject selectSubquery(QueryObject subquery, String relationshipName) {
+        this.useCache = false;
+        subquery.subqueryRelationshipName = relationshipName;
+        queryBuilder.addSubquery(subquery.toSOQL(this.bindings));
         return this;
-    }*/
+    }
+
+
+    /**
+     * Give this query unique name, which can be referenced in Unit Tests in QueryMocker to mock results for named query.
+     */
+    public QueryObject setMockName(String mockName) {
+        this.mockName = mockName;
+        return this;
+    }
 
     /**
      * Sets limit on query
      */
     public QueryObject limits(Integer l) {
         this.queryBuilder.setLimit(l);
+        return this;
+    }
+
+    /**
+     * Sets group by on query
+     */
+    public QueryObject groupBy(String fields) {
+        this.useCache = false;
+        this.queryBuilder.setGroupBy(fields);
+        return this;
+    }
+
+
+    /**
+     * Sets HAVING clause on group without any bindings
+     * <pre>
+     * .havingConditions('COUNt(ID) > 1');
+     * </pre>
+     */
+    public QueryObject havingCondition(String fields) {
+        return havingCondition(fields, null);
+    }
+
+    /**
+     * Sets HAVING clause on group with explicit bindings
+     * ex `.havingGroupings('COUNT(Id) < :i', new Map<String, Object>{'i' => 5})`
+     */
+    public QueryObject havingCondition(String fields, Map<String, Object> params) {
+        return havingCondition(conditionFactory.wheres(fields, params));
+    }
+
+    /**
+     * Sets given condition as HAVING clause
+     * <pre>
+     * QueryConditionFactory c = new QueryConditionFactory();
+     * Query.Users
+     *     .selectFields('COUNT(ID), Email')
+     *     .havingConditions(
+     *         c.ANDs(
+     *             c.field('COUNT(ID)').greaterThan(5),
+     *             c.field('COUNT(ID)').lessThan(10)
+     *         )
+     *     .toSOQL()
+     * <pre>
+     */
+    public QueryObject havingCondition(Query.Condition condition) {
+        this.useCache = false;
+        this.saveResultsToCache = false;
+        this.havingConditions.add(condition);
         return this;
     }
 
@@ -223,6 +301,7 @@ public abstract inherited sharing class QueryObject {
         return this;
     }
 
+
     /**
      * @example
      * <pre>
@@ -251,7 +330,7 @@ public abstract inherited sharing class QueryObject {
      * @return SObjects with field values in given value set.
      */
     public virtual QueryObject byField(String fieldAPIName, String operator, Object value) {
-        this.conditions.add(conditionFactory.field(fieldAPIName, operator, value));
+        this.whereConditions.add(conditionFactory.field(fieldAPIName, operator, value));
         return this;
     }
 
@@ -274,7 +353,7 @@ public abstract inherited sharing class QueryObject {
      * Adds WHERE clause to query conditions
      */
     public QueryObject wheres(Query.Condition wheres) {
-        this.conditions.add(wheres);
+        this.whereConditions.add(wheres);
         return this;
     }
 
@@ -347,6 +426,15 @@ public abstract inherited sharing class QueryObject {
 
 
     /**
+     * @return Collection of sObjects.
+     * Remove this method if you are deploying Query without Collection library
+     */
+    public Collection getCollection() {
+        return Collection.of(getList());
+    }
+
+
+    /**
      * @return Ids for SObjects
      */
     public Set<Id> getIds() {
@@ -368,41 +456,21 @@ public abstract inherited sharing class QueryObject {
      * @return Query Locator for current query
      */
     public Database.QueryLocator getQueryLocator() {
-        Query.Condition compiledExp = getCompiledCondition();
-        this.queryBuilder.fromObject(sObjectType)
-            .setWhere(compiledExp.toSOQL());
+        this.queryBuilder
+            .fromObject(sObjectType)
+            .setWhere(compileConditions(whereConditions).toSOQL(bindings));
 
-        return this.databaseService.getQueryLocator(queryBuilder.toSOQL(), compiledExp.getQueryParameters());
+        return this.databaseService.getQueryLocator(queryBuilder.toSOQL(), bindings.getMap());
     }
 
     /**
     * @return Count of records
     */
     public Integer getCount() {
-        return (Integer) getAggregatedResults('COUNT(Id) cnt').get(0).get('cnt');
-    }
-
-    /**
-    * @return Records counted by given SObject field
-    */
-    public AggregateResult[] getAggregatedResults(String fields) {
-        return getAggregatedResults(fields, null);
-    }
-
-    public AggregateResult[] getAggregatedResults(String fields, String groupBy) {
-        return getAggregatedResults(fields, groupBy, null);
-    }
-
-    public AggregateResult[] getAggregatedResults(String fields, String groupBy, String havingClause) {
-        if (String.isNotBlank(fields)) this.queryBuilder.setFields(new List<String>{fields});
-        if (String.isNotBlank(groupBy))this.queryBuilder.setGroupBy(groupBy);
-        if (String.isNotBlank(havingClause)) this.queryBuilder.setHaving(havingClause);
-
-        this.queryBuilder.fromObject(sObjectType);
-
-        Query.Condition compiledExp = getCompiledCondition();
-        this.queryBuilder.setWhere(compiledExp.toSOQL());
-        return this.databaseService.query(queryBuilder.toSOQL(), compiledExp.getQueryParameters());
+        return (Integer) selectFields('COUNT(Id) cnt')
+            .getList()
+            .get(0)
+            .get('cnt');
     }
 
 
@@ -420,10 +488,8 @@ public abstract inherited sharing class QueryObject {
     */
     protected SObject[] executeQuery() {
         try {
-            Type thisQueryClass = Runtime.getType(this);
-
-            if (mocker.isMocked(thisQueryClass)) {
-                return mocker.getMock(thisQueryClass).mockQuery(getCompiledCondition());
+            if (mocker.isMocked(mockName)) {
+                return mocker.getMock(mockName).mockQuery();
             }
 
             List<SObject> result = getQueryResult();
@@ -444,7 +510,7 @@ public abstract inherited sharing class QueryObject {
 
     private List<SObject> getQueryResult() {
         List<SObject> result = Runtime.newListOfItemType(sObjectType);
-        Query.Condition compiledExpr = getCompiledCondition();
+        Query.Condition compiledExpr = compileConditions(whereConditions);
         Boolean doQuery = true;
 
         if (canUseCache()) {
@@ -453,14 +519,17 @@ public abstract inherited sharing class QueryObject {
         }
 
         if (doQuery) {
-            this.queryBuilder.setWhere(compiledExpr.toSOQL());
+            this.queryBuilder.setWhere(compiledExpr.toSOQL(bindings));
+            this.queryBuilder.setHaving(compileConditions(havingConditions).toSOQL(bindings));
             this.queryBuilder.fromObject(sObjectType);
-            SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), compiledExpr.getQueryParameters());
-            result.addAll(records);
+            SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), bindings.getMap());
 
             if (!(records instanceof AggregateResult[])) {
                 cache.put(sObjectType, getFieldsToCacheBy(), records);
             }
+
+            records.addAll(result);
+            return records;
         }
 
         return result;
@@ -477,10 +546,10 @@ public abstract inherited sharing class QueryObject {
     */
     private Boolean canUseCache() {
         return this.useCache
-            && conditions.size() == 1
-            && conditions.get(0) instanceof Query.CacheableCondition
-            && ((Query.CacheableCondition) conditions.get(0)).isCacheable()
-            && getFieldsToCacheBy().contains(((Query.CacheableCondition) conditions.get(0)).getCacheKey());
+            && whereConditions.size() == 1
+            && whereConditions.get(0) instanceof Query.CacheableCondition
+            && ((Query.CacheableCondition) whereConditions.get(0)).isCacheable()
+            && getFieldsToCacheBy().contains(((Query.CacheableCondition) whereConditions.get(0)).getCacheKey());
     }
 
     /**
@@ -488,7 +557,7 @@ public abstract inherited sharing class QueryObject {
      * @return True if there's remainder with non-cached values and there has to be query on that.
      */
     private Query.Condition getCachedRecordsAndReturnRemainderCondition(List<SObject> result) {
-        Query.Condition condition = conditions.get(0);
+        Query.Condition condition = whereConditions.get(0);
         Query.CacheableCondition cacheable = (Query.CacheableCondition) condition;
         QueryCache.Result cacheResult = cache.getCachedRecords(sObjectType, cacheable.getCacheKey(), cacheable.getCacheValue());
 
@@ -502,7 +571,7 @@ public abstract inherited sharing class QueryObject {
         }
     }
 
-    private Query.Condition getCompiledCondition() {
+    private Query.Condition compileConditions(Query.Condition[] conditions) {
         if (conditions.isEmpty()) {
             return conditionFactory.blank();
 
@@ -514,18 +583,35 @@ public abstract inherited sharing class QueryObject {
         }
     }
 
+    /**
+     * @return SOQL representation of the Query
+     */
+    public String toSOQL() {
+        return toSOQL(bindings);
+    }
+
+    private String toSOQL(QueryBindings bindings) {
+        QueryBuilder copy = this.queryBuilder.clone();
+
+        copy.setWhere(compileConditions(whereConditions).toSOQL(bindings));
+        copy.setHaving(compileConditions(havingConditions).toSOQL(bindings));
+
+        if (String.isNotBlank(subqueryRelationshipName)) {
+            copy.fromObject(subqueryRelationshipName);
+        } else {
+            copy.fromObject(sObjectType);
+        }
+
+        return copy.toSOQL();
+    }
 
     /**
-     * @return String representation of the Query
+     * @return String representation of the Query (SQOL + Bindings)
      */
     public override String toString() {
-        Query.Condition compiledExpr = getCompiledCondition();
-
-        QueryBuilder copy = this.queryBuilder.clone();
-        copy.setWhere(compiledExpr.toSOQL());
         return new List<Object>{
-            copy.toSOQL(),
-            compiledExpr.getQueryParameters()
+            this.toSOQL(),
+            bindings.getMap()
         }.toString();
     }
 }

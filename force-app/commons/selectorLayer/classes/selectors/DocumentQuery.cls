@@ -28,19 +28,8 @@
 public inherited sharing class DocumentQuery extends Query {
 
     public DocumentQuery() {
-        super(new List<String>{
-            'Id',
-            'AuthorId',
-            'Body',
-            'BodyLength',
-            'ContentType',
-            'Description',
-            'DeveloperName',
-            'FolderId',
-            'Name',
-            'Type',
-            'Url'
-        }, Document.SObjectType);
+        super(Document.SObjectType);
+        selectFields(Query.Fields.STANDARD);
     }
 
 

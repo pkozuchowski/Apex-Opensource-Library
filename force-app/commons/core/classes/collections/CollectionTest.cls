@@ -25,36 +25,36 @@
 private class CollectionTest {
 
     private static List<Opportunity> opportunities = new List<Opportunity>{
-            newOpportunity(0, new Map<String, Object>{
-                    'NextStep' => 'Analysis'
-            }),
-            newOpportunity(1, new Map<String, Object>{
-                    'NextStep' => 'Analysis'
-            }),
-            newOpportunity(2, new Map<String, Object>{
-                    'NextStep' => 'Analysis'
-            }),
-            newOpportunity(3, new Map<String, Object>{
-                    'NextStep' => 'Analysis'
-            }),
-            newOpportunity(4, new Map<String, Object>{
-                    'NextStep' => 'Deal'
-            }),
-            newOpportunity(5, new Map<String, Object>{
-                    'NextStep' => 'Deal'
-            }),
-            newOpportunity(6, new Map<String, Object>{
-                    'NextStep' => 'Deal'
-            }),
-            newOpportunity(7, new Map<String, Object>{
-                    'NextStep' => 'Support'
-            }),
-            newOpportunity(8, new Map<String, Object>{
-                    'NextStep' => 'Support'
-            }),
-            newOpportunity(9, new Map<String, Object>{
-                    'NextStep' => 'Support'
-            })
+        newOpportunity(0, new Map<String, Object>{
+            'NextStep' => 'Analysis'
+        }),
+        newOpportunity(1, new Map<String, Object>{
+            'NextStep' => 'Analysis'
+        }),
+        newOpportunity(2, new Map<String, Object>{
+            'NextStep' => 'Analysis'
+        }),
+        newOpportunity(3, new Map<String, Object>{
+            'NextStep' => 'Analysis'
+        }),
+        newOpportunity(4, new Map<String, Object>{
+            'NextStep' => 'Deal'
+        }),
+        newOpportunity(5, new Map<String, Object>{
+            'NextStep' => 'Deal'
+        }),
+        newOpportunity(6, new Map<String, Object>{
+            'NextStep' => 'Deal'
+        }),
+        newOpportunity(7, new Map<String, Object>{
+            'NextStep' => 'Support'
+        }),
+        newOpportunity(8, new Map<String, Object>{
+            'NextStep' => 'Support'
+        }),
+        newOpportunity(9, new Map<String, Object>{
+            'NextStep' => 'Support'
+        })
     };
 
     /**
@@ -63,15 +63,15 @@ private class CollectionTest {
      */
     private static Opportunity newOpportunity(Integer i, Map<String, Object> opp) {
         Map<String, Object> oppMap = new Map<String, Object>{
-                'Id' => '006' + ('' + i).leftPad(12, '0') + 'AAA',
-                'AccountId' => '001' + ('' + Math.mod(i, 3)).leftPad(12, '0') + 'AAA',
-                'OwnerId' => '005' + ('' + Math.mod(i, 5)).leftPad(12, '0') + 'AAA',
-                'Name' => 'Test Opportunity ' + i,
-                'CreatedDate' => Datetime.now().addDays(-i),
-                'HasOpenActivity' => Math.mod(i, 2) == 0,
-                'LastActivityDate' => Date.today().addDays(-i),
-                'Probability' => 1.0 * i / 10,
-                'Amount' => i * 100
+            'Id' => '006' + ('' + i).leftPad(12, '0') + 'AAA',
+            'AccountId' => '001' + ('' + Math.mod(i, 3)).leftPad(12, '0') + 'AAA',
+            'OwnerId' => '005' + ('' + Math.mod(i, 5)).leftPad(12, '0') + 'AAA',
+            'Name' => 'Test Opportunity ' + i,
+            'CreatedDate' => Datetime.now().addDays(-i),
+            'HasOpenActivity' => Math.mod(i, 2) == 0,
+            'LastActivityDate' => Date.today().addDays(-i),
+            'Probability' => 1.0 * i / 10,
+            'Amount' => i * 100
         };
         oppMap.putAll(opp);
 
@@ -149,14 +149,14 @@ private class CollectionTest {
     @IsTest
     static void testAddRemove() {
         Collection.of(new List<Opportunity>())
-                .addAll(opportunities)
-                .add(newOpportunity(10, new Map<String, Object>()))
-                .add(5, newOpportunity(10, new Map<String, Object>()))
-                .remove(0)
-                .removeLast();
+            .addAll(opportunities)
+            .add(newOpportunity(10, new Map<String, Object>()))
+            .add(5, newOpportunity(10, new Map<String, Object>()))
+            .remove(0)
+            .removeLast();
 
         Collection.of(new List<Integer>{1, 2, 3})
-                .addAll(new Set<Object>{4, 5, 6});
+            .addAll(new Set<Object>{4, 5, 6});
     }
 
 
@@ -296,8 +296,8 @@ private class CollectionTest {
 
         Test.startTest();
         Map<Id, OpportunityWrapper> actual = (Map<Id, OpportunityWrapper>) Collection.of(opportunities).mapBy(
-                new CollectionImpl.FieldMapper(Opportunity.Id),
-                new OpportunityWrapperMapper()
+            new CollectionImpl.FieldMapper(Opportunity.Id),
+            new OpportunityWrapperMapper()
         );
         Test.stopTest();
 
@@ -372,7 +372,7 @@ private class CollectionTest {
         for (Opportunity opp : opportunities) {
             String key = '' + opp.AccountId + opp.OwnerId;
 
-            if(expected.containsKey(key)){
+            if (expected.containsKey(key)) {
                 expected.get(key).add(opp);
             } else {
                 expected.put(key, new List<Opportunity>{opp});
@@ -485,10 +485,10 @@ private class CollectionTest {
 
         for (Opportunity opp : opportunities) {
             Boolean accept = (
-                    opp.NextStep.contains('Analysis')
-                            && opp.HasOpenActivity == true
-                            && opp.LastActivityDate <= Date.today()
-                            && opp.LastActivityDate > Date.today().addDays(-2)
+                opp.NextStep.contains('Analysis')
+                    && opp.HasOpenActivity == true
+                    && opp.LastActivityDate <= Date.today()
+                    && opp.LastActivityDate > Date.today().addDays(-2)
             ) || opp.NextStep != 'Analysis';
 
             if (accept) {
@@ -497,20 +497,21 @@ private class CollectionTest {
         }
 
 
+        ConditionsFactory c = new ConditionsFactory();
         Test.startTest();
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
-                .filter(
-                        Conditions.ORs(
-                                Conditions.ANDs(
-                                        Conditions.field(Opportunity.NextStep).contains('Analysis'),
-                                        Conditions.field(Opportunity.HasOpenActivity).equals(true),
-                                        Conditions.field(Opportunity.LastActivityDate).lessEqualsThan(Date.today()),
-                                        Conditions.field(Opportunity.LastActivityDate).greaterThan(Date.today().addDays(-2))
-                                ),
-                                Conditions.field(Opportunity.NextStep).notEquals('Analysis')
-                        )
+            .filter(
+                c.ORs(
+                    c.ANDs(
+                        c.field(Opportunity.NextStep).contains('Analysis'),
+                        c.field(Opportunity.HasOpenActivity).equals(true),
+                        c.field(Opportunity.LastActivityDate).lessEqualsThan(Date.today()),
+                        c.field(Opportunity.LastActivityDate).greaterThan(Date.today().addDays(-2))
+                    ),
+                    c.field(Opportunity.NextStep).notEquals('Analysis')
                 )
-                .get();
+            )
+            .get();
 
         Test.stopTest();
 
@@ -526,28 +527,29 @@ private class CollectionTest {
         List<Opportunity> expected = new List<Opportunity>();
         for (Opportunity opp : opportunities) {
             Boolean accept =
-                    opp.Name != null
-                            && wantedSteps.indexOf(opp.NextStep) > -1
-                            && unwantedSteps.indexOf(opp.NextStep) == -1
-                            && opp.LastActivityDate < Date.today();
+                opp.Name != null
+                    && wantedSteps.indexOf(opp.NextStep) > -1
+                    && unwantedSteps.indexOf(opp.NextStep) == -1
+                    && opp.LastActivityDate < Date.today();
 
             if (accept) {
                 expected.add(opp);
             }
         }
 
+        ConditionsFactory c = new ConditionsFactory();
 
         Test.startTest();
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
-                .filter(
-                        Conditions.ANDs(
-                                Conditions.field(Opportunity.Name).notEquals(null),
-                                Conditions.field(Opportunity.NextStep).isIn(wantedSteps),
-                                Conditions.field(Opportunity.NextStep).isNotIn(unwantedSteps),
-                                Conditions.field('LastActivityDate').lessThan(Date.today())
-                        )
+            .filter(
+                c.ANDs(
+                    c.field(Opportunity.Name).notEquals(null),
+                    c.field(Opportunity.NextStep).isIn(wantedSteps),
+                    c.field(Opportunity.NextStep).isNotIn(unwantedSteps),
+                    c.field('LastActivityDate').lessThan(Date.today())
                 )
-                .get();
+            )
+            .get();
 
         Test.stopTest();
 
@@ -562,7 +564,7 @@ private class CollectionTest {
     @IsTest
     static void tesFilterByFieldValues() {
         Set<Object> acceptedStages = new Set<Object>{
-                'Analysis', 'Deal'
+            'Analysis', 'Deal'
         };
         List<Opportunity> expectedAcceptedOpps = new List<Opportunity>();
         List<Opportunity> expectedRejectedOpps = new List<Opportunity>();
@@ -590,8 +592,8 @@ private class CollectionTest {
     @IsTest
     static void testFilterByRelatedTo() {
         Map<Id, Account> accounts = new Map<Id, Account>(new List<Account>{
-                new Account(Id = '001000000000000'),
-                new Account(Id = '001000000000001')
+            new Account(Id = '001000000000000'),
+            new Account(Id = '001000000000001')
         });
 
         Set<Id> expected = new Set<Id>();
@@ -604,8 +606,8 @@ private class CollectionTest {
 
         Test.startTest();
         Set<Id> actual = (Set<Id>) Collection.of(opportunities)
-                .filter(Opportunity.AccountId).relatedTo(accounts.values())
-                .setOf(Opportunity.Id);
+            .filter(Opportunity.AccountId).relatedTo(accounts.values())
+            .setOf(Opportunity.Id);
         Test.stopTest();
 
 
@@ -620,7 +622,7 @@ private class CollectionTest {
     @IsTest
     static void testFilterByPrototype() {
         Opportunity prototype = new Opportunity(
-                AccountId = '001000000000000'
+            AccountId = '001000000000000'
         );
 
         List<Opportunity> expected = new List<Opportunity>();
@@ -632,7 +634,7 @@ private class CollectionTest {
 
 
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
-                .filterAlike(prototype).get();
+            .filterAlike(prototype).get();
         System.assertEquals(expected, actual);
     }
 
@@ -750,8 +752,8 @@ private class CollectionTest {
         }
 
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
-                .orderBy(new ReverseProbabilityComparator())
-                .get();
+            .orderBy(new ReverseProbabilityComparator())
+            .get();
 
         System.assertEquals(actual, expected);
     }
@@ -798,8 +800,8 @@ private class CollectionTest {
 
 
         sortedOpportunities = (List<Opportunity>) Collection.of(opportunities)
-                .orderBy(Opportunity.Probability, Ordering.ASCENDING)
-                .get();
+            .orderBy(Opportunity.Probability, Ordering.ASCENDING)
+            .get();
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {
                 System.assert(opportunity.Probability >= previous.Probability);
@@ -824,9 +826,9 @@ private class CollectionTest {
     @IsTest
     static void testWrap() {
         List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>)
-                Collection.of(opportunities)
-                        .wrap(OpportunityWrapper2.class)
-                        .get();
+            Collection.of(opportunities)
+                .wrap(OpportunityWrapper2.class)
+                .get();
 
         for (Integer i = 0; i < wrappers.size(); i++) {
             System.assertEquals(wrappers[i].opportunity, opportunities[i]);
@@ -849,9 +851,9 @@ private class CollectionTest {
     @IsTest
     static void testWrapByWrapperFactory() {
         List<OpportunityWrapper> wrappers = (List<OpportunityWrapper>)
-                Collection.of(opportunities)
-                        .wrap(new OpportunityWrapperFactory(), OpportunityWrapper.class)
-                        .get();
+            Collection.of(opportunities)
+                .wrap(new OpportunityWrapperFactory(), OpportunityWrapper.class)
+                .get();
 
         for (Integer i = 0; i < wrappers.size(); i++) {
             System.assertEquals(wrappers[i].opportunity, opportunities[i]);
@@ -874,10 +876,10 @@ private class CollectionTest {
         Account account = new Account(Name = 'Test');
 
         List<Contact> contacts = (List<Contact>)
-                Collection.of(new List<Contact>())
-                        .fill(10, new Contact(LastName = 'Test Contact', Account = account))
-                        .fill(10, new Contact(LastName = 'Other Contact', Account = account), new Collection.CloneOptions(false, false, false, false))
-                        .get();
+            Collection.of(new List<Contact>())
+                .fill(10, new Contact(LastName = 'Test Contact', Account = account))
+                .fill(10, new Contact(LastName = 'Other Contact', Account = account), new Collection.CloneOptions(false, false, false, false))
+                .get();
 
 
         System.assertEquals(20, contacts.size());
@@ -907,8 +909,8 @@ private class CollectionTest {
     @IsTest
     static void testForEach() {
         List<Opportunity> opportunities = (List<Opportunity>) Collection.of(opportunities)
-                .forEach(new AppendIndexToOpportunityNameWorker())
-                .get();
+            .forEach(new AppendIndexToOpportunityNameWorker())
+            .get();
 
         for (Integer i = 0; i < opportunities.size(); i++) {
             System.assert(opportunities[i].Name.contains('' + i));
@@ -969,8 +971,8 @@ private class CollectionTest {
     @IsTest
     static void testMethodChaining() {
         Map<Boolean, List<OpportunityWrapper2>> expected = new Map<Boolean, List<CollectionTest.OpportunityWrapper2>>{
-                true => new List<OpportunityWrapper2>(),
-                false => new List<OpportunityWrapper2>()
+            true => new List<OpportunityWrapper2>(),
+            false => new List<OpportunityWrapper2>()
         };
 
         for (Integer i = 0; i < opportunities.size(); i++) {
@@ -988,11 +990,11 @@ private class CollectionTest {
 
 
         Map<Boolean, List<OpportunityWrapper2>> actual = (Map<Boolean, List<OpportunityWrapper2>>)
-                Collection.of(opportunities)
-                        .filter(Opportunity.CreatedDate).greaterEqualsThan(Date.today().addDays(-3))
-                        .forEach(new AppendIndexToOpportunityNameWorker())
-                        .wrap(OpportunityWrapper2.class)
-                        .groupBy(new WrapperByOpenActivityMapper());
+            Collection.of(opportunities)
+                .filter(Opportunity.CreatedDate).greaterEqualsThan(Date.today().addDays(-3))
+                .forEach(new AppendIndexToOpportunityNameWorker())
+                .wrap(OpportunityWrapper2.class)
+                .groupBy(new WrapperByOpenActivityMapper());
 
 
         System.assertEquals(JSON.serialize(expected), JSON.serialize(actual));
@@ -1016,8 +1018,8 @@ private class CollectionTest {
     @IsTest
     static void testAssertion() {
         Collection.of(opportunities)
-                .filter(Opportunity.NextStep).equals('Deal')
-                .assertEquals(Opportunity.NextStep, 'Deal', '')
-                .assertNotEquals(Opportunity.NextStep, 'Not deal', '');
+            .filter(Opportunity.NextStep).equals('Deal')
+            .assertEquals(Opportunity.NextStep, 'Deal', '')
+            .assertNotEquals(Opportunity.NextStep, 'Not deal', '');
     }
 }

@@ -36,10 +36,8 @@ public inherited sharing class PermissionSetQuery extends Query {
     }
 
     public PermissionSetQuery() {
-        super(new List<String>{
-            'Id',
-            'Name'
-        }, PermissionSet.SObjectType);
+        super(PermissionSet.SObjectType);
+        selectFields(Query.Fields.STANDARD);
     }
 
 

@@ -59,18 +59,6 @@ private without sharing class AccountQueryTest {
             .withSharing(Sharing.WITHOUT_SHARING)
             .getFirstOrNull();
 
-        System.debug(
-            new AccountQuery()
-                .withCases()
-                .withChildAccounts()
-                .withContacts()
-                .withParentAccount()
-                .byName('Test Child Account')
-                .withOpportunities()
-                .withSharing(Sharing.WITHOUT_SHARING)
-                .toString()
-        );
-
 
         System.assertEquals(1, account.Contacts.size());
         System.assertEquals(1, account.Cases.size());

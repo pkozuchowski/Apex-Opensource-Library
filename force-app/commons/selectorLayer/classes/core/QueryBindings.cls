@@ -50,7 +50,7 @@ public with sharing class QueryBindings {
     }
 
     /**
-     * Registers bindings and replaces bindging names in SOQL string to unique values.
+     * Registers bindings and replaces binding names in SOQL string to unique values.
      */
     public String replaceReferences(String soql, Map<String, Object> params) {
         String newSOQL = soql;

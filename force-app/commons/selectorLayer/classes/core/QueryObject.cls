@@ -33,12 +33,14 @@ public virtual inherited sharing class QueryObject {
     protected final QueryConditionFactory conditionFactory = new QueryConditionFactory();
     protected final QueryBuilder queryBuilder = new QueryBuilder();
     protected final DatabaseService databaseService = new DatabaseService();
-    protected final List<Query.Condition> conditions = new List<Query.Condition>();
+    protected final List<Query.Condition> whereConditions = new List<Query.Condition>();
+    protected final List<Query.Condition> havingConditions = new List<Query.Condition>();
     protected final SObjectType sObjectType;
     protected final QueryBindings bindings = new QueryBindings();
 
-    private Boolean useCache = !Test.isRunningTest();
     private AccessType accessType = null;
+    private Boolean useCache = !Test.isRunningTest();
+    private Boolean saveResultsToCache = true;
     private String subqueryRelationshipName;
     private String mockName;
 
@@ -162,26 +164,43 @@ public virtual inherited sharing class QueryObject {
         return this;
     }
 
+
     /**
      * Sets HAVING clause on group without any bindings
+     * <pre>
+     * .havingConditions('COUNt(ID) > 1');
+     * </pre>
      */
-    public QueryObject havingGroupings(String fields) {
-        return havingGroupings(fields, null);
+    public QueryObject havingCondition(String fields) {
+        return havingCondition(fields, null);
     }
 
     /**
      * Sets HAVING clause on group with explicit bindings
      * ex `.havingGroupings('COUNT(Id) < :i', new Map<String, Object>{'i' => 5})`
      */
-    public QueryObject havingGroupings(String fields, Map<String, Object> params) {
+    public QueryObject havingCondition(String fields, Map<String, Object> params) {
+        return havingCondition(conditionFactory.wheres(fields, params));
+    }
+
+    /**
+     * Sets given condition as HAVING clause
+     * <pre>
+     * QueryConditionFactory c = new QueryConditionFactory();
+     * Query.Users
+     *     .selectFields('COUNT(ID), Email')
+     *     .havingConditions(
+     *         c.ANDs(
+     *             c.field('COUNT(ID)').greaterThan(5),
+     *             c.field('COUNT(ID)').lessThan(10)
+     *         )
+     *     .toSOQL()
+     * <pre>
+     */
+    public QueryObject havingCondition(Query.Condition condition) {
         this.useCache = false;
-        String newClause = fields;
-
-        if (params != null) {
-            newClause = this.bindings.replaceReferences(fields, params);
-        }
-
-        this.queryBuilder.setHaving(newClause);
+        this.saveResultsToCache = false;
+        this.havingConditions.add(condition);
         return this;
     }
 
@@ -311,7 +330,7 @@ public virtual inherited sharing class QueryObject {
      * @return SObjects with field values in given value set.
      */
     public virtual QueryObject byField(String fieldAPIName, String operator, Object value) {
-        this.conditions.add(conditionFactory.field(fieldAPIName, operator, value));
+        this.whereConditions.add(conditionFactory.field(fieldAPIName, operator, value));
         return this;
     }
 
@@ -334,7 +353,7 @@ public virtual inherited sharing class QueryObject {
      * Adds WHERE clause to query conditions
      */
     public QueryObject wheres(Query.Condition wheres) {
-        this.conditions.add(wheres);
+        this.whereConditions.add(wheres);
         return this;
     }
 
@@ -437,9 +456,9 @@ public virtual inherited sharing class QueryObject {
      * @return Query Locator for current query
      */
     public Database.QueryLocator getQueryLocator() {
-        Query.Condition compiledExp = getCompiledCondition();
-        this.queryBuilder.fromObject(sObjectType)
-            .setWhere(compiledExp.toSOQL(bindings));
+        this.queryBuilder
+            .fromObject(sObjectType)
+            .setWhere(compileConditions(whereConditions).toSOQL(bindings));
 
         return this.databaseService.getQueryLocator(queryBuilder.toSOQL(), bindings.getMap());
     }
@@ -491,7 +510,7 @@ public virtual inherited sharing class QueryObject {
 
     private List<SObject> getQueryResult() {
         List<SObject> result = Runtime.newListOfItemType(sObjectType);
-        Query.Condition compiledExpr = getCompiledCondition();
+        Query.Condition compiledExpr = compileConditions(whereConditions);
         Boolean doQuery = true;
 
         if (canUseCache()) {
@@ -501,6 +520,7 @@ public virtual inherited sharing class QueryObject {
 
         if (doQuery) {
             this.queryBuilder.setWhere(compiledExpr.toSOQL(bindings));
+            this.queryBuilder.setHaving(compileConditions(havingConditions).toSOQL(bindings));
             this.queryBuilder.fromObject(sObjectType);
             SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), bindings.getMap());
 
@@ -526,10 +546,10 @@ public virtual inherited sharing class QueryObject {
     */
     private Boolean canUseCache() {
         return this.useCache
-            && conditions.size() == 1
-            && conditions.get(0) instanceof Query.CacheableCondition
-            && ((Query.CacheableCondition) conditions.get(0)).isCacheable()
-            && getFieldsToCacheBy().contains(((Query.CacheableCondition) conditions.get(0)).getCacheKey());
+            && whereConditions.size() == 1
+            && whereConditions.get(0) instanceof Query.CacheableCondition
+            && ((Query.CacheableCondition) whereConditions.get(0)).isCacheable()
+            && getFieldsToCacheBy().contains(((Query.CacheableCondition) whereConditions.get(0)).getCacheKey());
     }
 
     /**
@@ -537,7 +557,7 @@ public virtual inherited sharing class QueryObject {
      * @return True if there's remainder with non-cached values and there has to be query on that.
      */
     private Query.Condition getCachedRecordsAndReturnRemainderCondition(List<SObject> result) {
-        Query.Condition condition = conditions.get(0);
+        Query.Condition condition = whereConditions.get(0);
         Query.CacheableCondition cacheable = (Query.CacheableCondition) condition;
         QueryCache.Result cacheResult = cache.getCachedRecords(sObjectType, cacheable.getCacheKey(), cacheable.getCacheValue());
 
@@ -551,7 +571,7 @@ public virtual inherited sharing class QueryObject {
         }
     }
 
-    private Query.Condition getCompiledCondition() {
+    private Query.Condition compileConditions(Query.Condition[] conditions) {
         if (conditions.isEmpty()) {
             return conditionFactory.blank();
 
@@ -571,10 +591,10 @@ public virtual inherited sharing class QueryObject {
     }
 
     private String toSOQL(QueryBindings bindings) {
-        Query.Condition compiledExpr = getCompiledCondition();
-
         QueryBuilder copy = this.queryBuilder.clone();
-        copy.setWhere(compiledExpr.toSOQL(bindings));
+
+        copy.setWhere(compileConditions(whereConditions).toSOQL(bindings));
+        copy.setHaving(compileConditions(havingConditions).toSOQL(bindings));
 
         if (String.isNotBlank(subqueryRelationshipName)) {
             copy.fromObject(subqueryRelationshipName);

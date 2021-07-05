@@ -151,7 +151,9 @@ public inherited sharing class QueryBuilder {
     }
 
     public QueryBuilder setHaving(String havingConditionExpression) {
-        this.havingConditions = 'HAVING ' + havingConditionExpression;
+        if (String.isNotEmpty(havingConditionExpression)) {
+            this.havingConditions = 'HAVING ' + havingConditionExpression;
+        }
         return this;
     }
 

@@ -40,10 +40,12 @@ public inherited sharing class CollectionImpl extends Collection {
 
     /*Flyweights for reducers*/
     private final static ArithmeticReducer
-            MAX = new ReducerToMax(),
-            MIN = new ReducerToMin(),
-            AVERAGE = new ReducerToAverage(),
-            SUM = new ReducerToSum();
+        MAX = new ReducerToMax(),
+        MIN = new ReducerToMin(),
+        AVERAGE = new ReducerToAverage(),
+        SUM = new ReducerToSum();
+
+    private final static ConditionsFactory conditionsFactory = new ConditionsFactory();
 
     private List<Object> items;
 
@@ -124,7 +126,7 @@ public inherited sharing class CollectionImpl extends Collection {
 
     public override Collection.FieldFilter filter(SObjectField field) { return filter('' + field); }
     public override Collection.FieldFilter filter(String field) { return new FieldFilterImpl(this, field); }
-    public override Collection filterAlike(SObject prototype) { return filter(Conditions.alike(prototype)); }
+    public override Collection filterAlike(SObject prototype) { return filter(conditionsFactory.alike(prototype)); }
 
     public override Collection filter(Condition condition) {
         List<Object> filteredItems = Runtime.newListOfTheSameType(items);
@@ -344,10 +346,10 @@ public inherited sharing class CollectionImpl extends Collection {
         assertSObjectCollection();
         for (Integer i = 0; i < count; i++) {
             SObject clone = prototype.clone(
-                    cloneOptions.preserveId,
-                    cloneOptions.deepClone,
-                    cloneOptions.preserveReadonlyTimestamps,
-                    cloneOptions.preserveAutonumber
+                cloneOptions.preserveId,
+                cloneOptions.deepClone,
+                cloneOptions.preserveReadonlyTimestamps,
+                cloneOptions.preserveAutonumber
             );
             items.add(clone);
         }
@@ -416,11 +418,11 @@ public inherited sharing class CollectionImpl extends Collection {
     */
     private class FieldFilterImpl implements FieldFilter {
         private Collection collection;
-        private Conditions.FieldValueConditionFactory filterFactory;
+        private ConditionsFactory.FieldValueConditionFactory filterFactory;
 
         private FieldFilterImpl(Collection filterFacade, String field) {
             this.collection = filterFacade;
-            this.filterFactory = new Conditions.FieldValueConditionFactory(field);
+            this.filterFactory = new ConditionsFactory.FieldValueConditionFactory(field);
         }
 
         public Collection equals(Object value) { return collection.filter(filterFactory.equals(value)); }

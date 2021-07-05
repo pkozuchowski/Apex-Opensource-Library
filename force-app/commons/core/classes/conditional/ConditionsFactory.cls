@@ -25,43 +25,43 @@
 /**
  * Factory class for Condition implementations.
  */
-public abstract inherited sharing class Conditions {
+public inherited sharing class ConditionsFactory {
 
     /**
      * Creates filter which returns true if all of the filters return true
      */
-    public static Condition ANDs(Condition f1, Condition f2) {
+    public Condition ANDs(Condition f1, Condition f2) {
         return ANDs(new List<Condition>{f1, f2});
     }
-    public static Condition ANDs(Condition f1, Condition f2, Condition f3) {
+    public Condition ANDs(Condition f1, Condition f2, Condition f3) {
         return ANDs(new List<Condition>{f1, f2, f3});
     }
-    public static Condition ANDs(Condition f1, Condition f2, Condition f3, Condition f4) {
+    public Condition ANDs(Condition f1, Condition f2, Condition f3, Condition f4) {
         return ANDs(new List<Condition>{f1, f2, f3, f4});
     }
-    public static Condition ANDs(Condition f1, Condition f2, Condition f3, Condition f4, Condition f5) {
+    public Condition ANDs(Condition f1, Condition f2, Condition f3, Condition f4, Condition f5) {
         return ANDs(new List<Condition>{f1, f2, f3, f4, f5});
     }
-    public static Condition ANDs(Condition[] conditions) {
+    public Condition ANDs(Condition[] conditions) {
         return new ANDCondition(conditions);
     }
 
     /**
      * Creates filter which returns true if any of the filters return true
      */
-    public static Condition ORs(Condition f1, Condition f2) {
+    public Condition ORs(Condition f1, Condition f2) {
         return ORs(new List<Condition>{f1, f2});
     }
-    public static Condition ORs(Condition f1, Condition f2, Condition f3) {
+    public Condition ORs(Condition f1, Condition f2, Condition f3) {
         return ORs(new List<Condition>{f1, f2, f3});
     }
-    public static Condition ORs(Condition f1, Condition f2, Condition f3, Condition f4) {
+    public Condition ORs(Condition f1, Condition f2, Condition f3, Condition f4) {
         return ORs(new List<Condition>{f1, f2, f3, f4});
     }
-    public static Condition ORs(Condition f1, Condition f2, Condition f3, Condition f4, Condition f5) {
+    public Condition ORs(Condition f1, Condition f2, Condition f3, Condition f4, Condition f5) {
         return ORs(new List<Condition>{f1, f2, f3, f4, f5});
     }
-    public static Condition ORs(Condition[] conditions) {
+    public Condition ORs(Condition[] conditions) {
         return new ORCondition(conditions);
     }
 
@@ -69,10 +69,10 @@ public abstract inherited sharing class Conditions {
     /**
      * Creates filter by field value
      */
-    public static FieldValueConditionFactory field(String field) {
+    public FieldValueConditionFactory field(String field) {
         return new FieldValueConditionFactory(field);
     }
-    public static FieldValueConditionFactory field(SObjectField field) {
+    public FieldValueConditionFactory field(SObjectField field) {
         return new FieldValueConditionFactory('' + field);
     }
 
@@ -89,7 +89,7 @@ public abstract inherited sharing class Conditions {
      *
      * Above would be true for all accounts that have these 2 fields set with same values.
      */
-    public static Condition alike(SObject prototype) {
+    public Condition alike(SObject prototype) {
         return new SimilarityCondition(prototype);
     }
 
@@ -97,7 +97,7 @@ public abstract inherited sharing class Conditions {
     /**
      * Composite Condition used for creating nested AND and ORs conditions
      */
-    public abstract class CompositeCondition implements Condition {
+    private abstract class CompositeCondition implements Condition {
         protected Condition[] conditions;
 
         public CompositeCondition(Condition[] conditions) {

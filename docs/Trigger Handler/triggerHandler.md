@@ -1,16 +1,15 @@
 # Table of Contents
 
 1. [Description](#description)
-1. [Overview](#overview)
-    - [Trigger Handler](#trigger-handler)
+1. [Documentation](#documentation)
+    - [API](#api)
     - [Trigger Dispatcher](#trigger-dispatcher)
+    - [Trigger Handler](#trigger-handler)
     - [Trigger Context](#trigger-context)
     - [Trigger Settings](#trigger-settings)
     - [Interfaces](#interfaces)
     - [Custom Metadata](#custom-metadata)
     - [Custom Settings](#custom-settings)
-1. [Basic Usage](#basic-usage)
-1. [Multi-Tenant Environments](#multi-tenant-environments)
 
 <br/>
 
@@ -57,41 +56,51 @@ Trigger Handler frameworks encapsulates this implementation and provide easy to 
 <br/>
 <br/>
 
-# Overview
+# Documentation
 
-### Trigger Handler
-
-This virtual class is the heart of framework. It contains virtual methods which should be overwritten, each one corresponding to trigger event:
-
+### API
+###### TriggerDispatcher
 ```apex
-public virtual void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc) {}
-public virtual void onAfterInsert(List<SObject> triggerNew, TriggerContext tc) {}
+public static void runMetadataDefinedTriggers();
+public static void run(TriggerHandler triggerHandler);
 
-public virtual void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {}
-public virtual void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {}
-
-public virtual void onBeforeDelete(List<SObject> triggerOld, TriggerContext tc) {}
-public virtual void onAfterDelete(List<SObject> triggerOld, TriggerContext tc) {}
-
-public virtual void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc) {}
+@TestVisible private static void runMetadataDefinedTriggers(TriggerContext triggerContext)
+@TestVisible private static void run(TriggerHandler triggerHandler, TriggerContext triggerContext)
 ```
 
-Concrete trigger handler (ex. `AccountTriggerHandler`) should extend this class and override methods it needs to handle and then delegate execution of logic to
-dedicated service classes.
+###### TriggerHandler
+```apex
+public virtual void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc);
+public virtual void onAfterInsert(List<SObject> triggerNew, TriggerContext tc);
+public virtual void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc);
+public virtual void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc);
+public virtual void onBeforeDelete(List<SObject> triggerOld, TriggerContext tc);
+public virtual void onAfterDelete(List<SObject> triggerOld, TriggerContext tc);
+public virtual void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc);
 
+public void execute(List<SObject> records, TriggerContext tc, List<Logic> triggerLogics);
 
-TODO: Move this digression
-I believe TriggerHandler shouldn't have any other logic exception for delegation, since it violates Single Responsibility Principle. Record filtering for
-processing is semantically closer to the business class, than it is to the Trigger Handler (it's part of business requirement).
+public interface Logic {
+   void execute(List<SObject> records, TriggerContext ctx);
+}
 
-To prove it, we can interpolate solution to infinity and check if it's still maintainable. On one side, we will have a infinite number of one purpose classes
-which each filter records they need, plus unit tests. On other side, we have trigger handler with infinite number of filtering methods, plus service classes,
-plus tests for TriggerHandler filtering. <br/>
-By comparison, we can see that it is easier to add, remove or edit code when TH only does delegation and it's easier to maintain it in VCS.
+public interface Parameterizable {
+   void setParameters(String parameters);
+}
+```
 
-<br/>
-<br/>
-<br/>
+###### Trigger Settings
+```apex
+public static void disableTriggers();
+public static void enableTriggers();
+public static void disableTrigger(SObjectType sObjectType);
+public static void enableTrigger(SObjectType sObjectType);
+public static Boolean isSObjectTriggerEnabled(SObjectType sObjectType);
+public static TriggerLogicSelector getLogicSelector();
+public static void disableAllLogic();
+public static void enableAllLogic();
+```
+
 
 ### Trigger Dispatcher
 
@@ -118,6 +127,35 @@ trigger AccountTrigger on Account (before insert, after insert, before update, a
 
 <br/>
 <br/>
+
+### Trigger Handler
+
+This virtual class is the heart of framework. It contains virtual methods which should be overwritten, each one corresponding to the trigger event.
+Each sObject should have a concrete trigger handler class, which extends TriggerHandler class, and override method it wants to handle in the trigger execution.
+Example:
+```apex
+public inherited sharing class AccountTriggerHandler extends TriggerHandler {
+
+    //Using TriggerHandler.Logic implementing classes
+    public override void onAfterInsert(List<SObject> triggerNew, TriggerContext tc) {
+        this.execute(triggerNew, tc, new List<Logic>{
+            new AccountContactLinker()
+        });
+    }
+
+    //without interface
+    public override void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {
+       new AccountContactLinker().linkContactsToAccount(triggerNew, tc);
+    }
+
+}
+```
+
+<br/>
+<br/>
+<br/>
+
+
 
 ### Trigger Context
 
@@ -187,6 +225,7 @@ TriggerSettings.mockSelector(new CustomTriggerLogicSelector());
 Framework provides 2 interfaces that should be implemented in business logic classes. It's not a requirement, but it streamlines the code and is a good
 practice.
 
+
 ###### TriggerHandler.Logic
 
 ```apex
@@ -195,36 +234,22 @@ public interface Logic {
 }
 ```
 
-TriggerHandler.Logic represents single business requirement implementing class. TriggerContext marker interface indicates that this method runs in Trigger and
+TriggerHandler.Logic is a class that's implementing single business requirement. TriggerContext marker interface indicates that this method runs in Trigger and
 may have to filter records for processing. TriggerContext contains methods that make filtering simpler and more verbose:
 
 ```apex
-List<Account> filtered = new List<Account>();
+public inherited sharing class AccountContactLinker implements TriggerHandler.Logic {
 
-for (Account acc : (Account[]) records) {
-    if (ctx.isNew() || ctx.isChanged(acc, Account.Email__c)) {
-        filtered.add(acc);
-    }
+   public void execute(List<SObject> records, TriggerContext ctx) {
+      for (Account acc : (Account[]) records){
+         if(ctx.isNew() || ctx.isChanged(acc, Account.Phone)){
+            //... do logic here
+            // ex. link Contacts with same phone number
+         }
+      }
+   }
 }
 ```
-
-<br/>
-<br/>
-
-###### TriggerHandler.AsyncLogic
-
-```apex
-public interface AsyncLogic {
-    List<SObject> filter(List<SObject> records, TriggerContext ctx);
-    void execute(List<SObject> records, QueueableContext ctx);
-}
-```
-
-This interface marks classes which should execute asynchronously (using Queueable) on trigger event. Implementing classes does not have to implement Queueable
-interface, but may do that if needed.
-
-It's similar to TriggerHandler.Logic, but it has additional method `filter(List<SObject> records, TriggerContext ctx);` which checks if Queueable should be
-queued. If method does not return any records, queueable is not scheduled.
 
 <br/>
 <br/>
@@ -248,7 +273,7 @@ Generic class that copies one field to another in before trigger.
 Custom Metadata:
 ![image](https://user-images.githubusercontent.com/4470967/118978167-4bddb580-b977-11eb-921c-494de754ccf3.png)
 
-*Code:*
+*Example parametrizable code:*
 
 ```apex
 public with sharing class FieldCopier implements TriggerHandler.Logic, TriggerHandler.Parameterizable {
@@ -281,7 +306,6 @@ any common code.
 | AfterUndelete__c | Checkbox       |              |
 | AfterUpdate__c   | Checkbox       |              |
 | ApexClass__c     | Text(255)      | Name of apex class - must be public. It can be inner class - ex. AccountFieldSetters.NameSetter             |
-| Async__c         | Checkbox       | Should this logic run in Queueable? |
 | BeforeDelete__c  | Checkbox       |              |
 | BeforeInsert__c  | Checkbox       |              |
 | BeforeUpdate__c  | Checkbox       |              |
@@ -293,29 +317,12 @@ any common code.
 | SObject__c       | Text(255)      | API Name of SObject             |
 
 ### Custom Settings
+Logic Switch custom settings can be used to disable automation from executing for selected Profiles or Users.
 
-# Basic Usage
 
-If you are not working in Multi-Tenant environment, the easiest way to start is by extending TriggerHandler class and running it using TriggerDispatcher. Let's
-consider this example on Account Trigger.
-
-First
-
-# Multi-Tenant Environments
-
-##### Defining logic in custom metadata
-
-##### Parameterizing logic
-
-# Components
-
-| Type           | Name                  | Description  |
-| ------         | ------                | ------------ |
-| Apex Class     | TriggerContext        | Encapsulation of Trigger variables for current run, Marker interface         |
-| Apex Class     | TriggerDispatcher     | Entry point to the trigger execution. Dispatches trigger execution to concrete TriggerHandler instance or custom metadata defined triggers          |
-| Apex Class     | TriggerDispatcherTest | Unit Tests and examples for all trigger handler scenarios         |
-| Apex Class     | TriggerHandler        | Virtual class         |
-| Apex Class     | TriggerLogicSelector  | Selector class for querying and instantiating concrete classes of TriggerHandler.Logic defined in custom metadata         |
-| Apex Class     | TriggerSettings       | This class can be used to disable/enable trigger for specific SObject type or mock metadata defined logic         |
-| Custom Setting | LogicSwitch__c        | Hierarchy custom setting which controls whether triggers / validation rules / flows should be ran for current user         |
-| Custom Object  | TriggerLogic__mdt     | Custom metadata used to define trigger logic to be run without concrete TriggerHandler. In Multi-Tenant environments, this approach decouples Trigger Handler dependency between teams/packages          |
+| Field            | Type           | Description  |
+| ------           | ------         | ------------ |
+| DisableProcessBuilders__c | Checkbox | Disables Process Builders (PBs have to check for this setting as first step) |
+| DisableTriggers__c        | Checkbox | Disables all triggers from executing |
+| DisableValidationRules__c | Checkbox | Disables Validation Rules (VRs have to check for this setting) |
+| DisableWorkflowRules__c   | Checkbox | Disables Workflow Rules (WRs have to check for this setting as first step) |

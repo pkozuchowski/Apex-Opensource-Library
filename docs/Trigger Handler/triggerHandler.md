@@ -13,6 +13,9 @@
 
 <br/>
 
+[Link to Code](../../force-app/commons/triggerHandler) <br/>
+[Link to Examples](examples)
+
 # Description
 
 Trigger Handler is apex design pattern which solves a few problems which arouse around apex triggers:

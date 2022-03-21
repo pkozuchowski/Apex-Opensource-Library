@@ -36,13 +36,12 @@ private class LoggerTest {
         logger.info('INFO');
         logger.warn('WARN');
         logger.error('ERROR');
-
-        System.assertEquals(3, Limits.getDmlRows(), 'DML should be issued for each call when in immediate mode');
-        System.assertEquals(3, Limits.getDmlStatements(), 'DML should be issued for each call when in immediate mode');
         Test.stopTest();
 
 
-        Log__c[] logs = [SELECT ApexClass__c,ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
+        Log__c[] logs = [SELECT ApexClass__c, ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
+        System.assertEquals(3, logs.size(), '3 Logs should be created');
+
         for (Log__c log : logs) {
             System.assertEquals('LoggerTest.testLogMessageInImmediateMode', log.ApexClass__c);
             System.assertEquals(log.Message__c, log.LoggingLevel__c);
@@ -66,12 +65,12 @@ private class LoggerTest {
         logger.error('ERROR');
         logger.flush();
 
-        System.assertEquals(3, Limits.getDmlRows());
-        System.assertEquals(1, Limits.getDmlStatements());
         Test.stopTest();
 
 
-        Log__c[] logs = [SELECT ApexClass__c,ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
+        Log__c[] logs = [SELECT ApexClass__c, ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
+        System.assertEquals(3, logs.size(), '3 Logs should be created');
+
         for (Log__c log : logs) {
             System.assertEquals('LoggerTest.testLogMessageInNonImmediateMode', log.ApexClass__c);
             System.assertEquals(log.Message__c, log.LoggingLevel__c);
@@ -85,26 +84,26 @@ private class LoggerTest {
      */
     @IsTest
     static void testLogRecord() {
-        Logger logger = new Logger(true);
+        Logger logger = new Logger();
 
 
         Test.startTest();
         logger.info(new Log__c(
-                Message__c = 'INFO',
-                ReferenceId__c = '12345'
+            Message__c = 'INFO',
+            ReferenceId__c = '12345'
         ));
         logger.warn(new Log__c(
-                Message__c = 'WARN',
-                ReferenceId__c = '12345'
+            Message__c = 'WARN',
+            ReferenceId__c = '12345'
         ));
         logger.error(new Log__c(
-                Message__c = 'ERROR',
-                ReferenceId__c = '12345'
+            Message__c = 'ERROR',
+            ReferenceId__c = '12345'
         ));
         Test.stopTest();
 
 
-        Log__c[] logs = [SELECT ApexClass__c,ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
+        Log__c[] logs = [SELECT ApexClass__c, ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
         for (Log__c log : logs) {
             System.assertEquals('LoggerTest.testLogRecord', log.ApexClass__c);
             System.assertEquals(log.Message__c, log.LoggingLevel__c);
@@ -134,7 +133,7 @@ private class LoggerTest {
         Test.stopTest();
 
 
-        Log__c log = [SELECT ApexClass__c,ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c LIMIT 1];
+        Log__c log = [SELECT ApexClass__c, ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c LIMIT 1];
         System.assert(log.Message__c.contains('Invalid conversion from runtime type Datetime to Date'), 'Message should contain exception message');
         System.assert(log.Message__c.contains('LoggerTest.testLogException'), 'Message should contain stack trace');
         System.assertEquals('LoggerTest.testLogException', log.ApexClass__c);

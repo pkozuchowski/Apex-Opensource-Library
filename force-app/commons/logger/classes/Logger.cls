@@ -140,8 +140,8 @@ public with sharing class Logger {
     }
     public void log(LoggingLevel loggingLevel, String referenceId, String message) {
         log(loggingLevel, new Log__c(
-                ReferenceId__c = referenceId,
-                Message__c = message
+            ReferenceId__c = referenceId,
+            Message__c = message
         ));
     }
 
@@ -150,8 +150,8 @@ public with sharing class Logger {
      */
     public void log(LoggingLevel loggingLevel, String referenceId, Exception ex) {
         log(loggingLevel, new Log__c(
-                Message__c = stringifier.toString(ex),
-                ReferenceId__c = referenceId
+            Message__c = stringifier.toString(ex),
+            ReferenceId__c = referenceId
         ));
     }
 
@@ -160,11 +160,11 @@ public with sharing class Logger {
      */
     public void log(LoggingLevel loggingLevel, String referenceId, HttpRequest request, HttpResponse response) {
         log(loggingLevel, new Log__c(
-                ReferenceId__c = referenceId,
-                Message__c = String.join(new List<String>{
-                        stringifier.toString(request),
-                        stringifier.toString(response)
-                }, '\n\n')
+            ReferenceId__c = referenceId,
+            Message__c = String.join(new List<String>{
+                stringifier.toString(request),
+                stringifier.toString(response)
+            }, '\n\n')
         ));
     }
 
@@ -173,11 +173,11 @@ public with sharing class Logger {
      */
     public void log(LoggingLevel loggingLevel, String referenceId, RestRequest request, RestResponse response) {
         log(loggingLevel, new Log__c(
-                ReferenceId__c = referenceId,
-                Message__c = String.join(new List<String>{
-                        '<Request>\n' + stringifier.toString(request),
-                        '<Response>\n' + stringifier.toString(response)
-                }, '\n\n')
+            ReferenceId__c = referenceId,
+            Message__c = String.join(new List<String>{
+                '<Request>\n' + stringifier.toString(request),
+                '<Response>\n' + stringifier.toString(response)
+            }, '\n\n')
         ));
     }
 
@@ -212,11 +212,11 @@ public with sharing class Logger {
 
         for (Log__c log : logs) {
             loggingEvents.add(new LoggingEvent__e(
-                    ApexClass__c = log.ApexClass__c,
-                    LoggingLevel__c = log.LoggingLevel__c,
-                    Message__c = log.Message__c,
-                    ReferenceId__c = log.ReferenceId__c,
-                    UserId__c = UserInfo.getUserId()
+                ApexClass__c = log.ApexClass__c,
+                LoggingLevel__c = log.LoggingLevel__c,
+                Message__c = log.Message__c,
+                ReferenceId__c = log.ReferenceId__c,
+                UserId__c = UserInfo.getUserId()
             ));
         }
 

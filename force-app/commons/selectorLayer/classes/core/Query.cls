@@ -48,7 +48,6 @@ public inherited sharing virtual class Query extends QueryObject {
     public final static ProductQuery Products { get {return new ProductQuery();} }
     public final static ProfileQuery Profiles { get {return new ProfileQuery();} }
     public final static QueueQuery Queues { get {return new QueueQuery();} }
-    public final static RecordTypeQuery RecordTypes { get {return new RecordTypeQuery();} }
     public final static StaticResourceQuery StaticResources { get {return new StaticResourceQuery();} }
     public final static TaskQuery Tasks { get {return new TaskQuery();} }
     public final static UserRoleQuery UserRoles { get {return new UserRoleQuery();} }

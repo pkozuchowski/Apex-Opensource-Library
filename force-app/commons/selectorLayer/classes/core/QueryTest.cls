@@ -46,7 +46,6 @@ private class QueryTest {
         System.assertNotEquals(null, Query.Products);
         System.assertNotEquals(null, Query.Profiles);
         System.assertNotEquals(null, Query.Queues);
-        System.assertNotEquals(null, Query.RecordTypes);
         System.assertNotEquals(null, Query.SObjectHistory(MacroShare.SObjectType));
         System.assertNotEquals(null, Query.SObjectShares(MacroShare.SObjectType));
         System.assertNotEquals(null, Query.StaticResources);

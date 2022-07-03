@@ -30,11 +30,9 @@
 public with sharing class RecordTypes {
 
     //Add new record types bellow:
-    public static Id ACCOUNT_CUSTOMER { get {return resolve(Account.SObjectType, 'Customer');} }
-    public static Id ACCOUNT_ENTERPRISE { get {return resolve(Account.SObjectType, 'Enterprise');} }
-    public static Id ACCOUNT_DEALER { get {return resolve(Account.SObjectType, 'Dealers');} }
-    public static Id LOG_APPLICATION { get {return resolve(Log__c.SObjectType, 'ApplicationLog');} }
-    public static Id LOG_CALLOUT { get {return resolve(Log__c.SObjectType, 'CalloutLog');} }
+    public static Id ACCOUNT_DEALER     { get { return resolve(Account.SObjectType, 'Dealers');} }
+    public static Id LOG_APPLICATION    { get { return resolve(Log__c.SObjectType, 'ApplicationLog');} }
+    public static Id LOG_CALLOUT        { get { return resolve(Log__c.SObjectType, 'CalloutLog');} }
 
 
     private static Map<SObjectType, Map<String, RecordTypeInfo>> recordTypeCache = new Map<SObjectType, Map<String, RecordTypeInfo>>();

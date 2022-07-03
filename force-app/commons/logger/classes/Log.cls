@@ -115,7 +115,7 @@ public with sharing class Log {
      * @return Log__c record constructed from the data.
      */
     public Log__c getLogRecord() {
-        this.log.Parameters__c = Stringifier.toString(parameters);
+        this.log.Parameters__c = JSON.serializePretty(parameters);
         return this.log;
     }
 }

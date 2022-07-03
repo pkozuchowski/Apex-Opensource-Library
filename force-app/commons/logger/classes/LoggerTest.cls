@@ -54,7 +54,12 @@ private class LoggerTest {
         try {
             Date d = (Date) Datetime.now();
         } catch (Exception ex) {
-            Logger.error(new Log(ex));
+            Logger.error(new Log(ex)
+                .withParameter('test', 'test')
+                .withParameters(new Map<String, Object>{
+                    'other' => 'param'
+                })
+                .withReferenceId('test'));
         }
         Test.stopTest();
 

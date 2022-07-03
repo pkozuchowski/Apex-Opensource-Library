@@ -23,23 +23,28 @@
 */
 
 /**
- * Utility class for easy access to Schema classes and descriptions
+ * Utility class for easy and cached access to Schema classes and descriptions
  */
 public without sharing class SchemaDescriptions {
-    private static Map<String, SObjectType> globalDescribe = Schema.getGlobalDescribe();
     private static Map<String, Map<String, SObjectField>> fieldMap = new Map<String, Map<String, SObjectField>>();
+    private static Map<String, SObjectType> sObjectTypeMap = new Map<String, SObjectType>();
     private static Map<String, DescribeSObjectResult> sObjectDescribeMap = new Map<String, DescribeSObjectResult>();
     private static Map<String, DescribeFieldResult> fieldDescribeMap = new Map<String, DescribeFieldResult>();
 
 
     /**
-     * @param sobjectType API Name of SOBject - 'Account'
+     * @param sobjectTypeName API Name of SOBject - 'Account'
      * @return SObjectType for given API Name
      */
-    public static SObjectType getSObjectType(String sobjectType) {
-        assert(globalDescribe.containsKey(sobjectType), 'Invalid SObject: ' + sobjectType);
-
-        return globalDescribe.get(sobjectType);
+    public static SObjectType getSObjectType(String sobjectTypeName) {
+        if (sObjectTypeMap.containsKey(sobjectTypeName)) {
+            return sObjectTypeMap.get(sobjectTypeName);
+        } else {
+            SObject s = (SObject) Type.forName(sobjectTypeName).newInstance();
+            SObjectType sObjectType = s.getSObjectType();
+            sObjectTypeMap.put(sobjectTypeName, sObjectType);
+            return sObjectType;
+        }
     }
 
     /**

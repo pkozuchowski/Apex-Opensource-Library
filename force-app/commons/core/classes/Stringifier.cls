@@ -38,14 +38,21 @@ public with sharing class Stringifier {
     *     CauseStack: line X, column Y
     * </pre>
     */
-    public String toString(Exception ex) {
+    public static String toString(Exception ex) {
         if (ex == null) {
             return '';
 
         } else {
-            return ex.getTypeName() + ': ' + ex.getMessage()
-                    + '\n' + ex.getStackTraceString().substringBefore('Caused by')
-                    + (ex.getCause() == null ? '' : '\nCaused by\n' + toString(ex.getCause()));
+            List<String> lines = new List<String>{
+                ex.getTypeName() + ': ' + ex.getMessage(),
+                ex.getStackTraceString().substringBefore('Caused by')
+            };
+            if (ex.getCause() != null) {
+                lines.add('Caused by');
+                lines.add(toString(ex.getCause()));
+            }
+
+            return join(lines);
         }
     }
 
@@ -55,38 +62,38 @@ public with sharing class Stringifier {
     * <pre>
     *     POST /services/data/v20.0/sobjects/Account/
     *     Host: yourInstance.salesforce.com
-    *     Authorization:Bearer XXX
     *     Content-Type:application/json
     *
     *     {"Name":"Test Account}
     * </pre>
     */
-    public String toString(HttpRequest request) {
-        return toString(request, new List<String>{'Authorization', 'Content-Type'});
+    public static String toString(HttpRequest request) {
+        return toString(request, new List<String>{'Content-Type', 'Accept'});
     }
 
-    public String toString(HttpRequest request, List<String> headerKeys) {
+    public static String toString(HttpRequest request, List<String> headerKeys) {
         if (request == null) {
             return '';
 
         } else {
             Url url = new Url(request.getEndpoint());
-            String result = request.getMethod() + ' ' + url.getFile() + '\n'
-                    + 'Host: ' + url.getHost() + '\n';
+            List<String> lines = new List<String>{
+                request.getMethod() + ' ' + url.getFile(),
+                'Host: ' + url.getHost()
+            };
 
-            List<String> headers = new List<String>();
             for (String headerKey : headerKeys) {
                 String headerValue = request.getHeader(headerKey);
 
                 if (String.isNotEmpty(headerValue)) {
-                    headers.add(headerKey + ': ' + request.getHeader(headerKey));
+                    lines.add(headerKey + ': ' + request.getHeader(headerKey));
                 }
             }
 
-            result += String.join(headers, '\n');
-            result += '\n\n' + request.getBody();
+            lines.add('');
+            lines.add(request.getBody());
 
-            return result;
+            return join(lines);
         }
     }
 
@@ -94,19 +101,34 @@ public with sharing class Stringifier {
     * @return String representation of HttpResponse derived from Http status, code and body
     * <pre>
     *     200 OK
+    *     Content-Type: application/json
     *
     *     {
     *       "orderNumber":"Test"
     *     }
     * </pre>
     */
-    public String toString(HttpResponse response) {
+    public static String toString(HttpResponse response) {
         if (response == null) {
             return '';
 
         } else {
-            return response.getStatusCode() + ' ' + response.getStatus()
-                    + '\n\n' + response.getBody();
+            List<String> lines = new List<String>{
+                response.getStatusCode() + ' ' + response.getStatus()
+            };
+
+            for (String headerKey : response.getHeaderKeys()) {
+                String headerValue = response.getHeader(headerKey);
+
+                if (String.isNotEmpty(headerValue)) {
+                    lines.add(headerKey + ': ' + response.getHeader(headerKey));
+                }
+            }
+
+            lines.add('');
+            lines.add(response.getBody());
+
+            return join(lines);
         }
     }
 
@@ -124,18 +146,28 @@ public with sharing class Stringifier {
     *     {"Name":"Test Account}
     * </pre>
     */
-    public String toString(RestRequest request) {
+    public static String toString(RestRequest request) {
         if (request == null) {
             return '';
 
         } else {
-            return request.httpMethod + ' ' + request.resourcePath + '\n'
-                    + 'Host: ' + Url.getOrgDomainUrl().getHost() + '\n'
-                    + toString(request.headers) + '\n'
-                    + '\nURL Parameters:\n'
-                    + toString(request.params)
-                    + '\n\n'
-                    + toString(request.requestBody);
+            List<String> lines = new List<String>{
+                request.httpMethod + ' ' + request.resourcePath
+            };
+
+            if (!request.params.isEmpty()) {
+                lines[0] += '?';
+            }
+
+            for (String param : request.params.keySet()) {
+                lines.add('&' + param + '=' + request.params.get(param));
+            }
+
+            lines.add('Host: ' + Url.getOrgDomainUrl().getHost());
+            lines.add(toString(request.headers));
+            lines.add('');
+            lines.add(toString(request.requestBody));
+            return join(lines);
         }
     }
 
@@ -143,26 +175,25 @@ public with sharing class Stringifier {
     * @return String representation of RestResponse derived from response status code, headers and body
     * <pre>
     *     POST http://salesforce.instance.com/apexrest/orders
-    *     Params:
     *     market : US
     *     brand: ACME
     *
-    *     Body:
     *     {
     *       "orderNumber":"Test"
     *     }
     * </pre>
     */
-    public String toString(RestResponse response) {
+    public static String toString(RestResponse response) {
         if (response == null) {
             return '';
 
         } else {
-            String headers = toString(response.headers);
-
-            return response.statusCode + '\n'
-                    + (String.isEmpty(headers) ? '' : headers + '\n')
-                    + '\n' + toString(response.responseBody);
+            return join(new List<String>{
+                '' + response.statusCode,
+                toString(response.headers),
+                '',
+                toString(response.responseBody)
+            });
         }
     }
 
@@ -173,7 +204,7 @@ public with sharing class Stringifier {
     *     Key2: Value2
     * </pre>
     */
-    public String toString(Map<String, String> mapInstance) {
+    public static String toString(Map<String, Object> mapInstance) {
         if (mapInstance == null) {
             return '';
 
@@ -182,7 +213,7 @@ public with sharing class Stringifier {
             for (String key : mapInstance.keySet()) {
                 values.add(key + ': ' + mapInstance.get(key));
             }
-            return String.join(values, '\n');
+            return join(values);
         }
     }
 
@@ -190,7 +221,7 @@ public with sharing class Stringifier {
     * @return String representation of a Blob. If possible, returns blob.toString(),
     * for non UTF-8 generic string Blob[12] is returned where 12 is size of blob.
     */
-    public String toString(Blob b) {
+    public static String toString(Blob b) {
         if (b == null) {
             return '';
         } else {
@@ -201,4 +232,10 @@ public with sharing class Stringifier {
             }
         }
     }
+
+    private static String join(List<String> lines) {
+        return String.join(lines, '\n').trim();
+    }
+
+    private Stringifier() {}
 }

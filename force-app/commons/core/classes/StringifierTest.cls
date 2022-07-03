@@ -23,7 +23,6 @@
 */
 @IsTest(IsParallel=true)
 private class StringifierTest {
-    private final static Stringifier stringifier = new Stringifier();
 
 
     @IsTest
@@ -36,18 +35,15 @@ private class StringifierTest {
                 throw new CalloutException(ex);
             }
         } catch (Exception ex) {
-            System.assertEquals(
-                    ('System.CalloutException: Script-thrown exception\n'
-                            + 'Class.StringifierTest.testStringifyException: line 36, column 1\n'
-                            + '\n'
-                            + 'Caused by\n'
-                            + 'System.CalloutException: test\n'
-                            + 'Class.StringifierTest.testStringifyException: line 34, column 1'),
-                    stringifier.toString(ex)
-            );
+            String[] str = Stringifier.toString(ex).split('\n');
+            System.assertEquals(str[0], 'System.CalloutException: Script-thrown exception');
+            System.assert(str[1].startsWith('Class.StringifierTest.testStringifyException: line '));
+            System.assertEquals(str[3], 'Caused by');
+            System.assertEquals(str[4], 'System.CalloutException: test');
+            System.assert(str[5].startsWith('Class.StringifierTest.testStringifyException:'));
         }
         Exception ex2 = null;
-        System.assertEquals(stringifier.toString(ex2), '');
+        System.assertEquals(Stringifier.toString(ex2), '');
     }
 
     @IsTest
@@ -60,16 +56,15 @@ private class StringifierTest {
         request.setBody('{"Name":"Test Account}');
 
         System.assertEquals(
-                'POST /services/data/v20.0/sobjects/Account/\n'
-                        + 'Host: yourInstance.salesforce.com\n'
-                        + 'Authorization: Bearer XXX\n'
-                        + 'Content-Type: application/json\n'
-                        + '\n'
-                        + '{"Name":"Test Account}',
-                stringifier.toString(request)
+            'POST /services/data/v20.0/sobjects/Account/\n'
+                + 'Host: yourInstance.salesforce.com\n'
+                + 'Content-Type: application/json\n'
+                + '\n'
+                + '{"Name":"Test Account}',
+            Stringifier.toString(request)
         );
         request = null;
-        System.assertEquals(stringifier.toString(request), '');
+        System.assertEquals(Stringifier.toString(request), '');
     }
 
     @IsTest
@@ -80,12 +75,12 @@ private class StringifierTest {
         response.setBody('success');
 
         System.assertEquals(
-                '200 OK\n\n' +
-                        'success',
-                stringifier.toString(response)
+            '200 OK\n\n' +
+                'success',
+            Stringifier.toString(response)
         );
         response = null;
-        System.assertEquals(stringifier.toString(response), '');
+        System.assertEquals(Stringifier.toString(response), '');
     }
 
     @IsTest
@@ -95,21 +90,19 @@ private class StringifierTest {
         request.resourcePath = '/services/data/v20.0/sobjects/Account/';
         request.addParameter('id', '001000000000000');
         request.addHeader('Content-Type', 'application/json');
-        request.requestBody = Blob.valueOf('{request}');
+        request.requestBody = Blob.valueOf('request body');
 
-        System.assertEquals('POST /services/data/v20.0/sobjects/Account/\n' +
-                'Host: ' + Url.getOrgDomainUrl().getHost() + '\n' +
-                'Content-Type: application/json\n' +
-                '\n' +
-                'URL Parameters:\n' +
-                'id: 001000000000000\n' +
-                '\n' +
-                '{request}',
+        System.assertEquals('POST /services/data/v20.0/sobjects/Account/?\n' +
+            '&id=001000000000000\n' +
+            'Host: ' + Url.getOrgDomainUrl().getHost() + '\n' +
+            'Content-Type: application/json\n' +
+            '\n' +
+            'request body',
 
-                stringifier.toString(request)
+            Stringifier.toString(request)
         );
         request = null;
-        System.assertEquals(stringifier.toString(request), '');
+        System.assertEquals(Stringifier.toString(request), '');
     }
 
     @IsTest
@@ -120,21 +113,21 @@ private class StringifierTest {
         response.headers.put('Content-Type', 'application/json');
 
         System.assertEquals('200\n'
-                + 'Content-Type: application/json\n'
-                + '\n'
-                + 'success',
-                stringifier.toString(response)
+            + 'Content-Type: application/json\n'
+            + '\n'
+            + 'success',
+            Stringifier.toString(response)
         );
         response = null;
-        System.assertEquals(stringifier.toString(response), '');
+        System.assertEquals(Stringifier.toString(response), '');
     }
 
     @IsTest
     static void testStringifyBlob() {
         Blob b = Blob.valueOf('test');
 
-        System.assertEquals('test', stringifier.toString(b));
+        System.assertEquals('test', Stringifier.toString(b));
         b = null;
-        System.assertEquals(stringifier.toString(b), '');
+        System.assertEquals(Stringifier.toString(b), '');
     }
 }

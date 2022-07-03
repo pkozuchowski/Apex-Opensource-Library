@@ -76,6 +76,26 @@
             <field>CreatedBy.Username</field>
             <table>Log__c</table>
         </columns>
+        <columns>
+            <checkedByDefault>false</checkedByDefault>
+            <field>Request__c</field>
+            <table>Log__c</table>
+        </columns>
+        <columns>
+            <checkedByDefault>false</checkedByDefault>
+            <field>Response__c</field>
+            <table>Log__c</table>
+        </columns>
+        <columns>
+            <checkedByDefault>false</checkedByDefault>
+            <field>HttpStatus__c</field>
+            <table>Log__c</table>
+        </columns>
+        <columns>
+            <checkedByDefault>false</checkedByDefault>
+            <field>Outbound__c</field>
+            <table>Log__c</table>
+        </columns>
         <masterLabel>Logs</masterLabel>
     </sections>
 </ReportType>

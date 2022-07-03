@@ -24,177 +24,42 @@
 
 /**
  * Logs persistent messages in custom object records and emits platform event.
- *
- * @dependency:
-  * @see Runtime
- *  @see Stringifier
+ * Name of the apex class is resolved automatically using Runtime class.
  */
 public with sharing class Logger {
-    private Stringifier stringifier = new Stringifier();
-    private Boolean immediate;
-    private List<Log__c> logs = new List<Log__c>();
-
-    /**
-     * Default constructor works in immediate mode.
-     * This is preferred mode for controllers and async apex.
-     */
-    public Logger() {
-        this(true);
-    }
-
-    public Logger(Boolean immediate) {
-        this.immediate = immediate;
-    }
-
 
     /**
      * Logs message with INFO logging level
      */
-    public void info(String message) {
-        info(null, message);
-    }
-    public void info(String referenceId, String message) {
-        log(LoggingLevel.INFO, referenceId, message);
-    }
-    public void info(Log__c log) {
+    public static void info(Log log) {
         log(LoggingLevel.INFO, log);
     }
-    public void info(String referenceId, Exception ex) {
-        log(LoggingLevel.INFO, referenceId, ex);
-    }
-    public void info(String referenceId, HttpRequest request, HttpResponse response) {
-        log(LoggingLevel.INFO, referenceId, request, response);
-    }
-    public void info(String referenceId, RestRequest request, RestResponse response) {
-        log(LoggingLevel.INFO, referenceId, request, response);
-    }
-
 
     /**
      * Logs message with WARNING logging level
      */
-    public void warn(String message) {
-        warn(null, message);
-    }
-    public void warn(String referenceId, String message) {
-        log(LoggingLevel.WARN, referenceId, message);
-    }
-    public void warn(Log__c log) {
+    public static void warn(Log log) {
         log(LoggingLevel.WARN, log);
     }
-    public void warn(String referenceId, Exception ex) {
-        log(LoggingLevel.WARN, referenceId, ex);
-    }
-    public void warn(String referenceId, HttpRequest request, HttpResponse response) {
-        log(LoggingLevel.WARN, referenceId, request, response);
-    }
-    public void warn(String referenceId, RestRequest request, RestResponse response) {
-        log(LoggingLevel.WARN, referenceId, request, response);
-    }
-
 
     /**
      * Logs message with WARNING logging level
      */
-    public void error(String message) {
-        error(null, message);
-    }
-    public void error(String referenceId, String message) {
-        log(LoggingLevel.ERROR, referenceId, message);
-    }
-    public void error(Log__c log) {
+    public static void error(Log log) {
         log(LoggingLevel.ERROR, log);
     }
-    public void error(Exception ex) {
-        error(null, ex);
-    }
-    public void error(String referenceId, Exception ex) {
-        log(LoggingLevel.ERROR, referenceId, ex);
-    }
-    public void error(String referenceId, HttpRequest request, HttpResponse response) {
-        log(LoggingLevel.ERROR, referenceId, request, response);
-    }
-    public void error(String referenceId, RestRequest request, RestResponse response) {
-        log(LoggingLevel.ERROR, referenceId, request, response);
-    }
-
-
-    /**
-     * Logs ERROR log when condition is not met.
-     *
-     * @param condition When false, error is logged
-     * @param log Message to record
-     */
-    public void assert(Boolean condition, Log__c log) {
-        if (!condition) {
-            log(LoggingLevel.ERROR, log);
-        }
-    }
-
 
     /**
      * Logs message with given logging level
      */
-    public void log(LoggingLevel loggingLevel, String message) {
-        log(loggingLevel, null, message);
-    }
-    public void log(LoggingLevel loggingLevel, String referenceId, String message) {
-        log(loggingLevel, new Log__c(
-            ReferenceId__c = referenceId,
-            Message__c = message
-        ));
-    }
-
-    /**
-     * Logs exception with given logging level
-     */
-    public void log(LoggingLevel loggingLevel, String referenceId, Exception ex) {
-        log(loggingLevel, new Log__c(
-            Message__c = stringifier.toString(ex),
-            ReferenceId__c = referenceId
-        ));
-    }
-
-    /**
-     * Formats and logs Http request and response (null-safe).
-     */
-    public void log(LoggingLevel loggingLevel, String referenceId, HttpRequest request, HttpResponse response) {
-        log(loggingLevel, new Log__c(
-            ReferenceId__c = referenceId,
-            Message__c = String.join(new List<String>{
-                stringifier.toString(request),
-                stringifier.toString(response)
-            }, '\n\n')
-        ));
-    }
-
-    /**
-     * Formats and logs Http request and response (null-safe).
-     */
-    public void log(LoggingLevel loggingLevel, String referenceId, RestRequest request, RestResponse response) {
-        log(loggingLevel, new Log__c(
-            ReferenceId__c = referenceId,
-            Message__c = String.join(new List<String>{
-                '<Request>\n' + stringifier.toString(request),
-                '<Response>\n' + stringifier.toString(response)
-            }, '\n\n')
-        ));
-    }
-
-
-    /**
-     * Logs log object with given logging level
-     */
-    public void log(LoggingLevel loggingLevel, Log__c log) {
+    public static void log(LoggingLevel loggingLevel, Log log) {
         if (LoggerSettings.shouldCreateLog(loggingLevel)) {
-            log.ApexClass__c = Runtime.getCaller().apexClassMethod;
-            log.LoggingLevel__c = loggingLevel.name();
-            logs.add(log);
-            System.debug(loggingLevel, JSON.serializePretty(log));
+            Log__c logRecord = log.getLogRecord();
+            logRecord.ApexClass__c = Runtime.getCaller().apexClassMethod;
+            logRecord.LoggingLevel__c = loggingLevel.name();
+            System.debug(loggingLevel, JSON.serializePretty(logRecord));
 
-            if (immediate == true) {
-                flush();
-            }
+            emitLogEvent(logRecord);
         }
     }
 
@@ -207,20 +72,19 @@ public with sharing class Logger {
      * This is mainly for AuraEnabled methods which may have to throw AuraHandledException for proper aura handling,
      * but would not be able to save logs under normal circumstances.
      */
-    public void flush() {
-        List<LoggingEvent__e> loggingEvents = new List<LoggingEvent__e>();
-
-        for (Log__c log : logs) {
-            loggingEvents.add(new LoggingEvent__e(
-                ApexClass__c = log.ApexClass__c,
-                LoggingLevel__c = log.LoggingLevel__c,
-                Message__c = log.Message__c,
-                ReferenceId__c = log.ReferenceId__c,
-                UserId__c = UserInfo.getUserId()
-            ));
-        }
-
-        EventBus.publish(loggingEvents);
-        logs.clear();
+    private static void emitLogEvent(Log__c log) {
+        EventBus.publish(new LoggingEvent__e(
+            ApexClass__c = log.ApexClass__c,
+            HttpStatus__c = log.HttpStatus__c,
+            LoggingLevel__c = log.LoggingLevel__c,
+            Message__c = log.Message__c,
+            Outbound__c = log.Outbound__c,
+            ReferenceId__c = log.ReferenceId__c,
+            Request__c = log.Request__c,
+            Response__c = log.Response__c,
+            UserId__c = UserInfo.getUserId()
+        ));
     }
+
+    private Logger() {}
 }

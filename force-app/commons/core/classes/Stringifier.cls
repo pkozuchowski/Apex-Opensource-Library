@@ -155,12 +155,13 @@ public with sharing class Stringifier {
                 request.httpMethod + ' ' + request.resourcePath
             };
 
-            if (!request.params.isEmpty()) {
-                lines[0] += '?';
-            }
-
+            String paramSeparator = '?';
             for (String param : request.params.keySet()) {
-                lines.add('&' + param + '=' + request.params.get(param));
+                lines.add('\t' + paramSeparator + param + '=' + request.params.get (param));
+
+                if (paramSeparator == '?') {
+                    paramSeparator = '&';
+                }
             }
 
             lines.add('Host: ' + Url.getOrgDomainUrl().getHost());

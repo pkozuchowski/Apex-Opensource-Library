@@ -89,11 +89,13 @@ private class StringifierTest {
         request.httpMethod = 'POST';
         request.resourcePath = '/services/data/v20.0/sobjects/Account/';
         request.addParameter('id', '001000000000000');
+        request.addParameter('checkonly', 'true');
         request.addHeader('Content-Type', 'application/json');
         request.requestBody = Blob.valueOf('request body');
 
-        System.assertEquals('POST /services/data/v20.0/sobjects/Account/?\n' +
-            '&id=001000000000000\n' +
+        System.assertEquals('POST /services/data/v20.0/sobjects/Account/\n' +
+            '\t?id=001000000000000\n' +
+            '\t&checkonly=true\n' +
             'Host: ' + Url.getOrgDomainUrl().getHost() + '\n' +
             'Content-Type: application/json\n' +
             '\n' +

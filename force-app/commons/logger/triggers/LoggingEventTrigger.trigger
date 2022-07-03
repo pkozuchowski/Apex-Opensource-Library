@@ -26,11 +26,14 @@ trigger LoggingEventTrigger on LoggingEvent__e (after insert) {
 
     for (LoggingEvent__e loggingEvent : Trigger.new) {
         logs.add(new Log__c(
-                ApexClass__c = loggingEvent.ApexClass__c,
-                LoggingLevel__c = loggingEvent.LoggingLevel__c,
-                Message__c = loggingEvent.Message__c,
-                ReferenceId__c = loggingEvent.ReferenceId__c,
-                User__c = loggingEvent.UserId__c
+            ApexClass__c = loggingEvent.ApexClass__c,
+            LoggingLevel__c = loggingEvent.LoggingLevel__c,
+            Message__c = loggingEvent.Message__c,
+            Outbound__c = loggingEvent.Outbound__c,
+            ReferenceId__c = loggingEvent.ReferenceId__c,
+            Request__c = loggingEvent.Request__c,
+            Response__c = loggingEvent.Response__c,
+            User__c = loggingEvent.UserId__c
         ));
     }
 

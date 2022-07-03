@@ -24,18 +24,13 @@
 @IsTest
 private class LoggerTest {
 
-    /**
-     * In immediate mode all logs are saved in database right away.
-     */
     @IsTest
-    static void testLogMessageInImmediateMode() {
-        Logger logger = new Logger();
-
+    static void testLogMessage() {
 
         Test.startTest();
-        logger.info('INFO');
-        logger.warn('WARN');
-        logger.error('ERROR');
+        Logger.info(new Log('INFO'));
+        Logger.warn(new Log('WARN'));
+        Logger.error(new Log('ERROR'));
         Test.stopTest();
 
 
@@ -43,92 +38,23 @@ private class LoggerTest {
         System.assertEquals(3, logs.size(), '3 Logs should be created');
 
         for (Log__c log : logs) {
-            System.assertEquals('LoggerTest.testLogMessageInImmediateMode', log.ApexClass__c);
+            System.assertEquals('LoggerTest.testLogMessage', log.ApexClass__c);
             System.assertEquals(log.Message__c, log.LoggingLevel__c);
-            System.assertEquals(null, log.ReferenceId__c);
         }
     }
 
 
     /**
-     * In non-immediate mode all logs are saved in database when flush method is called.
-     * This mode is especially useful for logging in-between callouts.
-     */
-    @IsTest
-    static void testLogMessageInNonImmediateMode() {
-        Logger logger = new Logger(false);
-
-
-        Test.startTest();
-        logger.info('INFO');
-        logger.warn('WARN');
-        logger.error('ERROR');
-        logger.flush();
-
-        Test.stopTest();
-
-
-        Log__c[] logs = [SELECT ApexClass__c, ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
-        System.assertEquals(3, logs.size(), '3 Logs should be created');
-
-        for (Log__c log : logs) {
-            System.assertEquals('LoggerTest.testLogMessageInNonImmediateMode', log.ApexClass__c);
-            System.assertEquals(log.Message__c, log.LoggingLevel__c);
-            System.assertEquals(null, log.ReferenceId__c);
-        }
-    }
-
-
-    /**
-     * Log record can be passed as argument for full details customization
-     */
-    @IsTest
-    static void testLogRecord() {
-        Logger logger = new Logger();
-
-
-        Test.startTest();
-        logger.info(new Log__c(
-            Message__c = 'INFO',
-            ReferenceId__c = '12345'
-        ));
-        logger.warn(new Log__c(
-            Message__c = 'WARN',
-            ReferenceId__c = '12345'
-        ));
-        logger.error(new Log__c(
-            Message__c = 'ERROR',
-            ReferenceId__c = '12345'
-        ));
-        Test.stopTest();
-
-
-        Log__c[] logs = [SELECT ApexClass__c, ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
-        for (Log__c log : logs) {
-            System.assertEquals('LoggerTest.testLogRecord', log.ApexClass__c);
-            System.assertEquals(log.Message__c, log.LoggingLevel__c);
-            System.assertEquals('12345', log.ReferenceId__c);
-        }
-    }
-
-
-    /**
-     *@description
-     * Logger.error() method can take exception as argument.
+     * logger.error() method can take exception as argument.
      * Logs message should contain exception's message, stack trace and cause.
      */
     @IsTest
     static void testLogException() {
-        Logger logger = new Logger();
-
-
         Test.startTest();
         try {
             Date d = (Date) Datetime.now();
         } catch (Exception ex) {
-            logger.info('refId', ex);
-            logger.warn('refId', ex);
-            logger.error(ex);
+            Logger.error(new Log(ex));
         }
         Test.stopTest();
 
@@ -141,12 +67,10 @@ private class LoggerTest {
 
 
     /**
-     *@description
      * Logger should be able to format and log HttpRequest and Responses
      */
     @IsTest
     static void testLogHttp() {
-        Logger logger = new Logger();
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
         request.setEndpoint('https://www.example.com');
@@ -159,25 +83,22 @@ private class LoggerTest {
 
 
         Test.startTest();
-        logger.info('refId', request, response);
-        logger.warn('refId', null, response);
-        logger.error('refId', request, null);
+        Logger.info(new Log(request, response));
         Test.stopTest();
 
 
-        Log__c log = [SELECT Message__c FROM Log__c WHERE LoggingLevel__c = 'INFO' LIMIT 1];
-        System.assert(log.Message__c.contains('200 OK'));
-        System.assert(log.Message__c.contains('{"value":"test"}'));
+        Log__c log = [SELECT Response__c, Request__c FROM Log__c WHERE LoggingLevel__c = 'INFO' LIMIT 1];
+        System.debug('log: ' + JSON.serializePretty(log));
+        System.assert(log.Response__c.contains('200 OK'));
+        System.assert(log.Request__c.contains('{"value":"test"}'));
     }
 
 
     /**
-     *@description
      * Logger should be able to format and log HttpRequest and Responses
      */
     @IsTest
     static void testLogREST() {
-        Logger logger = new Logger();
         RestRequest request = new RestRequest();
         request.httpMethod = 'GET';
         request.resourcePath = 'https://www.example.com?param=value';
@@ -190,16 +111,15 @@ private class LoggerTest {
 
 
         Test.startTest();
-        logger.info('refId', request, response);
-        logger.warn('refId', null, response);
-        logger.error('refId', request, null);
+        Logger.info(new Log(request, response));
         Test.stopTest();
 
 
-        Log__c log = [SELECT Message__c FROM Log__c WHERE LoggingLevel__c = 'INFO' LIMIT 1];
-        System.assert(log.Message__c.contains('200'));
-        System.assert(log.Message__c.contains('success'));
-        System.assert(log.Message__c.contains('request'));
-        System.assert(log.Message__c.contains('param: value'));
+        Log__c log = [SELECT Request__c, Response__c FROM Log__c WHERE LoggingLevel__c = 'INFO' LIMIT 1];
+        System.debug(log);
+        System.assert(log.Response__c.contains('200'));
+        System.assert(log.Response__c.contains('success'));
+        System.assert(log.Request__c.contains('request'));
+        System.assert(log.Request__c.contains('?param=value'));
     }
 }

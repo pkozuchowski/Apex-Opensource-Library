@@ -31,9 +31,9 @@
  * where we want to create all data in @TestSetup, but at the same time we want to segregate data into suites for different scenarios.
  */
 public abstract class TestDataSuite {
-    private Map<String, SObjectId> sobjectIdByUniqueName = new Map<String, SObjectId>();
-    private Map<String, SObjectId[]> sobjectIdsBySObjectType = new Map<String, SObjectId[]>();
-    private Map<String, SObjectId[]> sobjectIdsByGroup = new Map<String, SObjectId[]>();
+    private Map<String, SObject> sobjectByUniqueName = new Map<String, SObject>();
+    private Map<String, SObject[]> sobjectBySObjectType = new Map<String, SObject[]>();
+    private Map<String, SObject[]> sobjectByGroup = new Map<String, SObject[]>();
 
 
     /**
@@ -57,7 +57,7 @@ public abstract class TestDataSuite {
      * Record Id can be later retrieved in unit test using getId() method.
      */
     public void registerRecord(String uniqueName, SObject record) {
-        sobjectIdByUniqueName.put(uniqueName, new SObjectId(record));
+        sobjectByUniqueName.put(uniqueName, record);
         registerRecordUnderObject(record);
     }
 
@@ -66,57 +66,57 @@ public abstract class TestDataSuite {
      * Record Ids can be later retrieved in unit test using getRecords() method.
      */
     public void registerRecordsUnderGroup(String groupName, SObject[] records) {
-        if (!sobjectIdsByGroup.containsKey(groupName)) {
-            sobjectIdsByGroup.put(groupName, new List<SObjectId>());
+        if (!sobjectByGroup.containsKey(groupName)) {
+            sobjectByGroup.put(groupName, new List<SObject>());
         }
 
-        List<SObjectId> groupOfRecords = sobjectIdsByGroup.get(groupName);
+        List<SObject> groupOfRecords = sobjectByGroup.get(groupName);
         for (SObject record : records) {
-            groupOfRecords.add(new SObjectId(record));
+            groupOfRecords.add(record);
             registerRecordUnderObject(record);
         }
 
-        sobjectIdsByGroup.put(groupName, groupOfRecords);
+        sobjectByGroup.put(groupName, groupOfRecords);
     }
 
 
     /**
-     * @return Id of record registered in the test data suite under give unique name.
+     * @return Record registered in the test data suite under give unique name.
      */
-    public Id getId(String uniqueName) {
-        return sobjectIdByUniqueName.get(uniqueName)?.id;
+    public SObject get(String uniqueName) {
+        return sobjectByUniqueName.get(uniqueName);
     }
 
     /**
-     * @return Ids of all records of given SObjectType in suite.
+     * @return All records of given SObjectType in suite.
      */
-    public Set<Id> getIds(SObjectType type) {
-        Set<Id> ids = new Set<Id>();
+    public List<SObject> get(SObjectType type) {
+        List<SObject> records = new List<SObject>();
         String typeName = '' + type;
 
-        if (sobjectIdsBySObjectType.containsKey(typeName)) {
-            for (SObjectId recordId : sobjectIdsBySObjectType.get(typeName)) {
-                ids.add(recordId.id);
+        if (sobjectBySObjectType.containsKey(typeName)) {
+            for (SObject record : sobjectBySObjectType.get(typeName)) {
+                records.add(record);
             }
         }
 
-        return ids;
+        return records;
     }
 
     /**
-     * @return Ids of all records registered in given group.
+     * @return All records registered in given group.
      * Respects order in which records were added to the group.
      */
-    public List<Id> getIdsUnderGroup(String groupName) {
-        List<Id> ids = new List<Id>();
+    public List<SObject> getGroup(String groupName) {
+        List<SObject> records = new List<SObject>();
 
-        if (sobjectIdsByGroup.containsKey(groupName)) {
-            for (SObjectId recordId : sobjectIdsByGroup.get(groupName)) {
-                ids.add(recordId.id);
+        if (sobjectByGroup.containsKey(groupName)) {
+            for (SObject record : sobjectByGroup.get(groupName)) {
+                records.add(record);
             }
         }
 
-        return ids;
+        return records;
     }
 
 
@@ -124,35 +124,13 @@ public abstract class TestDataSuite {
      * Registers record under SObject group
      */
     private void registerRecordUnderObject(SObject record) {
-        TestDataSuite.SObjectId sObjectId = new SObjectId(record);
         String key = '' + record.getSObjectType();
 
-        if (sobjectIdsBySObjectType.containsKey(key)) {
-            sobjectIdsBySObjectType.get(key).add(sObjectId);
+        if (sobjectBySObjectType.containsKey(key)) {
+            sobjectBySObjectType.get(key).add(record);
 
         } else {
-            sobjectIdsBySObjectType.put(key, new List<SObjectId>{sObjectId});
-        }
-    }
-
-    /**
-     * Helper SObject wrapper which is saved as Id during JSON serialization.
-     */
-    private class SObjectId {
-        public Id id {
-            get {
-                if (record != null) {
-                    return record.Id;
-                } else {
-                    return id;
-                }
-            }
-            set;
-        }
-        private transient SObject record;
-
-        public SObjectId(SObject record) {
-            this.record = record;
+            sobjectBySObjectType.put(key, new List<SObject>{record});
         }
     }
 

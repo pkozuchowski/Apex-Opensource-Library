@@ -29,22 +29,22 @@ private class TestDataSuiteTest {
         TestDataBuilder dataBuilder = new TestDataBuilder();
 
         List<Account> accounts = dataBuilder
-                .create(new Account(Name = '1'))
-                .create(new Account(Name = '2'))
-                .insertRecords();
+            .create(new Account(Name = '1'))
+            .create(new Account(Name = '2'))
+            .insertRecords();
 
         Case[] cases = (Case[]) dataBuilder
-                .create(new Case(Subject = 'Case 1', AccountId = accounts[0].Id))
-                .similarly(new Case(Subject = 'Case 2'))
-                .similarly(new Case(Subject = 'Case 3'))
-                .insertRecords();
+            .create(new Case(Subject = 'Case 1', AccountId = accounts[0].Id))
+            .similarly(new Case(Subject = 'Case 2'))
+            .similarly(new Case(Subject = 'Case 3'))
+            .insertRecords();
 
         Contact[] contacts = (Contact[]) dataBuilder
-                .create(new Contact(FirstName = 'Joe', LastName = 'Doe1', AccountId = accounts[0].Id))
-                .similarly(new Contact(LastName = 'Doe2'))
-                .similarly(new Contact(LastName = 'Doe3'))
-                .similarly(new Contact(LastName = 'Doe4'))
-                .insertRecords();
+            .create(new Contact(FirstName = 'Joe', LastName = 'Doe1', AccountId = accounts[0].Id))
+            .similarly(new Contact(LastName = 'Doe2'))
+            .similarly(new Contact(LastName = 'Doe3'))
+            .similarly(new Contact(LastName = 'Doe4'))
+            .insertRecords();
 
 
         TestDataSuite suite1 = TestDataSuiteManager.registerSuite('Account with related');
@@ -61,54 +61,55 @@ private class TestDataSuiteTest {
 
 
     /**
-     *@description
-     * TestDataSuite.getId() should retrieve Id of record registered in that suite or null if no record was registered by that name;
+     * @description
+     * TestDataSuite.get() should retrieve record registered in that suite or null if no record was registered by that name;
      */
     @IsTest
     static void shouldRetrieveRecordIdByUniqueName() {
         TestDataSuite suite = TestDataSuiteManager.getSuite('Account with related');
-        System.assertEquals(null, suite.getId('Other'), 'Should return null if unique name was not registered');
+        System.assertEquals(null, suite.get('Other'), 'Should return null if unique name was not registered');
 
-        Id accountId = suite.getId('Account');
-        System.assert(accountId != null && accountId.getSobjectType() == Account.SObjectType, 'Should retrieve Id of account registered under "Account" name');
+        Account account = (Account) suite.get('Account');
+        System.assertEquals('1', account.Name, 'Should retrieve Account registered under "Account" name');
     }
 
 
     /**
-     *@description
+     * @description
      * TestDataSuite.getIdsUnderGroup() should retrieve ids of records registered under given group.
      * The order in which records were registered is persisted.
      * If group was not registered, empty list is returned.
      */
     @IsTest
-    static void shouldRetrieveIdsByGroupName() {
+    static void shouldRetrieveRecordsByGroupName() {
         TestDataSuite suite = TestDataSuiteManager.getSuite('Account with related');
 
-        System.assertEquals(true, suite.getIdsUnderGroup('other').isEmpty(), 'Should return empty list for unregistered group');
-        System.assertEquals(2, suite.getIdsUnderGroup('Contacts to process').size(), 'Should return ids of records registered under group');
+        System.assertEquals(true, suite.getGroup('other').isEmpty(), 'Should return empty list for unregistered group');
+        System.assertEquals(2, suite.getGroup('Contacts to process').size(), 'Should return ids of records registered under group');
     }
 
 
     /**
-     *@description
+     * @description
      * TestDataSuite.getIds(SObjectType) should retrieve ids of registered records (under unique name or group) with given SObjectType.
      * Order of returned ids is not guaranteed (Set).
      */
     @IsTest
-    static void shouldRetrieveIdsBySObjectName() {
+    static void shouldRetrieveSObjectName() {
         TestDataSuite suite = TestDataSuiteManager.getSuite('Account with related');
 
-        System.assertEquals(true, suite.getIds(User.SObjectType).isEmpty(), 'Should return empty list if no records of given SObject Type were registered');
-        System.assertEquals(1, suite.getIds(Account.SObjectType).size(), 'Should return all records of given SObjectType registered under group');
+        System.assertEquals(true, suite.get(User.SObjectType).isEmpty(), 'Should return empty list if no records of given SObject Type were registered');
+        System.assertEquals(1, suite.get(Account.SObjectType).size(), 'Should return all records of given SObjectType registered under group');
     }
 
 
     /**
-     *@description
+     * @description
      * TestDataSuiteManager.getSuite() should throw exception, if no suite was registered under that name.
      */
     @IsTest
     static void shouldThrowErrorWhenSuiteIsNotRegister() {
+        delete [SELECT Id FROM ContentDocument WHERE Title = :TestDataSuiteManager.FILE_NAME];
         Exception ex;
 
         try {

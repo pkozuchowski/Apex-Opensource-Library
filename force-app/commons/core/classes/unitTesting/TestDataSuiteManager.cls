@@ -27,6 +27,7 @@
  * Manages and persistence of collection of test data suites
  */
 public inherited sharing class TestDataSuiteManager {
+    @TestVisible
     private final static String FILE_NAME = 'TestDataSuite';
     private final static Map<String, TestDataSuite> suitesToSave = new Map<String, TestDataSuite>();
     private final static Map<String, TestDataSuite> suitesByName {

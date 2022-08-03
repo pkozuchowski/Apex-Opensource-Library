@@ -34,16 +34,16 @@ private class TestDataBuilderTest {
 
         Test.startTest();
         List<Account> accounts = builder
-                .create(10, new Account(
-                        Id = '001000000000000',
-                        Name = 'Test'
-                ))
-                .flush();
+            .create(10, new Account(
+                Id = '001000000000000',
+                Name = 'Test'
+            ))
+            .flush();
 
         for (Account account : accounts) {
             builder.create(2, new Contact(
-                    Id = '003000000000000',
-                    AccountId = account.Id
+                Id = '003000000000000',
+                AccountId = account.Id
             ));
         }
         List<Contact> contacts = builder.flush();
@@ -51,8 +51,8 @@ private class TestDataBuilderTest {
 
         for (Contact contact : contacts) {
             builder.create(new Case(
-                    ContactId = contact.Id,
-                    AccountId = contact.AccountId
+                ContactId = contact.Id,
+                AccountId = contact.AccountId
             ));
         }
         List<Case> cases = builder.flush();
@@ -67,7 +67,7 @@ private class TestDataBuilderTest {
 
 
     /**
-     * TestDataFactory.create(SObject record) should create record with default values of vanilla flavour.
+     * .create(SObject record) should create record with default values of vanilla flavour.
      * Default field values should be overwritten by passed prototype record.
      */
     @IsTest
@@ -88,7 +88,7 @@ private class TestDataBuilderTest {
 
 
     /**
-     * TestDataFactory.create(Integer count, SObject record) should create number of records with default values of vanilla flavour.
+     * .create(Integer count, SObject record) should create number of records with default values of vanilla flavour.
      * Default field values should be overwritten by passed prototype record.
      */
     @IsTest
@@ -112,15 +112,15 @@ private class TestDataBuilderTest {
 
 
     /**
-     * TestDataFactory.builder() should let developer build list of test records
+     * .builder() should let developer build list of test records
      */
     @IsTest
     static void testBuilderCreate() {
         Test.startTest();
         User[] users = new TestDataBuilder()
-                .create(new User(LastName = 'Johnson'))
-                .create(2, new User(LastName = 'Xian'))
-                .getRecords();
+            .create(new User(LastName = 'Johnson'))
+            .create(2, new User(LastName = 'Xian'))
+            .getRecords();
         Test.stopTest();
 
         System.assertEquals(3, users.size());
@@ -140,7 +140,6 @@ private class TestDataBuilderTest {
 
 
     /**
-     *@description
      * Builder's similarly method can be called sequentially to create() method
      * to reuse previous prototype with small adjustments.
      */
@@ -148,10 +147,10 @@ private class TestDataBuilderTest {
     static void testBuilderSimilarly() {
         Test.startTest();
         User[] users = new TestDataBuilder()
-                .create(new User(LastName = 'Johnson', Email = 'similarly@example.com'))
-                .similarly(2, new User(LastName = 'Xian'))
-                .similarly(new User(LastName = 'Dong'))
-                .getRecords();
+            .create(new User(LastName = 'Johnson', Email = 'similarly@example.com'))
+            .similarly(2, new User(LastName = 'Xian'))
+            .similarly(new User(LastName = 'Dong'))
+            .getRecords();
         Test.stopTest();
 
         System.assertEquals(4, users.size());
@@ -167,7 +166,6 @@ private class TestDataBuilderTest {
 
 
     /**
-     *@description
      * Builder.similarly() method can be only called after create() method, to reuse first prototype.
      */
     @IsTest
@@ -177,8 +175,8 @@ private class TestDataBuilderTest {
         try {
             Test.startTest();
             User[] users = new TestDataBuilder()
-                    .similarly(2, new User(LastName = 'Xian'))
-                    .getRecords();
+                .similarly(2, new User(LastName = 'Xian'))
+                .getRecords();
             Test.stopTest();
 
         } catch (Exception e) {
@@ -191,7 +189,6 @@ private class TestDataBuilderTest {
 
 
     /**
-     *@description
      * Builder.similarly() does not accept different sObject type then preceding create()
      */
     @IsTest
@@ -201,9 +198,9 @@ private class TestDataBuilderTest {
         try {
             Test.startTest();
             User[] users = new TestDataBuilder()
-                    .create(new Account())
-                    .similarly(new Contact())
-                    .getRecords();
+                .create(new Account())
+                .similarly(new Contact())
+                .getRecords();
             Test.stopTest();
 
         } catch (Exception e) {
@@ -212,5 +209,45 @@ private class TestDataBuilderTest {
 
         System.assertNotEquals(null, ex);
         System.assert(ex instanceof TestDataBuilder.TestDataBuilderException);
+    }
+
+    /**
+     * When test attempts to create sobject with unrecognized flavour, exception should be thrown.
+     */
+    @IsTest
+    static void testBuilderThrowsExceptionWhenUnkownFlavourIsRequested() {
+        Exception ex;
+
+        try {
+            new TestDataBuilder()
+                .create(1, 'invalid_flavour', new Account());
+
+        } catch (Exception e) {
+            ex = e;
+        }
+
+
+        System.assertNotEquals(null, ex);
+        System.assert(ex instanceof TestDataBuilder.TestDataBuilderException);
+        System.assertEquals('SObjects custom flavour is not defined: Account:invalid_flavour', ex.getMessage());
+    }
+
+    /**
+     * .insertRecord(s) should insert and return records immadiatelly, without additional call.
+     */
+    @IsTest
+    static void testInsertRecords() {
+        TestDataBuilderFactories.registerPrototype(Contact.SObjectType, '', new Contact(
+            FirstName = 'John'
+        ));
+
+
+        Test.startTest();
+        Contact c = (Contact) new TestDataBuilder().insertRecord(new Contact(LastName = 'Deer'));
+        Test.stopTest();
+
+
+        System.assertNotEquals(null, c.Id, 'Record should be inserted');
+        System.assertEquals('John', c.FirstName, 'Builder should apply defaults');
     }
 }

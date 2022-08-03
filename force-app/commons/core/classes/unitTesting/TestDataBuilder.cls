@@ -28,28 +28,6 @@
  */
 @IsTest
 public inherited sharing class TestDataBuilder {
-    private final static String defaults = 'default';
-
-    /**
-     * Map of SObject field defaults by type.
-     * For each sObjectType, it's possible to configure separate set of defaults - for example, different for each Record Type
-     * or by other classification.
-     */
-    private static Map<SObjectType, Map<String, SObjectFactory>> sObjectFactoriesMap = new Map<SObjectType, Map<String, SObjectFactory>>{
-            User.SObjectType => new Map<String, SObjectFactory>{
-                    defaults => new DefaultUserFactory()
-            },
-            Account.SObjectType => new Map<String, SObjectFactory>{
-                    defaults => new DefaultAccountFactory()
-            },
-            Contact.SObjectType => new Map<String, SObjectFactory>{
-                    defaults => new DefaultContactFactory()
-            },
-            Opportunity.SObjectType => new Map<String, SObjectFactory>{
-                    defaults => new DefaultOpportunityFactory()
-            }
-    };
-
     private List<SObject> records = new List<SObject>();
     private SObject previousPrototype;
 
@@ -60,10 +38,10 @@ public inherited sharing class TestDataBuilder {
      * @param prototype Example of record to create - fields specified in the constructor will override defaults
      * @throws TestDataBuilder.TestDataBuilderException when default is not defined
      *
-     * @return Copy of the test-default record with fields overridden
+     * @return instance of DataBuilder for subsequent calls.
      */
     public TestDataBuilder create(SObject prototype) {
-        return create(defaults, prototype);
+        return create('', prototype);
     }
 
     /**
@@ -73,7 +51,7 @@ public inherited sharing class TestDataBuilder {
      * @param prototype Example of record to create - fields specified in the constructor will override defaults
      * @throws TestDataBuilder.TestDataBuilderException when flavour is not defined
      *
-     * @return Copy of the test-default record with fields overridden
+     * @return instance of DataBuilder for subsequent calls.
      */
     public TestDataBuilder create(String flavour, SObject prototype) {
         return create(1, flavour, prototype);
@@ -86,10 +64,10 @@ public inherited sharing class TestDataBuilder {
      * @param prototype Example of record to create - fields specified in the constructor will override defaults
      * @throws TestDataBuilder.TestDataBuilderException when flavour is not defined
      *
-     * @return Copy of the test-default record with fields overridden
+     * @return instance of DataBuilder for subsequent calls.
      */
     public TestDataBuilder create(Integer count, SObject prototype) {
-        return create(count, defaults, prototype);
+        return create(count, '', prototype);
     }
 
     /**
@@ -100,11 +78,11 @@ public inherited sharing class TestDataBuilder {
      * @param prototype Example of record to create - fields specified in the constructor will override defaults
      * @throws TestDataBuilder.TestDataBuilderException when flavour is not defined
      *
-     * @return List of copies of the test-defaulted record with fields overridden
+     * @return instance of DataBuilder for subsequent calls.
      */
     public TestDataBuilder create(Integer count, String flavour, SObject prototype) {
         for (Integer i = 0; i < count; i++) {
-            SObject newRecord = getBaseRecord(flavour, prototype);
+            SObject newRecord = TestDataBuilderFactories.getBaseRecord(flavour, prototype);
             applyExtraFields(newRecord, prototype.getPopulatedFieldsAsMap());
 
             records.add(newRecord);
@@ -158,6 +136,40 @@ public inherited sharing class TestDataBuilder {
 
 
     /**
+     * Inserts and returns record with default field values, overridden by given prototype field values.
+     *
+     * @param prototype Example of record to create - fields specified in the constructor will override defaults
+     * @return instance of TestDataBuilder for subsequent calls.
+     */
+    public SObject insertRecord(SObject prototype) {
+        return insertRecords(1, prototype)[0];
+    }
+
+    /**
+     * Inserts and returns record with default field values, overridden by given prototype field values.
+     *
+     * @param count How many records should be created.
+     * @param prototype Example of record to create - fields specified in the constructor will override defaults
+     * @return instance of TestDataBuilder for subsequent calls.
+     */
+    public SObject[] insertRecords(Integer count, SObject prototype) {
+        return insertRecords(count, '', prototype);
+    }
+
+    /**
+     * Inserts and returns record with default field values, overridden by given prototype field values.
+     *
+     * @param count How many records should be created.
+     * @param flavour Name of the default fields configuration - defines which default field values will be used for SObject
+     * @param prototype Example of record to create - fields specified in the constructor will override defaults
+     * @return instance of TestDataBuilder for subsequent calls.
+     */
+    public SObject[] insertRecords(Integer count, String flavour, SObject prototype) {
+        return create(count, flavour, prototype).insertRecords();
+    }
+
+
+    /**
      * Inserts records stored in builder's internal storage, clears buffer and returns records.
      *
      * @return inserted records
@@ -200,31 +212,6 @@ public inherited sharing class TestDataBuilder {
 
 
     /**
-     * @return base (default) record for given SObject and flavour.
-     * If there's no factory specified for the SObject, input prototype is returned.
-     * @throws TestDataBuilderException when custom flavour was demanded, but not defined in mapping
-     */
-    private SObject getBaseRecord(String flav, SObject prototype) {
-        SObject base;
-        if (sObjectFactoriesMap.containsKey(prototype.getSObjectType())) {
-            Map<String, SObjectFactory> flavoursFactories = sObjectFactoriesMap.get(prototype.getSObjectType());
-
-            if (flavoursFactories.containsKey(flav)) {
-                return flavoursFactories.get(flav).create();
-
-            } else if (flav != defaults) {
-                throw new TestDataBuilderException(String.format('SObjects custom flavour is not defined: {0}:{1}', new List<Object>{
-                        prototype.getSObjectType(), flav
-                }));
-            }
-
-        } else {
-            base = prototype.clone();
-        }
-        return base;
-    }
-
-    /**
      * Applies field overwrites from the input prototype onto base record.
      */
     private void applyExtraFields(SObject basePrototype, Map<String, Object> extraFields) {
@@ -233,59 +220,6 @@ public inherited sharing class TestDataBuilder {
         }
     }
 
-
-    private interface SObjectFactory {
-        SObject create();
-    }
-
-    private class DefaultUserFactory implements SObjectFactory {
-        private Integer counter = 0;
-        private Id orgId = UserInfo.getOrganizationId();
-
-        public SObject create() {
-            counter++;
-            String uid = '' + counter + Crypto.getRandomInteger();
-
-            return new User(
-                    FirstName = 'Test',
-                    LastName = 'User',
-                    Email = 'test@example.com',
-                    Username = uid + '@' + orgId + '.test.com',
-                    ProfileId = UserInfo.getProfileId(),
-                    Alias = uid.left(8),
-                    CommunityNickname = uid.left(40),
-                    TimeZoneSidKey = 'GMT',
-                    LocaleSidKey = 'en_US',
-                    EmailEncodingKey = 'UTF-8',
-                    LanguageLocaleKey = 'en_US'
-            );
-        }
-    }
-
-    private class DefaultAccountFactory implements SObjectFactory {
-        public SObject create() {
-            return new Account(
-                    Name = 'Test Account'
-            );
-        }
-    }
-
-    private class DefaultContactFactory implements SObjectFactory {
-        public SObject create() {
-            return new Contact(
-                    FirstName = 'Testy',
-                    LastName = 'Jones'
-            );
-        }
-    }
-
-    private class DefaultOpportunityFactory implements SObjectFactory {
-        public SObject create() {
-            return new Opportunity(
-                    Name = 'Test Opportunity'
-            );
-        }
-    }
 
     public class TestDataBuilderException extends Exception {
     }

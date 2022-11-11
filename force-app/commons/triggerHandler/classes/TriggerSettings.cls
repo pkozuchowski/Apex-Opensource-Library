@@ -22,7 +22,7 @@
 * SOFTWARE.
 */
 /**
-*  Please find the newest source code at https://github.com/amorek/Apex-Opensource-Library
+*  Please find the newest source code at https://github.com/pkozuchowski/Apex-Opensource-Library
 *
 */
 

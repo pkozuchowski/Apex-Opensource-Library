@@ -23,7 +23,7 @@
  *  SOFTWARE.
  * /
  * *
- *  Please find newest source code at https://github.com/amorek/Apex-Opensource-Library
+ *  Please find newest source code at https://github.com/pkozuchowski/Apex-Opensource-Library
  * /
  */
 
@@ -51,7 +51,7 @@ public with sharing class Log {
      */
     public Log(Exception ex) {
         this(new Log__c(
-            RecordTypeId = RecordTypes.LOG_APPLICATION,
+            RecordTypeId = RecordTypes.LOG_APPLICATION.id,
             Message__c = Stringifier.toString(ex)
         ));
     }
@@ -63,7 +63,7 @@ public with sharing class Log {
      */
     public Log(HttpRequest request, HttpResponse response) {
         this(new Log__c(
-            RecordTypeId = RecordTypes.LOG_CALLOUT,
+            RecordTypeId = RecordTypes.LOG_CALLOUT.id,
             Outbound__c = true,
             Request__c = Stringifier.toString(request),
             Response__c = Stringifier.toString(response),
@@ -78,7 +78,7 @@ public with sharing class Log {
      */
     public Log(RestRequest request, RestResponse response) {
         this(new Log__c(
-            RecordTypeId = RecordTypes.LOG_CALLOUT,
+            RecordTypeId = RecordTypes.LOG_CALLOUT.id,
             Outbound__c = false,
             Request__c = Stringifier.toString(request),
             Response__c = Stringifier.toString(response),

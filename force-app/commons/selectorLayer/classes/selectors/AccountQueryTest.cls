@@ -23,7 +23,7 @@
  *  SOFTWARE.
  * /
  * *
- *  Please find newest source code at https://github.com/amorek/Apex-Opensource-Library
+ *  Please find newest source code at https://github.com/pkozuchowski/Apex-Opensource-Library
  * /
  */
 @IsTest(IsParallel=true)

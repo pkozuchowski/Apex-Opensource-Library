@@ -40,7 +40,12 @@ public without sharing class SchemaDescriptions {
         if (sObjectTypeMap.containsKey(sobjectTypeName)) {
             return sObjectTypeMap.get(sobjectTypeName);
         } else {
-            SObject s = (SObject) Type.forName(sobjectTypeName).newInstance();
+            Type typeForName = Type.forName(sobjectTypeName);
+            if (typeForName == null) {
+                throw new SchemaException('Invalid SObject: ' + sobjectTypeName);
+            }
+
+            SObject s = (SObject) typeForName.newInstance();
             SObjectType sObjectType = s.getSObjectType();
             sObjectTypeMap.put(sobjectTypeName, sObjectType);
             return sObjectType;

@@ -23,7 +23,7 @@
  *  SOFTWARE.
  * /
  * *
- *  Please find newest source code at https://github.com/amorek/Apex-Opensource-Library
+ *  Please find newest source code at https://github.com/pkozuchowski/Apex-Opensource-Library
  * /
  */
 
@@ -37,8 +37,8 @@ private class RecordTypesTest {
      */
     @IsTest
     static void shouldRetrieveRecordTypeId() {
-        Map<String, RecordTypeInfo> recordTypeInfos = Account.SObjectType.getDescribe().getRecordTypeInfosByDeveloperName();
+        Map<String, RecordTypeInfo> recordTypeInfos = Log__c.SObjectType.getDescribe().getRecordTypeInfosByDeveloperName();
 
-        System.assertEquals(RecordTypes.ACCOUNT_DEALER, recordTypeInfos.get('Dealer')?.getRecordTypeId());
+        System.assertEquals(recordTypeInfos.get('ApplicationLog')?.getRecordTypeId(), RecordTypes.LOG_APPLICATION.id);
     }
 }

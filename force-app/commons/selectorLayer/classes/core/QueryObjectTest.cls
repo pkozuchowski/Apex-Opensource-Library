@@ -163,7 +163,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void conditionFactoryCoverage() {
-        QueryConditionFactory c = new QueryConditionFactory();
+        QueryConditions c = new QueryConditions();
         c.ANDs(null, null);
         c.ANDs(null, null, null);
         c.ANDs(null, null, null, null);
@@ -228,7 +228,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testAggregateQuery() {
-        QueryConditionFactory c = new QueryConditionFactory();
+        QueryConditions c = new QueryConditions();
         String soql = Query.fromSObject(User.SObjectType)
             .selectFields('COUNT(ID), Email')
             .groupBy('Email')

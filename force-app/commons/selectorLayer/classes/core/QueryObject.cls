@@ -30,7 +30,7 @@ public virtual inherited sharing class QueryObject {
     private final static QueryMocker mocker = QueryMocker.getInstance();
     private final static QueryCache cache = QueryCache.getInstance();
 
-    protected final QueryConditionFactory conditionFactory = new QueryConditionFactory();
+    protected final QueryConditions conditionFactory = new QueryConditions();
     protected final QueryBuilder queryBuilder = new QueryBuilder();
     protected final DatabaseService databaseService = new DatabaseService();
     protected final List<Query.Condition> whereConditions = new List<Query.Condition>();
@@ -186,7 +186,7 @@ public virtual inherited sharing class QueryObject {
     /**
      * Sets given condition as HAVING clause
      * <pre>
-     * QueryConditionFactory c = new QueryConditionFactory();
+     * QueryConditions c = new QueryConditions();
      * Query.Users
      *     .selectFields('COUNT(ID), Email')
      *     .havingConditions(

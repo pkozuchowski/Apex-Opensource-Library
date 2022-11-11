@@ -28,9 +28,20 @@
  */
 
 /**
- * Created by piotr on 19.06.2021.
+ * This class can be used to create complex query conditions.
+ * Example:
+ * <pre>
+ * QueryConditions c = new QueryConditions();
+ *
+ * Query.Accounts.wheres(
+ *     c.ORs(
+ *         c.field(Account.Name).equals('John Doe'),
+ *         c.field(Account.BillingCity).equals('Warsaw')
+ *     ))
+ *     .getList();
+ * </pre>
  */
-public with sharing class QueryConditionFactory {
+public with sharing class QueryConditions {
 
     private static final String SEPARATOR_OR = ' OR ';
     private static final String SEPARATOR_AND = ' AND ';

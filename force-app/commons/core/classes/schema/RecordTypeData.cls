@@ -22,6 +22,10 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
+
+/**
+ * Similar to RecordTypeInfo, but with shorter Id and AuraEnabled
+ */
 public with sharing class RecordTypeData {
     @AuraEnabled public final Boolean isActive;
     @AuraEnabled public final Boolean isAvailable;

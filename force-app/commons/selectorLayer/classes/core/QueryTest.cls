@@ -57,8 +57,8 @@ private class QueryTest {
     @IsTest
     static void testGenericQuery() {
         List<User> users = Query.fromSObject(User.SObjectType)
-            .selectFields('Id, Username')
-            .limits(1)
+            .withFields('Id, Username')
+            .withLimit(1)
             .getList();
 
         System.assertEquals(1, users.size());

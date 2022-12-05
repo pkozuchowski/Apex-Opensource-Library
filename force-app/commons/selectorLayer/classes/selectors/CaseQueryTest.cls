@@ -24,53 +24,33 @@
 @IsTest(IsParallel=true)
 private class CaseQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        Account account = new Account(Name = 'Parent Account');
-        insert account;
-
-        Contact contact = new Contact(AccountId = account.Id, LastName = 'Doe');
-        insert contact;
-
-        insert new List<Case>{
-                new Case(AccountId = account.Id, Subject = 'Subject 1', Status = 'New', Origin = 'Web'),
-                new Case(AccountId = account.Id, Subject = 'Subject 2', Status = 'New', Origin = 'Web'),
-                new Case(AccountId = account.Id, Subject = 'Subject 3', Status = 'New', Origin = 'Web', ContactId = contact.Id)
-        };
-    }
-
     @IsTest
     static void testSelectWithParentAccount() {
-        Case c = (Case) new CaseQuery()
-                .withParentAccount()
-                .bySubject(new Set<String>{'Subject 1'})
-                .getFirstOrNull();
+        String soql = new CaseQuery()
+            .withParentAccount()
+            .toSOQL();
 
-        System.assertEquals('Parent Account', c.Account.Name);
+        Assert.isTrue(soql.containsIgnoreCase('Account.Name'));
     }
 
     @IsTest
     static void testSelectBySubject() {
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Case WHERE Subject = 'Subject 1']),
-                new CaseQuery().bySubject('Subject 1').getList());
+        String value = 'Subject';
+        QueryObject query = new CaseQuery().bySubject(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Case.Subject, value);
     }
 
     @IsTest
     static void testSelectByAccountId() {
-        Account account = [SELECT Id FROM Account];
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Case WHERE AccountId = :account.Id]),
-                new CaseQuery().byAccountId(account.Id).getList());
+        Id value = '001000000000000';
+        CaseQuery query = new CaseQuery().byAccountId(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Case.AccountId, value);
     }
 
     @IsTest
     static void testSelectByContactId() {
-        Contact contact = [SELECT Id FROM Contact];
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Case WHERE ContactId = :contact.Id]),
-                new CaseQuery().byContactId(contact.Id).getList());
+        Id value = '003000000000000';
+        CaseQuery query = new CaseQuery().byContactId(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Case.ContactId, value);
     }
 }

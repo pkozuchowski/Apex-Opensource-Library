@@ -25,9 +25,9 @@
 private class StaticResourceQueryTest {
 
     @IsTest
-    static void coverage() {
-        new StaticResourceQuery().byName('Test').getList();
-        new StaticResourceQuery().byName(new Set<String>{'Test'}).getList();
-        new StaticResourceQuery().byName((Set<String>) new Set<String>{'Test'}).getList();
+    static void testSelectByName() {
+        String value = 'StaticResourceName';
+        StaticResourceQuery query = new StaticResourceQuery().byName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, StaticResource.Name, value);
     }
 }

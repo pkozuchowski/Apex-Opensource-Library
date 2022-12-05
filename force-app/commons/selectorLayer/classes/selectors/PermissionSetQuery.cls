@@ -37,7 +37,7 @@ public inherited sharing class PermissionSetQuery extends Query {
 
     public PermissionSetQuery() {
         super(PermissionSet.SObjectType);
-        selectFields(Query.Fields.STANDARD);
+        withFields(Query.Fields.STANDARD);
     }
 
 
@@ -52,6 +52,7 @@ public inherited sharing class PermissionSetQuery extends Query {
      * Filter Permission Set by given name or null if it does not exist.
      */
     public PermissionSetQuery byName(Set<String> names) {
+        withMockName('byName');
         return (PermissionSetQuery) byField(PermissionSet.Name, 'IN', names);
     }
 

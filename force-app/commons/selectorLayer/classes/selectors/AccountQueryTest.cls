@@ -29,41 +29,27 @@
 @IsTest(IsParallel=true)
 private without sharing class AccountQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        List<Account> accounts = new List<Account>{
-            new Account(Name = 'Name 0'),
-            new Account(Name = 'Name 1'),
-            new Account(Name = 'Name 2'),
-            new Account(Name = 'Name 3')
-        };
-        insert accounts;
-
-        Account account = new Account(ParentId = accounts[0].Id, Name = 'Test Child Account');
-        insert account;
-
-        insert new Contact(AccountId = account.Id, LastName = 'Test Contact');
-        insert new Case(AccountId = account.Id, Subject = 'Test Case');
-        insert new Opportunity(AccountId = account.Id, Name = 'Test Opportunity', CloseDate = Date.today(), StageName = 'Prospecting');
-    }
-
     @IsTest
-    static void testSelectByName() {
-        Account account = (Account) new AccountQuery()
+    static void testRelationships() {
+        QueryObject queryObject = new AccountQuery()
             .withCases()
             .withChildAccounts()
             .withContacts()
             .withOpportunities()
-            .withParentAccount()
-            .byName('Test Child Account')
-            .withSharing(Sharing.WITHOUT_SHARING)
-            .getFirstOrNull();
+            .withParentAccount();
+        String query = queryObject.toSOQL();
 
+        Assert.isTrue(query.containsIgnoreCase('FROM ChildAccounts'));
+        Assert.isTrue(query.containsIgnoreCase('FROM Cases'));
+        Assert.isTrue(query.containsIgnoreCase('FROM Contacts'));
+        Assert.isTrue(query.containsIgnoreCase('FROM Opportunities'));
+        Assert.isTrue(query.containsIgnoreCase('FROM Cases'));
+        Assert.isTrue(query.containsIgnoreCase('Parent.Name'));
+    }
 
-        System.assertEquals(1, account.Contacts.size());
-        System.assertEquals(1, account.Cases.size());
-        System.assertEquals(1, account.Opportunities.size());
-        System.assertEquals(0, account.ChildAccounts.size());
-        System.assertEquals('Name 0', account.Parent.Name);
+    @IsTest
+    static void testSelectByName() {
+        AccountQuery query = new AccountQuery().byName('Test Account');
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Account.Name, 'Test Account');
     }
 }

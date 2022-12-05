@@ -56,6 +56,7 @@ public inherited sharing class ContentDocumentQuery extends Query {
      * Filters Content Document with Latest Version linked to given records
      */
     public ContentDocumentQuery byLinkedEntityId(Set<Id> linkedEntityId) {
+        withMockName('byLinkedEntityId');
         List<ContentDocumentLink> links = Database.query('SELECT ContentDocumentId FROM ContentDocumentLink WHERE LinkedEntityId IN :linkedEntityId');
 
         Set<Id> documentIds = new Set<Id>();

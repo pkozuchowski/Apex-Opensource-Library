@@ -69,6 +69,7 @@ public inherited sharing class EmailTemplateQuery extends Query {
      * @return Email Templates By given names
      */
     public EmailTemplateQuery byDeveloperName(Set<String> developerNames) {
+        withMockName('byDeveloperName');
         return (EmailTemplateQuery) byField(EmailTemplate.DeveloperName, 'IN', developerNames);
     }
 }

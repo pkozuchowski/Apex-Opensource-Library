@@ -33,7 +33,7 @@ public with sharing class PermissionSets {
     private static PermissionSet resolve(String name) {
         return (PermissionSet) Query.PermissionSets
             .byName(name)
-            .useCache(true)
+            .usingCache(true)
             .getFirstOrNull();
     }
 }

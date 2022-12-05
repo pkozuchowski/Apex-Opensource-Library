@@ -27,7 +27,7 @@
  */
 @JsonAccess(Serializable='never' Deserializable='never')
 public virtual inherited sharing class QueryObject {
-    private final static QueryMocker mocker = QueryMocker.getInstance();
+    public final static Map<String, Object> queryMocks = new Map<String, Object>();
     private final static QueryCache cache = QueryCache.getInstance();
 
     protected final QueryConditions conditionFactory = new QueryConditions();
@@ -42,7 +42,7 @@ public virtual inherited sharing class QueryObject {
     private Boolean useCache = !Test.isRunningTest();
     private Boolean saveResultsToCache = true;
     private String subqueryRelationshipName;
-    private String mockName;
+    private String mockName = '';
 
 
     /**
@@ -60,7 +60,7 @@ public virtual inherited sharing class QueryObject {
      */
     protected QueryObject(List<String> fields, SObjectType sObjectType) {
         this(sObjectType);
-        this.selectFields(fields);
+        this.withFields(fields);
     }
 
 
@@ -68,16 +68,8 @@ public virtual inherited sharing class QueryObject {
      * Selects All, Custom or Standard fields.
      * Query is restricted to 200 records in case of ALL and CUSTOM fields.
      */
-    public QueryObject selectFields(Query.Fields field) {
+    public QueryObject withFields(Query.Fields field) {
         this.queryBuilder.addField(field);
-        return this;
-    }
-
-    /**
-     * Selects given fields
-     */
-    public QueryObject selectFields(List<String> fields) {
-        this.queryBuilder.setFields(fields);
         return this;
     }
 
@@ -85,26 +77,28 @@ public virtual inherited sharing class QueryObject {
      * Selects given fields
      * @param fields Comma separated fields ex. selectFields('Id, Name, Username')
      */
-    public QueryObject selectFields(String fields) {
+    public QueryObject withFields(String fields) {
         List<String> fieldsSplit = fields.deleteWhitespace().split(',');
-        this.queryBuilder.setFields(fieldsSplit);
-        return this;
+        return withFields(fieldsSplit);
     }
 
     /**
      * Selects given fields
      */
-    public QueryObject selectAdditionalFields(List<String> fields) {
+    public QueryObject withFields(List<String> fields) {
         this.queryBuilder.addFields(fields);
         return this;
     }
 
+
     /**
      * Select all fields. Fields are retrieved from sObjectType describe and is different from selecting FIELDS(ALL) as the FIELDS(*) is restricted to 200 records
      */
-    public QueryObject selectAllFields() {
-        Set<String> allFields = sObjectType.getDescribe().fields.getMap().keySet();
-        this.queryBuilder.setFields(new List<String>(allFields));
+    public QueryObject withAllFields() {
+        List<SObjectField> allFields = sObjectType.getDescribe().fields.getMap().values();
+        for (SObjectField sObjectField : allFields) {
+            this.queryBuilder.addField('' + sObjectField);
+        }
         return this;
     }
 
@@ -113,15 +107,15 @@ public virtual inherited sharing class QueryObject {
      * Adds subquery with given fields and relationship name.
      * Disables caching.
      */
-    public QueryObject selectSubquery(String fieldsCSV, String relationshipName) {
-        return selectSubquery(fieldsCSV.deleteWhitespace().split(','), relationshipName);
+    public QueryObject withChildren(String fieldsCSV, String relationshipName) {
+        return withChildren(fieldsCSV.deleteWhitespace().split(','), relationshipName);
     }
 
     /**
      * Adds subquery with given fields and relationship name
      * Disables caching.
      */
-    public QueryObject selectSubquery(List<String> fields, String relationshipName) {
+    public QueryObject withChildren(List<String> fields, String relationshipName) {
         this.useCache = false;
         this.queryBuilder.addSubquery(fields, relationshipName);
         return this;
@@ -131,7 +125,7 @@ public virtual inherited sharing class QueryObject {
      * Adds another query as subquery
      * Disables caching.
      */
-    public QueryObject selectSubquery(QueryObject subquery, String relationshipName) {
+    public QueryObject withChildren(QueryObject subquery, String relationshipName) {
         this.useCache = false;
         subquery.subqueryRelationshipName = relationshipName;
         queryBuilder.addSubquery(subquery.toSOQL(this.bindings));
@@ -140,27 +134,44 @@ public virtual inherited sharing class QueryObject {
 
 
     /**
-     * Give this query unique name, which can be referenced in Unit Tests in QueryMocker to mock results for named query.
+     * Give this query unique name, which can be referenced in Unit Tests to mock results for named query.
      */
-    public QueryObject setMockName(String mockName) {
-        this.mockName = mockName;
+    public QueryObject withMockName(String mockName) {
+        this.mockName += mockName;
         return this;
     }
 
     /**
      * Sets limit on query
      */
-    public QueryObject limits(Integer l) {
+    public QueryObject withLimit(Integer l) {
         this.queryBuilder.setLimit(l);
         return this;
     }
 
     /**
+     * Sets limit on query
+     */
+    public QueryObject withOffset(Integer l) {
+        this.queryBuilder.setOffset(l);
+        return this;
+    }
+
+
+    /**
      * Sets group by on query
      */
-    public QueryObject groupBy(String fields) {
+    public QueryObject groupBy(String fields, String groupBy) {
+        return groupBy(fields.split(','), groupBy);
+    }
+
+    /**
+     * Sets group by on query
+     */
+    public QueryObject groupBy(List<String> fields, String groupBy) {
         this.useCache = false;
-        this.queryBuilder.setGroupBy(fields);
+        this.queryBuilder.setFields(fields);
+        this.queryBuilder.setGroupBy(groupBy);
         return this;
     }
 
@@ -168,11 +179,11 @@ public virtual inherited sharing class QueryObject {
     /**
      * Sets HAVING clause on group without any bindings
      * <pre>
-     * .havingConditions('COUNt(ID) > 1');
+     * .havingConditions('COUNT(ID) > 1');
      * </pre>
      */
     public QueryObject havingCondition(String fields) {
-        return havingCondition(fields, null);
+        return havingCondition(fields, new Map<String, Object>());
     }
 
     /**
@@ -227,8 +238,9 @@ public virtual inherited sharing class QueryObject {
     *
     * Since there is no proper way to handle method chaining of builder pattern with inheritance in Apex,
     * this method should be reimplemented where it's needed as public XXXSelector withoutCache();
+    * or used at the end of method chain.
     */
-    public QueryObject useCache(Boolean useCache) {
+    public QueryObject usingCache(Boolean useCache) {
         this.useCache = useCache;
         return this;
     }
@@ -240,7 +252,7 @@ public virtual inherited sharing class QueryObject {
      *
      * @throws System.NoAccessException No access to entity
      */
-    public QueryObject stripInaccessible(AccessType accessType) {
+    public QueryObject withFieldAccess(AccessType accessType) {
         this.accessType = accessType;
         return this;
     }
@@ -369,21 +381,21 @@ public virtual inherited sharing class QueryObject {
      * @return Id of first record or null if list has no results
      */
     public Id getFirstIdOrNull() {
-        return getFirstOrEmpty().Id;
+        return getFirstOrNull()?.Id;
     }
 
     /**
      * @return Field of first record or null if list has no results
      */
     public Object getFirstFieldOrNull(SObjectField field) {
-        return getFirstOrEmpty().get(field);
+        return getFirstOrNull()?.get(field);
     }
 
     /**
      * @return Field of first record or null if list has no results
      */
     public Object getFirstFieldOrFallback(SObjectField field, Object fallbackValue) {
-        Object val = getFirstOrEmpty().get(field);
+        Object val = getFirstOrNull()?.get(field);
         return val == null ? fallbackValue : val;
     }
 
@@ -407,30 +419,12 @@ public virtual inherited sharing class QueryObject {
         return result.isEmpty() ? null : result.get(0);
     }
 
-    /**
-     * @return First record or empty record instance if list has no results
-     */
-    public SObject getFirstOrEmpty() {
-        this.queryBuilder.setLimit(1);
-        List<SObject> result = executeQuery();
-        return result.isEmpty() ? sObjectType.newSObject(null, false) : result.get(0);
-    }
-
 
     /**
      * @return List of SObjects for given conditions
      */
     public SObject[] getList() {
         return executeQuery();
-    }
-
-
-    /**
-     * @return Collection of sObjects.
-     * Remove this method if you are deploying Query without Collection library
-     */
-    public Collection getCollection() {
-        return Collection.of(getList());
     }
 
 
@@ -451,6 +445,25 @@ public virtual inherited sharing class QueryObject {
         return resultMap;
     }
 
+    /**
+     * @return SObject map by unique string
+     */
+    public Map<String, SObject> getMapByString(SObjectField field) {
+        return getMapByString('' + field);
+    }
+
+    public Map<String, SObject> getMapByString(String field) {
+        Map<String, SObject> resultMap = (Map<String, SObject>) Type.forName('Map<String,' + sObjectType + '>')
+            .newInstance();
+
+        for (SObject record : getList()) {
+            String key = '' + record.get(field);
+            resultMap.put(key, record);
+        }
+
+        return resultMap;
+    }
+
 
     /**
      * @return Query Locator for current query
@@ -467,10 +480,8 @@ public virtual inherited sharing class QueryObject {
     * @return Count of records
     */
     public Integer getCount() {
-        return (Integer) selectFields('COUNT(Id) cnt')
-            .getList()
-            .get(0)
-            .get('cnt');
+        queryBuilder.setFields(new List<String>{'COUNT(Id) cnt'});
+        return (Integer) getList().get(0).get('cnt');
     }
 
 
@@ -479,7 +490,7 @@ public virtual inherited sharing class QueryObject {
     * Whenever possible, selector will use cached fields to
     */
     protected virtual Set<String> getFieldsToCacheBy() {
-        return new Set<String>{'Id'};
+        return new Set<String>{};
     }
 
 
@@ -488,8 +499,9 @@ public virtual inherited sharing class QueryObject {
     */
     protected SObject[] executeQuery() {
         try {
-            if (mocker.isMocked(mockName)) {
-                return mocker.getMock(mockName).mockQuery();
+            String mockKey = '' + this.sObjectType + '.' + mockName;
+            if (queryMocks.containsKey(mockKey)) {
+                return (SObject[]) queryMocks.get(mockKey);
             }
 
             List<SObject> result = getQueryResult();
@@ -603,6 +615,14 @@ public virtual inherited sharing class QueryObject {
         }
 
         return copy.toSOQL();
+    }
+
+    /**
+     * @return Query Binding's value
+     */
+    @TestVisible
+    private Object getBinding(String name) {
+        return bindings.getMap().get(name);
     }
 
     /**

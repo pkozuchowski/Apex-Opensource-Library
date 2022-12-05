@@ -24,34 +24,24 @@
 @IsTest(IsParallel=true)
 private class LeadQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        insert new List<Lead>{
-                new Lead(LastName = 'Name 1', Company = 'Company 1', Email = 'Email1@example.com'),
-                new Lead(LastName = 'Name 2', Company = 'Company 2', Email = 'Email2@example.com'),
-                new Lead(LastName = 'Name 3', Company = 'Company 3', Email = 'Email3@example.com'),
-                new Lead(LastName = 'Name 4', Company = 'Company 4', Email = 'Email4@example.com')
-        };
-    }
-
     @IsTest
     static void testSelectByName() {
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Lead WHERE Name = 'Name 1']),
-                new LeadQuery().byName('Name 1').getList());
+        String value = 'John Doe';
+        LeadQuery query = new LeadQuery().byName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Lead.Name, value);
     }
 
     @IsTest
     static void testSelectByEmail() {
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Lead WHERE Email = 'Email1@example.com']),
-                new LeadQuery().byEmail('Email1@example.com').getList());
+        String value = 'john@example.com';
+        LeadQuery query = new LeadQuery().byEmail(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Lead.Email, value);
     }
 
     @IsTest
     static void testSelectByCompany() {
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Lead WHERE Company = 'Company 1']),
-                new LeadQuery().byCompany('Company 1').getList());
+        String value = 'Company Name';
+        LeadQuery query = new LeadQuery().byCompany(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Lead.Company, value);
     }
 }

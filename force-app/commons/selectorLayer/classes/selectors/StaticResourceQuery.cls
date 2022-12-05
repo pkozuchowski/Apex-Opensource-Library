@@ -29,7 +29,7 @@ public inherited sharing class StaticResourceQuery extends Query {
 
     public StaticResourceQuery() {
         super(StaticResource.SObjectType);
-        selectFields(Query.Fields.STANDARD);
+        withFields(Query.Fields.STANDARD);
     }
 
 
@@ -44,6 +44,7 @@ public inherited sharing class StaticResourceQuery extends Query {
      * Filters Static Resource by given names
      */
     public StaticResourceQuery byName(Set<String> names) {
+        withMockName('byName');
         return (StaticResourceQuery) byField(StaticResource.Name, 'IN', names);
     }
 }

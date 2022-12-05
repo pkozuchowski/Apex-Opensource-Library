@@ -45,7 +45,7 @@ public inherited sharing class OpportunityQuery extends Query {
      * Opportunities will include information about parent Account field through Opportunity.AccountId field.
      */
     public OpportunityQuery withParentAccount() {
-        selectAdditionalFields(new List<String>{
+        withFields(new List<String>{
             'Account.Name'
         });
         return this;
@@ -63,6 +63,7 @@ public inherited sharing class OpportunityQuery extends Query {
      * Filters Opportunities by given names
      */
     public OpportunityQuery byName(Set<String> names) {
+        withMockName('byName');
         return (OpportunityQuery) byField(Opportunity.Name, 'IN', names);
     }
 
@@ -78,13 +79,7 @@ public inherited sharing class OpportunityQuery extends Query {
      * Filters Opportunities related to given account Ids
      */
     public OpportunityQuery byAccountId(Set<Id> accountIds) {
+        withMockName('byAccountId');
         return (OpportunityQuery) byField(Opportunity.AccountId, 'IN', accountIds);
-    }
-
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id'
-        };
     }
 }

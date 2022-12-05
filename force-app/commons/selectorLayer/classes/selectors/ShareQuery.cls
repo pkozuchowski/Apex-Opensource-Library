@@ -31,7 +31,7 @@ public inherited sharing class ShareQuery extends Query {
     public ShareQuery(SObjectType shareObjectType) {
         super(shareObjectType);
         this.parentField = getParentField();
-        this.selectFields(Query.Fields.STANDARD);
+        this.withFields(Query.Fields.STANDARD);
     }
 
 
@@ -39,6 +39,7 @@ public inherited sharing class ShareQuery extends Query {
      * @return Share records for given user or group ids
      */
     public ShareQuery byUserOrGroupId(Set<Id> userOrGroupIds) {
+        withMockName('byUserOrGroupId');
         return (ShareQuery) byField('UserOrGroupId', 'IN', userOrGroupIds);
     }
 
@@ -46,6 +47,7 @@ public inherited sharing class ShareQuery extends Query {
      * @return Share records for given records
      */
     public ShareQuery byParentId(Set<Id> parentIds) {
+        withMockName('byParentId');
         return (ShareQuery) byField(parentField, 'IN', parentIds);
     }
 
@@ -53,6 +55,7 @@ public inherited sharing class ShareQuery extends Query {
      * @return Share records for given records and users/groups
      */
     public ShareQuery byParentIdAndUserOrGroupId(Set<Id> parentIds, Set<Id> userOrGroupIds) {
+        withMockName('byParentIdAndUserOrGroupId');
         wheres(conditionFactory.ANDs(
             conditionFactory.field(parentField).isIn(parentIds),
             conditionFactory.field('UserOrGroupId').isIn(userOrGroupIds)

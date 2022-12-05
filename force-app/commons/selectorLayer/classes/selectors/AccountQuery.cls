@@ -56,7 +56,7 @@ public virtual inherited sharing class AccountQuery extends Query {
      * Accounts will be queried with related Contact records
      */
     public AccountQuery withContacts() {
-        selectSubquery(new List<String>{
+        withChildren(new List<String>{
             'Id'
         }, 'Contacts');
         return this;
@@ -66,7 +66,7 @@ public virtual inherited sharing class AccountQuery extends Query {
      * Accounts will be queried with related Opportunity records
      */
     public AccountQuery withOpportunities() {
-        selectSubquery(new List<String>{
+        withChildren(new List<String>{
             'Id'
         }, 'Opportunities');
         return this;
@@ -76,7 +76,7 @@ public virtual inherited sharing class AccountQuery extends Query {
      * Accounts will be queried with related Contact records
      */
     public AccountQuery withCases() {
-        selectSubquery(new List<String>{
+        withChildren(new List<String>{
             'Id'
         }, 'Cases');
         return this;
@@ -86,7 +86,7 @@ public virtual inherited sharing class AccountQuery extends Query {
      * Accounts will be queried with related child Account records
      */
     public AccountQuery withChildAccounts() {
-        selectSubquery(new List<String>{
+        withChildren(new List<String>{
             'Name'
         }, 'ChildAccounts');
         return this;
@@ -96,7 +96,7 @@ public virtual inherited sharing class AccountQuery extends Query {
      * Accounts will be queried with related Parent Account
      */
     public AccountQuery withParentAccount() {
-        return (AccountQuery) this.selectFields(new List<String>{
+        return (AccountQuery) this.withFields(new List<String>{
             'Parent.Name'
         });
     }
@@ -113,6 +113,7 @@ public virtual inherited sharing class AccountQuery extends Query {
      * Filters Accounts with given names
      */
     public AccountQuery byName(Set<String> names) {
+        withMockName('byName');
         return (AccountQuery) byField(Account.Name, 'IN', names);
     }
 

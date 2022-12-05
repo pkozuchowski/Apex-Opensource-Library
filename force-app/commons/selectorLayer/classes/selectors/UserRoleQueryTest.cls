@@ -26,63 +26,15 @@ private class UserRoleQueryTest {
 
     @IsTest
     static void testSelectByDeveloperName() {
-        UserRole userRole = [SELECT Id,DeveloperName FROM UserRole LIMIT 1];
-
-        Test.startTest();
-        UserRole role = (UserRole) new UserRoleQuery().byDeveloperName(userRole.DeveloperName).getFirstOrEmpty();
-        Test.stopTest();
-
-        System.assertEquals(userRole.DeveloperName, role.DeveloperName);
+        String value = 'UserRoleDevName';
+        UserRoleQuery query = new UserRoleQuery().byDeveloperName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, UserRole.DeveloperName, value);
     }
-
-
-    @IsTest
-    static void testSelectByDeveloperNames() {
-        Map<Id, UserRole> expected = new Map<Id, UserRole>([SELECT Id,DeveloperName FROM UserRole]);
-        Set<String> devNames = new Set<String>();
-        for (UserRole userRole : expected.values()) {
-            devNames.add(userRole.DeveloperName);
-        }
-
-        Test.startTest();
-        Map<Id, UserRole> result = (Map<Id, UserRole>) new UserRoleQuery().byDeveloperName((Set<String>) devNames).getMapById();
-        Test.stopTest();
-
-        System.assertEquals(expected.keySet(), result.keySet());
-    }
-
-
-    @IsTest
-    static void testSelectById() {
-        UserRole userRole = [SELECT Id,DeveloperName FROM UserRole LIMIT 1];
-
-        Test.startTest();
-        UserRole result = (UserRole) new UserRoleQuery().byId(userRole.Id).getFirstOrNull();
-        Test.stopTest();
-
-        System.assertEquals(userRole.DeveloperName, result.DeveloperName);
-    }
-
-
-    @IsTest
-    static void testSelectByIds() {
-        Map<Id, UserRole> expected = new Map<Id, UserRole>([SELECT Id,DeveloperName FROM UserRole]);
-        Map<Id, UserRole> result = (Map<Id, UserRole>) new UserRoleQuery().byId(expected.keySet()).getMapById();
-
-        System.assertEquals(expected.keySet(), result.keySet());
-    }
-
 
     @IsTest
     static void testSelectOfCurrentUser() {
-        UserRole[] roles = [SELECT Id FROM UserRole WHERE Id = :UserInfo.getUserRoleId()];
-
-        if (roles.isEmpty()) {
-            System.assertEquals(true, new UserRoleQuery().byCurrentUser().getList().isEmpty());
-
-        } else {
-            UserRole role = roles.isEmpty() ? null : roles[0];
-            System.assertEquals(role.Id, new UserRoleQuery().byCurrentUser().getFirstOrNull().Id);
-        }
+        Id value = UserInfo.getUserRoleId();
+        UserRoleQuery query = new UserRoleQuery().byCurrentUser();
+        QueryObjectTest.assertSOQLContainsFieldClause(query, UserRole.Id, '=', value);
     }
 }

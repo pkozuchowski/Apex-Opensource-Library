@@ -56,36 +56,39 @@ public inherited sharing class EventQuery extends Query {
      * Filters Events associated with given Accounts
      */
     public EventQuery byAccountId(Set<Id> accountIds) {
+        withMockName('byDeveloperName');
         return (EventQuery) byField(Event.AccountId, 'IN', accountIds);
     }
 
 
     /**
-     * Filters Events associated with given Account
+     * Filters Events associated with given WhatId
      */
     public EventQuery byWhatId(Id whatId) {
         return byWhatId(new Set<Id>{whatId});
     }
 
     /**
-     * Filters Events associated with given Accounts
+     * Filters Events associated with given whatIds
      */
     public EventQuery byWhatId(Set<Id> whatIds) {
+        withMockName('byDeveloperName');
         return (EventQuery) byField(Event.WhatId, 'IN', whatIds);
     }
 
 
     /**
-     * Filters Events associated with given Account
+     * Filters Events associated with given WhoId
      */
     public EventQuery byWhoId(Id whoId) {
         return byWhoId(new Set<Id>{whoId});
     }
 
     /**
-     * Filters Events associated with given Accounts
+     * Filters Events associated with given WhoIds
      */
     public EventQuery byWhoId(Set<Id> whoIds) {
+        withMockName('byDeveloperName');
         return (EventQuery) byField(Event.WhoId, 'IN', whoIds);
     }
 }

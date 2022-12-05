@@ -21,38 +21,22 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest
+@IsTest(IsParallel=true)
 private class QueueQueryTest {
-    private static final String QUERY_NAME = 'Queue Query Test';
-    private static final String QUERY_DEV_NAME = 'QueueQueryTest';
 
-    @TestSetup
-    static void testSetup() {
-        insert new Group(
-            Type = 'Queue',
-            DeveloperName = QUERY_DEV_NAME,
-            Name = QUERY_NAME
-        );
+    @IsTest
+    static void testSelectByName() {
+        String value = 'Group Name';
+        QueueQuery query = new QueueQuery().byName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Group.Name, value);
+        Assert.isTrue(query.toSOQL().containsIgnoreCase('FROM Group'));
     }
 
     @IsTest
-    static void testQueueSelector() {
-        Group queue = [SELECT Id, Name, DeveloperName FROM Group WHERE DeveloperName = :QUERY_DEV_NAME];
-        Integer queryCounts = 1;
-
-        new QueueQuery();
-        queryCounts += 1;
-        System.assertEquals(queryCounts, Limits.getQueries(), 'There should be 2 queries - one in test and another one caching all Queues in static block');
-
-
-        System.assertEquals(queue.Id, new QueueQuery().byId(queue.Id).useCache(true).getFirstIdOrNull());
-        System.assertEquals(queryCounts, Limits.getQueries(), 'Query by Id should use cache');
-
-        System.assertEquals(queue.Id, new QueueQuery().byDeveloperName(queue.DeveloperName).useCache(true).getFirstIdOrNull());
-        System.assertEquals(queryCounts, Limits.getQueries(), 'Query by DeveloperName should use cache');
-
-        System.assertEquals(queue.Id, new QueueQuery().byName(queue.Name).useCache(true).getFirstIdOrNull());
-        queryCounts += 1;
-        System.assertEquals(queryCounts, Limits.getQueries(), 'Query by Name should NOT use cache, because Name is not unique');
+    static void testSelectByDeveloeprName() {
+        String value = 'GroupDeveloperName';
+        QueueQuery query = new QueueQuery().byDeveloperName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Group.DeveloperName, value);
+        Assert.isTrue(query.toSOQL().containsIgnoreCase('FROM Group'));
     }
 }

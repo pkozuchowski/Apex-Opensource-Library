@@ -34,7 +34,7 @@ public inherited sharing class HistoryQuery extends Query {
     public HistoryQuery(SObjectType historySObjectType) {
         super(historySObjectType);
         this.parentField = getParentField();
-        this.selectFields(Query.Fields.STANDARD);
+        this.withFields(Query.Fields.STANDARD);
     }
 
 
@@ -42,6 +42,7 @@ public inherited sharing class HistoryQuery extends Query {
      * @return Share records for given records
      */
     public HistoryQuery byParentId(Set<Id> parentIds) {
+        withMockName('byDeveloperName');
         return (HistoryQuery) byField(parentField, 'IN', parentIds);
     }
 

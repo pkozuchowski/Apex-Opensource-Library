@@ -51,6 +51,7 @@ public inherited sharing class UserQuery extends Query {
      * Filters User with given names.
      */
     public UserQuery byName(Set<String> names) {
+        withMockName('byName');
         return (UserQuery) byField(User.Name, 'IN', names);
     }
 
@@ -65,6 +66,7 @@ public inherited sharing class UserQuery extends Query {
      * Filters User with given emails.
      */
     public UserQuery byEmail(Set<String> emails) {
+        withMockName('byEmail');
         return (UserQuery) byField(User.Email, 'IN', emails);
     }
 
@@ -79,6 +81,7 @@ public inherited sharing class UserQuery extends Query {
      * Filters User with given usernames.
      */
     public UserQuery byUsername(Set<String> usernames) {
+        withMockName('byUsername');
         return (UserQuery) byField(User.Username, 'IN', usernames);
     }
 
@@ -86,6 +89,7 @@ public inherited sharing class UserQuery extends Query {
      * Filters User record identified by UserInfo.getUserId().
      */
     public User getCurrentUser() {
+        withMockName('getCurrentUser');
         return (User) byId(UserInfo.getUserId()).getFirstOrNull();
     }
 

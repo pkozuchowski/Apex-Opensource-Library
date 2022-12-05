@@ -24,41 +24,24 @@
 @IsTest(IsParallel=true)
 private class OpportunityQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        Account account = new Account(Name = 'Parent Account');
-        insert account;
-
-        insert new List<Opportunity>{
-                new Opportunity(AccountId = account.Id, Name = 'Name 1', CloseDate = Date.today(), StageName = 'Prospecting'),
-                new Opportunity(AccountId = account.Id, Name = 'Name 2', CloseDate = Date.today(), StageName = 'Prospecting'),
-                new Opportunity(AccountId = account.Id, Name = 'Name 3', CloseDate = Date.today(), StageName = 'Prospecting')
-        };
-    }
-
     @IsTest
     static void testSelectWithParentAccount() {
-        Opportunity opp = (Opportunity) new OpportunityQuery()
-                .withParentAccount()
-                .byName(new Set<String>{'Name 1'})
-                .getFirstOrNull();
+        String soql = new OpportunityQuery().withParentAccount().toSOQL();
 
-        System.assertEquals('Parent Account', opp.Account.Name);
+        Assert.isTrue(soql.containsIgnoreCase('Account.Name'));
     }
 
     @IsTest
     static void testSelectByName() {
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Opportunity WHERE Name = 'Name 1']),
-                new OpportunityQuery().byName('Name 1').getList());
+        String value = 'Opportunity Name';
+        OpportunityQuery query = new OpportunityQuery().byName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Opportunity.Name, value);
     }
 
     @IsTest
     static void testSelectByAccountId() {
-        Account account = [SELECT Id FROM Account];
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Opportunity WHERE AccountId = :account.Id]),
-                new OpportunityQuery().byAccountId(account.Id).getList());
+        Id value = '001000000000000';
+        OpportunityQuery query = new OpportunityQuery().byAccountId(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Opportunity.AccountId, value);
     }
 }

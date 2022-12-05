@@ -37,7 +37,7 @@ public inherited sharing class OrgWideEmailAddressQuery extends Query {
 
     public OrgWideEmailAddressQuery() {
         super(OrgWideEmailAddress.SObjectType);
-        this.selectFields(Query.Fields.STANDARD);
+        this.withFields(Query.Fields.STANDARD);
     }
 
 
@@ -52,6 +52,7 @@ public inherited sharing class OrgWideEmailAddressQuery extends Query {
      * @return OrgWideEmailAddress by given Display Names
      */
     public OrgWideEmailAddressQuery byDisplayName(Set<String> names) {
+        withMockName('byDisplayName');
         return (OrgWideEmailAddressQuery) byField(OrgWideEmailAddress.DisplayName, 'IN', names);
     }
 
@@ -67,6 +68,7 @@ public inherited sharing class OrgWideEmailAddressQuery extends Query {
      * @return OrgWideEmailAddress by given Email Addresses
      */
     public OrgWideEmailAddressQuery byAddress(Set<String> names) {
+        withMockName('byAddress');
         return (OrgWideEmailAddressQuery) byField(OrgWideEmailAddress.Address, 'IN', names);
     }
 

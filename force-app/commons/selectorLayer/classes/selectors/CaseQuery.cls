@@ -47,7 +47,7 @@ public inherited sharing class CaseQuery extends Query {
      * Cases will include information about parent Account field through Case.AccountId field.
      */
     public CaseQuery withParentAccount() {
-        selectAdditionalFields(new List<String>{
+        withFields(new List<String>{
             'Account.Name'
         });
         return this;
@@ -65,6 +65,7 @@ public inherited sharing class CaseQuery extends Query {
      * Filters Cases by given names
      */
     public CaseQuery bySubject(Set<String> names) {
+        withMockName('bySubject');
         return (CaseQuery) byField(Case.Subject, 'IN', names);
     }
 
@@ -80,6 +81,7 @@ public inherited sharing class CaseQuery extends Query {
      * Filters Cases related to given account Ids
      */
     public CaseQuery byAccountId(Set<Id> accountIds) {
+        withMockName('byAccountId');
         return (CaseQuery) byField(Case.AccountId, 'IN', accountIds);
     }
 
@@ -95,6 +97,7 @@ public inherited sharing class CaseQuery extends Query {
      * Filters Cases related to given contact Ids
      */
     public CaseQuery byContactId(Set<Id> contactIds) {
+        withMockName('byContactId');
         return (CaseQuery) byField(Case.ContactId, 'IN', contactIds);
     }
 }

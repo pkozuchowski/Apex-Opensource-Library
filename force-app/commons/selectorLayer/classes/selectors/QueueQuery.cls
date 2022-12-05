@@ -39,7 +39,7 @@ public inherited sharing class QueueQuery extends Query {
 
     public QueueQuery() {
         super(Group.SObjectType);
-        selectFields(Query.Fields.STANDARD);
+        withFields(Query.Fields.STANDARD);
     }
 
 
@@ -54,6 +54,7 @@ public inherited sharing class QueueQuery extends Query {
      * Filters List of Queues for given Developer Names.
      */
     public QueueQuery byDeveloperName(Set<String> developerNames) {
+        withMockName('byDeveloperName');
         return (QueueQuery) byField(Group.DeveloperName, 'IN', developerNames);
     }
 
@@ -69,6 +70,7 @@ public inherited sharing class QueueQuery extends Query {
      * Filters Queues with given names (label).
      */
     public QueueQuery byName(Set<String> names) {
+        withMockName('byName');
         return (QueueQuery) byField(Group.Name, 'IN', names);
     }
 

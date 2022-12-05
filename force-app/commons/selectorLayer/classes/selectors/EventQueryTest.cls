@@ -25,50 +25,24 @@
 @IsTest(IsParallel=true)
 public inherited sharing class EventQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        Account account = new Account(Name = 'Parent Account');
-        insert account;
-
-        Contact contact = new Contact(LastName = 'Doe', AccountId = account.Id);
-        insert contact;
-
-        insert new Event[]{
-                new Event(Subject = 'Test',
-                        ActivityDateTime = Datetime.now(),
-                        EndDateTime = Datetime.now().addHours(12),
-                        WhatId = account.Id,
-                        WhoId = contact.Id)
-        };
-    }
-
     @IsTest
     static void testSelectByAccountId() {
-        Account account = [SELECT Id FROM Account];
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Event WHERE AccountId = :account.Id]),
-                new EventQuery().byAccountId(account.Id).getList()
-        );
+        Id value = '001000000000000';
+        EventQuery query = new EventQuery().byAccountId(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Event.AccountId, value);
     }
 
     @IsTest
     static void testSelectByWhatId() {
-        Account account = [SELECT Id FROM Account];
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Event WHERE WhatId = :account.Id]),
-                new EventQuery().byWhatId(account.Id).getList()
-        );
+        Id value = '001000000000000';
+        EventQuery query = new EventQuery().byWhatId(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Event.WhatId, value);
     }
 
     @IsTest
     static void testSelectByWhoId() {
-        Contact contact = [SELECT Id FROM Contact WHERE LastName = 'Doe'];
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Event WHERE WhoId = :contact.Id]),
-                new EventQuery().byWhoId(contact.Id).getList()
-        );
+        Id value = UserInfo.getUserId();
+        EventQuery query = new EventQuery().byWhoId(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Event.WhoId, value);
     }
 }

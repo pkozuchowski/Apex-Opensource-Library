@@ -29,14 +29,14 @@ public inherited sharing class PricebookEntryQuery extends Query {
 
     public PricebookEntryQuery() {
         super(PricebookEntry.SObjectType);
-        selectFields(Query.Fields.STANDARD);
+        withFields(Query.Fields.STANDARD);
     }
 
 
     /**
      * Filters PricebookEntry record with given name or null.
      */
-    public PricebookEntryQuery byProductId(Id productId) {
+    public PricebookEntryQuery byProduct2Id(Id productId) {
         return byProductId(new Set<Id>{productId});
     }
 
@@ -44,6 +44,7 @@ public inherited sharing class PricebookEntryQuery extends Query {
      * Filters PricebookEntry records with given productIds.
      */
     public PricebookEntryQuery byProductId(Set<Id> productIds) {
+        withMockName('byProductId');
         return (PricebookEntryQuery) byField(PricebookEntry.Product2Id, 'IN', productIds);
     }
 
@@ -51,7 +52,7 @@ public inherited sharing class PricebookEntryQuery extends Query {
     /**
      * Filters PricebookEntry record with given name or null.
      */
-    public PricebookEntryQuery byPricebookId(Id pricebookId) {
+    public PricebookEntryQuery byPricebook2Id(Id pricebookId) {
         return byPricebookId(new Set<Id>{pricebookId});
     }
 
@@ -59,6 +60,7 @@ public inherited sharing class PricebookEntryQuery extends Query {
      * Filters PricebookEntry records with given pricebookIds.
      */
     public PricebookEntryQuery byPricebookId(Set<Id> pricebookIds) {
+        withMockName('byPricebookId');
         return (PricebookEntryQuery) byField(PricebookEntry.Pricebook2Id, 'IN', pricebookIds);
     }
 }

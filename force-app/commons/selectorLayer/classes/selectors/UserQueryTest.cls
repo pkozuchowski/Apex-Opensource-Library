@@ -33,43 +33,22 @@ private class UserQueryTest {
 
     @IsTest
     static void testSelectByName() {
-        System.assertEquals(
-                [SELECT Id FROM User WHERE Name = :UserInfo.getName() LIMIT 1].Id,
-                new UserQuery().byName(UserInfo.getName()).getFirstOrEmpty().Id
-        );
-
-        Set<String> names = new Set<String>{UserInfo.getName()};
-        System.assertEquals(
-        [SELECT COUNT() FROM User WHERE Name IN :names],
-                new UserQuery().byName(names).getList().size()
-        );
+        String value = UserInfo.getName();
+        UserQuery query = new UserQuery().byName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, User.Name, value);
     }
 
     @IsTest
     static void testSelectByEmail() {
-        System.assertEquals(
-                [SELECT Id FROM User WHERE Email = :UserInfo.getUserEmail() LIMIT 1].Id,
-                new UserQuery().byEmail(UserInfo.getUserEmail()).getFirstOrEmpty().Id
-        );
-
-        Set<String> emails = new Set<String>{UserInfo.getUserEmail()};
-        System.assertEquals(
-        [SELECT COUNT() FROM User WHERE Email IN :emails],
-                new UserQuery().byEmail(emails).getList().size()
-        );
+        String value = UserInfo.getUserEmail();
+        UserQuery query = new UserQuery().byEmail(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, User.Email, value);
     }
 
     @IsTest
     static void testSelectByUsername() {
-        System.assertEquals(
-                [SELECT Id FROM User WHERE Username = :UserInfo.getUserName()].Id,
-                new UserQuery().byUsername(UserInfo.getUserName()).getFirstOrEmpty().Id
-        );
-
-        Set<String> usernames = new Set<String>{UserInfo.getUserName()};
-        System.assertEquals(
-        [SELECT COUNT() FROM User WHERE Username IN :usernames],
-                new UserQuery().byUsername(usernames).getList().size()
-        );
+        String value = UserInfo.getUserName();
+        UserQuery query = new UserQuery().byUsername(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, User.Username, value);
     }
 }

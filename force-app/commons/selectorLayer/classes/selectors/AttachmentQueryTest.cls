@@ -25,23 +25,16 @@
 @IsTest(IsParallel=true)
 public inherited sharing class AttachmentQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        Account account = new Account(Name = 'Parent Account');
-        insert account;
-
-        insert new Attachment(ParentId = account.Id, Name = 'Test', Body = Blob.valueOf('Test'));
-    }
-
-
 
     @IsTest
     static void testSelectByParentAndName() {
-        Account account = [SELECT Id FROM Account];
+        AttachmentQuery attachmentQuery = new AttachmentQuery()
+            .byParentIdAndName('001000000000000', 'Test');
+        String query = attachmentQuery.toSOQL();
 
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Attachment WHERE ParentId = :account.Id AND Name = 'Test']),
-                new AttachmentQuery().byParentIdAndName(account.Id, 'Test').getList()
-        );
+        Assert.isTrue(query.containsIgnoreCase('FROM Attachment'));
+        Assert.isTrue(query.containsIgnoreCase('WHERE ((ParentId IN :var0) AND (Name = :var1))'));
+        Assert.areEqual(new Set<Id>{'001000000000000'}, attachmentQuery.getBinding(':var0'));
+        Assert.areEqual('Test', attachmentQuery.getBinding(':var1'));
     }
 }

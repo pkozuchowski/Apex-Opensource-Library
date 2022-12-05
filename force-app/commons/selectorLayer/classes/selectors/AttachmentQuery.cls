@@ -29,13 +29,14 @@ public inherited sharing class AttachmentQuery extends Query {
 
     public AttachmentQuery() {
         super(Attachment.SObjectType);
-        selectFields(Query.Fields.STANDARD);
+        withFields(Query.Fields.STANDARD);
     }
 
     /**
      * Filters Attachments associated with given record
      */
     public AttachmentQuery byParentIdAndName(Id parentId, String name) {
+        withMockName('byParentIdAndName');
         return (AttachmentQuery) byParentId(parentId)
             .byField(Attachment.Name, '=', name);
     }
@@ -51,6 +52,7 @@ public inherited sharing class AttachmentQuery extends Query {
      * Filters Attachments associated with given records
      */
     public AttachmentQuery byParentId(Set<Id> parentIds) {
+        withMockName('byParentId');
         return (AttachmentQuery) byField(Attachment.ParentId, 'IN', parentIds);
     }
 }

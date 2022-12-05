@@ -27,9 +27,6 @@ private class ContentDocumentQueryTest {
 
     @TestSetup
     static void testSetup() {
-        Account account = new Account(Name = 'Test');
-        insert account;
-
         ContentVersion contentVersionInsert = new ContentVersion(
                 Title = 'Test',
                 PathOnClient = 'Test.jpg',
@@ -37,20 +34,11 @@ private class ContentDocumentQueryTest {
                 IsMajorVersion = true
         );
         insert contentVersionInsert;
-
-        ContentDocument document = [SELECT Id FROM ContentDocument];
-
-        insert new ContentDocumentLink(
-                LinkedEntityId = account.Id,
-                ContentDocumentId = document.Id,
-                ShareType = 'I'
-        );
     }
 
     @IsTest
     static void testSelectByLinkedEntityId() {
-        Account account = [SELECT Id FROM Account];
-        ContentDocument[] documents = new ContentDocumentQuery().byLinkedEntityId(account.Id).getList();
+        ContentDocument[] documents = new ContentDocumentQuery().byLinkedEntityId(UserInfo.getUserId()).getList();
 
         System.assertEquals(1, documents.size());
         System.assertEquals('Test', documents[0].LatestPublishedVersion.Title);

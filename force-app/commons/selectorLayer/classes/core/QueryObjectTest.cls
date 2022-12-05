@@ -28,28 +28,117 @@ public class QueryObjectTest {
 
         private TestUserQuery() {
             super(new List<String>{
-                'Id',
-                'Name',
-                'Email',
-                'Username'
+                'Id', 'Name', 'Email', 'Username'
             }, User.SObjectType);
         }
 
+        public TestUserQuery byUsername(String username) {
+            return (TestUserQuery) byField('Username', '=', username);
+        }
+
         protected override Set<String> getFieldsToCacheBy() {
-            return new Set<String>{
-                'Id', 'Username'
-            };
+            return new Set<String>{'Id', 'Username'};
         }
     }
 
+    @IsTest
+    static void testSelectFieldsToken() {
+        String soql = new TestUserQuery().withFields(Query.Fields.ALL).toSOQL();
+        Assert.isTrue(soql.containsIgnoreCase('SELECT FIELDS(ALL) FROM User'));
+    }
 
-    public static void assertEquals(SObject[] expected, SObject[] actual) {
-        System.assertEquals(
-            new Map<Id, SObject>(expected).keySet(),
-            new Map<Id, SObject>(actual).keySet()
+    @IsTest
+    static void testSelectFieldsString() {
+        String soql = new TestUserQuery().withFields('Parent.Name').toSOQL();
+        Assert.isTrue(soql.containsIgnoreCase('SELECT Id, Name, Email, Username, Parent.Name FROM User'), soql);
+    }
+
+    @IsTest
+    static void testSelectAllFields() {
+        String soql = new TestUserQuery().withAllFields().toSOQL();
+        Assert.isTrue(soql.containsIgnoreCase('Name'));
+        Assert.isTrue(soql.containsIgnoreCase('Username'));
+        Assert.isTrue(soql.containsIgnoreCase('FirstName'));
+    }
+
+    @IsTest
+    static void testSelectWithChildren() {
+        String soql = new TestUserQuery()
+            .withChildren('Id, Preference', 'UserPreferences')
+            .toSOQL();
+        Assert.isTrue(soql.containsIgnoreCase('( SELECT Id, Preference FROM UserPreferences )'));
+    }
+
+    @IsTest
+    static void testSelectWithChildrenSubquery() {
+        String soql = new TestUserQuery()
+            .withChildren(
+                Query.fromSObject(UserPreference.SObjectType)
+                    .withFields('Id, Preference'),
+                'UserPreferences')
+            .toSOQL();
+
+        System.debug(soql);
+        Assert.isTrue(soql.containsIgnoreCase('(SELECT Id, Preference FROM UserPreferences)'));
+    }
+
+    @IsTest
+    static void testWithLimitAndOffset() {
+        String soql = new TestUserQuery()
+            .withLimit(10)
+            .withOffset(5)
+            .toSOQL();
+
+        Assert.isNotNull(soql.containsIgnoreCase('LIMIT 10'));
+        Assert.isNotNull(soql.containsIgnoreCase('OFFSET 5'));
+    }
+
+    @IsTest
+    static void testGroupByHaving() {
+        QueryConditions c = new QueryConditions();
+        String soql = new TestUserQuery()
+            .groupBy('COUNT(ID) cnt, Profile.Name', 'Profile.Name')
+            .havingCondition(
+                c.ANDs(
+                    c.field('COUNT(ID)').greaterThan(0),
+                    c.field('COUNT(ID)').lessThan(10)
+                )
+            )
+            .toString();
+
+        Assert.areEqual(
+            '(SELECT COUNT(ID) cnt, Profile.Name FROM User ' +
+                'GROUP BY Profile.Name ' +
+                'HAVING ((COUNT(ID) > :var0) AND (COUNT(ID) < :var1)),' +
+
+                ' {:var0=0, :var1=10})',
+            soql
         );
     }
 
+    @IsTest
+    static void testHaving() {
+        String soql = new TestUserQuery()
+            .groupBy('COUNT(ID), ProfileId', 'ProfileId')
+            .havingCondition('COUNT(ID) > 1')
+            .toSOQL();
+
+        Assert.areEqual('SELECT COUNT(ID), ProfileId' +
+            ' FROM User' +
+            ' GROUP BY ProfileId' +
+            ' HAVING COUNT(ID) > 1', soql);
+    }
+
+    @IsTest
+    static void testSelectWheres() {
+        TestUserQuery query = (TestUserQuery) new TestUserQuery()
+            .wheres('Id = :userIds', new Map<String, Object>{
+                'userIds' => new Set<Id>{UserInfo.getUserId()}
+            });
+
+        Assert.isTrue(query.toSOQL().containsIgnoreCase('WHERE Id = :var0'));
+        Assert.areEqual(new Set<Id>{UserInfo.getUserId()}, query.getBinding(':var0'));
+    }
 
     @IsTest
     static void testSelectById() {
@@ -104,38 +193,64 @@ public class QueryObjectTest {
 
     @IsTest
     static void testSelectOne() {
-        User usr = (User) new TestUserQuery().getFirstOrEmpty();
+        User usr = (User) new TestUserQuery().getFirstOrNull();
         System.assertNotEquals(null, usr, 'Should query one user');
         System.assertEquals(1, Limits.getQueryRows(), 'Should limit query to 1');
     }
 
+    @IsTest
+    static void testOffset() {
+        String query = new TestUserQuery().withOffset(50).toSOQL();
+        Assert.isTrue(query.containsIgnoreCase('OFFSET 50'));
+    }
 
     @IsTest
     static void testCountBy() {
-        Integer cnt = (Integer) [SELECT COUNT(Id) cnt FROM User].get(0).get('cnt');
+        Integer cnt = [SELECT COUNT() FROM User];
         Integer queryCount = new TestUserQuery().getCount();
         System.assertEquals(cnt, queryCount, 'getCount() should return Integer');
     }
 
     @IsTest
+    static void testGetFirst() {
+        Assert.isNotNull(new TestUserQuery().getFirst());
+    }
+
+    @IsTest
+    static void testGetIds() {
+        Query.mock(User.SObjectType, 'testGetIds', new List<User>{
+            new User(Id = '005000000000001'),
+            new User(Id = '005000000000002')
+        });
+
+
+        Set<Id> ids = new TestUserQuery()
+            .withMockName('testGetIds')
+            .getIds();
+
+        Assert.areEqual(new Set<Id>{
+            '005000000000001',
+            '005000000000002'
+        }, ids);
+    }
+
+    @IsTest
     static void coverage() {
         new TestUserQuery()
-            .selectFields('Name')
-            .selectFields(new List<String>{'Name'})
-            .selectAdditionalFields(new List<String>{'Name'})
-            .selectFields(Query.Fields.STANDARD)
-            .selectAllFields()
+            .withFields('Name')
+            .withFields(new List<String>{'Name'})
+            .withAllFields()
             .withSharing(Sharing.WITHOUT_SHARING)
-            .useCache(true)
-            .stripInaccessible(AccessType.READABLE)
+            .usingCache(true)
+            .withFieldAccess(AccessType.READABLE)
             .byId(UserInfo.getUserId())
-            .limits(100)
+            .withLimit(100)
             .getFirstOrNull();
 
         new TestUserQuery().byId(UserInfo.getUserId()).getCount();
         new TestUserQuery().byId(UserInfo.getUserId()).getMapById();
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
-        new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrEmpty();
+        new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstIdOrNull();
         new TestUserQuery().byId(UserInfo.getUserId()).getQueryLocator();
         new TestUserQuery().byId(UserInfo.getUserId()).getFirstFieldOrNull(User.Name);
@@ -227,22 +342,87 @@ public class QueryObjectTest {
     }
 
     @IsTest
-    static void testAggregateQuery() {
-        QueryConditions c = new QueryConditions();
-        String soql = Query.fromSObject(User.SObjectType)
-            .selectFields('COUNT(ID), Email')
-            .groupBy('Email')
-            .havingCondition(
-                c.ANDs(
-                    c.field('COUNT(ID)').greaterThan(0),
-                    c.field('COUNT(ID)').lessThan(10)
-                )
-            )
-            .toString();
+    static void testMock() {
+        List<User> mockedResult = new List<User>{
+            new User(Username = 'mock@example.com')
+        };
+        Query.mock(User.SObjectType, 'getById', mockedResult);
 
+        List<User> queryResult = new TestUserQuery()
+            .withMockName('getById')
+            .getList();
+
+        Assert.areEqual(mockedResult.size(), queryResult.size());
+        Assert.areEqual(mockedResult[0].Username, queryResult[0].Username);
+    }
+
+    @IsTest
+    static void testGetMapByString() {
+        Query.mock(User.SObjectType, 'test', new List<SObject>{
+            new User(Username = '1@example.com'),
+            new User(Username = '2@example.com'),
+            new User(Username = '3@example.com')
+        });
+
+        Map<String, User> usersByUsername = (Map<String, User>) new TestUserQuery()
+            .withMockName('test')
+            .getMapByString(User.Username);
+
+        Assert.isTrue(usersByUsername.containsKey('1@example.com'));
+        Assert.isTrue(usersByUsername.containsKey('2@example.com'));
+        Assert.isTrue(usersByUsername.containsKey('3@example.com'));
+    }
+
+    @IsTest
+    static void testCaching() {
+        new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
+        new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
+        new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
+
+        Assert.areEqual(1, Limits.getQueries(), 'Once queried users should be saved in cache.');
+    }
+
+    public static void assertEquals(SObject[] expected, SObject[] actual) {
         System.assertEquals(
-            '(SELECT COUNT(ID), Email FROM User  GROUP BY Email HAVING ((COUNT(ID) > :var0) AND (COUNT(ID) < :var1)), {:var0=0, :var1=10})',
-            soql
+            new Map<Id, SObject>(expected).keySet(),
+            new Map<Id, SObject>(actual).keySet()
+        );
+    }
+
+    public static void assertSOQLContainsFieldInClause(QueryObject queryObject, SObjectField field, Object value) {
+        assertSOQLContainsFieldClause(queryObject, field, 'IN', value);
+    }
+
+    public static void assertSOQLContainsFieldClause(QueryObject queryObject, SObjectField field, String operator, Object value) {
+        String soql = queryObject.toSOQL();
+        String whereClause = String.format('WHERE ({0} {1} :var0)', new List<Object>{
+            field, operator
+        });
+
+        Assert.isTrue(soql.containsIgnoreCase(whereClause),
+            String.format('SOQL "{0}" should contain WHERE clause: "{1}"',
+                new List<Object>{soql, whereClause}
+            )
+        );
+
+        if (value instanceof Id) {
+            assertQueryHasBinding(queryObject, ':var0', new Set<Id>{(Id) value});
+        } else if (value instanceof String) {
+            assertQueryHasBinding(queryObject, ':var0', new Set<String>{(String) value});
+        }
+    }
+
+    public static void assertQueryHasBinding(QueryObject queryObject, String binding, Object value) {
+        Assert.areEqual(value, queryObject.getBinding(binding), 'Invalid query binding.');
+    }
+
+    public static void assertSOQLContains(QueryObject queryObject, String substring) {
+        String soql = queryObject.toSOQL();
+        Assert.isTrue(
+            soql.containsIgnoreCase(substring),
+            String.format('SOQL "{0}" should contain substring "{1}"', new List<Object>{
+                soql, substring
+            })
         );
     }
 }

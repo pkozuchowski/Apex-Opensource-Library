@@ -24,55 +24,40 @@
 @IsTest(IsParallel=true)
 private class ContactQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        Account account = new Account(Name = 'Parent Account');
-        insert account;
-
-        insert new List<Contact>{
-            new Contact(AccountId = account.Id, LastName = 'Name 1', Email = '1@example.com', Phone = '121'),
-            new Contact(AccountId = account.Id, LastName = 'Name 2', Email = '2@example.com', Phone = '122'),
-            new Contact(AccountId = account.Id, LastName = 'Name 3', Email = '3@example.com', Phone = '123')
-        };
-    }
-
     @IsTest
     static void testSelectWithParentAccount() {
-        Contact c = (Contact) new ContactQuery()
+        String soql = new ContactQuery()
             .withParentAccount()
-            .byName(new Set<String>{'Name 1'})
-            .getFirstOrNull();
+            .toSOQL();
 
-        System.assertEquals('Parent Account', c.Account.Name);
+        Assert.isTrue(soql.containsIgnoreCase('Account.Name'));
     }
 
     @IsTest
     static void testSelectByName() {
-        QueryObjectTest.assertEquals(
-            ([SELECT Id FROM Contact WHERE Name = 'Name 1']),
-            new ContactQuery().byName('Name 1').getList());
+        String value = 'John Doe';
+        ContactQuery query = new ContactQuery().byName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Contact.Name, value);
     }
 
     @IsTest
     static void testSelectByEmail() {
-        QueryObjectTest.assertEquals(
-            ([SELECT Id FROM Contact WHERE Email = '1@example.com']),
-            new ContactQuery().byEmail('1@example.com').getList());
+        String value = 'john@test.com';
+        ContactQuery query = new ContactQuery().byEmail(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Contact.Email, value);
     }
 
     @IsTest
     static void testSelectByAccountId() {
-        Account account = [SELECT Id FROM Account];
-
-        QueryObjectTest.assertEquals(
-            ([SELECT Id FROM Contact WHERE AccountId = :account.Id]),
-            new ContactQuery().byAccountId(account.Id).getList());
+        Id value = '001000000000000';
+        ContactQuery query = new ContactQuery().byAccountId(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Contact.AccountId, value);
     }
 
     @IsTest
     static void testSelectByPhone() {
-        QueryObjectTest.assertEquals(
-            ([SELECT Id FROM Contact WHERE Phone = '121']),
-            new ContactQuery().byPhone('121').getList());
+        String value = '123 456 789';
+        ContactQuery query = new ContactQuery().byPhone(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Contact.Phone, value);
     }
 }

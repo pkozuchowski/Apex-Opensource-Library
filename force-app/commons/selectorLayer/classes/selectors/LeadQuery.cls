@@ -54,6 +54,7 @@ public inherited sharing class LeadQuery extends Query {
      * Filters Leads by given names
      */
     public LeadQuery byName(Set<String> names) {
+        withMockName('byName');
         return (LeadQuery) byField(Lead.Name, 'IN', names);
     }
 
@@ -68,6 +69,7 @@ public inherited sharing class LeadQuery extends Query {
      * Filters Leads by given emails
      */
     public LeadQuery byEmail(Set<String> emails) {
+        withMockName('byEmail');
         return (LeadQuery) byField(Lead.Email, 'IN', emails);
     }
 
@@ -82,13 +84,7 @@ public inherited sharing class LeadQuery extends Query {
      * Filters Leads by given companies
      */
     public LeadQuery byCompany(Set<String> companies) {
+        withMockName('byCompany');
         return (LeadQuery) byField(Lead.Company, 'IN', companies);
-    }
-
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id'
-        };
     }
 }

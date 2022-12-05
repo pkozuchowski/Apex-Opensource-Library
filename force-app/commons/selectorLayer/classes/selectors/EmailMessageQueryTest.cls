@@ -25,24 +25,10 @@
 @IsTest(IsParallel=true)
 public inherited sharing class EmailMessageQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        Account account = new Account(Name = 'Parent Account');
-        insert account;
-
-        Case caase = new Case(AccountId = account.Id, Subject = 'Subject 1', Status = 'New', Origin = 'Web');
-        insert caase;
-
-        insert new EmailMessage(ParentId = caase.Id);
-    }
-
     @IsTest
     static void testSelectByParentId() {
-        Case caase = [SELECT Id FROM Case];
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM EmailMessage WHERE ParentId = :caase.Id]),
-                new EmailMessageQuery().byParentId(caase.Id).getList()
-        );
+        Id value = '001000000000000';
+        EmailMessageQuery query = new EmailMessageQuery().byParentId(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, EmailMessage.ParentId, value);
     }
 }

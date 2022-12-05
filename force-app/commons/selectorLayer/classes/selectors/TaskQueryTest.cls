@@ -25,48 +25,24 @@
 @IsTest(IsParallel=true)
 public inherited sharing class TaskQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        Account account = new Account(Name = 'Parent Account');
-        insert account;
-
-        Contact contact = new Contact(LastName = 'Doe', AccountId = account.Id);
-        insert contact;
-
-        insert new Task[]{
-                new Task(Subject = 'Test', WhatId = account.Id),
-                new Task(Subject = 'Test', WhatId = account.Id, WhoId = contact.Id)
-        };
-
-    }
-
     @IsTest
     static void testSelectByAccountId() {
-        Account account = [SELECT Id FROM Account];
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Task WHERE AccountId = :account.Id]),
-                new TaskQuery().byAccountId(account.Id).getList()
-        );
+        Id value = '001000000000000';
+        TaskQuery query = new TaskQuery().byAccountId(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Task.AccountId, value);
     }
 
     @IsTest
     static void testSelectByWhatId() {
-        Account account = [SELECT Id FROM Account];
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Task WHERE WhatId = :account.Id]),
-                new TaskQuery().byWhatId(account.Id).getList()
-        );
+        Id value = '001000000000000';
+        TaskQuery query = new TaskQuery().byWhatId(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Task.WhatId, value);
     }
 
     @IsTest
     static void testSelectByWhoId() {
-        Contact contact = [SELECT Id FROM Contact WHERE LastName = 'Doe'];
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Task WHERE WhoId = :contact.Id]),
-                new TaskQuery().byWhoId(contact.Id).getList()
-        );
+        Id value = UserInfo.getUserId();
+        TaskQuery query = new TaskQuery().byWhoId(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Task.WhoId, value);
     }
 }

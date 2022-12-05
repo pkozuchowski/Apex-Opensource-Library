@@ -30,7 +30,7 @@ public inherited sharing class UserRoleQuery extends Query {
 
     public UserRoleQuery() {
         super(UserRole.SObjectType);
-        selectFields(Query.Fields.STANDARD);
+        withFields(Query.Fields.STANDARD);
     }
 
 
@@ -38,6 +38,7 @@ public inherited sharing class UserRoleQuery extends Query {
     * @return UserRole of current user
     */
     public UserRoleQuery byCurrentUser() {
+        withMockName('byCurrentUser');
         return (UserRoleQuery) byField(UserRole.Id, '=', UserInfo.getUserRoleId());
     }
 
@@ -53,15 +54,13 @@ public inherited sharing class UserRoleQuery extends Query {
      * @return UserRoles by given developer names
      */
     public UserRoleQuery byDeveloperName(Set<String> developerNames) {
+        withMockName('byDeveloperName');
         return (UserRoleQuery) byField(UserRole.DeveloperName, 'IN', developerNames);
     }
 
 
     protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id',
-            'DeveloperName'
-        };
+        return new Set<String>{'Id', 'DeveloperName'};
     }
 
 }

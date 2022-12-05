@@ -24,53 +24,43 @@
 @IsTest(IsParallel=true)
 private class ShareQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        insert new Macro(Name = 'ShareQueryTest');
-    }
-
     @IsTest
     static void testSelectByUserOrGroup() {
-        Set<Id> userIds = new Set<Id>{UserInfo.getUserId()};
-        List<MacroShare> expected = [SELECT Id FROM MacroShare WHERE UserOrGroupId IN :userIds];
-        List<MacroShare> actual = new ShareQuery(MacroShare.SObjectType).byUserOrGroupId(userIds).getList();
+        Set<Id> filterValue = new Set<Id>{UserInfo.getUserId()};
+        ShareQuery query = new ShareQuery(MacroShare.SObjectType).byUserOrGroupId(filterValue);
+        String soql = query.toSOQL();
 
-        System.assertEquals(
-                new Map<Id, MacroShare>(expected).keySet(),
-                new Map<Id, MacroShare>(actual).keySet()
-        );
+        Assert.isTrue(soql.containsIgnoreCase('FROM MacroShare'));
+        Assert.isTrue(soql.containsIgnoreCase('WHERE (UserOrGroupId IN :var0)'));
+        Assert.areEqual(filterValue, query.getBinding(':var0'));
     }
 
     @IsTest
     static void testSelectByParentId() {
-        Set<Id> parentIds = new Set<Id>{[SELECT Id FROM Macro LIMIT 1][0].Id};
-        List<MacroShare> expected = [SELECT Id FROM MacroShare WHERE ParentId IN :parentIds];
-        List<MacroShare> actual = new ShareQuery(MacroShare.SObjectType).byParentId(parentIds).getList();
+        Set<Id> filterValue = new Set<Id>{'0JZ000000000000'};
+        ShareQuery query = new ShareQuery(MacroShare.SObjectType).byParentId(filterValue);
+        String soql = query.toSOQL();
 
-        System.assertEquals(
-                new Map<Id, MacroShare>(expected).keySet(),
-                new Map<Id, MacroShare>(actual).keySet()
-        );
+        Assert.isTrue(soql.containsIgnoreCase('FROM MacroShare'));
+        Assert.isTrue(soql.containsIgnoreCase('WHERE (ParentId IN :var0)'));
+        Assert.areEqual(filterValue, query.getBinding(':var0'));
     }
 
     @IsTest
     static void testSelectByParentIdAndUser() {
-        Set<Id> parentIds = new Set<Id>{[SELECT Id FROM Macro LIMIT 1][0].Id};
+        Set<Id> parentIds = new Set<Id>{'0JZ000000000000'};
         Set<Id> userIds = new Set<Id>{UserInfo.getUserId()};
 
-        List<MacroShare> expected = [SELECT Id FROM MacroShare WHERE ParentId IN :parentIds AND UserOrGroupId IN :userIds];
-        List<MacroShare> actual = new ShareQuery(MacroShare.SObjectType).byParentIdAndUserOrGroupId(parentIds, userIds).getList();
 
-        System.assertEquals(
-                new Map<Id, MacroShare>(expected).keySet(),
-                new Map<Id, MacroShare>(actual).keySet()
+        ShareQuery query = new ShareQuery(MacroShare.SObjectType).byParentIdAndUserOrGroupId(
+            parentIds, userIds
         );
-    }
+        String soql = query.toSOQL();
 
-    @IsTest
-    static void coverage() {
-        Set<Id> userIds = new Set<Id>{UserInfo.getUserId()};
-
-        new ShareQuery(AssetShare.SObjectType).byUserOrGroupId(userIds);
+        System.debug(soql);
+        Assert.isTrue(soql.containsIgnoreCase('FROM MacroShare'));
+        Assert.isTrue(soql.containsIgnoreCase('WHERE ((ParentId IN :var0) AND (UserOrGroupId IN :var1))'));
+        Assert.areEqual(parentIds, query.getBinding(':var0'));
+        Assert.areEqual(userIds, query.getBinding(':var1'));
     }
 }

@@ -24,21 +24,12 @@
 @IsTest
 private class PricebookQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        insert new List<Pricebook2>{
-                new Pricebook2(Name = 'Test Pricebook 0', IsActive = true),
-                new Pricebook2(Name = 'Test Pricebook 1', IsActive = true),
-                new Pricebook2(Name = 'Test Pricebook 2', IsActive = true),
-                new Pricebook2(Name = 'Test Pricebook 3', IsActive = false)
-        };
-    }
-
     @IsTest
-    static void testWithRelated() {
-        new PricebookQuery()
-                .withEntries()
-                .byName('Test Pricebook 0');
+    static void testWithEntries() {
+        QueryObjectTest.assertSOQLContains(
+            new PricebookQuery().withEntries(),
+            'FROM PricebookEntries'
+        );
     }
 
     /**
@@ -47,55 +38,16 @@ private class PricebookQueryTest {
     @IsTest
     static void testSelectStandardPricebookId() {
         System.assertEquals(
-                Test.getStandardPricebookId(),
-                new PricebookQuery().getStandardPricebookId()
+            Test.getStandardPricebookId(),
+            new PricebookQuery().getStandardPricebookId()
         );
     }
 
     @IsTest
-    static void testSelectById() {
-        Pricebook2 actual = [SELECT Id FROM Pricebook2 WHERE Name = 'Test Pricebook 0'];
-        Pricebook2 expected = (Pricebook2) new PricebookQuery().byId(actual.Id).getFirstOrNull();
-
-        System.assertEquals(actual.Id, expected.Id);
-    }
-
-    @IsTest
-    static void testSelectByIds() {
-        Map<Id, Pricebook2> actual = new Map<Id, Pricebook2>([
-                SELECT Id
-                FROM Pricebook2
-                WHERE Name IN ('Test Pricebook 0', 'Test Pricebook 1')
-        ]);
-        Map<Id, Pricebook2> expected = (Map<Id, Pricebook2>) new PricebookQuery().byId((Set<Id>) actual.keySet()).getMapById();
-
-        System.assertEquals(actual.keySet(), expected.keySet());
-    }
-
-    @IsTest
     static void testSelectByName() {
-        Pricebook2 actual = [SELECT Id FROM Pricebook2 WHERE Name = 'Test Pricebook 0'];
-        Pricebook2 expected = (Pricebook2) new PricebookQuery().byName('Test Pricebook 0').getFirstOrEmpty();
-
-        System.assertEquals(actual.Id, expected.Id);
+        String value = 'Pricebook Name';
+        PricebookQuery query = new PricebookQuery().byName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Pricebook2.Name, value);
     }
 
-    @IsTest
-    static void testSelectByNames() {
-        Map<Id, Pricebook2> actual = new Map<Id, Pricebook2>([
-                SELECT Id
-                FROM Pricebook2
-                WHERE Name IN ('Test Pricebook 0', 'Test Pricebook 1')
-        ]);
-        Map<Id, Pricebook2> expected = (Map<Id, Pricebook2>) new PricebookQuery().byName(new Set<String>{
-                'Test Pricebook 0', 'Test Pricebook 1'
-        }).getMapById();
-
-        System.assertEquals(actual.keySet(), expected.keySet());
-    }
-
-    @IsTest
-    static void testSelectorReturnsNullWhenPricebookIsNotFound() {
-        System.assertEquals(null, new PricebookQuery().byName('Other').getFirstOrNull());
-    }
 }

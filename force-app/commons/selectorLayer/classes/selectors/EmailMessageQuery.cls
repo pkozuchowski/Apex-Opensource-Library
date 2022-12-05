@@ -29,7 +29,7 @@ public inherited sharing class EmailMessageQuery extends Query {
 
     public EmailMessageQuery() {
         super(EmailMessage.SObjectType);
-        selectFields(Query.Fields.STANDARD);
+        withFields(Query.Fields.STANDARD);
     }
 
 
@@ -44,6 +44,7 @@ public inherited sharing class EmailMessageQuery extends Query {
      * Filters Email Messages associated with given records
      */
     public EmailMessageQuery byParentId(Set<Id> parentIds) {
+        withMockName('byParentId');
         return (EmailMessageQuery) byField(EmailMessage.ParentId, 'IN', parentIds);
     }
 }

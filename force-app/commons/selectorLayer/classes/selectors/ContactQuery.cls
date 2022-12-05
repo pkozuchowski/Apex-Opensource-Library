@@ -59,7 +59,7 @@ public inherited sharing class ContactQuery extends Query {
      * Contacts will include information about parent Account field through Contact.AccountId field.
      */
     public ContactQuery withParentAccount() {
-        selectAdditionalFields(new List<String>{
+        withFields(new List<String>{
             'Account.Name'
         });
         return this;
@@ -77,6 +77,7 @@ public inherited sharing class ContactQuery extends Query {
      * Filters Contacts with given names
      */
     public ContactQuery byName(Set<String> names) {
+        withMockName('byName');
         return (ContactQuery) byField(Contact.Name, 'IN', names);
     }
 
@@ -92,6 +93,7 @@ public inherited sharing class ContactQuery extends Query {
      * Filters Contacts with given emails
      */
     public ContactQuery byEmail(Set<String> emails) {
+        withMockName('byEmail');
         return (ContactQuery) byField(Contact.Email, 'IN', emails);
     }
 
@@ -107,6 +109,7 @@ public inherited sharing class ContactQuery extends Query {
      * Filters Contacts related to given account Ids
      */
     public ContactQuery byAccountId(Set<Id> accountIds) {
+        withMockName('byAccountId');
         return (ContactQuery) byField(Contact.AccountId, 'IN', accountIds);
     }
 
@@ -122,13 +125,7 @@ public inherited sharing class ContactQuery extends Query {
      * Filters Contacts with given Phone
      */
     public ContactQuery byPhone(Set<String> phone) {
+        withMockName('byPhone');
         return (ContactQuery) byField(Contact.Phone, 'IN', phone);
-    }
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id',
-            'Email'
-        };
     }
 }

@@ -26,32 +26,16 @@ private class EmailTemplateQueryTest {
 
     @IsTest
     static void testSelectByDeveloperName() {
+        String filterValue = 'devName';
+        EmailTemplateQuery query = new EmailTemplateQuery()
+            .withTextBody()
+            .withHtmlBody()
+            .byDeveloperName(filterValue);
+        String soql = query.toSOQL();
 
-        try {
-            EmailTemplate template = [
-                    SELECT Id, Name,DeveloperName, HtmlValue, Body
-                    FROM EmailTemplate
-                    LIMIT 1
-            ];
-
-
-            EmailTemplate actual = (EmailTemplate) new EmailTemplateQuery()
-                    .withHtmlBody()
-                    .withTextBody()
-                    .byDeveloperName(template.DeveloperName)
-                    .getFirstOrNull();
-
-            System.assertNotEquals(null, actual);
-            System.assertEquals(template.DeveloperName, actual.DeveloperName);
-            System.assertEquals(template.Body, actual.Body);
-            System.assertEquals(template.HtmlValue, actual.HtmlValue);
-            System.assertEquals(1, new EmailTemplateQuery().byDeveloperName(new Set<String>{template.DeveloperName}).getList().size());
-        } catch (QueryException ex) {
-            new EmailTemplateQuery()
-                    .withHtmlBody()
-                    .withTextBody()
-                    .byDeveloperName('');
-            System.assertEquals(0, new EmailTemplateQuery().byDeveloperName(new Set<String>{''}).getList().size());
-        }
+        Assert.isTrue(soql.containsIgnoreCase('WHERE (DeveloperName IN :var0)'));
+        Assert.isTrue(soql.containsIgnoreCase('Body'));
+        Assert.isTrue(soql.containsIgnoreCase('HtmlValue'));
+        Assert.areEqual(new Set<String>{filterValue}, query.getBinding(':var0'));
     }
 }

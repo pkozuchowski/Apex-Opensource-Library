@@ -24,38 +24,17 @@
 @IsTest
 private class PricebookEntryQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        List<Product2> product2s = new List<Product2>{
-                new Product2(Name = 'Name 1', ProductCode = 'Code 1', ExternalId = 'Code 1', IsActive = true),
-                new Product2(Name = 'Name 2', ProductCode = 'Code 2', ExternalId = 'Code 2', IsActive = true),
-                new Product2(Name = 'Name 3', ProductCode = 'Code 3', ExternalId = 'Code 3', IsActive = true)
-        };
-        insert product2s;
-
-        Id std = Test.getStandardPricebookId();
-        insert new List<PricebookEntry>{
-                new PricebookEntry(Pricebook2Id = std, Product2Id = product2s[0].Id, UnitPrice = 1),
-                new PricebookEntry(Pricebook2Id = std, Product2Id = product2s[1].Id, UnitPrice = 2),
-                new PricebookEntry(Pricebook2Id = std, Product2Id = product2s[2].Id, UnitPrice = 3)
-        };
-    }
-
-
     @IsTest
     static void testSelectByPricebookId() {
-        Id std = Test.getStandardPricebookId();
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM PricebookEntry WHERE Pricebook2Id = :std]),
-                new PricebookEntryQuery().byPricebookId(std).getList());
+        Id value = '01s3O0000028iRmQAI';
+        PricebookEntryQuery query = new PricebookEntryQuery().byPricebook2Id(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, PricebookEntry.Pricebook2Id, value);
     }
 
     @IsTest
     static void testSelectByProductId() {
-        List<Product2> product2s = [SELECT Id FROM Product2];
-
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM PricebookEntry WHERE Product2Id = :product2s[0].Id]),
-                new PricebookEntryQuery().byProductId(product2s[0].Id).getList());
+        Id value = '01s3O0000028iRmQAI';
+        PricebookEntryQuery query = new PricebookEntryQuery().byProduct2Id(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, PricebookEntry.Product2Id, value);
     }
 }

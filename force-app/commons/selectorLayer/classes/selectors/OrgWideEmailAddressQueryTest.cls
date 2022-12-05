@@ -25,12 +25,16 @@
 private class OrgWideEmailAddressQueryTest {
 
     @IsTest
-    static void testCoverage() {
-        new OrgWideEmailAddressQuery().byId('0D2000000000000').getList();
-        new OrgWideEmailAddressQuery().byId(new Set<Id>{'0D2000000000000'}).getList();
-        new OrgWideEmailAddressQuery().byDisplayName('test@example.com').getList();
-        new OrgWideEmailAddressQuery().byDisplayName(new Set<String>{'test@example.com'}).getList();
-        new OrgWideEmailAddressQuery().byAddress('test@example.com').getList();
-        new OrgWideEmailAddressQuery().byAddress(new Set<String>{'test@example.com'}).getList();
+    static void testSelectByDisplayName() {
+        String value = 'test@example.com';
+        OrgWideEmailAddressQuery query = new OrgWideEmailAddressQuery().byDisplayName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, OrgWideEmailAddress.DisplayName, value);
+    }
+
+    @IsTest
+    static void testSelectByAddress() {
+        String value = 'test@example.com';
+        OrgWideEmailAddressQuery query = new OrgWideEmailAddressQuery().byAddress(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, OrgWideEmailAddress.Address, value);
     }
 }

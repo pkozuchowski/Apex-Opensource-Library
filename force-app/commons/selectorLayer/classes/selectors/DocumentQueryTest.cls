@@ -25,25 +25,10 @@
 @IsTest(IsParallel=true)
 public inherited sharing class DocumentQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        insert new Document(
-                Name = 'DocumentQueryTest',
-                DeveloperName = 'DocumentQueryTest',
-                Body = Blob.valueOf('12'),
-                FolderId = UserInfo.getUserId()
-        );
-    }
-
     @IsTest
-    static void testSelectByParentId() {
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Document WHERE DeveloperName = 'DocumentQueryTest']),
-                new DocumentQuery().byDeveloperName('DocumentQueryTest').getList()
-        );
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Document WHERE DeveloperName = 'DocumentQueryTest']),
-                new DocumentQuery().byDeveloperName(new Set<String>{'DocumentQueryTest'}).getList()
-        );
+    static void testSelectByDeveloperName() {
+        String value = 'Doc_Name';
+        DocumentQuery query = new DocumentQuery().byDeveloperName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Document.DeveloperName, value);
     }
 }

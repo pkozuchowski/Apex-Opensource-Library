@@ -29,7 +29,7 @@ public inherited sharing class DocumentQuery extends Query {
 
     public DocumentQuery() {
         super(Document.SObjectType);
-        selectFields(Query.Fields.STANDARD);
+        withFields(Query.Fields.STANDARD);
     }
 
 
@@ -44,6 +44,7 @@ public inherited sharing class DocumentQuery extends Query {
      * @return Documents by given developer names
      */
     public DocumentQuery byDeveloperName(Set<String> developerNames) {
+        withMockName('byDeveloperName');
         return (DocumentQuery) byField(Document.DeveloperName, 'IN', developerNames);
     }
 }

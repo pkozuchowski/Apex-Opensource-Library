@@ -24,11 +24,14 @@
 @IsTest(IsParallel=true)
 private class HistoryQueryTest {
 
-    /**
-     * Just a coverage test, since it's hard to do any real tests without history tracking set up on org.
-     */
     @IsTest
-    static void coverage() {
-        SObject[] historyRecords = new HistoryQuery(MacroHistory.SObjectType).byParentId(new Set<Id>()).getList();
+    static void testSelectByParentId() {
+        Set<Id> filterValue = new Set<Id>{'001000000000000'};
+        HistoryQuery query = new HistoryQuery(AccountHistory.SObjectType).byParentId(filterValue);
+        String soql = query.toSOQL();
+
+        Assert.isTrue(soql.containsIgnoreCase('FROM AccountHistory'));
+        Assert.isTrue(soql.containsIgnoreCase('WHERE (AccountId IN :var0)'));
+        Assert.areEqual(filterValue, query.getBinding(':var0'));
     }
 }

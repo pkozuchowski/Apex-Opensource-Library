@@ -39,7 +39,7 @@ public with sharing class Profiles {
     private static Profile resolve(String name) {
         return (Profile) Query.Profiles
             .byName(name)
-            .useCache(true)
+            .usingCache(true)
             .getFirstOrNull();
     }
 }

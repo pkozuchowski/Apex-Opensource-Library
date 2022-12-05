@@ -26,24 +26,23 @@ private class BusinessHoursQueryTest {
 
     @IsTest
     static void testSelectDefault() {
-        BusinessHours[] expected = [SELECT Id FROM BusinessHours WHERE IsDefault = TRUE];
-        BusinessHours actual = (BusinessHours) new BusinessHoursQuery().byDefault(true).getFirstOrNull();
+        QueryObject query = new BusinessHoursQuery().byDefault(true);
+        String soql = query.toSOQL();
+        String whereClause = 'WHERE (IsDefault = :var0)';
 
-        if (!expected.isEmpty()) {
-            System.assertEquals(expected[0].Id, actual.Id);
-        }
+        Assert.isTrue(soql.containsIgnoreCase(whereClause),
+            String.format('SOQL "{0}" should contain WHERE clause: "{1}"',
+                new List<Object>{soql, whereClause}
+            )
+        );
+        Assert.areEqual(true, query.getBinding(':var0'));
     }
 
 
     @IsTest
     static void testSelectByName() {
-        BusinessHours[] expected = [SELECT Id,Name FROM BusinessHours WHERE IsActive = TRUE];
-
-        if (!expected.isEmpty()) {
-            System.assertEquals(
-                    expected[0].Id,
-                    new BusinessHoursQuery().byName(expected[0].Name).getFirstIdOrNull()
-            );
-        }
+        String value = 'Test Value';
+        QueryObject query = new BusinessHoursQuery().byName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, BusinessHours.Name, value);
     }
 }

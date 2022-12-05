@@ -57,7 +57,10 @@ public inherited sharing class QueryBuilder {
             offsetQueryPart
         };
 
-        return String.join(query, ' ').trim();
+        System.debug(String.join(query, ' '));
+        return String.join(query, ' ')
+            .trim()
+            .replaceAll('\\s{2,}', ' ');
     }
 
     public QueryBuilder addField(SObjectField field) {

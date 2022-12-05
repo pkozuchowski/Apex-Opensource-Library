@@ -24,40 +24,33 @@
 @IsTest(IsParallel=true)
 private class ProductQueryTest {
 
-    @TestSetup
-    static void testSetup() {
-        insert new List<Product2>{
-                new Product2(Name = 'Name 1', ProductCode = 'Code 1', ExternalId = 'Code 1', IsActive = true),
-                new Product2(Name = 'Name 2', ProductCode = 'Code 2', ExternalId = 'Code 2', IsActive = true),
-                new Product2(Name = 'Name 3', ProductCode = 'Code 3', ExternalId = 'Code 3', IsActive = true)
-        };
+    @IsTest
+    static void testWithPricebookEntries() {
+        ProductQuery productQuery = new ProductQuery().withPricebookEntries();
+        QueryObjectTest.assertSOQLContains(productQuery, 'FROM PricebookEntries )');
     }
 
     @IsTest
-    static void testWithEntries() {
-        new ProductQuery()
-                .withPricebookEntries()
-                .withPricebookEntries('01s000000000000');
+    static void testWitSpecifichPricebookEntries() {
+        ProductQuery productQuery = new ProductQuery().withPricebookEntries('01s000000000000');
+        QueryObjectTest.assertSOQLContains(productQuery, 'FROM PricebookEntries WHERE (Pricebook2Id IN :var0)');
     }
 
     @IsTest
     static void testSelectByName() {
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Product2 WHERE Name = 'Name 1']),
-                new ProductQuery().byName('Name 1').getList());
+        ProductQuery productQuery = new ProductQuery().byName('Product Name');
+        QueryObjectTest.assertSOQLContainsFieldInClause(productQuery, Product2.Name, 'Product Name');
     }
 
     @IsTest
     static void testSelectByProductCode() {
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Product2 WHERE ProductCode = 'Code 1']),
-                new ProductQuery().byProductCode('Code 1').getList());
+        ProductQuery productQuery = new ProductQuery().byProductCode('productCode');
+        QueryObjectTest.assertSOQLContainsFieldInClause(productQuery, Product2.ProductCode, 'productCode');
     }
 
     @IsTest
     static void testSelectByExternalId() {
-        QueryObjectTest.assertEquals(
-                ([SELECT Id FROM Product2 WHERE ExternalId = 'Code 1']),
-                new ProductQuery().byExternalId('Code 1').getList());
+        ProductQuery productQuery = new ProductQuery().byExternalId('externalId');
+        QueryObjectTest.assertSOQLContainsFieldInClause(productQuery, Product2.ExternalId, 'externalId');
     }
 }

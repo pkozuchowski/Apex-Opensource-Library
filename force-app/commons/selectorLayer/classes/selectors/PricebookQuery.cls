@@ -30,7 +30,7 @@ public inherited sharing class PricebookQuery extends Query {
 
     public PricebookQuery() {
         super(Pricebook2.SObjectType);
-        selectFields(Query.Fields.STANDARD);
+        withFields(Query.Fields.STANDARD);
     }
 
 
@@ -38,7 +38,7 @@ public inherited sharing class PricebookQuery extends Query {
      * Add Pricebook Entries to query
      */
     public PricebookQuery withEntries() {
-        selectSubquery(new List<String>{
+        withChildren(new List<String>{
             'Id',
             'Product2Id'
         }, 'PricebookEntries');
@@ -56,6 +56,7 @@ public inherited sharing class PricebookQuery extends Query {
      * Filters Pricebook2 records with given names.
      */
     public PricebookQuery byName(Set<String> names) {
+        withMockName('byName');
         return (PricebookQuery) byField(Pricebook2.Name, 'IN', names);
     }
 
@@ -63,10 +64,11 @@ public inherited sharing class PricebookQuery extends Query {
      * Filters Id of Standard Pricebook. In Unit Test context Test.getStandardPricebookId() value is returned.
      */
     public Id getStandardPricebookId() {
+        withMockName('getStandardPricebookId');
         if (Test.isRunningTest()) {
             return Test.getStandardPricebookId();
         } else {
-            return byField(Pricebook2.IsStandard, '=', true).getFirstOrEmpty().Id;
+            return byField(Pricebook2.IsStandard, '=', true).getFirstOrNull()?.Id;
         }
     }
 }

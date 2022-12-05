@@ -23,49 +23,11 @@
 */
 @IsTest(IsParallel=true)
 private class PermissionSetQueryTest {
-    private final static PermissionSet[] permissionSets = [SELECT Id, Name FROM PermissionSet WHERE IsOwnedByProfile = FALSE];
-
-    @IsTest
-    static void testSelectNull() {
-        System.assertEquals(null, new PermissionSetQuery().byName('PermissionSetQueryTest').getFirstOrNull());
-        System.assertEquals(null, new PermissionSetQuery().byId('001000000000000').getFirstOrNull());
-    }
-
-    @IsTest
-    static void testSelectById() {
-        if (!permissionSets.isEmpty()) {
-            PermissionSet permissionSet = permissionSets[0];
-
-            System.assertEquals(
-                    permissionSet.Id,
-                    new PermissionSetQuery().byId(permissionSet.Id).getFirstOrEmpty().Id
-            );
-
-            System.assertEquals(1, new PermissionSetQuery().byId(new Set<Id>{permissionSet.Id}).getList().size());
-        }
-    }
 
     @IsTest
     static void testSelectByName() {
-        if (!permissionSets.isEmpty()) {
-            PermissionSet permissionSet = permissionSets[0];
-
-            System.assertEquals(
-                    permissionSet.Id,
-                    new PermissionSetQuery().byName(permissionSet.Name).getFirstIdOrNull()
-            );
-        }
-    }
-
-    @IsTest
-    static void testSelectIdByName() {
-        if (!permissionSets.isEmpty()) {
-            PermissionSet permissionSet = permissionSets[0];
-
-            System.assertEquals(
-                    permissionSet.Id,
-                    new PermissionSetQuery().byName(permissionSet.Name).getFirstIdOrNull()
-            );
-        }
+        String value = 'Sales_Manager';
+        PermissionSetQuery query = new PermissionSetQuery().byName(value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, PermissionSet.Name, value);
     }
 }

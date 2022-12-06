@@ -44,7 +44,7 @@ public inherited sharing class PricebookEntryQuery extends Query {
      * Filters PricebookEntry records with given productIds.
      */
     public PricebookEntryQuery byProductId(Set<Id> productIds) {
-        withMockName('byProductId');
+        appendMockName('byProductId');
         return (PricebookEntryQuery) byField(PricebookEntry.Product2Id, 'IN', productIds);
     }
 
@@ -60,7 +60,7 @@ public inherited sharing class PricebookEntryQuery extends Query {
      * Filters PricebookEntry records with given pricebookIds.
      */
     public PricebookEntryQuery byPricebookId(Set<Id> pricebookIds) {
-        withMockName('byPricebookId');
+        appendMockName('byPricebookId');
         return (PricebookEntryQuery) byField(PricebookEntry.Pricebook2Id, 'IN', pricebookIds);
     }
 }

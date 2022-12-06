@@ -58,7 +58,7 @@ public inherited sharing class TaskQuery extends Query {
      * Filters Tasks associated with given Accounts
      */
     public TaskQuery byAccountId(Set<Id> accountIds) {
-        withMockName('byAccountId');
+        appendMockName('byAccountId');
         return (TaskQuery) byField(Task.AccountId, 'IN', accountIds);
     }
 
@@ -74,7 +74,7 @@ public inherited sharing class TaskQuery extends Query {
      * Filters Tasks associated with given Accounts
      */
     public TaskQuery byWhatId(Set<Id> whatIds) {
-        withMockName('byWhatId');
+        appendMockName('byWhatId');
         return (TaskQuery) byField(Task.WhatId, 'IN', whatIds);
     }
 
@@ -90,7 +90,7 @@ public inherited sharing class TaskQuery extends Query {
      * Filters Tasks associated with given Accounts
      */
     public TaskQuery byWhoId(Set<Id> whoIds) {
-        withMockName('byWhoId');
+        appendMockName('byWhoId');
         return (TaskQuery) byField(Task.WhoId, 'IN', whoIds);
     }
 

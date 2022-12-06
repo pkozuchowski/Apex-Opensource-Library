@@ -57,7 +57,6 @@ private class ShareQueryTest {
         );
         String soql = query.toSOQL();
 
-        System.debug(soql);
         Assert.isTrue(soql.containsIgnoreCase('FROM MacroShare'));
         Assert.isTrue(soql.containsIgnoreCase('WHERE ((ParentId IN :var0) AND (UserOrGroupId IN :var1))'));
         Assert.areEqual(parentIds, query.getBinding(':var0'));

@@ -44,7 +44,7 @@ public inherited sharing class DocumentQuery extends Query {
      * @return Documents by given developer names
      */
     public DocumentQuery byDeveloperName(Set<String> developerNames) {
-        withMockName('byDeveloperName');
+        appendMockName('byDeveloperName');
         return (DocumentQuery) byField(Document.DeveloperName, 'IN', developerNames);
     }
 }

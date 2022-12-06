@@ -113,7 +113,7 @@ public virtual inherited sharing class AccountQuery extends Query {
      * Filters Accounts with given names
      */
     public AccountQuery byName(Set<String> names) {
-        withMockName('byName');
+        appendMockName('byName');
         return (AccountQuery) byField(Account.Name, 'IN', names);
     }
 

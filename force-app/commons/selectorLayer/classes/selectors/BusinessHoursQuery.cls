@@ -64,7 +64,7 @@ public inherited sharing class BusinessHoursQuery extends Query {
      * @return Active Business Hours with given name
      */
     public QueryObject byDefault(Boolean isDefault) {
-        withMockName('byDefault');
+        appendMockName('byDefault');
         return byField(BusinessHours.IsDefault, '=', isDefault);
     }
 
@@ -80,7 +80,7 @@ public inherited sharing class BusinessHoursQuery extends Query {
      * @return Active Business Hours with given name
      */
     public QueryObject byName(Set<String> names) {
-        withMockName('byName');
+        appendMockName('byName');
         return (QueryObject) byField(BusinessHours.Name, 'IN', names);
     }
 

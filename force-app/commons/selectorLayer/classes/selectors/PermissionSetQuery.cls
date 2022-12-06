@@ -52,7 +52,7 @@ public inherited sharing class PermissionSetQuery extends Query {
      * Filter Permission Set by given name or null if it does not exist.
      */
     public PermissionSetQuery byName(Set<String> names) {
-        withMockName('byName');
+        appendMockName('byName');
         return (PermissionSetQuery) byField(PermissionSet.Name, 'IN', names);
     }
 

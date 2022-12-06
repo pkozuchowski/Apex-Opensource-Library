@@ -56,7 +56,7 @@ public inherited sharing class PricebookQuery extends Query {
      * Filters Pricebook2 records with given names.
      */
     public PricebookQuery byName(Set<String> names) {
-        withMockName('byName');
+        appendMockName('byName');
         return (PricebookQuery) byField(Pricebook2.Name, 'IN', names);
     }
 
@@ -64,7 +64,7 @@ public inherited sharing class PricebookQuery extends Query {
      * Filters Id of Standard Pricebook. In Unit Test context Test.getStandardPricebookId() value is returned.
      */
     public Id getStandardPricebookId() {
-        withMockName('getStandardPricebookId');
+        appendMockName('getStandardPricebookId');
         if (Test.isRunningTest()) {
             return Test.getStandardPricebookId();
         } else {

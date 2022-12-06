@@ -57,7 +57,6 @@ public inherited sharing class QueryBuilder {
             offsetQueryPart
         };
 
-        System.debug(String.join(query, ' '));
         return String.join(query, ' ')
             .trim()
             .replaceAll('\\s{2,}', ' ');

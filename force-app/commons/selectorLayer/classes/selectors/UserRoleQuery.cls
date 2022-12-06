@@ -38,7 +38,7 @@ public inherited sharing class UserRoleQuery extends Query {
     * @return UserRole of current user
     */
     public UserRoleQuery byCurrentUser() {
-        withMockName('byCurrentUser');
+        appendMockName('byCurrentUser');
         return (UserRoleQuery) byField(UserRole.Id, '=', UserInfo.getUserRoleId());
     }
 
@@ -54,7 +54,7 @@ public inherited sharing class UserRoleQuery extends Query {
      * @return UserRoles by given developer names
      */
     public UserRoleQuery byDeveloperName(Set<String> developerNames) {
-        withMockName('byDeveloperName');
+        appendMockName('byDeveloperName');
         return (UserRoleQuery) byField(UserRole.DeveloperName, 'IN', developerNames);
     }
 

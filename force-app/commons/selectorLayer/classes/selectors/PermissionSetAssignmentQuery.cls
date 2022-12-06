@@ -42,7 +42,7 @@ public inherited sharing class PermissionSetAssignmentQuery extends Query {
      * Filter Permission Sets Assignments to those of current user
      */
     public PermissionSetAssignmentQuery byCurrentUser() {
-        withMockName('byCurrentUser');
+        appendMockName('byCurrentUser');
         return byAssigneeId(UserInfo.getUserId());
     }
 
@@ -58,7 +58,7 @@ public inherited sharing class PermissionSetAssignmentQuery extends Query {
      * Filter Permission Sets Assignments to those of given users
      */
     public PermissionSetAssignmentQuery byAssigneeId(Set<Id> assigneeId) {
-        withMockName('byAssigneeId');
+        appendMockName('byAssigneeId');
         return (PermissionSetAssignmentQuery) byField(PermissionSetAssignment.AssigneeId, 'IN', assigneeId);
     }
 
@@ -74,7 +74,7 @@ public inherited sharing class PermissionSetAssignmentQuery extends Query {
      * Filter Permission Sets Assignments to those associated with given permission sets
      */
     public PermissionSetAssignmentQuery byPermissionSetId(Set<Id> permissionSetId) {
-        withMockName('byPermissionSetId');
+        appendMockName('byPermissionSetId');
         return (PermissionSetAssignmentQuery) byField(PermissionSetAssignment.PermissionSetId, 'IN', permissionSetId);
     }
 }

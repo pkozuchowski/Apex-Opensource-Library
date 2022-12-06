@@ -63,7 +63,7 @@ public inherited sharing class OpportunityQuery extends Query {
      * Filters Opportunities by given names
      */
     public OpportunityQuery byName(Set<String> names) {
-        withMockName('byName');
+        appendMockName('byName');
         return (OpportunityQuery) byField(Opportunity.Name, 'IN', names);
     }
 
@@ -79,7 +79,7 @@ public inherited sharing class OpportunityQuery extends Query {
      * Filters Opportunities related to given account Ids
      */
     public OpportunityQuery byAccountId(Set<Id> accountIds) {
-        withMockName('byAccountId');
+        appendMockName('byAccountId');
         return (OpportunityQuery) byField(Opportunity.AccountId, 'IN', accountIds);
     }
 }

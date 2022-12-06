@@ -78,7 +78,6 @@ public class QueryObjectTest {
                 'UserPreferences')
             .toSOQL();
 
-        System.debug(soql);
         Assert.isTrue(soql.containsIgnoreCase('(SELECT Id, Preference FROM UserPreferences)'));
     }
 
@@ -150,6 +149,33 @@ public class QueryObjectTest {
     }
 
     @IsTest
+    static void testSelectByRecordTypeId() {
+        String soql = new TestUserQuery().byRecordTypeId('001000000000000').toString();
+        Assert.areEqual(
+            '(SELECT Id, Name, Email, Username FROM User WHERE (RecordTypeId IN :var0), {:var0={001000000000000AAA}})',
+            soql
+        );
+    }
+
+    @IsTest
+    static void testSelectByRecordTypeDevName() {
+        String soql = new TestUserQuery().byRecordTypeDeveloperName('DeveloperName').toString();
+        Assert.areEqual(
+            '(SELECT Id, Name, Email, Username FROM User WHERE (RecordType.DeveloperName IN :var0), {:var0={DeveloperName}})',
+            soql
+        );
+    }
+
+    @IsTest
+    static void testSelectByOwnerId() {
+        String soql = new TestUserQuery().byOwnerId(UserInfo.getUserId()).toString();
+        Assert.areEqual(
+            '(SELECT Id, Name, Email, Username FROM User WHERE (OwnerId IN :var0), {:var0={' + UserInfo.getUserId() + '}})',
+            soql
+        );
+    }
+
+    @IsTest
     static void testSelectByIdSObject() {
         User user = (User) new TestUserQuery().byId(new List<User>{
             new User(Id = UserInfo.getUserId())
@@ -218,7 +244,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testGetIds() {
-        Query.mock(User.SObjectType, 'testGetIds', new List<User>{
+        new TestUserQuery().mock('testGetIds', new List<User>{
             new User(Id = '005000000000001'),
             new User(Id = '005000000000002')
         });
@@ -346,7 +372,7 @@ public class QueryObjectTest {
         List<User> mockedResult = new List<User>{
             new User(Username = 'mock@example.com')
         };
-        Query.mock(User.SObjectType, 'getById', mockedResult);
+        new TestUserQuery().mock('getById', mockedResult);
 
         List<User> queryResult = new TestUserQuery()
             .withMockName('getById')
@@ -358,7 +384,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testGetMapByString() {
-        Query.mock(User.SObjectType, 'test', new List<SObject>{
+        new TestUserQuery().mock('test', new List<SObject>{
             new User(Username = '1@example.com'),
             new User(Username = '2@example.com'),
             new User(Username = '3@example.com')

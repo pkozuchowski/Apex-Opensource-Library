@@ -44,7 +44,7 @@ public inherited sharing class EmailMessageQuery extends Query {
      * Filters Email Messages associated with given records
      */
     public EmailMessageQuery byParentId(Set<Id> parentIds) {
-        withMockName('byParentId');
+        appendMockName('byParentId');
         return (EmailMessageQuery) byField(EmailMessage.ParentId, 'IN', parentIds);
     }
 }

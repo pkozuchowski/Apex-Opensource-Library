@@ -36,7 +36,7 @@ public inherited sharing class AttachmentQuery extends Query {
      * Filters Attachments associated with given record
      */
     public AttachmentQuery byParentIdAndName(Id parentId, String name) {
-        withMockName('byParentIdAndName');
+        appendMockName('byParentIdAndName');
         return (AttachmentQuery) byParentId(parentId)
             .byField(Attachment.Name, '=', name);
     }
@@ -52,7 +52,7 @@ public inherited sharing class AttachmentQuery extends Query {
      * Filters Attachments associated with given records
      */
     public AttachmentQuery byParentId(Set<Id> parentIds) {
-        withMockName('byParentId');
+        appendMockName('byParentId');
         return (AttachmentQuery) byField(Attachment.ParentId, 'IN', parentIds);
     }
 }

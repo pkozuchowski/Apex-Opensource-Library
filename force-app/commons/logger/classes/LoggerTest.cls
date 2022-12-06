@@ -93,7 +93,6 @@ private class LoggerTest {
 
 
         Log__c log = [SELECT Response__c, Request__c FROM Log__c WHERE LoggingLevel__c = 'INFO' LIMIT 1];
-        System.debug('log: ' + JSON.serializePretty(log));
         System.assert(log.Response__c.contains('200 OK'));
         System.assert(log.Request__c.contains('{"value":"test"}'));
     }
@@ -121,7 +120,6 @@ private class LoggerTest {
 
 
         Log__c log = [SELECT Request__c, Response__c FROM Log__c WHERE LoggingLevel__c = 'INFO' LIMIT 1];
-        System.debug(log);
         System.assert(log.Response__c.contains('200'));
         System.assert(log.Response__c.contains('success'));
         System.assert(log.Request__c.contains('request'));

@@ -62,24 +62,6 @@ public inherited sharing virtual class Query extends QueryObject {
     }
 
     /**
-     * @param queryClass -
-     * @param mockName
-     *
-     * Usage in tests:
-     * <pre>
-     *     Query.mock(Account.SObjectType, 'byId', mockedAccounts);
-     *
-     *     //Uses AccountQuery
-     *     AccountService
-     *
-     * </pre>
-     */
-    public static void mock(SObjectType sObjectType, String mockName, List<SObject> results) {
-        QueryObject.queryMocks.put('' + sObjectType + '.' + mockName, results);
-    }
-
-
-    /**
      * @return Query instance for generic SObjectType
      *
      */

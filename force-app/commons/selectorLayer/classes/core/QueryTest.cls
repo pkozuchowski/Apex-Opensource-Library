@@ -63,4 +63,36 @@ private class QueryTest {
 
         System.assertEquals(1, users.size());
     }
+
+    @IsTest
+    static void testQueryMocking() {
+        Query.Accounts.mock('.byName.byRecordTypeDeveloperName', new List<Account>{
+            new Account(Name = 'Test')
+        });
+
+
+        Test.startTest();
+        List<Account> result = Query.Accounts
+            .byName('Test')
+            .byRecordTypeDeveloperName('PersonAccount')
+            .getList();
+        Test.stopTest();
+
+
+        Assert.areEqual(1, result.size());
+        Assert.areEqual('Test', result[0].Name);
+    }
+
+    @IsTest
+    static void testCountMock(){
+        Query.Accounts.mock('.byName', 10);
+
+
+        Test.startTest();
+        Integer result = Query.Accounts.byName('Test').getCount();
+        Test.stopTest();
+
+
+        Assert.areEqual(10, result);
+    }
 }

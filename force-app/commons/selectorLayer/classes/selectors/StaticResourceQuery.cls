@@ -44,7 +44,7 @@ public inherited sharing class StaticResourceQuery extends Query {
      * Filters Static Resource by given names
      */
     public StaticResourceQuery byName(Set<String> names) {
-        withMockName('byName');
+        appendMockName('byName');
         return (StaticResourceQuery) byField(StaticResource.Name, 'IN', names);
     }
 }

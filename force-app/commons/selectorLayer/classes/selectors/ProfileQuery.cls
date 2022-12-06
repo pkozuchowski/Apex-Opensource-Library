@@ -47,7 +47,7 @@ public inherited sharing class ProfileQuery extends Query {
     * Filters Profile of current user
     */
     public ProfileQuery byCurrentUser() {
-        withMockName('byCurrentUser');
+        appendMockName('byCurrentUser');
         return (ProfileQuery) byField(Profile.Id, '=', UserInfo.getProfileId());
     }
 
@@ -63,7 +63,7 @@ public inherited sharing class ProfileQuery extends Query {
      * Filters Profile records by given names.
      */
     public ProfileQuery byName(Set<String> names) {
-        withMockName('byName');
+        appendMockName('byName');
         return (ProfileQuery) byField(Profile.Name, 'IN', names);
     }
 

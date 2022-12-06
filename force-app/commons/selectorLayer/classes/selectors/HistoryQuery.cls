@@ -42,7 +42,7 @@ public inherited sharing class HistoryQuery extends Query {
      * @return Share records for given records
      */
     public HistoryQuery byParentId(Set<Id> parentIds) {
-        withMockName('byDeveloperName');
+        appendMockName('byDeveloperName');
         return (HistoryQuery) byField(parentField, 'IN', parentIds);
     }
 

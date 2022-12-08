@@ -74,12 +74,4 @@ public without sharing class TriggerDispatcher {
 
     private TriggerDispatcher() {
     }
-
-
-    /**
-     * Empty Implementation of Trigger Handler without any explicitly defined logic.
-     * Trigger will use only logic defined in custom metadata
-     */
-    private class CustomMetadataTrigger extends TriggerHandler {
-    }
 }

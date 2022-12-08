@@ -96,6 +96,26 @@
             <field>Outbound__c</field>
             <table>Log__c</table>
         </columns>
+        <columns>
+            <checkedByDefault>false</checkedByDefault>
+            <field>ExecutionTime__c</field>
+            <table>Log__c</table>
+        </columns>
+        <columns>
+            <checkedByDefault>false</checkedByDefault>
+            <field>Parameters__c</field>
+            <table>Log__c</table>
+        </columns>
+        <columns>
+            <checkedByDefault>false</checkedByDefault>
+            <field>RecordType</field>
+            <table>Log__c</table>
+        </columns>
+        <columns>
+            <checkedByDefault>false</checkedByDefault>
+            <field>User__c</field>
+            <table>Log__c</table>
+        </columns>
         <masterLabel>Logs</masterLabel>
     </sections>
 </ReportType>

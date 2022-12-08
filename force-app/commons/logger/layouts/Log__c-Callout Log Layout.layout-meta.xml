@@ -23,6 +23,10 @@
                 <behavior>Edit</behavior>
                 <field>LoggingLevel__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>ExecutionTime__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>

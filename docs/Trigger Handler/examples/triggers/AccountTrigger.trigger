@@ -23,14 +23,10 @@
  *  SOFTWARE.
  * /
  * *
- *  Please find newest source code at https://github.com/amorek/Apex-Opensource-Library
+ *  Please find newest source code at https://github.com/pkozuchowski/Apex-Opensource-Library
  * /
  */
 
 trigger AccountTrigger on Account (before insert, before update, before delete, after insert, after update, after delete, after undelete) {
-    /*Run explicitly defined Trigger Handler class*/
-//    TriggerDispatcher.run(new AccountTriggerHandler());
-
-    /*Run metadata defined trigger logic*/
-    TriggerDispatcher.runMetadataDefinedTriggers();
+    TriggerDispatcher.run(new AccountTriggerHandler());
 }

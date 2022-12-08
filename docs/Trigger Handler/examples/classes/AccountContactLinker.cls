@@ -1,10 +1,10 @@
-public inherited sharing class AccountContactLinker implements TriggerHandler.Logic {
+public inherited sharing class AccountContactLinker {
 
     /**
      * Trigger interface of this class - filters Account records that are new or changed Email and should have Contacts
      * assigned.
      */
-    public void execute(List<SObject> records, TriggerContext ctx) {
+    public void linkContactsToAccount(List<Account> records, TriggerContext ctx) {
         List<Account> filtered = filterRecordsToProcess(records, ctx);
 
         if (!filtered.isEmpty()) {

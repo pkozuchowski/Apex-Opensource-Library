@@ -42,23 +42,4 @@ public virtual inherited sharing class TriggerHandler {
     public virtual void onAfterDelete(List<SObject> triggerOld, TriggerContext tc) {}
 
     public virtual void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc) {}
-
-
-    /**
-     * Executes given trigger logic implementations.
-     */
-    public void execute(List<SObject> records, TriggerContext tc, List<Logic> triggerLogics) {
-        for (Logic logic : triggerLogics) {
-            logic.execute(records, tc);
-        }
-    }
-
-
-    /**
-     * This interface marks classes which should execute on trigger event.
-     * Implementing classes are defined in TriggerLogic custom metadata.
-     */
-    public interface Logic {
-        void execute(List<SObject> records, TriggerContext ctx);
-    }
 }

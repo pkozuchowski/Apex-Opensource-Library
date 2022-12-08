@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Report xmlns="http://soap.sforce.com/2006/04/metadata">
     <columns>
+        <field>Log__c$RecordType</field>
+    </columns>
+    <columns>
         <field>Log__c$Name</field>
     </columns>
     <columns>
@@ -13,10 +16,17 @@
         <field>Log__c$CreatedDate</field>
     </columns>
     <columns>
-        <field>Log__c$CreatedBy</field>
+        <field>Log__c$User__c</field>
+    </columns>
+    <columns>
+        <aggregateTypes>Sum</aggregateTypes>
+        <field>Log__c$ExecutionTime__c</field>
     </columns>
     <columns>
         <field>Log__c$Message__c</field>
+    </columns>
+    <columns>
+        <field>Log__c$Parameters__c</field>
     </columns>
     <format>Tabular</format>
     <name>Logs</name>

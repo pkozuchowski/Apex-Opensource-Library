@@ -30,15 +30,11 @@
 public with sharing class AccountTriggerHandler extends TriggerHandler {
 
     public override void onAfterInsert(List<SObject> triggerNew, TriggerContext tc) {
-        this.execute(triggerNew, tc, new List<Logic>{
-            new AccountContactLinker()
-        });
+        new AccountContactLinker().linkContactsToAccount(triggerNew, tc);
     }
 
     public override void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {
-        this.execute(triggerNew, tc, new List<Logic>{
-            new AccountContactLinker()
-        });
+        new AccountContactLinker().linkContactsToAccount(triggerNew, tc);
     }
 
 }

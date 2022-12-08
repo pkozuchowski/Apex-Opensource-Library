@@ -21,8 +21,6 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-
-@SuppressWarnings('sf:CommentRequired')
 @IsTest(IsParallel=true)
 private class TriggerDispatcherTest {
     private static final String
@@ -65,17 +63,15 @@ private class TriggerDispatcherTest {
      */
     private class TestAccountTriggerHandler extends TriggerHandler {
         public override void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
-            this.execute(triggerNew, tc, new List<TriggerHandler.Logic>{
-                new TestTriggerLogic()
-            });
+            new AccountAddressPopulator().populateDefaultAddress(triggerNew, tc);
         }
     }
 
     /**
      * Emulation of Trigger logic class
      */
-    public class TestTriggerLogic implements TriggerHandler.Logic {
-        public void execute(List<SObject> records, TriggerContext ctx) {
+    public class AccountAddressPopulator {
+        public void populateDefaultAddress(List<Account> records, TriggerContext ctx) {
             for (Account acc : (Account[]) records) {
                 if (String.isBlank(acc.BillingCountry)) {
                     acc.BillingCountry = COUNTRY_USA;
@@ -88,6 +84,7 @@ private class TriggerDispatcherTest {
             }
         }
     }
+
 
     @IsTest
     static void triggerShouldExecuteTriggerHandler() {
@@ -114,7 +111,6 @@ private class TriggerDispatcherTest {
      * Coverage tests for TriggerContext helper methods
      */
     @IsTest
-    @SuppressWarnings('sf:UnitAssertionsShouldIncludeMessage')
     static void testIsChangedHelperMethods() {
         Account record = new Account(
             Id = ID_1,

@@ -54,7 +54,7 @@ public with sharing class Logger {
      */
     public static void log(LoggingLevel loggingLevel, Log log) {
         if (LoggerSettings.shouldCreateLog(loggingLevel)) {
-            Log__c logRecord = log.getLogRecord();
+            LoggingEvent__e logRecord = log.getLogRecord();
             logRecord.ApexClass__c = Runtime.getCaller().apexClassMethod;
             logRecord.LoggingLevel__c = loggingLevel.name();
             System.debug(loggingLevel, JSON.serializePretty(logRecord));
@@ -72,18 +72,8 @@ public with sharing class Logger {
      * This is mainly for AuraEnabled methods which may have to throw AuraHandledException for proper aura handling,
      * but would not be able to save logs under normal circumstances.
      */
-    private static void emitLogEvent(Log__c log) {
-        EventBus.publish(new LoggingEvent__e(
-            ApexClass__c = log.ApexClass__c,
-            HttpStatus__c = log.HttpStatus__c,
-            LoggingLevel__c = log.LoggingLevel__c,
-            Message__c = log.Message__c,
-            Outbound__c = log.Outbound__c,
-            ReferenceId__c = log.ReferenceId__c,
-            Request__c = log.Request__c,
-            Response__c = log.Response__c,
-            UserId__c = UserInfo.getUserId()
-        ));
+    private static void emitLogEvent(LoggingEvent__e log) {
+        EventBus.publish(log);
     }
 
     private Logger() {}

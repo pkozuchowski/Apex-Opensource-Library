@@ -39,11 +39,11 @@ private class DatabaseServiceTest {
                             .build()
                     );
 
-            databaseService.doInsert(acc);
-            databaseService.doUpdate(acc);
-            databaseService.doUpsert(acc, Account.Id);
-            databaseService.doDelete(acc);
-            databaseService.doUndelete(acc);
+            databaseService.insertRecord(acc);
+            databaseService.updateRecord(acc);
+            databaseService.upsertRecord(acc, Account.Id);
+            databaseService.deleteRecord(acc);
+            databaseService.undeleteRecord(acc);
             databaseService.query('SELECT ID FROM Account');
         }
     }

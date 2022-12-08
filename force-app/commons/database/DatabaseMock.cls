@@ -33,11 +33,11 @@
 public with sharing class DatabaseMock {
     @TestVisible final static String GENERIC_ERROR = 'Mocked DML Error';
 
-    public List<SObject> inserted = new List<SObject>();
-    public List<SObject> updated = new List<SObject>();
-    public List<SObject> upserted = new List<SObject>();
-    public List<SObject> deleted = new List<SObject>();
-    public List<SObject> undeleted = new List<SObject>();
+    public List<SObject> insertedRecords = new List<SObject>();
+    public List<SObject> updatedRecords = new List<SObject>();
+    public List<SObject> upsertedRecords = new List<SObject>();
+    public List<SObject> deletedRecords = new List<SObject>();
+    public List<SObject> undeletedRecords = new List<SObject>();
 
     private final List<ErrorMatcher> errorMatchers = new List<ErrorMatcher>();
 

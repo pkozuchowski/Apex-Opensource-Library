@@ -41,10 +41,10 @@ private class DatabaseMockTest {
 
         public void doBusinessLogic() {
             Account parentAccount = new Account(Name = 'Parent Account');
-            databaseService.doInsert(parentAccount);
+            databaseService.insertRecord(parentAccount);
 
             Account childAccount = new Account(Name = 'Child Account', ParentId = parentAccount.Id);
-            databaseService.doInsert(childAccount);
+            databaseService.insertRecord(childAccount);
 
 
             List<Contact> contacts = new List<Contact>{
@@ -52,12 +52,12 @@ private class DatabaseMockTest {
                 new Contact(FirstName = 'John', LastName = 'Doe2', AccountId = childAccount.Id),
                 new Contact(FirstName = 'John', LastName = 'Doe3', AccountId = childAccount.Id)
             };
-            databaseService.doInsert(contacts);
+            databaseService.insertRecords(contacts);
 
             contacts[0].MailingCity = 'Test City';
-            databaseService.doUpdate(contacts[0]);
-            databaseService.doUpsert(contacts[1], Contact.Name);
-            databaseService.doDelete(contacts[2]);
+            databaseService.updateRecord(contacts[0]);
+            databaseService.upsertRecord(contacts[1], Contact.Name);
+            databaseService.deleteRecord(contacts[2]);
         }
     }
 
@@ -74,11 +74,11 @@ private class DatabaseMockTest {
 
         System.debug(JSON.serializePretty(db));
 
-        Assert.areEqual(5, db.inserted.size());
-        Account parentAccount = (Account) db.inserted.get(0);
-        Account childAccount = (Account) db.inserted.get(1);
-        Contact contact1 = (Contact) db.inserted.get(2);
-        Contact contact2 = (Contact) db.inserted.get(3);
+        Assert.areEqual(5, db.insertedRecords.size());
+        Account parentAccount = (Account) db.insertedRecords.get(0);
+        Account childAccount = (Account) db.insertedRecords.get(1);
+        Contact contact1 = (Contact) db.insertedRecords.get(2);
+        Contact contact2 = (Contact) db.insertedRecords.get(3);
 
         Assert.areEqual('Parent Account', parentAccount.Name);
         Assert.isNotNull(parentAccount.Id);
@@ -96,9 +96,9 @@ private class DatabaseMockTest {
         Assert.areEqual(Contact.SObjectType, contact1.Id.getSobjectType());
         Assert.areNotEqual(contact1.Id, contact2.Id);
 
-        Assert.areEqual(1, db.updated.size());
-        Assert.areEqual(1, db.upserted.size());
-        Assert.areEqual(1, db.deleted.size());
+        Assert.areEqual(1, db.updatedRecords.size());
+        Assert.areEqual(1, db.upsertedRecords.size());
+        Assert.areEqual(1, db.deletedRecords.size());
     }
 
 
@@ -109,7 +109,7 @@ private class DatabaseMockTest {
 
 
         Test.startTest();
-        List<Database.DeleteResult> deleteResults = dbService.doDelete(new List<Contact>{
+        List<Database.DeleteResult> deleteResults = dbService.deleteRecords(new List<Contact>{
             new Contact(LastName = 'Doe1'),
             new Contact(LastName = 'Doe2'),
             new Contact(LastName = 'Doe3')
@@ -140,7 +140,7 @@ private class DatabaseMockTest {
 
 
         Test.startTest();
-        List<Database.DeleteResult> deleteResults = dbService.doDelete(new List<Contact>{
+        List<Database.DeleteResult> deleteResults = dbService.deleteRecords(new List<Contact>{
             new Contact(FirstName = 'John', LastName = 'Doe1', AccountId = DatabaseService.getFakeId(Account.SObjectType)),
             new Contact(FirstName = 'John', LastName = 'Doe2', AccountId = accountId),
             new Contact(FirstName = 'John', LastName = 'Doe3', AccountId = DatabaseService.getFakeId(Account.SObjectType))
@@ -164,17 +164,17 @@ private class DatabaseMockTest {
         Contact contact = new Contact(LastName = 'Doe1');
 
 
-        Assert.isTrue(dbService.doInsert(account).success);
-        Assert.isTrue(dbService.doUpdate(account).success);
-        Assert.isTrue(dbService.doUpsert(account, Schema.Account.Name).success);
-        Assert.isFalse(dbService.doDelete(account).success, 'All deletes should fail');
-        Assert.isTrue(dbService.doUndelete(account).success);
+        Assert.isTrue(dbService.insertRecord(account).success);
+        Assert.isTrue(dbService.updateRecord(account).success);
+        Assert.isTrue(dbService.upsertRecord(account, Schema.Account.Name).success);
+        Assert.isFalse(dbService.deleteRecord(account).success, 'All deletes should fail');
+        Assert.isTrue(dbService.undeleteRecord(account).success);
 
-        Assert.isTrue(dbService.doInsert(contact).success);
-        Assert.isFalse(dbService.doUpdate(contact).success, 'Specific Contact Updates should fail');
-        Assert.isTrue(dbService.doUpdate(new Contact(LastName = 'OtherDoe')).success);
-        Assert.isTrue(dbService.doUpsert(contact, Schema.Account.Name).success);
-        Assert.isFalse(dbService.doDelete(contact).success, 'All deletes should fail');
+        Assert.isTrue(dbService.insertRecord(contact).success);
+        Assert.isFalse(dbService.updateRecord(contact).success, 'Specific Contact Updates should fail');
+        Assert.isTrue(dbService.updateRecord(new Contact(LastName = 'OtherDoe')).success);
+        Assert.isTrue(dbService.upsertRecord(contact, Schema.Account.Name).success);
+        Assert.isFalse(dbService.deleteRecord(contact).success, 'All deletes should fail');
     }
 
 
@@ -186,17 +186,17 @@ private class DatabaseMockTest {
         Account account = new Account();
         Contact contact = new Contact();
 
-        Assert.isTrue(dbService.doInsert(account).success);
-        Assert.isTrue(dbService.doUpdate(account).success);
-        Assert.isTrue(dbService.doUpsert(account, Schema.Account.Name).success);
-        Assert.isTrue(dbService.doDelete(account).success);
-        Assert.isTrue(dbService.doUndelete(account).success);
+        Assert.isTrue(dbService.insertRecord(account).success);
+        Assert.isTrue(dbService.updateRecord(account).success);
+        Assert.isTrue(dbService.upsertRecord(account, Schema.Account.Name).success);
+        Assert.isTrue(dbService.deleteRecord(account).success);
+        Assert.isTrue(dbService.undeleteRecord(account).success);
 
-        Assert.isFalse(dbService.doInsert(contact).success);
-        Assert.isFalse(dbService.doUpdate(contact).success);
-        Assert.isFalse(dbService.doUpsert(contact, Schema.Account.Name).success);
-        Assert.isFalse(dbService.doDelete(contact).success);
-        Assert.isFalse(dbService.doUndelete(contact).success);
+        Assert.isFalse(dbService.insertRecord(contact).success);
+        Assert.isFalse(dbService.updateRecord(contact).success);
+        Assert.isFalse(dbService.upsertRecord(contact, Schema.Account.Name).success);
+        Assert.isFalse(dbService.deleteRecord(contact).success);
+        Assert.isFalse(dbService.undeleteRecord(contact).success);
     }
 
 
@@ -207,7 +207,7 @@ private class DatabaseMockTest {
 
 
         try {
-            Database.SaveResult saveResults = dbService.doInsert(new Contact(LastName = 'Doe1'));
+            Database.SaveResult saveResults = dbService.insertRecord(new Contact(LastName = 'Doe1'));
             Assert.fail('Should throw exception');
 
         } catch (Exception e) {

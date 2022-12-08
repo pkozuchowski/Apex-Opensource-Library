@@ -121,46 +121,45 @@ public class DatabaseService {
         return dmlIssuer.getQueryLocator(query, boundVars == null ? new Map<String, Object>() : boundVars);
     }
 
-
-    public Database.SaveResult doInsert(SObject record) {
-        return doInsert(new List<SObject>{record})[0];
+    public Database.SaveResult insertRecord(SObject record) {
+        return insertRecords(new List<SObject>{record})[0];
     }
-    public List<Database.SaveResult> doInsert(List<SObject> records) {
-        return dmlIssuer.doInsert(records, dmlOptions);
-    }
-
-
-    public Database.SaveResult doUpdate(SObject record) {
-        return doUpdate(new List<SObject>{record})[0];
-    }
-    public List<Database.SaveResult> doUpdate(List<SObject> records) {
-        return dmlIssuer.doUpdate(records, dmlOptions);
+    public List<Database.SaveResult> insertRecords(List<SObject> records) {
+        return dmlIssuer.insertRecords(records, dmlOptions);
     }
 
 
-    public Database.UpsertResult doUpsert(SObject record, SObjectField field) {
-        return doUpsert(nonGenericSObjectList(record), field)[0];
+    public Database.SaveResult updateRecord(SObject record) {
+        return updateRecords(new List<SObject>{record})[0];
     }
-    public List<Database.UpsertResult> doUpsert(List<SObject> records, SObjectField field) {
-        return dmlIssuer.doUpsert(records, field, dmlOptions.optAllOrNone);
-    }
-
-
-    public Database.DeleteResult doDelete(SObject record) {
-        return doDelete(new List<SObject>{record})[0];
-    }
-
-    public List<Database.DeleteResult> doDelete(List<SObject> records) {
-        return dmlIssuer.doDelete(records, isAllOrNone());
+    public List<Database.SaveResult> updateRecords(List<SObject> records) {
+        return dmlIssuer.updateRecords(records, dmlOptions);
     }
 
 
-    public Database.UndeleteResult doUndelete(SObject record) {
-        return doUndelete(new List<SObject>{record})[0];
+    public Database.UpsertResult upsertRecord(SObject record, SObjectField field) {
+        return upsertRecords(nonGenericSObjectList(record), field)[0];
+    }
+    public List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field) {
+        return dmlIssuer.upsertRecords(records, field, dmlOptions?.optAllOrNone == true);
     }
 
-    public List<Database.UndeleteResult> doUndelete(List<SObject> records) {
-        return dmlIssuer.doUndelete(records, isAllOrNone());
+
+    public Database.DeleteResult deleteRecord(SObject record) {
+        return deleteRecords(new List<SObject>{record})[0];
+    }
+
+    public List<Database.DeleteResult> deleteRecords(List<SObject> records) {
+        return dmlIssuer.deleteRecords(records, isAllOrNone());
+    }
+
+
+    public Database.UndeleteResult undeleteRecord(SObject record) {
+        return undeleteRecords(new List<SObject>{record})[0];
+    }
+
+    public List<Database.UndeleteResult> undeleteRecords(List<SObject> records) {
+        return dmlIssuer.undeleteRecords(records, isAllOrNone());
     }
 
 
@@ -183,11 +182,11 @@ public class DatabaseService {
     * Interface for classes that will handle DML operations
     * */
     public interface DMLIssuer {
-        List<Database.SaveResult> doInsert(List<SObject> records, Database.DMLOptions options);
-        List<Database.SaveResult> doUpdate(List<SObject> records, Database.DMLOptions options);
-        List<Database.UpsertResult> doUpsert(List<SObject> records, SObjectField field, Boolean allOrNone);
-        List<Database.DeleteResult> doDelete(List<SObject> records, Boolean allOrNone);
-        List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone);
+        List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options);
+        List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options);
+        List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone);
+        List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone);
+        List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone);
         List<SObject> query(String query, Map<String, Object> boundVars);
         Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars);
     }
@@ -248,11 +247,11 @@ public class DatabaseService {
     * Issues DMLs with sharing
     * */
     private with sharing class WithSharingDMLIssuer extends AbstractDMLIssuer {
-        public List<Database.SaveResult> doInsert(List<SObject> records, Database.DMLOptions options) { return Database.insert(records, options); }
-        public List<Database.SaveResult> doUpdate(List<SObject> records, Database.DMLOptions options) { return Database.update(records, options); }
-        public List<Database.UpsertResult> doUpsert(List<SObject> records, SObjectField field, Boolean allOrNone) { return Database.upsert(records, field, allOrNone); }
-        public List<Database.DeleteResult> doDelete(List<SObject> records, Boolean allOrNone) { return Database.delete(records, allOrNone); }
-        public List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone) { return Database.undelete(records, allOrNone); }
+        public List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options) { return Database.insert(records, options); }
+        public List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options) { return Database.update(records, options); }
+        public List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone) { return Database.upsert(records, field, allOrNone); }
+        public List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone) { return Database.delete(records, allOrNone); }
+        public List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone) { return Database.undelete(records, allOrNone); }
         public override List<SObject> query(String query, Map<String, Object> boundVars) { return super.query(query, boundVars); }
         public override Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) { return super.getQueryLocator(query, boundVars); }
     }
@@ -262,11 +261,11 @@ public class DatabaseService {
     * Issues DMLs without sharing
     * */
     private without sharing class WithoutSharingDMLIssuer extends AbstractDMLIssuer {
-        public List<Database.SaveResult> doInsert(List<SObject> records, Database.DMLOptions options) { return Database.insert(records, options); }
-        public List<Database.SaveResult> doUpdate(List<SObject> records, Database.DMLOptions options) { return Database.update(records, options); }
-        public List<Database.UpsertResult> doUpsert(List<SObject> records, SObjectField field, Boolean allOrNone) { return Database.upsert(records, field, allOrNone); }
-        public List<Database.DeleteResult> doDelete(List<SObject> records, Boolean allOrNone) { return Database.delete(records, allOrNone); }
-        public List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone) { return Database.undelete(records, allOrNone); }
+        public List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options) { return Database.insert(records, options); }
+        public List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options) { return Database.update(records, options); }
+        public List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone) { return Database.upsert(records, field, allOrNone); }
+        public List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone) { return Database.delete(records, allOrNone); }
+        public List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone) { return Database.undelete(records, allOrNone); }
         public override List<SObject> query(String query, Map<String, Object> boundVars) { return super.query(query, boundVars); }
         public override Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) { return super.getQueryLocator(query, boundVars); }
     }
@@ -276,11 +275,11 @@ public class DatabaseService {
     * Issues DMLs with inherited sharing
     * */
     private inherited sharing class InheritedSharingDMLIssuer extends AbstractDMLIssuer {
-        public List<Database.SaveResult> doInsert(List<SObject> records, Database.DMLOptions options) { return Database.insert(records, options); }
-        public List<Database.SaveResult> doUpdate(List<SObject> records, Database.DMLOptions options) { return Database.update(records, options); }
-        public List<Database.UpsertResult> doUpsert(List<SObject> records, SObjectField field, Boolean allOrNone) { return Database.upsert(records, field, allOrNone); }
-        public List<Database.DeleteResult> doDelete(List<SObject> records, Boolean allOrNone) { return Database.delete(records, allOrNone); }
-        public List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone) { return Database.undelete(records, allOrNone); }
+        public List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options) { return Database.insert(records, options); }
+        public List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options) { return Database.update(records, options); }
+        public List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone) { return Database.upsert(records, field, allOrNone); }
+        public List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone) { return Database.delete(records, allOrNone); }
+        public List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone) { return Database.undelete(records, allOrNone); }
         public override List<SObject> query(String query, Map<String, Object> boundVars) { return super.query(query, boundVars); }
         public override Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) { return super.getQueryLocator(query, boundVars); }
     }
@@ -297,33 +296,33 @@ public class DatabaseService {
             this.mock = mock;
         }
 
-        public List<Database.SaveResult> doInsert(List<SObject> records, Database.DMLOptions options) {
+        public List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options) {
             return (List<Database.SaveResult>) doMockedDML(
-                DmlType.INSERT_DML, records, options.optAllOrNone, mock.inserted, List<Database.SaveResult>.class
+                DmlType.INSERT_DML, records, options.optAllOrNone, mock.insertedRecords, List<Database.SaveResult>.class
             );
         }
 
-        public List<Database.SaveResult> doUpdate(List<SObject> records, Database.DMLOptions options) {
+        public List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options) {
             return (List<Database.SaveResult>) doMockedDML(
-                DmlType.UPDATE_DML, records, options.optAllOrNone, mock.updated, List<Database.SaveResult>.class
+                DmlType.UPDATE_DML, records, options.optAllOrNone, mock.updatedRecords, List<Database.SaveResult>.class
             );
         }
 
-        public List<Database.UpsertResult> doUpsert(List<SObject> records, SObjectField field, Boolean allOrNone) {
+        public List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone) {
             return (List<Database.UpsertResult>) doMockedDML(
-                DmlType.UPSERT_DML, records, allOrNone, mock.upserted, List<Database.UpsertResult>.class
+                DmlType.UPSERT_DML, records, allOrNone, mock.upsertedRecords, List<Database.UpsertResult>.class
             );
         }
 
-        public List<Database.DeleteResult> doDelete(List<SObject> records, Boolean allOrNone) {
+        public List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone) {
             return (List<Database.DeleteResult>) doMockedDML(
-                DmlType.DELETE_DML, records, allOrNone, mock.deleted, List<Database.DeleteResult>.class
+                DmlType.DELETE_DML, records, allOrNone, mock.deletedRecords, List<Database.DeleteResult>.class
             );
         }
 
-        public List<Database.UndeleteResult> doUndelete(List<SObject> records, Boolean allOrNone) {
+        public List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone) {
             return (List<Database.UndeleteResult>) doMockedDML(
-                DmlType.UNDELETE_DML, records, allOrNone, mock.undeleted, List<Database.UndeleteResult>.class
+                DmlType.UNDELETE_DML, records, allOrNone, mock.undeletedRecords, List<Database.UndeleteResult>.class
             );
         }
 

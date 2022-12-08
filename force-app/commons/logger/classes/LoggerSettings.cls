@@ -27,32 +27,20 @@
  */
 public with sharing class LoggerSettings {
     @TestVisible
-    private static Map<LoggingLevel, LoggerSetting__mdt> settingByLoggingLevel = new Map<LoggingLevel, LoggerSetting__mdt>();
-    private static Map<String, LoggingLevel> loggingLevelEnumByName = new Map<String, LoggingLevel>{
-            'INFO' => LoggingLevel.INFO,
-            'WARN' => LoggingLevel.WARN,
-            'ERROR' => LoggingLevel.ERROR
-    };
-
-    static {
-        for (LoggerSetting__mdt setting : [SELECT Create__c, RetentionDays__c, LoggingLevel__c FROM LoggerSetting__mdt]) {
-            LoggingLevel level = loggingLevelEnumByName.get(setting.LoggingLevel__c);
-            settingByLoggingLevel.put(level, setting);
-        }
-    }
+    private static Map<String, LoggerSetting__mdt> settingByLoggingLevel = LoggerSetting__mdt.getAll();
 
     /**
      * @return True if log with given LoggingLevel should be created.
      */
     public static Boolean shouldCreateLog(LoggingLevel level) {
-        return settingByLoggingLevel.get(level).Create__c;
+        return settingByLoggingLevel.get(level.name()).Create__c;
     }
 
     /**
      * @return Date of the last day when log should be retained.
      */
     public static Date getRetentionDate(LoggingLevel level) {
-        LoggerSetting__mdt setting = settingByLoggingLevel.get(level);
+        LoggerSetting__mdt setting = settingByLoggingLevel.get(level.name());
 
         if (setting == null || setting.RetentionDays__c == null) {
             return Date.newInstance(1900, 1, 1);

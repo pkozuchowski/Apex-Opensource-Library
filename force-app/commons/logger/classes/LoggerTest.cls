@@ -21,7 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest
+@IsTest(IsParallel=true)
 private class LoggerTest {
 
     @IsTest
@@ -31,6 +31,7 @@ private class LoggerTest {
         Logger.info(new Log('INFO'));
         Logger.warn(new Log('WARN'));
         Logger.error(new Log('ERROR'));
+        Test.getEventBus().deliver();
         Test.stopTest();
 
 

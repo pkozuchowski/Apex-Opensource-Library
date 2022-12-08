@@ -57,10 +57,10 @@ private class LogCleanerBatchTest {
      */
     @IsTest
     static void testLogsShouldBeDeletedAfterPassingRetentionDate() {
-        LoggerSettings.settingByLoggingLevel = new Map<LoggingLevel, LoggerSetting__mdt>{
-                LoggingLevel.INFO => new LoggerSetting__mdt(RetentionDays__c = 7),
-                LoggingLevel.WARN => new LoggerSetting__mdt(RetentionDays__c = 21),
-                LoggingLevel.ERROR => new LoggerSetting__mdt(RetentionDays__c = 60)
+        LoggerSettings.settingByLoggingLevel = new Map<String, LoggerSetting__mdt>{
+                LoggingLevel.INFO.name() => new LoggerSetting__mdt(RetentionDays__c = 7),
+                LoggingLevel.WARN.name() => new LoggerSetting__mdt(RetentionDays__c = 21),
+                LoggingLevel.ERROR.name() => new LoggerSetting__mdt(RetentionDays__c = 60)
         };
 
 

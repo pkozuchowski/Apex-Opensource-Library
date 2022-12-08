@@ -7,10 +7,6 @@
         <value xsi:type="xsd:boolean">true</value>
     </values>
     <values>
-        <field>LoggingLevel__c</field>
-        <value xsi:type="xsd:string">ERROR</value>
-    </values>
-    <values>
         <field>RetentionDays__c</field>
         <value xsi:type="xsd:double">360.0</value>
     </values>

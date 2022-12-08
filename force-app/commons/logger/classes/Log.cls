@@ -42,6 +42,7 @@ public with sharing class Log {
      */
     public Log(String message) {
         this(new LoggingEvent__e(
+            RecordTypeId__c = RecordTypes.LOG_APPLICATION.id,
             Message__c = message
         ));
     }

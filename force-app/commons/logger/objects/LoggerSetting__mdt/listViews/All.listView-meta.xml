@@ -2,7 +2,7 @@
 <ListView xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>All</fullName>
     <columns>MasterLabel</columns>
-    <columns>LoggingLevel__c</columns>
+    <columns>DeveloperName</columns>
     <columns>Create__c</columns>
     <columns>RetentionDays__c</columns>
     <filterScope>Everything</filterScope>

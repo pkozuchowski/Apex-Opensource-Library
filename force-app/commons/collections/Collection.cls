@@ -117,39 +117,51 @@ public abstract inherited sharing class Collection {
     public abstract Object reduce(Reducer reducer, Object initialValue);
 
     /**@return Sum of numeric field values*/
-    public abstract Decimal sum(SObjectField field);
-    public abstract Decimal sum(String field);
+    public abstract Decimal getSum(SObjectField field);
+    public abstract Decimal getSum(String field);
 
     /**@return Average of numeric field values*/
-    public abstract Decimal average(SObjectField field);
-    public abstract Decimal average(String field);
+    public abstract Decimal getAverage(SObjectField field);
+    public abstract Decimal getAverage(String field);
 
     /**@return Minimum of numeric field values*/
-    public abstract Decimal min(SObjectField field);
-    public abstract Decimal min(String field);
+    public abstract Decimal getMin(SObjectField field);
+    public abstract Decimal getMin(String field);
 
     /**@return Maximum of numeric field values*/
-    public abstract Decimal max(SObjectField field);
-    public abstract Decimal max(String field);
+    public abstract Decimal getMax(SObjectField field);
+    public abstract Decimal getMax(String field);
 
     /**
-     * @return List<V>, V - value type of SObject field.
+     * @return List<V>, V - value type of SObject field. Cast to expected value type.
      */
-    public abstract List<Object> listOf(SObjectField field);
-    public abstract List<Object> listOf(String field);
-    public abstract List<Object> listOf(String field, Type fieldType);
-    public abstract List<Object> listOf(Mapper valueMapper);
+    public abstract List<Id> getIdsList(SObjectField field);
+    public abstract List<String> getStringsList(SObjectField field);
+    public abstract List<Integer> getIntegersList(SObjectField field);
+
+    public abstract List<Object> getList(SObjectField field);
+    public abstract List<Object> getList(String field);
+    public abstract List<Object> getList(String field, Type fieldType);
+    public abstract List<Object> getList(Mapper valueMapper);
 
     /**
-     * @return Set<V>, V - value type of SObject field.
+     * @return Set<V>, V - value type of SObject field. Cast to expected Set type.
+     * ex. Set<String> names = (Set<String>) Collection.of(accounts).getSet(Account.Name);
      */
-    public abstract Object setOf(SObjectField field);
-    public abstract Object setOf(String field);
-    public abstract Object setOf(String field, Type fieldType);
-    public abstract Object setOf(Mapper valueMapper);
+    public abstract Set<Id> getIdsSet(SObjectField field);
+    public abstract Set<String> getStringsSet(SObjectField field);
+    public abstract Set<Integer> getIntegersSet(SObjectField field);
+    public abstract Object getSet(SObjectField field);
+    public abstract Object getSet(String field);
+    public abstract Object getSet(String field, Type fieldType);
+    public abstract Object getSet(Mapper valueMapper);
 
     /**
      * @return Map<K, V>, K - value type, V - collection item type. LIFO - Last item in collection replace previous in map.
+     * Cast to expected map. ex:
+     * <pre>
+     * Map<String, Account> accountsByExternalId = (Map<String, Account>) Collection.of(accounts).mapBy(Account.ExternalId__c);
+     * </pre>
      */
     public abstract Object mapBy(SObjectField field);
     public abstract Object mapBy(SObjectField keyField, SObjectField valueField);
@@ -186,37 +198,6 @@ public abstract inherited sharing class Collection {
 
 
     /**
-     * Fills in the list with number of clones of provided prototype record.
-     * By default, clone is deep and Id, timestamps and autonumber are not preserved.
-     *
-     * @param count Number of clones in the list
-     * @param prototype Prototype of the record. Clone of this record will be added to the list.
-     */
-    public abstract Collection fill(Integer count, SObject prototype);
-
-    /**
-     * Fills in the list with number of clones of provided prototype record.
-     * @param count Number of clones in the list
-     * @param prototype Prototype of the record. Clone of this record will be added to the list.
-     * @param cloneOptions Collection.CloneOptions instance which determine clone operation characteristics.
-     */
-    public abstract Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions);
-
-
-    /**
-     * Wraps objects into Wrapper implementation.
-     * @param wrapperType Type of concrete class implementing Wrapper interface. Must provide no-args constructor.
-     */
-    public abstract Collection wrap(Type wrapperType);
-
-    /**
-     * Wraps collection items using wrapper factory.
-     * @return Collection of wrapped objects;
-     */
-    public abstract Collection wrap(WrapperFactory wrapperFactory, Type wrapperType);
-
-
-    /**
      * Sorts collection by given field and order.
      * @param field Field to sort by.
      * @param order Sorting order
@@ -227,12 +208,6 @@ public abstract inherited sharing class Collection {
      * Sorts collection using given Comparator implementation.
      */
     public abstract Collection orderBy(Comparator comparator);
-
-
-    /**
-     * For each element in collection, Worker.forEach action is executed.
-     */
-    public abstract Collection forEach(Worker worker);
 
 
     /**
@@ -260,9 +235,9 @@ public abstract inherited sharing class Collection {
         Collection lessEqualsThan(Object value);
         Collection isIn(Set<Object> values);
         Collection isIn(List<Object> values);
+        Collection isIn(List<SObject> parents);
         Collection isNotIn(Set<Object> values);
         Collection isNotIn(List<Object> values);
-        Collection relatedTo(List<SObject> parents);
         Collection contains(String value);
     }
 
@@ -285,51 +260,6 @@ public abstract inherited sharing class Collection {
         Type valueType();
         Object value(Object item);
     }
-
-
-    /**
-     * Wrapper interface.
-     * Concrete method implementing this interface should have a member variable for wrapped item.
-     * wrap method should set that member variable or set other data from the record.
-     */
-    public interface Wrapper {
-        void wrap(Object item);
-    }
-
-    /**
-     * WrapperFactory interface.
-     * Concrete method implementing this interface should produce wrapper for given item.
-     */
-    public interface WrapperFactory {
-        Object wrap(Object item);
-    }
-
-
-    /**
-     * Worker performs action on each item in collection.
-     */
-    public interface Worker {
-        void forEach(Object item, Integer index);
-    }
-
-
-    /**
-     * Clone options used to populate collection with fill() method
-     */
-    public class CloneOptions {
-        public Boolean preserveId { get; private set; }
-        public Boolean deepClone { get; private set; }
-        public Boolean preserveReadonlyTimestamps { get; private set; }
-        public Boolean preserveAutonumber { get; private set; }
-
-        public CloneOptions(Boolean preserveId, Boolean deepClone, Boolean preserveReadonlyTimestamps, Boolean preserveAutonumber) {
-            this.preserveId = preserveId;
-            this.deepClone = deepClone;
-            this.preserveReadonlyTimestamps = preserveReadonlyTimestamps;
-            this.preserveAutonumber = preserveAutonumber;
-        }
-    }
-
 
     public class CollectionException extends Exception {
     }

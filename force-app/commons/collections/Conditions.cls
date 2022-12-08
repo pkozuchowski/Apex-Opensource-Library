@@ -25,7 +25,7 @@
 /**
  * Factory class for Condition implementations.
  */
-public inherited sharing class ConditionsFactory {
+public inherited sharing class Conditions {
 
     /**
      * Creates filter which returns true if all of the filters return true

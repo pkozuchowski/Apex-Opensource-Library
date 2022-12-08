@@ -36,7 +36,6 @@
  * @see CollectionTest
  */
 public inherited sharing class CollectionImpl extends Collection {
-    private final static CloneOptions defaultCloneOptions = new CloneOptions(false, true, false, false);
 
     /*Flyweights for reducers*/
     private final static ArithmeticReducer
@@ -45,7 +44,7 @@ public inherited sharing class CollectionImpl extends Collection {
         AVERAGE = new ReducerToAverage(),
         SUM = new ReducerToSum();
 
-    private final static ConditionsFactory conditionsFactory = new ConditionsFactory();
+    private final static Conditions conditionsFactory = new Conditions();
 
     private List<Object> items;
 
@@ -151,30 +150,42 @@ public inherited sharing class CollectionImpl extends Collection {
         return previousValue;
     }
 
-    public override Decimal sum(SObjectField field) { return sum('' + field); }
-    public override Decimal sum(String field) { return (Decimal) this.reduce(SUM.ofField(field), 0.0); }
+    public override Decimal getSum(SObjectField field) { return getSum('' + field); }
+    public override Decimal getSum(String field) { return (Decimal) this.reduce(SUM.ofField(field), 0.0); }
 
-    public override Decimal average(SObjectField field) { return average('' + field); }
-    public override Decimal average(String field) { return (Decimal) this.reduce(AVERAGE.ofField(field), null); }
+    public override Decimal getAverage(SObjectField field) { return getAverage('' + field); }
+    public override Decimal getAverage(String field) { return (Decimal) this.reduce(AVERAGE.ofField(field), null); }
 
-    public override Decimal min(SObjectField field) { return min('' + field); }
-    public override Decimal min(String field) { return (Decimal) this.reduce(MIN.ofField(field), null); }
+    public override Decimal getMin(SObjectField field) { return getMin('' + field); }
+    public override Decimal getMin(String field) { return (Decimal) this.reduce(MIN.ofField(field), null); }
 
-    public override Decimal max(SObjectField field) { return max('' + field); }
-    public override Decimal max(String field) { return (Decimal) this.reduce(MAX.ofField(field), 0.0); }
+    public override Decimal getMax(SObjectField field) { return getMax('' + field); }
+    public override Decimal getMax(String field) { return (Decimal) this.reduce(MAX.ofField(field), 0.0); }
 
 
-    public override List<Object> listOf(String field) {
-        return listOf(getSObjectField(field));
+    public override List<Id> getIdsList(SObjectField field) {
+        return (List<Id>) getList('' + field, Id.class);
     }
-    public override List<Object> listOf(SObjectField field) {
-        return listOf('' + field, Runtime.getSObjectFieldType(field));
+
+    public override List<String> getStringsList(SObjectField field) {
+        return (List<String>) getList('' + field, String.class);
     }
-    public override List<Object> listOf(String field, Type fieldType) {
+
+    public override List<Integer> getIntegersList(SObjectField field) {
+        return (List<Integer>) getList('' + field, Integer.class);
+    }
+
+    public override List<Object> getList(String field) {
+        return getList(getSObjectField(field));
+    }
+    public override List<Object> getList(SObjectField field) {
+        return getList('' + field, Runtime.getSObjectFieldType(field));
+    }
+    public override List<Object> getList(String field, Type fieldType) {
         assertSObjectCollection();
-        return listOf(new FieldMapper(field, fieldType));
+        return getList(new FieldMapper(field, fieldType));
     }
-    public override List<Object> listOf(Mapper valueMapper) {
+    public override List<Object> getList(Mapper valueMapper) {
         List<Object> values = Runtime.newListOfItemType(valueMapper.valueType());
 
         for (Integer i = 0, size = size(); i < size; i++) {
@@ -185,17 +196,27 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
 
-    public override Object setOf(String field) {
-        return setOf(getSObjectField(field));
+    public override Set<String> getStringsSet(SObjectField field) {
+        return (Set<String>) getSet('' + field, String.class);
     }
-    public override Object setOf(SObjectField field) {
-        return setOf('' + field, Runtime.getSObjectFieldType(field));
+    public override Set<Id> getIdsSet(SObjectField field) {
+        return (Set<Id>) getSet('' + field, Id.class);
     }
-    public override Object setOf(String field, Type fieldType) {
+    public override Set<Integer> getIntegersSet(SObjectField field) {
+        return (Set<Integer>) getSet('' + field, Integer.class);
+    }
+
+    public override Object getSet(String field) {
+        return getSet(getSObjectField(field));
+    }
+    public override Object getSet(SObjectField field) {
+        return getSet('' + field, Runtime.getSObjectFieldType(field));
+    }
+    public override Object getSet(String field, Type fieldType) {
         assertSObjectCollection();
-        return setOf(new FieldMapper(field, fieldType));
+        return getSet(new FieldMapper(field, fieldType));
     }
-    public override Object setOf(Mapper valueMapper) {
+    public override Object getSet(Mapper valueMapper) {
         return mapToUntypedMap(valueMapper, new ItemMapper(items)).keySet();
     }
 
@@ -290,22 +311,6 @@ public inherited sharing class CollectionImpl extends Collection {
         return groupMap.toMap();
     }
 
-
-    public override Collection wrap(Type wrapperType) {
-        return wrap(new WrapperFactoryAdatper(wrapperType), wrapperType);
-    }
-    public override Collection wrap(WrapperFactory wrapperFactory, Type wrapperType) {
-        List<Object> wrappers = (List<Object>) Runtime.newListOfItemType(wrapperType, new List<Object>());
-
-        for (Integer i = 0, j = size(); i < j; i++) {
-            Object wrapper = wrapperFactory.wrap(items[i]);
-            wrappers.add(wrapper);
-        }
-
-        return Collection.of(wrappers);
-    }
-
-
     public override Collection orderBy(SObjectField field, Ordering order) {
         assertSObjectCollection();
         return orderBy(new CompareByField(field, order));
@@ -326,36 +331,6 @@ public inherited sharing class CollectionImpl extends Collection {
 
         return Collection.of(sorted);
     }
-
-
-    public override Collection forEach(Worker worker) {
-        for (Integer i = 0, j = size(); i < j; i++) {
-            worker.forEach(items[i], i);
-        }
-
-        return this;
-    }
-
-
-    public override Collection fill(Integer count, SObject prototype) {
-        assertSObjectCollection();
-        return fill(count, prototype, defaultCloneOptions);
-    }
-
-    public override Collection fill(Integer count, SObject prototype, CloneOptions cloneOptions) {
-        assertSObjectCollection();
-        for (Integer i = 0; i < count; i++) {
-            SObject clone = prototype.clone(
-                cloneOptions.preserveId,
-                cloneOptions.deepClone,
-                cloneOptions.preserveReadonlyTimestamps,
-                cloneOptions.preserveAutonumber
-            );
-            items.add(clone);
-        }
-        return Collection.of(items);
-    }
-
 
     public override Collection assert(Condition condition, String message) {
         for (Integer i = 0, size = this.size(); i < size; i++) {
@@ -418,11 +393,11 @@ public inherited sharing class CollectionImpl extends Collection {
     */
     private class FieldFilterImpl implements FieldFilter {
         private Collection collection;
-        private ConditionsFactory.FieldValueConditionFactory filterFactory;
+        private Conditions.FieldValueConditionFactory filterFactory;
 
         private FieldFilterImpl(Collection filterFacade, String field) {
             this.collection = filterFacade;
-            this.filterFactory = new ConditionsFactory.FieldValueConditionFactory(field);
+            this.filterFactory = new Conditions.FieldValueConditionFactory(field);
         }
 
         public Collection equals(Object value) { return collection.filter(filterFactory.equals(value)); }
@@ -433,9 +408,9 @@ public inherited sharing class CollectionImpl extends Collection {
         public Collection lessEqualsThan(Object value) { return collection.filter(filterFactory.lessEqualsThan(value)); }
         public Collection isIn(Set<Object> values) { return collection.filter(filterFactory.isIn(values)); }
         public Collection isIn(List<Object> values) { return collection.filter(filterFactory.isIn(values)); }
+        public Collection isIn(List<SObject> parents) { return collection.filter(filterFactory.relatedTo(parents)); }
         public Collection isNotIn(Set<Object> values) { return collection.filter(filterFactory.isNotIn(values)); }
         public Collection isNotIn(List<Object> values) { return collection.filter(filterFactory.isNotIn(values)); }
-        public Collection relatedTo(List<SObject> parents) { return collection.filter(filterFactory.relatedTo(parents)); }
         public Collection contains(String value) { return collection.filter(filterFactory.contains(value)); }
     }
 
@@ -562,24 +537,6 @@ public inherited sharing class CollectionImpl extends Collection {
         }
 
         public Type valueType() { return String.class; }
-    }
-
-
-    /**
-    * WRAPPERS
-    * */
-    private class WrapperFactoryAdatper implements WrapperFactory {
-        private Type wrapperType;
-
-        public WrapperFactoryAdatper(Type wrapperType) {
-            this.wrapperType = wrapperType;
-        }
-
-        public Object wrap(Object item) {
-            Wrapper wrapper = (Wrapper) wrapperType.newInstance();
-            wrapper.wrap(item);
-            return wrapper;
-        }
     }
 
 

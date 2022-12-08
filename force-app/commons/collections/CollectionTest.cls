@@ -184,12 +184,12 @@ private class CollectionTest {
 
 
         Test.startTest();
-        Set<Id> actualIds = (Set<Id>) Collection.of(opportunities).setOf('AccountId');
-        Set<String> actualStrings = (Set<String>) Collection.of(opportunities).setOf('Name');
-        Set<Decimal> actualDecimals = (Set<Decimal>) Collection.of(opportunities).setOf('Probability');
-        Set<Date> actualDates = (Set<Date>) Collection.of(opportunities).setOf('LastActivityDate');
-        Set<Datetime> actualDatetimes = (Set<Datetime>) Collection.of(opportunities).setOf('CreatedDate');
-        Set<Boolean> actualBooleans = (Set<Boolean>) Collection.of(opportunities).setOf('HasOpenActivity');
+        Set<Id> actualIds = (Set<Id>) Collection.of(opportunities).getSet('AccountId');
+        Set<String> actualStrings = (Set<String>) Collection.of(opportunities).getSet('Name');
+        Set<Decimal> actualDecimals = (Set<Decimal>) Collection.of(opportunities).getSet('Probability');
+        Set<Date> actualDates = (Set<Date>) Collection.of(opportunities).getSet('LastActivityDate');
+        Set<Datetime> actualDatetimes = (Set<Datetime>) Collection.of(opportunities).getSet('CreatedDate');
+        Set<Boolean> actualBooleans = (Set<Boolean>) Collection.of(opportunities).getSet('HasOpenActivity');
         Test.stopTest();
 
 
@@ -209,7 +209,7 @@ private class CollectionTest {
             expected.add(opportunity.CreatedDate.day());
         }
 
-        Set<Integer> actual = (Set<Integer>) Collection.of(opportunities).setOf(new MapperByCreatedDay());
+        Set<Integer> actual = (Set<Integer>) Collection.of(opportunities).getSet(new MapperByCreatedDay());
         System.assertEquals(expected, actual);
     }
 
@@ -497,7 +497,7 @@ private class CollectionTest {
         }
 
 
-        ConditionsFactory c = new ConditionsFactory();
+        Conditions c = new Conditions();
         Test.startTest();
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
             .filter(
@@ -537,7 +537,7 @@ private class CollectionTest {
             }
         }
 
-        ConditionsFactory c = new ConditionsFactory();
+        Conditions c = new Conditions();
 
         Test.startTest();
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
@@ -606,8 +606,8 @@ private class CollectionTest {
 
         Test.startTest();
         Set<Id> actual = (Set<Id>) Collection.of(opportunities)
-            .filter(Opportunity.AccountId).relatedTo(accounts.values())
-            .setOf(Opportunity.Id);
+            .filter(Opportunity.AccountId).isIn(accounts.values())
+            .getSet(Opportunity.Id);
         Test.stopTest();
 
 
@@ -643,14 +643,36 @@ private class CollectionTest {
     * Reduce tests
     * */
     @IsTest
+    static void testGetList() {
+        List<String> strings = Collection.of(opportunities).getStringsList(Opportunity.Name);
+        List<Id> ids = Collection.of(opportunities).getIdsList(Opportunity.Id);
+        List<Integer> integers = Collection.of(opportunities).getIntegersList(Opportunity.FiscalYear);
+
+        Assert.isFalse(strings.isEmpty());
+        Assert.isFalse(ids.isEmpty());
+        Assert.isFalse(integers.isEmpty());
+    }
+
+    @IsTest
     static void testReduceToListOfSObjectField() {
         List<Id> expected = new List<Id>();
         for (Opportunity opportunity : opportunities) {
             expected.add(opportunity.AccountId);
         }
 
-        List<Id> actual = (List<Id>) Collection.of(opportunities).listOf('AccountId');
+        List<Id> actual = (List<Id>) Collection.of(opportunities).getList('AccountId');
         System.assertEquals(expected, actual);
+    }
+
+    @IsTest
+    static void testGetSet() {
+        Set<String> strings = Collection.of(opportunities).getStringsSet(Opportunity.Name);
+        Set<Id> ids = Collection.of(opportunities).getIdsSet(Opportunity.Id);
+        Set<Integer> integers = Collection.of(opportunities).getIntegersSet(Opportunity.FiscalYear);
+
+        Assert.isFalse(strings.isEmpty());
+        Assert.isFalse(ids.isEmpty());
+        Assert.isFalse(integers.isEmpty());
     }
 
     @IsTest
@@ -660,7 +682,7 @@ private class CollectionTest {
             expected.add(opportunity.AccountId);
         }
 
-        Set<Id> actual = (Set<Id>) Collection.of(opportunities).setOf('AccountId');
+        Set<Id> actual = (Set<Id>) Collection.of(opportunities).getSet('AccountId');
         System.assertEquals(expected, actual);
     }
 
@@ -677,7 +699,7 @@ private class CollectionTest {
             expected += opportunity.Amount != null ? opportunity.Amount : 0;
         }
 
-        Decimal actual = Collection.of(opportunities).sum(Opportunity.Amount);
+        Decimal actual = Collection.of(opportunities).getSum(Opportunity.Amount);
         System.assertEquals(expected, actual);
     }
 
@@ -694,7 +716,7 @@ private class CollectionTest {
         }
         expected /= opportunities.size();
 
-        Decimal actual = Collection.of(opportunities).average(Opportunity.Amount);
+        Decimal actual = Collection.of(opportunities).getAverage(Opportunity.Amount);
         System.assertEquals(expected, actual);
     }
 
@@ -713,7 +735,7 @@ private class CollectionTest {
             }
         }
 
-        Decimal actual = Collection.of(opportunities).max(Opportunity.Amount);
+        Decimal actual = Collection.of(opportunities).getMax(Opportunity.Amount);
 
         System.assertEquals(max, actual);
         System.assertNotEquals(null, actual);
@@ -733,7 +755,7 @@ private class CollectionTest {
             }
         }
 
-        Decimal actual = Collection.of(opportunities).min(Opportunity.Amount);
+        Decimal actual = Collection.of(opportunities).getMin(Opportunity.Amount);
 
         System.assertEquals(min, actual);
         System.assertNotEquals(null, actual);
@@ -813,118 +835,6 @@ private class CollectionTest {
 
 
     /**
-     * @description
-     * Wrap method wraps Collection member list with custom Wrapper class (implementing Collection.Wrapper).
-     * Collection of wrappers is returned for further chaining:
-     * <pre>
-     * Map<Id,OpportunityWrapper> ... = Collection.of(opportunities)
-     *      .filter(Opportunity.StageName,'==','Analysis')
-     *      .wrap(OpportunityWrapper.class)
-     *      .mapBy(new WrapperByOpportunityIdMapper());
-     * </pre>
-     */
-    @IsTest
-    static void testWrap() {
-        List<OpportunityWrapper2> wrappers = (List<OpportunityWrapper2>)
-            Collection.of(opportunities)
-                .wrap(OpportunityWrapper2.class)
-                .get();
-
-        for (Integer i = 0; i < wrappers.size(); i++) {
-            System.assertEquals(wrappers[i].opportunity, opportunities[i]);
-        }
-    }
-
-    public class OpportunityWrapper2 implements Collection.Wrapper {
-        public Opportunity opportunity;
-
-        public void wrap(Object item) {
-            this.opportunity = (Opportunity) item;
-        }
-
-        public String getName() {
-            return opportunity.Name;
-        }
-    }
-
-
-    @IsTest
-    static void testWrapByWrapperFactory() {
-        List<OpportunityWrapper> wrappers = (List<OpportunityWrapper>)
-            Collection.of(opportunities)
-                .wrap(new OpportunityWrapperFactory(), OpportunityWrapper.class)
-                .get();
-
-        for (Integer i = 0; i < wrappers.size(); i++) {
-            System.assertEquals(wrappers[i].opportunity, opportunities[i]);
-        }
-    }
-
-    public class OpportunityWrapperFactory implements Collection.WrapperFactory {
-        public Object wrap(Object item) {
-            return new OpportunityWrapper((Opportunity) item);
-        }
-    }
-
-
-    /**
-     *@description
-     * Fills in the list with number of clones of provided prototype record.
-     */
-    @IsTest
-    static void testFill() {
-        Account account = new Account(Name = 'Test');
-
-        List<Contact> contacts = (List<Contact>)
-            Collection.of(new List<Contact>())
-                .fill(10, new Contact(LastName = 'Test Contact', Account = account))
-                .fill(10, new Contact(LastName = 'Other Contact', Account = account), new Collection.CloneOptions(false, false, false, false))
-                .get();
-
-
-        System.assertEquals(20, contacts.size());
-
-        /*Test if clone is deep*/
-        contacts[0].LastName += '0';
-        account.Name += '0';
-
-
-        for (Integer i = 1; i < 20; i++) {
-            if (i < 10) {
-                System.assertEquals('Test Contact', contacts[i].LastName);
-                System.assertEquals('Test', contacts[i].Account.Name);
-
-            } else {
-                System.assertEquals('Other Contact', contacts[i].LastName);
-                System.assertEquals('Test0', contacts[i].Account.Name);
-            }
-        }
-    }
-
-
-    /**
-     *@description
-     * ForEach executes action on each element in collection and can be chained using instance methods.
-     */
-    @IsTest
-    static void testForEach() {
-        List<Opportunity> opportunities = (List<Opportunity>) Collection.of(opportunities)
-            .forEach(new AppendIndexToOpportunityNameWorker())
-            .get();
-
-        for (Integer i = 0; i < opportunities.size(); i++) {
-            System.assert(opportunities[i].Name.contains('' + i));
-        }
-    }
-
-    private class AppendIndexToOpportunityNameWorker implements Collection.Worker {
-        public void forEach(Object item, Integer index) {
-            ((Opportunity) item).Name += index;
-        }
-    }
-
-
-    /**
      *@description
      * find() returns first item accepted by ByFieldValue filter.
      */
@@ -964,49 +874,6 @@ private class CollectionTest {
 
         public Boolean isTrue(Object item) {
             return ((Opportunity) item).Name.contains(expr);
-        }
-    }
-
-
-    @IsTest
-    static void testMethodChaining() {
-        Map<Boolean, List<OpportunityWrapper2>> expected = new Map<Boolean, List<CollectionTest.OpportunityWrapper2>>{
-            true => new List<OpportunityWrapper2>(),
-            false => new List<OpportunityWrapper2>()
-        };
-
-        for (Integer i = 0; i < opportunities.size(); i++) {
-            Opportunity opp = opportunities[i];
-
-            if (opp.CreatedDate >= Date.today().addDays(-3)) {
-                opp.Name += i;
-
-                OpportunityWrapper2 wrapper = new OpportunityWrapper2();
-                wrapper.wrap(opp);
-
-                expected.get(opp.HasOpenActivity).add(wrapper);
-            }
-        }
-
-
-        Map<Boolean, List<OpportunityWrapper2>> actual = (Map<Boolean, List<OpportunityWrapper2>>)
-            Collection.of(opportunities)
-                .filter(Opportunity.CreatedDate).greaterEqualsThan(Date.today().addDays(-3))
-                .forEach(new AppendIndexToOpportunityNameWorker())
-                .wrap(OpportunityWrapper2.class)
-                .groupBy(new WrapperByOpenActivityMapper());
-
-
-        System.assertEquals(JSON.serialize(expected), JSON.serialize(actual));
-    }
-
-    private class WrapperByOpenActivityMapper implements Collection.Mapper {
-        public Type valueType() {
-            return Boolean.class;
-        }
-
-        public Object value(Object item) {
-            return ((OpportunityWrapper2) item).opportunity.HasOpenActivity;
         }
     }
 

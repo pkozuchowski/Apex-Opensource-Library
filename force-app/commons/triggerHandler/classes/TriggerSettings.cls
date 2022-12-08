@@ -35,7 +35,6 @@ public inherited sharing class TriggerSettings {
     private static Boolean triggersEnabled = true;
     private final static LogicSwitch__c logicSwitchSetting = LogicSwitch__c.getInstance();
     private final static Set<SObjectType> disabledTriggers = new Set<SObjectType>();
-    private static TriggerLogicSelector logicSelector = new TriggerLogicSelector();
 
 
     /**
@@ -73,29 +72,6 @@ public inherited sharing class TriggerSettings {
         return disabledTriggers.contains(sObjectType) == false
             && logicSwitchSetting.DisableTriggers__c == false
             && triggersEnabled == true;
-    }
-
-    /**
-     * Mocks Trigger Logic defined in TriggerLogic__mdt custom metadata for unit testing purposes.
-     */
-    @TestVisible
-    private static void mockMetadata(List<TriggerLogic__mdt> logic) {
-        mockSelector(new TriggerLogicSelector.MockSelector(logic));
-    }
-
-    /**
-     * Mocks TriggerLogicSelector used to query TriggerLogic__mdt records for unit testing purposes.
-     */
-    @TestVisible
-    private static void mockSelector(TriggerLogicSelector selector) {
-        logicSelector = selector;
-    }
-
-    /**
-     * @return Selector class which queries metadata-defined trigger logic.
-     */
-    public static TriggerLogicSelector getLogicSelector() {
-        return logicSelector;
     }
 
     /**

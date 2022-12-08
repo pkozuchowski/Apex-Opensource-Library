@@ -61,13 +61,4 @@ public virtual inherited sharing class TriggerHandler {
     public interface Logic {
         void execute(List<SObject> records, TriggerContext ctx);
     }
-
-
-    /**
-     * This interface marks classes which can be parametrized through TriggerLogic__mdt.Parameters__c field.
-     * Value of the field will be passed to setParameters method.
-     */
-    public interface Parameterizable {
-        void setParameters(String parameters);
-    }
 }

@@ -89,35 +89,6 @@ private class TriggerDispatcherTest {
         }
     }
 
-
-    @IsTest
-    static void triggerShouldExecuteTriggerLogicClassesDefinedInSettings() {
-        List<Account> accounts = new List<Account>{
-            new Account(Id = ID_1, Name = NAME_TEST),
-            new Account(Id = ID_2, Name = NAME_TEST),
-            new Account(Id = ID_3, Name = NAME_TEST)
-        };
-        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
-        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(
-                Enabled__c = true,
-                ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
-                BeforeUpdate__c = true,
-                SObject__c = SOBJECT_ACCOUNT
-            )
-        });
-
-
-        Test.startTest();
-        TriggerDispatcher.runMetadataDefinedTriggers(tc);
-        Test.stopTest();
-
-
-        for (Account acc : accounts) {
-            System.assertEquals(COUNTRY_USA, acc.BillingCountry, 'TriggerHandler should set Billing country');
-        }
-    }
-
     @IsTest
     static void triggerShouldExecuteTriggerHandler() {
         List<Account> accounts = new List<Account>{
@@ -136,51 +107,6 @@ private class TriggerDispatcherTest {
         for (Account acc : accounts) {
             System.assertEquals(COUNTRY_USA, acc.BillingCountry, 'TriggerHandler should set Billing country');
         }
-    }
-
-
-    /**
-     * When invalid or unreachable type is specified in custom metadata, TypeException should be thrown with meaningful message.
-     */
-    @IsTest
-    static void typeExceptionShouldBeThrownWhenInvalidClassIsDefinedInSettings() {
-        List<Account> accounts = new List<Account>{
-            new Account(Id = ID_1),
-            new Account(Id = ID_2),
-            new Account(Id = ID_3)
-        };
-        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_DELETE, accounts, accounts);
-        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(
-                Enabled__c = true,
-                ApexClass__c = 'TriggerDispatcherTest.InvalidClass',
-                BeforeDelete__c = true,
-                SObject__c = SOBJECT_ACCOUNT
-            )
-        });
-        Exception ex;
-
-
-        Test.startTest();
-        try {
-            TriggerDispatcher.runMetadataDefinedTriggers(tc);
-        } catch (Exception e) {
-            ex = e;
-        }
-        Test.stopTest();
-
-
-        System.assert(ex instanceof TypeException && ex.getMessage().contains('(TriggerDispatcherTest.InvalidClass)'),
-            'If TriggerLogic cannot be constructed, TypeException should be thrown.');
-    }
-
-    @IsTest
-    static void testCoverage() {
-        for (TriggerOperation triggerOperation : TriggerOperation.values()) {
-            TriggerDispatcher.run(new TestAccountTriggerHandler(), new TestTriggerContextImpl(triggerOperation, new List<SObject>(), new List<SObject>()));
-        }
-        TriggerDispatcher.runMetadataDefinedTriggers();
-        System.assert(true, 'No exception is expected to happen');
     }
 
 
@@ -244,14 +170,6 @@ private class TriggerDispatcherTest {
             new Account(Id = ID_1, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
-        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(
-                Enabled__c = true,
-                ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
-                AfterUpdate__c = true,
-                SObject__c = SOBJECT_ACCOUNT
-            )
-        });
 
 
         Test.startTest();
@@ -280,14 +198,6 @@ private class TriggerDispatcherTest {
             new Account(Id = ID_1, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
-        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(
-                Enabled__c = true,
-                ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
-                AfterUpdate__c = true,
-                SObject__c = SOBJECT_ACCOUNT
-            )
-        });
 
 
         Test.startTest();
@@ -310,14 +220,6 @@ private class TriggerDispatcherTest {
             new Account(Id = ID_1, Name = NAME_TEST)
         };
         TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
-        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(
-                Enabled__c = true,
-                ApexClass__c = 'TriggerDispatcherTest.TestTriggerLogic',
-                AfterUpdate__c = true,
-                SObject__c = SOBJECT_ACCOUNT
-            )
-        });
 
 
         Test.startTest();
@@ -357,58 +259,5 @@ private class TriggerDispatcherTest {
         System.assertEquals(false, setting.DisableProcessBuilders__c, expectedEnabled);
         System.assertEquals(false, setting.DisableTriggers__c, expectedEnabled);
         Test.stopTest();
-    }
-
-
-    /**
-     *@description
-     * Custom Metadata defined triggers should have Parameters field which can be passed down to instance to reuse single class
-     * in many situations.
-     */
-    @IsTest
-    static void customMetadataTriggerShouldBeParameterizable() {
-        List<Account> accounts = new List<Account>{
-            new Account(Id = ID_1, Name = NAME_TEST),
-            new Account(Id = ID_2, Name = NAME_TEST),
-            new Account(Id = ID_3, Name = NAME_TEST)
-        };
-        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_INSERT, accounts, null);
-        TriggerSettings.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(
-                Enabled__c = true,
-                ApexClass__c = 'TriggerDispatcherTest.ParameterizableLogic',
-                BeforeInsert__c = true,
-                SObject__c = SOBJECT_ACCOUNT,
-                Parameters__c = 'New Name'
-            )
-        });
-
-
-        Test.startTest();
-        TriggerDispatcher.runMetadataDefinedTriggers(tc);
-        Test.stopTest();
-
-
-        for (Account account : accounts) {
-            System.assertEquals('New Name', account.Name, 'Name should be updated to the value passed in custom metadata parameter.');
-        }
-    }
-
-
-    /**
-     * Example of TriggerHandler.Logic class which can be parametrized through custom metadata.
-     */
-    public class ParameterizableLogic implements TriggerHandler.Logic, TriggerHandler.Parameterizable {
-        private String parameterName;
-
-        public void execute(List<SObject> records, TriggerContext ctx) {
-            for (Account acc : (Account[]) records) {
-                acc.Name = parameterName;
-            }
-        }
-
-        public void setParameters(String parameters) {
-            this.parameterName = parameters;
-        }
     }
 }

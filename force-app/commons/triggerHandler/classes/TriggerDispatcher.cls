@@ -23,23 +23,6 @@
 */
 public without sharing class TriggerDispatcher {
 
-    /**
-     * Runs trigger field defaults, validations and logic defined in custom metadata
-     */
-    public static void runMetadataDefinedTriggers() {
-        runMetadataDefinedTriggers(TriggerContext.getInstance());
-    }
-
-    @TestVisible
-    private static void runMetadataDefinedTriggers(TriggerContext triggerContext) {
-        TriggerHandler metadataTrigger = new CustomMetadataTrigger();
-
-        if (shouldRun(triggerContext)) {
-            TriggerLogicSelector logicSelector = TriggerSettings.getLogicSelector();
-            metadataTrigger.execute(triggerContext.getRecords(), triggerContext, logicSelector.getLogic(triggerContext));
-        }
-    }
-
 
     /**
      * Runs instance of concrete Trigger Handler implementation

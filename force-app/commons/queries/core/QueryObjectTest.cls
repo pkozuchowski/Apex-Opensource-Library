@@ -271,6 +271,7 @@ public class QueryObjectTest {
             .withFieldAccess(AccessType.READABLE)
             .byId(UserInfo.getUserId())
             .withLimit(100)
+            .debugLogMockName()
             .getFirstOrNull();
 
         new TestUserQuery().byId(UserInfo.getUserId()).getCount();

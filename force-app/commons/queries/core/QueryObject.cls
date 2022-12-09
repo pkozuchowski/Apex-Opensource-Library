@@ -183,6 +183,15 @@ public virtual inherited sharing class QueryObject {
         return this;
     }
 
+    /**
+     * This method prints log with expected mock name.
+     * Use this when in doubt what mocked name is expected.
+     */
+    public QueryObject debugLogMockName() {
+        System.debug('Mock Name: \'' + mockName + '\'');
+        return this;
+    }
+
 
     /**
      * Sets limit on query

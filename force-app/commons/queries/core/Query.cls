@@ -123,7 +123,7 @@ public inherited sharing virtual class Query extends QueryObject {
         String getCacheKey();
 
         /**
-         * @return Key value udner which SObject instance is cached - usually unique id field value.
+         * @return Key value under which SObject instance is cached - usually unique id field value.
          */
         Object getCacheValue();
 

@@ -98,7 +98,7 @@ public abstract class XmlNode {
             throw new TypeException('Child class is not public.');
         }
 
-        registerChildren(childNodes, name, namespace, prefix, Runtime.getListItemType(childNodes));
+        registerChildren(childNodes, name, namespace, prefix, childType);
     }
 
     /**

@@ -28,14 +28,14 @@
  */
 public with sharing class Runtime {
     private final static Map<Schema.SoapType, Type> FIELD_TYPE_MAP = new Map<SoapType, Type>{
-            Schema.SoapType.ID => Id.class,
-            Schema.SoapType.INTEGER => Integer.class,
-            Schema.SoapType.BOOLEAN => Boolean.class,
-            Schema.SoapType.DATE => Date.class,
-            Schema.SoapType.DATETIME => Datetime.class,
-            Schema.SoapType.DOUBLE => Decimal.class,
-            Schema.SoapType.STRING => String.class,
-            Schema.SoapType.TIME => Time.class
+        Schema.SoapType.ID => Id.class,
+        Schema.SoapType.INTEGER => Integer.class,
+        Schema.SoapType.BOOLEAN => Boolean.class,
+        Schema.SoapType.DATE => Date.class,
+        Schema.SoapType.DATETIME => Datetime.class,
+        Schema.SoapType.DOUBLE => Decimal.class,
+        Schema.SoapType.STRING => String.class,
+        Schema.SoapType.TIME => Time.class
     };
 
 
@@ -47,7 +47,7 @@ public with sharing class Runtime {
         Long startTime = System.currentTimeMillis();
         Long diff = 0;
 
-        while (diff < milliSeconds){
+        while (diff < milliSeconds) {
             diff = System.currentTimeMillis() - startTime;
         }
     }
@@ -130,8 +130,7 @@ public with sharing class Runtime {
      * @return New list of given item type (List<SObject>)
      */
     public static List<SObject> newListOfItemType(SObjectType itemType) {
-        Type t = Type.forName('' + itemType);
-        return (List<SObject>) newListOfItemType(t, new List<SObject>());
+        return (List<SObject>) Type.forName('List<' + itemType + '>').newInstance();
     }
 
     /**
@@ -181,7 +180,7 @@ public with sharing class Runtime {
      * @return Stack Trace Lines without Apex class entry
      */
     public static StackTraceLine[] getStackTrace() {
-        List<String> lines =  new DmlException('_').getStackTraceString().split('\n');
+        List<String> lines = new DmlException('_').getStackTraceString().split('\n');
 
         List<StackTraceLine> stackTraceLines = new List<StackTraceLine>();
         for (Integer i = 1; i < lines.size(); i++) {

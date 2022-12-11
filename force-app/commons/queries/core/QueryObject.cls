@@ -603,10 +603,6 @@ public virtual inherited sharing class QueryObject {
     */
     protected SObject[] executeQuery() {
         try {
-            if (queryMocks.containsKey(mockKey)) {
-                return (SObject[]) queryMocks.get(mockKey);
-            }
-
             List<SObject> result = getQueryResult();
 
             if (accessType != null) {
@@ -624,6 +620,10 @@ public virtual inherited sharing class QueryObject {
     }
 
     private List<SObject> getQueryResult() {
+        if (queryMocks.containsKey(mockKey)) {
+            return (SObject[]) queryMocks.get(mockKey);
+        }
+
         List<SObject> result = Runtime.newListOfItemType(sObjectType);
         Query.Condition compiledExpr = compileConditions(whereConditions);
         Boolean doQuery = true;

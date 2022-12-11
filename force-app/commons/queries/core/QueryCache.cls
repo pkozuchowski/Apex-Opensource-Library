@@ -65,15 +65,11 @@ public inherited sharing class QueryCache {
       */
     public Result getCachedRecords(SObjectType sObjectType, String field, Object value) {
         Map<Id, SObject> cachedRecords = new Map<Id, SObject>();
-        Iterable<Object> iterable = getIterable(value);
+        List<Object> listOfQueryValues = getList(value);
+        List<Object> remainingValues = Runtime.newListOfTheSameType(listOfQueryValues);
 
-        Type itemType = Runtime.getIterableItemType(iterable);
-        List<Object> remainingValues = Runtime.newListOfItemType(itemType);
-
-
-        Iterator<Object> valueIt = iterable.iterator();
-        while (valueIt.hasNext()) {
-            Object val = valueIt.next();
+        for (Integer i = 0; i < listOfQueryValues.size(); i++) {
+            Object val = listOfQueryValues[i];
 
             if (val != null && val != '' && containsKey(sObjectType, field, val)) {
                 SObject record = get(sObjectType, field, val);
@@ -83,7 +79,6 @@ public inherited sharing class QueryCache {
                 remainingValues.add(val);
             }
         }
-
 
         return new Result(cachedRecords, remainingValues);
     }
@@ -95,20 +90,33 @@ public inherited sharing class QueryCache {
     * - List or Sets are casted into Iterable<Object>
     * - SObject[] is changed into Iterable<Id>
     */
-    private Iterable<Object> getIterable(Object value) {
-        String typeName = Runtime.getTypeName(value);
+    private List<Object> getList(Object value) {
 
         if (value instanceof SObject[]) {
-            return (Iterable<Object>) new Map<Id, SObject>((SObject[]) value).keySet();
+            return new List<Id>(
+                new Map<Id, SObject>((SObject[]) value).keySet()
+            );
 
-        } else if (typeName.contains('List') || typeName.contains('Set')) {
-            return ((Iterable<Object>) value);
+        } else if (value instanceof List<Object>) {
+            return (List<Object>) value;
 
         } else {
-            Type valueType = Runtime.getType(value);
-            List<Object> values = Runtime.newListOfItemType(valueType);
-            values.add(value);
-            return values;
+            if (value instanceof Id) return new List<Id>{(Id) value};
+            if (value instanceof String) return new List<String>{(String) value};
+            if (value instanceof Date) return new List<Date>{(Date) value};
+            if (value instanceof Datetime) return new List<Datetime>{(Datetime) value};
+            if (value instanceof Time) return new List<Time>{(Time) value};
+            if (value instanceof Decimal) return new List<Decimal>{(Decimal) value};
+            if (value instanceof Boolean) return new List<Boolean>{(Boolean) value};
+            if (value instanceof Set<Id>) return new List<Id>((Set<Id>) value);
+            if (value instanceof Set<String>) return new List<String>((Set<String>) value);
+            if (value instanceof Set<Date>) return new List<Date>((Set<Date>) value);
+            if (value instanceof Set<Datetime>) return new List<Datetime>((Set<Datetime>) value);
+            if (value instanceof Set<Time>) return new List<Time>((Set<Time>) value);
+            if (value instanceof Set<Decimal>) return new List<Decimal>((Set<Decimal>) value);
+            if (value instanceof Set<Boolean>) return new List<Boolean>((Set<Boolean>) value);
+
+            throw new QueryException('Unrecognized value type: ' + value);
         }
     }
 

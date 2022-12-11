@@ -225,7 +225,6 @@ public with sharing class QueryConditions {
             return '(' + field + ' ' + operator + ' ' + binding + ')';
         }
 
-
         public Boolean isCacheable() {
             return (operator == '=' || operator == 'IN')
                 && value != null

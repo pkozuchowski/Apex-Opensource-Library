@@ -8,3 +8,4 @@ https://salesforce-opensource-library.com
 1. [Trigger Handler](docs/Trigger%20Handler/triggerHandler.md)
 2. [Database Service - Mocking DMLs - Pure Apex Tests](docs/DatabaseService.md)
 3. [Collection](docs/Collection.md)
+4. [Apex Logging Framework / Logger](docs/Logger.md)

@@ -32,7 +32,6 @@
  * This class can be extended to provide context-specific logs.
  */
 public with sharing class Log {
-    private static Long t1 = System.currentTimeMillis();
     private LoggingEvent__e log = new LoggingEvent__e();
     private Map<String, Object> parameters = new Map<String, Object>();
 
@@ -88,7 +87,7 @@ public with sharing class Log {
         ));
     }
 
-    private Log(LoggingEvent__e log) {
+    public Log(LoggingEvent__e log) {
         this.log = log;
         this.log.UserId__c = UserInfo.getUserId();
     }
@@ -101,6 +100,9 @@ public with sharing class Log {
         return this;
     }
 
+    /**
+     * Saves called method parameter.
+     */
     public Log withParameter(String param, Object value) {
         this.parameters.put(param, value);
         return this;
@@ -114,13 +116,8 @@ public with sharing class Log {
         return this;
     }
 
-    public Log withTimeMetric() {
-        this.log.ExecutionTime__c = System.currentTimeMillis() - t1;
-        return this;
-    }
-
     /**
-     * Saves Execution time for performance metrics
+     * Saves Execution time for performance metrics.
     */
     public Log withTimeMetric(Long timeMs) {
         this.log.ExecutionTime__c = timeMs;

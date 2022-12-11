@@ -51,6 +51,7 @@ private class LoggerTest {
      */
     @IsTest
     static void testLogException() {
+        Datetime startTime = Datetime.now();
         Test.startTest();
         try {
             Date d = (Date) Datetime.now();
@@ -60,14 +61,20 @@ private class LoggerTest {
                 .withParameters(new Map<String, Object>{
                     'other' => 'param'
                 })
-                .withReferenceId('test'));
+                .withReferenceId('test')
+                .withTimeMetric(startTime));
         }
         Test.stopTest();
 
 
-        Log__c log = [SELECT ApexClass__c, ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c LIMIT 1];
+        Log__c log = [
+            SELECT ApexClass__c, ReferenceId__c, Message__c, LoggingLevel__c, ExecutionTime__c
+            FROM Log__c
+            LIMIT 1
+        ];
         System.assert(log.Message__c.contains('Invalid conversion from runtime type Datetime to Date'), 'Message should contain exception message');
         System.assert(log.Message__c.contains('LoggerTest.testLogException'), 'Message should contain stack trace');
+        System.assert(log.ExecutionTime__c > 0, 'Should measure how much time execution of the method took');
         System.assertEquals('LoggerTest.testLogException', log.ApexClass__c);
     }
 
@@ -126,4 +133,5 @@ private class LoggerTest {
         System.assert(log.Request__c.contains('request'));
         System.assert(log.Request__c.contains('?param=value'));
     }
+
 }

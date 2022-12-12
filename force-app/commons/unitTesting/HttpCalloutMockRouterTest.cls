@@ -29,14 +29,15 @@ private class HttpCalloutMockRouterTest {
     private class SalesforceRestAPIMocks extends HttpCalloutMockRouter {
 
         public SalesforceRestAPIMocks() {
-            this.registerEndpointVariable('endpoint', 'https://yourInstance.salesforce.com/services/data/v47.0');
-            this.registerEndpointVariable('id', '([0-9a-zA-Z]{15,18})');
+            this.registerEndpointVariables(new Map<String, String>{
+                'endpoint' => Url.getOrgDomainUrl().toExternalForm() + '/services/data/v\\d.0',
+                'id' => '([0-9a-zA-Z]{15,18})'
+            });
 
             this.registerStaticResourceMock('Query', 'GET', '{{endpoint}}/query/?q=.*', 200, 'OK', 'StaticResourceWithResponse');
             this.registerJsonMock('Create Account', 'POST', '{{endpoint}}/sobjects/Account/', 201, 'Created', new CreateRecordResult(true));
             this.registerJsonMock('Get Account', 'GET', '{{endpoint}}/sobjects/Account/{{id}}', 200, 'OK', new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME));
             this.registerMock('Delete Account', 'DELETE', '{{endpoint}}/sobjects/Account/{{id}}', 204, 'No Content', '');
-            this.registerStaticResourceMock('Query', 'GET', '{{endpoint}}/query/?q=.*', 200, 'OK', 'StaticResourceWithResponse');
         }
     }
 
@@ -92,9 +93,9 @@ private class HttpCalloutMockRouterTest {
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, new SalesforceRestAPIMocks()
-                .overrideJsonMock('Create Account', 401, 'Unauthorized', new List<Error>{
-                        new Error('Session expired or invalid', 'INVALID_SESSION_ID')
-                })
+            .overrideJsonMock('Create Account', 401, 'Unauthorized', new List<Error>{
+                new Error('Session expired or invalid', 'INVALID_SESSION_ID')
+            })
         );
         HttpResponse response = new Http().send(request);
         Test.stopTest();
@@ -181,10 +182,10 @@ private class HttpCalloutMockRouterTest {
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, new HttpCalloutMockRouter()
-                .registerMock('Salesforce API', new SalesforceRestAPIMocks()
-                        .overrideMock('Delete Account', 401, 'Unauthorized', '')
-                        .overrideMockWithStaticResource('Query', 200, 'OK', 'OtherStaticResource')
-                ));
+            .registerMock('Salesforce API', new SalesforceRestAPIMocks()
+                .overrideMock('Delete Account', 401, 'Unauthorized', '')
+                .overrideMockWithStaticResource('Query', 200, 'OK', 'OtherStaticResource')
+            ));
 
         try {
             new Http().send(request);

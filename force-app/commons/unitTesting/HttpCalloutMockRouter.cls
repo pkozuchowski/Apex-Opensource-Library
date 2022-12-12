@@ -164,6 +164,11 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
         return this;
     }
 
+    public HttpCalloutMockRouter registerEndpointVariables(Map<String,String> vars) {
+        variables.putAll(vars);
+        return this;
+    }
+
 
     /**
      * Responds with first registered mock which can handle the request.

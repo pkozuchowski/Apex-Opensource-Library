@@ -42,7 +42,7 @@ public virtual with sharing class HttpMockEndpointRouter implements HttpCalloutC
     }
 
     public virtual Boolean handles(HttpRequest request) {
-        return this.methods.contains(request.getMethod().toUpperCase())
+        return (this.methods.contains('*') || this.methods.contains(request.getMethod().toUpperCase()))
                 && endpointPattern.matcher(request.getEndpoint()).matches();
     }
 

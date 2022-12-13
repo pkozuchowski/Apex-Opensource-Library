@@ -12,3 +12,16 @@ https://salesforce-opensource-library.com
 5. Unit Testing Frameworks
     * [HTTP Callout Mock Router](docs/HttpCalloutMockRouter.md)
     * [Test Data Builder](docs/TestDataBuilder.md)
+    * Test Data Suite
+6. Selector Layer / Queries (Documentation In Progress)
+7. Runtime
+8. Schema
+    * Record Types/ Profiles / Permission Sets
+    * Custom Metadata Service
+9. Utils
+   * AuraService
+   * BatchSchedulable
+   * Scheduler
+   * Data Structures
+   * XML Serialization/Deserialization
+   * Localization - Dynamic Custom Labels / Retrieving Custom Labels by name

@@ -28,6 +28,7 @@
  */
 @IsTest
 public inherited sharing class TestDataBuilder {
+    @TestVisible private DatabaseService databaseService = new DatabaseService();
     private List<SObject> records = new List<SObject>();
     private SObject previousPrototype;
 
@@ -174,30 +175,23 @@ public inherited sharing class TestDataBuilder {
      *
      * @return inserted records
      */
-    public SObject[] insertRecords() {
-        insert records;
-        return this.flush();
+    public List<SObject> insertRecords() {
+        databaseService.insertRecords(records);
+        return this.getRecords();
+    }
+
+    /**
+     * @return First record from Builder's internal storage and clear's storage.
+     */
+    public SObject getOne() {
+        return getRecords().get(0);
     }
 
     /**
      * @return Records from Builder's internal storage.
      */
     public List<SObject> getRecords() {
-        return records.deepClone(true);
-    }
-
-    /**
-     * @return i'th record from Builder's internal storage.
-     */
-    public SObject get(Integer i) {
-        return records.deepClone(true).get(i);
-    }
-
-    /**
-     * @return Records from Builder's internal storage and clears the buffer.
-     */
-    public SObject[] flush() {
-        List<SObject> result = getRecords();
+        List<SObject> result = records.deepClone(true);
         this.clear();
         return result;
     }

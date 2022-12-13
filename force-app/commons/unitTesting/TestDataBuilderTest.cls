@@ -31,22 +31,21 @@ private class TestDataBuilderTest {
     @IsTest
     static void testRelationshipBuilding() {
         TestDataBuilder builder = new TestDataBuilder();
+        builder.databaseService.useMock();
 
         Test.startTest();
         List<Account> accounts = builder
             .create(10, new Account(
-                Id = '001000000000000',
                 Name = 'Test'
             ))
-            .flush();
+            .insertRecords();
 
         for (Account account : accounts) {
             builder.create(2, new Contact(
-                Id = '003000000000000',
                 AccountId = account.Id
             ));
         }
-        List<Contact> contacts = builder.flush();
+        List<Contact> contacts = builder.insertRecords();
 
 
         for (Contact contact : contacts) {
@@ -55,7 +54,7 @@ private class TestDataBuilderTest {
                 AccountId = contact.AccountId
             ));
         }
-        List<Case> cases = builder.flush();
+        List<Case> cases = builder.insertRecords();
         Test.stopTest();
 
 
@@ -73,7 +72,8 @@ private class TestDataBuilderTest {
     @IsTest
     static void testCreateVanillaShouldCreateRecordWithDefaultValues() {
         Test.startTest();
-        User user = (User) new TestDataBuilder().create(new User(LastName = 'Johnson')).get(0);
+        User user = (User) new TestDataBuilder()
+            .create(new User(LastName = 'Johnson')).getOne();
         Test.stopTest();
 
 
@@ -233,7 +233,7 @@ private class TestDataBuilderTest {
     }
 
     /**
-     * .insertRecord(s) should insert and return records immadiatelly, without additional call.
+     * .insertRecord(s) should insert and return records immediately, without additional call.
      */
     @IsTest
     static void testInsertRecords() {
@@ -249,5 +249,16 @@ private class TestDataBuilderTest {
 
         System.assertNotEquals(null, c.Id, 'Record should be inserted');
         System.assertEquals('John', c.FirstName, 'Builder should apply defaults');
+    }
+
+    @IsTest
+    static void testInsertRecordsMockDML() {
+        TestDataBuilder builder = new TestDataBuilder();
+        builder.databaseService.useMock();
+
+
+        Account account = (Account) builder.insertRecord(new Account());
+
+        Assert.areEqual(Id.valueOf('001000000000000'), account.Id);
     }
 }

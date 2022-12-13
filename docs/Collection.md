@@ -28,11 +28,11 @@ Call `.mapBy()` to map list of records by field.
 Method automatically determines map's key and value type by checking field type, so you only need to cast it to expected type.
 
 ```apex
-Map<Id, Contact> contactMap =
-    (Map<Id, Contact>) Collection.of(contacts).mapBy(Contact.AccountId);
-// or
-Map<Id, Contact> contactMap =
-    (Map<Id, Contact>) Collection.of(contacts).mapBy('AccountId');
+Map<Id, Contact> contactMap = (Map<Id, Contact>) Collection.of(contacts)
+    .mapBy(Contact.AccountId);
+
+Map<Id, Contact> contactMap = (Map<Id, Contact>) Collection.of(contacts)
+    .mapBy('AccountId');
 ```
 
 ##### Map between 2 fields
@@ -40,8 +40,8 @@ Map<Id, Contact> contactMap =
 When we need to map one sobject field to another:
 
 ```apex
-    Map<Id, String> usernameByProfileId = (Map<Id, String>)
-    Collection.of(users).mapBy(User.ProfileId, User.Username);
+Map<Id, String> usernameByProfileId = (Map<Id, String>) Collection.of(users)
+    .mapBy(User.ProfileId, User.Username);
 ```
 
 Output:
@@ -73,8 +73,8 @@ Map<String, JunctionObject__c> mapByParents = (Map<String, JunctionObject__c>) C
 Grouping is similar to mapping, except it expects values to be non-unique - it will produce List as map's value:
 
 ```apex
-Map<Id, Contact[]> contactMap =
-    (Map<Id, Contact[]>) Collection.of(contacts).groupBy(Contact.AccountId);
+Map<Id, Contact[]> contactMap = (Map<Id, Contact[]>) Collection.of(contacts)
+    .groupBy(Contact.AccountId);
 ```
 
 <br/>
@@ -84,8 +84,8 @@ Map<Id, Contact[]> contactMap =
 Similar to mapBy() equivalent, but in the list we will find field value instead of sobject.
 
 ```apex
-Map<Id, String[]> usernamesByProfile = (Map<Id, String[]>)
-    Collection.of(users).groupBy(User.ProfileId, User.Username);
+Map<Id, String[]> usernamesByProfile = (Map<Id, String[]>) Collection.of(users)
+    .groupBy(User.ProfileId, User.Username);
 ```
 
 Output:
@@ -127,7 +127,7 @@ Set<Id> accountIds = (Set<Id>) Collection.of(contacts).getSet('AccountId');
 Set<Integer> externalIds = Collection.of(contacts).getIntegerSet(Contact.ExternalId__c); // Preferred
 Set<Integer> externalIds = (Set<Integer>) Collection.of(contacts).getSet(Contact.ExternalId__c);
 
-// Similary we can get List of values
+// Similarly we can get List of values
 List<String> contactNames = (List<String>) Collection.of(contacts).getList(Contact.Name);
 
 ```
@@ -140,7 +140,7 @@ We can use .filter() methods to remove records that do not meet the filter:
 
 ```apex
 List<Contact> contacts = (List<Contact>) Collection.of(contacts)
-    .filter(Contact.Account).isIn(accountIds)
+    .filter(Contact.AccountId).isIn(accountIds)
     .get();
 ```
 

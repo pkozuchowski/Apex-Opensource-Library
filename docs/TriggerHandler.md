@@ -13,7 +13,7 @@
 
 <br/>
 
-[Link to Code](../../force-app/commons/triggerHandler) <br/>
+[Link to Code](../force-app/commons/triggerHandler) <br/>
 [Link to Examples](examples)
 
 # Description
@@ -126,10 +126,13 @@ Example:
 ```apex
 public inherited sharing class AccountTriggerHandler extends TriggerHandler {
 
-    //without interface
-    public override void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {
-        new AccountContactLinker().linkContactsToAccount(triggerNew, tc);
-    }
+   public override void onAfterInsert(List<SObject> triggerNew, TriggerContext tc) {
+      new AccountContactLinker().linkContactsToAccount(triggerNew, tc);
+   }
+
+   public override void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {
+      new AccountContactLinker().linkContactsToAccount(triggerNew, tc);
+   }
 }
 ```
 

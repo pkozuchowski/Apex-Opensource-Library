@@ -30,7 +30,7 @@ private class HttpCalloutMockRouterTest {
 
         public SalesforceRestAPIMocks() {
             this.registerEndpointVariables(new Map<String, String>{
-                'endpoint' => Url.getOrgDomainUrl().toExternalForm() + '/services/data/v\\d.0',
+                'endpoint' => 'https://yourInstance.salesforce.com/services/data/v\\d+.0',
                 'id' => '([0-9a-zA-Z]{15,18})'
             });
 

@@ -58,14 +58,14 @@ public with sharing class Runtime {
      * or when it's part of anonymous script. In that case, getRunningTypeName() should be used instead.
      */
     public static Type getType(Object o) {
-        return getType(o, 'Invalid conversion from runtime type ', ' to Date');
+        return getType(o, 'Invalid conversion from runtime type ', ' to Account');
     }
 
     /**
      * @return Name of running type of object passed in parameter.
      */
     public static String getTypeName(Object o) {
-        return getTypeName(o, 'Invalid conversion from runtime type ', ' to Date');
+        return getTypeName(o, 'Invalid conversion from runtime type ', ' to Account');
     }
 
 
@@ -77,8 +77,8 @@ public with sharing class Runtime {
         if (o == null) throw new NullPointerException();
 
         try {
-            Date d = (Date) o;
-            return 'Date';
+            Account a = (Account) o;
+            return 'Account';
         } catch (Exception ex) {
             return ex.getMessage().substringBetween(open, close);
         }

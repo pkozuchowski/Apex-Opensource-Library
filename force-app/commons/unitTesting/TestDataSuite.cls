@@ -31,9 +31,9 @@
  * where we want to create all data in @TestSetup, but at the same time we want to segregate data into suites for different scenarios.
  */
 public abstract class TestDataSuite {
-    private Map<String, SObject> sobjectByUniqueName = new Map<String, SObject>();
-    private Map<String, SObject[]> sobjectBySObjectType = new Map<String, SObject[]>();
-    private Map<String, SObject[]> sobjectByGroup = new Map<String, SObject[]>();
+    private final Map<String, SObject> sobjectByUniqueName = new Map<String, SObject>();
+    private final Map<String, SObject[]> sobjectBySObjectType = new Map<String, SObject[]>();
+    private final Map<String, SObject[]> sobjectByGroup = new Map<String, SObject[]>();
 
 
     /**
@@ -43,8 +43,8 @@ public abstract class TestDataSuite {
 
 
     /**
-     * Registers record in test data suite by unique name.
-     * Record Id can be later retrieved in unit test using getId() method.
+     * Registers records in test data suite by unique value stored in sobject field.
+     * Record can be later retrieved in unit test using get() method.
      */
     public void registerRecords(SObjectField field, SObject[] records) {
         for (SObject record : records) {
@@ -54,7 +54,7 @@ public abstract class TestDataSuite {
 
     /**
      * Registers record in test data suite by unique name.
-     * Record Id can be later retrieved in unit test using getId() method.
+     * Record can be later retrieved in unit test using get() method.
      */
     public void registerRecord(String uniqueName, SObject record) {
         sobjectByUniqueName.put(uniqueName, record);
@@ -63,7 +63,7 @@ public abstract class TestDataSuite {
 
     /**
      * Registers record in test data suite by group.
-     * Record Ids can be later retrieved in unit test using getRecords() method.
+     * Record can be later retrieved in unit test using getRecords() method.
      */
     public void registerRecordsUnderGroup(String groupName, SObject[] records) {
         if (!sobjectByGroup.containsKey(groupName)) {
@@ -91,16 +91,11 @@ public abstract class TestDataSuite {
      * @return All records of given SObjectType in suite.
      */
     public List<SObject> get(SObjectType type) {
-        List<SObject> records = new List<SObject>();
-        String typeName = '' + type;
-
-        if (sobjectBySObjectType.containsKey(typeName)) {
-            for (SObject record : sobjectBySObjectType.get(typeName)) {
-                records.add(record);
-            }
+        if (sobjectBySObjectType.containsKey('' + type)) {
+            return sobjectBySObjectType.get('' + type);
         }
 
-        return records;
+        return new List<SObject>();
     }
 
     /**

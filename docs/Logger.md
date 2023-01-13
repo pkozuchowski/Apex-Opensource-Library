@@ -81,6 +81,7 @@ Logger.error(new Log(RestContext.request, RestContext.response));
 * `withParameters(Map<String, Object> parameters)` - Same as above
 * `withTimeMetric(Long timeMs)` - Saves execution time of Http Request / Aura method etc.
 * `withTimeMetric(Datetime startTime)` - Saves execution time since given Datetime.
+* For new Log__c fields, you can add additional Log building methods.
 
 ```apex
 public with sharing class SomeCtrl {

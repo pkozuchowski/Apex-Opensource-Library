@@ -1,4 +1,36 @@
+# Test Data Factory
+Collection of one-liners for simple data setup:
+```apex
+@IsTest
+private class SomeTest {
+
+    @TestSetup
+    static void testSetup() {
+        User testUser = TestDataFactory.createUser(Profiles.SYSTEM_ADMINISTRATOR.Id, 'test@company.com');
+
+        Account account = TestDataFactory.createAccount('Test');
+    }
+}
+```
+
 # Test Data Builder
+More versatile test data creator:~~~~
+```apex
+@IsTest
+private class SomeTest {
+    static TestDataBuilder builder = new TestDataBuilder();
+
+    @TestSetup
+    static void testSetup() {
+        User testUser = TestDataFactory.createUser(Profiles.SYSTEM_ADMINISTRATOR.Id, 'test@company.com');
+
+        Account[] accounts = builder.create(new Account(Name = 'Test', BillingCountry = 'US')) // Applies other default fields, unless they are specified here specified here
+                .similarly(new Account(BillingCountry = 'PL')) // Same as above, but with different BillingCountry
+                .create(5, new Account(Name = 'Other Accounts')) // Creates 5 accounts
+                .insertRecords();
+    }
+}
+```
 
 Test Data Builder is a utility class for creating test records with default fields in unit tests.
 This builder utilizes 3 design patterns - builder, prototype and factory. First of all, we have repository of default fields,
@@ -7,55 +39,55 @@ which will be actively extended for new sObjects as project progresses.
 It will look like this:
 
 ```apex
-public with sharing class TestDataBuilderFactories {
-    private final static Map<SObjectType, Map<String, SObjectFactory>> sObjectFactoriesMap = new Map<SObjectType, Map<String, SObjectFactory>>{
-        User.SObjectType => new Map<String, SObjectFactory>{
-            defaults => new DefaultUserFactory()
-        },
+public with sharing class TestDataDefaults {
+  private final static Map<SObjectType, Map<String, SObjectFactory>> sObjectFactoriesMap = new Map<SObjectType, Map<String, SObjectFactory>>{
+          User.SObjectType => new Map<String, SObjectFactory>{
+                  defaults => new DefaultUserFactory()
+          },
 
-        Account.SObjectType => new Map<String, SObjectFactory>{
-            defaults => new SimpleDefaultsFactory(new Account(
-                Name = 'Test Account'
-            ))
-        },
+          Account.SObjectType => new Map<String, SObjectFactory>{
+                  defaults => new SimpleDefaultsFactory(new Account(
+                          Name = 'Test Account'
+                  ))
+          },
 
-        Contact.SObjectType => new Map<String, SObjectFactory>{
-            defaults => new SimpleDefaultsFactory(new Contact(
-                FirstName = 'Testy',
-                LastName = 'Jones'
-            ))
-        },
+          Contact.SObjectType => new Map<String, SObjectFactory>{
+                  defaults => new SimpleDefaultsFactory(new Contact(
+                          FirstName = 'Testy',
+                          LastName = 'Jones'
+                  ))
+          },
 
-        Opportunity.SObjectType => new Map<String, SObjectFactory>{
-            defaults => new SimpleDefaultsFactory(new Opportunity(
-                Name = 'Test Opportunity'
-            ))
-        }
-    };
+          Opportunity.SObjectType => new Map<String, SObjectFactory>{
+                  defaults => new SimpleDefaultsFactory(new Opportunity(
+                          Name = 'Test Opportunity'
+                  ))
+          }
+  };
 
-    private class DefaultUserFactory implements SObjectFactory {
-        private Integer counter = 0;
-        private Id orgId = UserInfo.getOrganizationId();
+  private class DefaultUserFactory implements SObjectFactory {
+    private Integer counter = 0;
+    private Id orgId = UserInfo.getOrganizationId();
 
-        public SObject create() {
-            counter++;
-            String uid = '' + counter + Crypto.getRandomInteger();
+    public SObject create() {
+      counter++;
+      String uid = '' + counter + Crypto.getRandomInteger();
 
-            return new User(
-                FirstName = 'Test',
-                LastName = 'User',
-                Email = 'test@example.com',
-                Username = uid + '@' + orgId + '.test.com',
-                ProfileId = UserInfo.getProfileId(),
-                Alias = uid.left(8),
-                CommunityNickname = uid.left(40),
-                TimeZoneSidKey = 'GMT',
-                LocaleSidKey = 'en_US',
-                EmailEncodingKey = 'UTF-8',
-                LanguageLocaleKey = 'en_US'
-            );
-        }
+      return new User(
+              FirstName = 'Test',
+              LastName = 'User',
+              Email = 'test@example.com',
+              Username = uid + '@' + orgId + '.test.com',
+              ProfileId = UserInfo.getProfileId(),
+              Alias = uid.left(8),
+              CommunityNickname = uid.left(40),
+              TimeZoneSidKey = 'GMT',
+              LocaleSidKey = 'en_US',
+              EmailEncodingKey = 'UTF-8',
+              LanguageLocaleKey = 'en_US'
+      );
     }
+  }
 }
 ```
 
@@ -72,7 +104,7 @@ TestDataBuilder builder = new TestDataBuilder();
 User[] users = builder.create(new User(LastName = 'Johnson')).getRecords();
 ```
 
-The builder takes prototype record from `TestDataBuilderFactories`, applies LastName = 'Johnson' on top of it and returns the User.  
+The builder takes prototype record from `TestDataDefaults`, applies LastName = 'Johnson' on top of it and returns the User.  
 Voila. That's it. You can override any fields you want easily, or create records instantly using `.insertRecords()` method:
 
 ```apex
@@ -84,7 +116,7 @@ User[] users = builder.create(new User(LastName = 'Johnson')).insertRecords();
 Account[] accounts = builder.insertRecords(new Account(Name = 'Test Account'));
 ```
 
-We have 2 prototype records here - default fields in `TestDataBuilderFactories` and overriding fields prototype passed to builder.
+We have 2 prototype records here - default fields in `TestDataDefaults` and overriding fields prototype passed to builder.
 
 <br/>
 
@@ -128,7 +160,7 @@ Flavours allow us to create different base records for the same SObject type.
 For example, let's assume that we have 3 Account Record Types - Person Account, Small Medium Business and Enterprise Business.
 Each has completely different layout and set of required fields.
 
-This is when we can use flavours in TestDataFactories:
+This is when we can use flavours in TestDataDefaults:
 
 ```apex
     private final static Map<SObjectType, Map<String, SObjectFactory>> sObjectFactoriesMap = new Map<SObjectType, Map<String, SObjectFactory>>{
@@ -194,9 +226,9 @@ Account will have fake id `001000000000000`.
 
 ### Trivia
 
-* If there is no prototype set up in `TestDataBuilderFactories`, builder will return records with only overriding fields. Nothing bad will happen. You should
+* If there is no prototype set up in `TestDataDefaults`, builder will return records with only overriding fields. Nothing bad will happen. You should
   create all records through the builder, even if there's no prototype - when new required field is created, you can just add prototype
-  in [TestDataBuilderFactories](..%2Fforce-app%2Fcommons%2FunitTesting%2FTestDataBuilderFactories.cls) and all unit tests will have this new field populated.
+  in [TestDataDefaults](..%2Fforce-app%2Fcommons%2FunitTesting%2FTestDataDefaults.cls) and all unit tests will have this new field populated.
 * `similarly()` method needs to be preceded with `create` method.
 * When calling `create()` subsequently for different sobjects, builder will return/insert a single list with many different sObjects. It's better to create
   getRecords/insertRecords for each sobject type separately.

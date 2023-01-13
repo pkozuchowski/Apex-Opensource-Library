@@ -83,7 +83,7 @@ public inherited sharing class TestDataBuilder {
      */
     public TestDataBuilder create(Integer count, String flavour, SObject prototype) {
         for (Integer i = 0; i < count; i++) {
-            SObject newRecord = TestDataBuilderFactories.getBaseRecord(flavour, prototype);
+            SObject newRecord = TestDataDefaults.getBaseRecord(flavour, prototype);
             applyExtraFields(newRecord, prototype.getPopulatedFieldsAsMap());
 
             records.add(newRecord);

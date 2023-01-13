@@ -35,15 +35,11 @@ private class TestDataBuilderTest {
 
         Test.startTest();
         List<Account> accounts = builder
-            .create(10, new Account(
-                Name = 'Test'
-            ))
+            .create(10, new Account(Name = 'Test'))
             .insertRecords();
 
         for (Account account : accounts) {
-            builder.create(2, new Contact(
-                AccountId = account.Id
-            ));
+            builder.create(2, new Contact(AccountId = account.Id));
         }
         List<Contact> contacts = builder.insertRecords();
 
@@ -237,7 +233,7 @@ private class TestDataBuilderTest {
      */
     @IsTest
     static void testInsertRecords() {
-        TestDataBuilderFactories.registerPrototype(Contact.SObjectType, '', new Contact(
+        TestDataDefaults.registerPrototype(Contact.SObjectType, '', new Contact(
             FirstName = 'John'
         ));
 

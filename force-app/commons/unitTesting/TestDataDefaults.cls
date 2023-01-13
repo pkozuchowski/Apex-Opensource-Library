@@ -28,7 +28,7 @@
  * Container class for Factories
  */
 @IsTest
-public with sharing class TestDataBuilderFactories {
+public with sharing class TestDataDefaults {
     public final static String defaults = '';
 
     /**
@@ -36,25 +36,25 @@ public with sharing class TestDataBuilderFactories {
      * For each sObjectType, it's possible to configure separate set of defaults - for example, different for each Record Type
      * or by other classification.
      */
-    private final static Map<SObjectType, Map<String, SObjectFactory>> sObjectFactoriesMap = new Map<SObjectType, Map<String, SObjectFactory>>{
-        User.SObjectType => new Map<String, SObjectFactory>{
+    private final static Map<SObjectType, Map<String, SObjectDefaults>> sObjectFactoriesMap = new Map<SObjectType, Map<String, SObjectDefaults>>{
+        User.SObjectType => new Map<String, SObjectDefaults>{
             defaults => new DefaultUserFactory()
         },
 
-        Account.SObjectType => new Map<String, SObjectFactory>{
+        Account.SObjectType => new Map<String, SObjectDefaults>{
             defaults => new SimpleDefaultsFactory(new Account(
                 Name = 'Test Account'
             ))
         },
 
-        Contact.SObjectType => new Map<String, SObjectFactory>{
+        Contact.SObjectType => new Map<String, SObjectDefaults>{
             defaults => new SimpleDefaultsFactory(new Contact(
                 FirstName = 'Testy',
                 LastName = 'Jones'
             ))
         },
 
-        Opportunity.SObjectType => new Map<String, SObjectFactory>{
+        Opportunity.SObjectType => new Map<String, SObjectDefaults>{
             defaults => new SimpleDefaultsFactory(new Opportunity(
                 Name = 'Test Opportunity'
             ))
@@ -72,7 +72,7 @@ public with sharing class TestDataBuilderFactories {
         String flavour = String.isEmpty(flav) ? defaults : flav;
 
         if (sObjectFactoriesMap.containsKey(prototype.getSObjectType())) {
-            Map<String, SObjectFactory> flavoursFactories = sObjectFactoriesMap.get(prototype.getSObjectType());
+            Map<String, SObjectDefaults> flavoursFactories = sObjectFactoriesMap.get(prototype.getSObjectType());
 
             if (flavoursFactories.containsKey(flavour)) {
                 base = flavoursFactories.get(flavour).create();
@@ -98,7 +98,7 @@ public with sharing class TestDataBuilderFactories {
     /**
      * Registers factory in cache for current request.
      */
-    public static void registerFactory(SObjectType sobjType, String flavour, SObjectFactory factory) {
+    public static void registerFactory(SObjectType sobjType, String flavour, SObjectDefaults factory) {
         sObjectFactoriesMap.get(sobjType).put(flavour, factory);
     }
 
@@ -106,7 +106,7 @@ public with sharing class TestDataBuilderFactories {
     /**
      * Concrete classes implementing this interface are responsible for creating test record
      */
-    public interface SObjectFactory {
+    public interface SObjectDefaults {
         SObject create();
     }
 
@@ -114,7 +114,7 @@ public with sharing class TestDataBuilderFactories {
     /**
      * Factory which takes prototype of an record and clones it.
      */
-    public class SimpleDefaultsFactory implements SObjectFactory {
+    public class SimpleDefaultsFactory implements SObjectDefaults {
         private SObject prototype;
 
         public SimpleDefaultsFactory(SObject prototype) {
@@ -127,7 +127,7 @@ public with sharing class TestDataBuilderFactories {
     }
 
 
-    private class DefaultUserFactory implements SObjectFactory {
+    private class DefaultUserFactory implements SObjectDefaults {
         private Integer counter = 0;
         private Id orgId = UserInfo.getOrganizationId();
 

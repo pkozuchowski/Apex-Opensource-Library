@@ -27,6 +27,7 @@ private class TriggerDispatcherTest {
         ID_1 = '001000000000000',
         ID_2 = '001000000000001',
         ID_3 = '001000000000002',
+        ID_4 = '001000000000003',
         NAME_TEST = 'Test',
         SOBJECT_ACCOUNT = 'Account',
         COUNTRY_USA = 'USA',
@@ -255,5 +256,27 @@ private class TriggerDispatcherTest {
         System.assertEquals(false, setting.DisableProcessBuilders__c, expectedEnabled);
         System.assertEquals(false, setting.DisableTriggers__c, expectedEnabled);
         Test.stopTest();
+    }
+
+
+    @IsTest
+    static void testGetChangedRecords() {
+        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE,
+            new List<Account>{
+                new Account(Id = ID_1, Name = 'Test 1 - new'),
+                new Account(Id = ID_2, Name = 'Test 2 - new'),
+                new Account(Id = ID_3, Name = 'Test 3 - new'),
+                new Account(Id = ID_4, Name = 'Test 4', BillingCountry = COUNTRY_USA)
+            },
+            new List<Account>{
+                new Account(Id = ID_1, Name = 'Test 1'),
+                new Account(Id = ID_2, Name = 'Test 2'),
+                new Account(Id = ID_3, Name = 'Test 3'),
+                new Account(Id = ID_4, Name = 'Test 4')
+            });
+
+        Assert.areEqual(3, tc.getChanged(Account.Name).size());
+        Assert.areEqual(1, tc.getChangedToValue(Account.Name, new Set<Object>{'Test 3 - new'}).size());
+        Assert.areEqual(2, tc.getChangedFromValue(Account.Name, new Set<Object>{'Test 1', 'Test 2'}).size());
     }
 }

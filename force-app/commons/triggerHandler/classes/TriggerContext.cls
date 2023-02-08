@@ -187,4 +187,49 @@ public virtual class TriggerContext {
             return false;
         }
     }
+
+    /**
+     * @return Records where the field changed
+     */
+    public List<SObject> getChanged(SObjectField sObjectField) {
+        List<SObject> changed = new List<SObject>();
+        for (SObject record : triggerNew) {
+            if (isChanged(record, sObjectField)) {
+                changed.add(record);
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * @param sObjectField Changed field
+     * @param values Set of new accepted values
+     *
+     * @return List of records which had the specified field changed to any of the accepted values
+     */
+    public List<SObject> getChangedToValue(SObjectField sObjectField, Set<Object> values) {
+        List<SObject> changed = new List<SObject>();
+        for (SObject record : triggerNew) {
+            if (isChanged(record, sObjectField) && values.contains(record.get(sObjectField))) {
+                changed.add(record);
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * @param sObjectField Changed field
+     * @param values Set of old values
+     *
+     * @return List of records which had the specified field changed from any of the provided values
+     */
+    public List<SObject> getChangedFromValue(SObjectField sObjectField, Set<Object> values) {
+        List<SObject> changed = new List<SObject>();
+        for (SObject record : triggerNew) {
+            if (isChanged(record, sObjectField) && values.contains(getOld(record).get(sObjectField))) {
+                changed.add(record);
+            }
+        }
+        return changed;
+    }
 }

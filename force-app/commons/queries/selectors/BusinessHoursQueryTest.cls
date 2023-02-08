@@ -35,7 +35,7 @@ private class BusinessHoursQueryTest {
                 new List<Object>{soql, whereClause}
             )
         );
-        Assert.areEqual(true, query.getBinding(':var0'));
+        Assert.areEqual(true, query.getBinding('var0'));
     }
 
 

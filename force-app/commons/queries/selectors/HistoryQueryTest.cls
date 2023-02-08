@@ -32,6 +32,6 @@ private class HistoryQueryTest {
 
         Assert.isTrue(soql.containsIgnoreCase('FROM AccountHistory'));
         Assert.isTrue(soql.containsIgnoreCase('WHERE (AccountId IN :var0)'));
-        Assert.areEqual(filterValue, query.getBinding(':var0'));
+        Assert.areEqual(filterValue, query.getBinding('var0'));
     }
 }

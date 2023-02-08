@@ -39,10 +39,10 @@ public with sharing class QueryBindings {
      * @return Unique name that should be used in SOQL.
      */
     public String registerBinding(Object value) {
-        String name = ':var' + counter++;
+        String name = 'var' + counter++;
         this.bindings.put(name, value);
 
-        return name;
+        return ':' + name;
     }
 
     public Map<String, Object> getMap() {

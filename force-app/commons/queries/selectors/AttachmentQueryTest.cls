@@ -34,7 +34,7 @@ public inherited sharing class AttachmentQueryTest {
 
         Assert.isTrue(query.containsIgnoreCase('FROM Attachment'));
         Assert.isTrue(query.containsIgnoreCase('WHERE ((ParentId IN :var0) AND (Name = :var1))'));
-        Assert.areEqual(new Set<Id>{'001000000000000'}, attachmentQuery.getBinding(':var0'));
-        Assert.areEqual('Test', attachmentQuery.getBinding(':var1'));
+        Assert.areEqual(new Set<Id>{'001000000000000'}, attachmentQuery.getBinding('var0'));
+        Assert.areEqual('Test', attachmentQuery.getBinding('var1'));
     }
 }

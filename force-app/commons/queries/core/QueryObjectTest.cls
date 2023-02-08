@@ -110,7 +110,7 @@ public class QueryObjectTest {
                 'GROUP BY Profile.Name ' +
                 'HAVING ((COUNT(ID) > :var0) AND (COUNT(ID) < :var1)),' +
 
-                ' {:var0=0, :var1=10})',
+                ' {var0=0, var1=10})',
             soql
         );
     }
@@ -136,7 +136,7 @@ public class QueryObjectTest {
             });
 
         Assert.isTrue(query.toSOQL().containsIgnoreCase('WHERE Id = :var0'));
-        Assert.areEqual(new Set<Id>{UserInfo.getUserId()}, query.getBinding(':var0'));
+        Assert.areEqual(new Set<Id>{UserInfo.getUserId()}, query.getBinding('var0'));
     }
 
     @IsTest
@@ -152,7 +152,7 @@ public class QueryObjectTest {
     static void testSelectByRecordTypeId() {
         String soql = new TestUserQuery().byRecordTypeId('001000000000000').toString();
         Assert.areEqual(
-            '(SELECT Id, Name, Email, Username FROM User WHERE (RecordTypeId IN :var0), {:var0={001000000000000AAA}})',
+            '(SELECT Id, Name, Email, Username FROM User WHERE (RecordTypeId IN :var0), {var0={001000000000000AAA}})',
             soql
         );
     }
@@ -161,7 +161,7 @@ public class QueryObjectTest {
     static void testSelectByRecordTypeDevName() {
         String soql = new TestUserQuery().byRecordTypeDeveloperName('DeveloperName').toString();
         Assert.areEqual(
-            '(SELECT Id, Name, Email, Username FROM User WHERE (RecordType.DeveloperName IN :var0), {:var0={DeveloperName}})',
+            '(SELECT Id, Name, Email, Username FROM User WHERE (RecordType.DeveloperName IN :var0), {var0={DeveloperName}})',
             soql
         );
     }
@@ -170,7 +170,7 @@ public class QueryObjectTest {
     static void testSelectByOwnerId() {
         String soql = new TestUserQuery().byOwnerId(UserInfo.getUserId()).toString();
         Assert.areEqual(
-            '(SELECT Id, Name, Email, Username FROM User WHERE (OwnerId IN :var0), {:var0={' + UserInfo.getUserId() + '}})',
+            '(SELECT Id, Name, Email, Username FROM User WHERE (OwnerId IN :var0), {var0={' + UserInfo.getUserId() + '}})',
             soql
         );
     }
@@ -328,7 +328,7 @@ public class QueryObjectTest {
         QueryBindings b1 = new QueryBindings();
         String soql = c.field(Account.Id).equals('test').toSOQL(b1);
         System.assertEquals('(Id = :var0)', soql);
-        System.assertEquals('test', b1.getMap().get(':var0'));
+        System.assertEquals('test', b1.getMap().get('var0'));
 
 
         c.field(Account.Id).notEquals('test');
@@ -365,7 +365,7 @@ public class QueryObjectTest {
 
         String newSoql = bindings.replaceReferences(soql, vars);
         System.assertEquals('Name IN :var0', newSoql, 'Should replace all manually-typed variables with unique names');
-        System.assertEquals(bindings.getMap().get(':var0'), vars.get('names'), 'Values should be registered in bindings');
+        System.assertEquals(bindings.getMap().get('var0'), vars.get('names'), 'Values should be registered in bindings');
     }
 
     @IsTest
@@ -433,9 +433,9 @@ public class QueryObjectTest {
         );
 
         if (value instanceof Id) {
-            assertQueryHasBinding(queryObject, ':var0', new Set<Id>{(Id) value});
+            assertQueryHasBinding(queryObject, 'var0', new Set<Id>{(Id) value});
         } else if (value instanceof String) {
-            assertQueryHasBinding(queryObject, ':var0', new Set<String>{(String) value});
+            assertQueryHasBinding(queryObject, 'var0', new Set<String>{(String) value});
         }
     }
 

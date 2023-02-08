@@ -36,6 +36,6 @@ private class EmailTemplateQueryTest {
         Assert.isTrue(soql.containsIgnoreCase('WHERE (DeveloperName IN :var0)'));
         Assert.isTrue(soql.containsIgnoreCase('Body'));
         Assert.isTrue(soql.containsIgnoreCase('HtmlValue'));
-        Assert.areEqual(new Set<String>{filterValue}, query.getBinding(':var0'));
+        Assert.areEqual(new Set<String>{filterValue}, query.getBinding('var0'));
     }
 }

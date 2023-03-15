@@ -19,9 +19,10 @@ https://salesforce-opensource-library.com
     * Record Types/ Profiles / Permission Sets
     * Custom Metadata Service
 9. Utils
-   * AuraService
-   * BatchSchedulable
-   * Scheduler
-   * Data Structures
-   * XML Serialization/Deserialization
-   * Localization - Dynamic Custom Labels / Retrieving Custom Labels by name
+    * AuraService
+    * BatchSchedulable
+    * Scheduler
+    * Data Structures
+    * XML Serialization/Deserialization
+        * [XmlParser](docs/XmlParser.md)
+    * Localization - Dynamic Custom Labels / Retrieving Custom Labels by name

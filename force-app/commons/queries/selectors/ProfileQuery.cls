@@ -28,12 +28,6 @@
  */
 public inherited sharing class ProfileQuery extends Query {
 
-    /**
-     * Cache all profiles
-     * */
-    static {
-        new ProfileQuery().getList();
-    }
 
     public ProfileQuery() {
         super(new List<String>{
@@ -68,10 +62,12 @@ public inherited sharing class ProfileQuery extends Query {
     }
 
 
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id',
-            'Name'
-        };
+    protected override QueryCache getCache() {
+        return QueryCache.getStaticCache(
+            sObjectType,
+            'SELECT Id, Name FROM Profile',
+            new Set<String>{'Id', 'Name'}
+        );
     }
+
 }

@@ -28,7 +28,7 @@
 @JsonAccess(Serializable='never' Deserializable='never')
 public virtual inherited sharing class QueryObject {
     private final static Map<String, Object> queryMocks = new Map<String, Object>();
-    private final static QueryCache cache = QueryCache.getInstance();
+    private final QueryCache cache;
 
     protected final QueryConditions conditionFactory = new QueryConditions();
     protected final QueryBuilder queryBuilder = new QueryBuilder();
@@ -56,6 +56,7 @@ public virtual inherited sharing class QueryObject {
      */
     protected QueryObject(SObjectType sObjectType) {
         this.sObjectType = sObjectType;
+        this.cache = getCache();
     }
 
     /**
@@ -593,8 +594,8 @@ public virtual inherited sharing class QueryObject {
     * Fields returned by this method will be used to cache records.
     * Whenever possible, selector will use cached fields to
     */
-    protected virtual Set<String> getFieldsToCacheBy() {
-        return new Set<String>{};
+    protected virtual QueryCache getCache() {
+        return null;
     }
 
 
@@ -612,6 +613,7 @@ public virtual inherited sharing class QueryObject {
 
             return result;
         } catch (Exception e) {
+            System.debug(e.getStackTraceString());
             QueryException queryException = new QueryException();
             queryException.initCause(e);
             queryException.setMessage(e.getMessage() + '\n' + this.toString());
@@ -639,8 +641,8 @@ public virtual inherited sharing class QueryObject {
             this.queryBuilder.fromObject(sObjectType);
             SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), bindings.getMap());
 
-            if (!(records instanceof AggregateResult[])) {
-                cache.put(sObjectType, getFieldsToCacheBy(), records);
+            if (cache != null && !(records instanceof AggregateResult[])) {
+                cache.put(records);
             }
 
             records.addAll(result);
@@ -661,10 +663,11 @@ public virtual inherited sharing class QueryObject {
     */
     private Boolean canUseCache() {
         return this.useCache
+            && this.cache != null
             && whereConditions.size() == 1
             && whereConditions.get(0) instanceof Query.CacheableCondition
             && ((Query.CacheableCondition) whereConditions.get(0)).isCacheable()
-            && getFieldsToCacheBy().contains(((Query.CacheableCondition) whereConditions.get(0)).getCacheKey());
+            && cache.isFieldCacheKey(((Query.CacheableCondition) whereConditions.get(0)).getCacheKey());
     }
 
     /**
@@ -674,7 +677,7 @@ public virtual inherited sharing class QueryObject {
     private Query.Condition getCachedRecordsAndReturnRemainderCondition(List<SObject> result) {
         Query.Condition condition = whereConditions.get(0);
         Query.CacheableCondition cacheable = (Query.CacheableCondition) condition;
-        QueryCache.Result cacheResult = cache.getCachedRecords(sObjectType, cacheable.getCacheKey(), cacheable.getCacheValue());
+        QueryCache.Result cacheResult = cache.getCachedRecords(cacheable.getCacheKey(), cacheable.getCacheValue());
 
         result.addAll(cacheResult.cachedRecords.values());
 

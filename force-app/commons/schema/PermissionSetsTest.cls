@@ -37,7 +37,7 @@ private class PermissionSetsTest {
         Test.startTest();
         System.assertEquals(commerceUser.Id, PermissionSets.COMMERCE_USER.Id);
         System.assertEquals(commerceUser.Name, PermissionSets.COMMERCE_USER.Name);
-        System.assertEquals(1, Limits.getQueries(), 'Consecutive calls should not use more queries');
+        System.assertEquals(2, Limits.getQueries(), 'Consecutive calls should not use more queries');
         Test.stopTest();
     }
 

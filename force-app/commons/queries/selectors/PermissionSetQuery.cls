@@ -28,13 +28,6 @@
  */
 public inherited sharing class PermissionSetQuery extends Query {
 
-    /**
-     * Cache all Permission Sets on first initialization
-     */
-    static {
-        new PermissionSetQuery().byField(PermissionSet.IsOwnedByProfile, '=', false).getList();
-    }
-
     public PermissionSetQuery() {
         super(PermissionSet.SObjectType);
         withFields(Query.Fields.STANDARD);
@@ -56,11 +49,14 @@ public inherited sharing class PermissionSetQuery extends Query {
         return (PermissionSetQuery) byField(PermissionSet.Name, 'IN', names);
     }
 
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id',
-            'Name'
-        };
+    /**
+     * Cache all Permission Sets on first initialization
+     */
+    protected override QueryCache getCache() {
+        return QueryCache.getStaticCache(
+            sObjectType,
+            'SELECT FIELDS(STANDARD) FROM PermissionSet WHERE IsOwnedByProfile = FALSE',
+            new Set<String>{'Id', 'Name'}
+        );
     }
 }

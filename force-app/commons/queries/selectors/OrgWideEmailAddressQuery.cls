@@ -28,12 +28,6 @@
  */
 public inherited sharing class OrgWideEmailAddressQuery extends Query {
 
-    /**
-     * Cache all records on first initialization
-     */
-    static {
-        new OrgWideEmailAddressQuery().getList();
-    }
 
     public OrgWideEmailAddressQuery() {
         super(OrgWideEmailAddress.SObjectType);
@@ -72,12 +66,11 @@ public inherited sharing class OrgWideEmailAddressQuery extends Query {
         return (OrgWideEmailAddressQuery) byField(OrgWideEmailAddress.Address, 'IN', names);
     }
 
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id',
-            'Address',
-            'DisplayName'
-        };
+    protected override QueryCache getCache() {
+        return QueryCache.getStaticCache(
+            sObjectType,
+            'SELECT FIELDS(STANDARD) FROM BusinessHours',
+            new Set<String>{'Id', 'Address', 'Name'}
+        );
     }
 }

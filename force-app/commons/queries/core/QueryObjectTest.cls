@@ -36,8 +36,10 @@ public class QueryObjectTest {
             return (TestUserQuery) byField('Username', '=', username);
         }
 
-        protected override Set<String> getFieldsToCacheBy() {
-            return new Set<String>{'Id', 'Username'};
+        protected override QueryCache getCache() {
+            return QueryCache.getStaticCache(
+                sObjectType, null, new Set<String>{'Id', 'Username'}
+            );
         }
     }
 

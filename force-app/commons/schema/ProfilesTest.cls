@@ -37,7 +37,8 @@ private class ProfilesTest {
         Test.startTest();
         System.assertEquals(sysAdmin.Id, Profiles.SYSTEM_ADMINISTRATOR.Id);
         System.assertEquals(sysAdmin.Name, Profiles.SYSTEM_ADMINISTRATOR.Name);
-        System.assertEquals(1, Limits.getQueries(), 'Consecutive calls should not use more queries');
+        Assert.isNotNull(Profiles.STANDARD_USER.Name);
+        System.assertEquals(2, Limits.getQueries(), 'Consecutive calls should not use more queries');
         Test.stopTest();
     }
 

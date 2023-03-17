@@ -93,11 +93,12 @@ public inherited sharing class UserQuery extends Query {
         return (User) byId(UserInfo.getUserId()).getFirstOrNull();
     }
 
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id',
-            'Username'
-        };
+    /**
+     * Cache once queried users in static map
+     */
+    protected override QueryCache getCache() {
+        return QueryCache.getStaticCache(
+            sObjectType, null, new Set<String>{'Id', 'Username'}
+        );
     }
-
 }

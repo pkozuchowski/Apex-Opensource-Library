@@ -58,9 +58,9 @@ public inherited sharing class UserRoleQuery extends Query {
         return (UserRoleQuery) byField(UserRole.DeveloperName, 'IN', developerNames);
     }
 
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{'Id', 'DeveloperName'};
+    protected override QueryCache getCache() {
+        return QueryCache.getOrgCache(
+            sObjectType, null, new Set<String>{'Id', 'DeveloperName'}
+        );
     }
-
 }

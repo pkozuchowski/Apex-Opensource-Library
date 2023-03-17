@@ -29,14 +29,6 @@
 * */
 public inherited sharing class QueueQuery extends Query {
 
-    /**
-     * Caches all Queues to save SOQL limits
-     */
-    static {
-        new QueueQuery().byField(Group.Type, '=', 'Queue').getList();
-    }
-
-
     public QueueQuery() {
         super(Group.SObjectType);
         withFields(Query.Fields.STANDARD);
@@ -74,11 +66,14 @@ public inherited sharing class QueueQuery extends Query {
         return (QueueQuery) byField(Group.Name, 'IN', names);
     }
 
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id',
-            'DeveloperName'
-        };
+    /**
+     * Caches all Queues to save SOQL limits
+     */
+    protected override QueryCache getCache() {
+        return QueryCache.getStaticCache(
+            sObjectType,
+            'SELECT FIELDS(STANDARD) FROM GROUP WHERE Type = \'Queue\'',
+            new Set<String>{'Id', 'DeveloperName'}
+        );
     }
 }

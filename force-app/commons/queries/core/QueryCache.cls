@@ -27,15 +27,62 @@
  * @see SObjectCacheTest
  */
 public inherited sharing class QueryCache {
-    private final static QueryCache instance = new QueryCache();
-    private Map<String, Map<Object, SObject>> storage = new Map<String, Map<Object, SObject>>();
+    private static Map<SObjectType, Map<String, SObject>> staticMap = new Map<SObjectType, Map<String, SObject>>();
+    private Storage cacheStorage;
+    private String query;
+    private Set<String> cachedFields;
+    private SObjectType sObjectType;
 
 
-    public static QueryCache getInstance() {
-        return instance;
+    private QueryCache(SObjectType sObjectType, String query, Set<String> cacheKeys, Storage cacheStorage) {
+        this.sObjectType = sObjectType;
+        this.query = query;
+        this.cachedFields = cacheKeys;
+        this.cacheStorage = cacheStorage;
     }
 
-    private QueryCache() {
+
+    public static QueryCache getStaticCache(SObjectType sObjectType, String query, Set<String> cacheKeys) {
+        return new QueryCache(sObjectType, query, cacheKeys, new StaticStorage());
+    }
+
+    public static QueryCache getOrgCache(SObjectType sObjectType, String query, Set<String> cacheKeys) {
+        return new QueryCache(sObjectType, query, cacheKeys, new OrgCacheStorage());
+    }
+
+
+    private interface Storage {
+        Map<String, SObject> getSObjectCache(SObjectType sobjectType);
+        void persistCacheMap(SObjectType sobjectType, Map<String, SObject> storageMap);
+    }
+
+
+    /**
+     * Stores records in Static Map - available only through transaction
+     */
+    private class StaticStorage implements Storage {
+
+        public Map<String, SObject> getSObjectCache(SObjectType sobjectType) {
+            return staticMap.get(sobjectType);
+        }
+
+        public void persistCacheMap(SObjectType sobjectType, Map<String, SObject> storageMap) {
+            staticMap.put(sobjectType, storageMap);
+        }
+    }
+
+    /**
+     * Stores records in Org Cache
+     */
+    private class OrgCacheStorage implements Storage {
+
+        public Map<String, SObject> getSObjectCache(SObjectType sobjectType) {
+            return (Map<String, SObject>) Cache.Org.get('local.queries.' + sobjectType);
+        }
+
+        public void persistCacheMap(SObjectType sobjectType, Map<String, SObject> storageMap) {
+            Cache.Org.put('local.queries.' + sObjectType, storageMap, 3600, Cache.Visibility.NAMESPACE, true);
+        }
     }
 
 
@@ -43,44 +90,73 @@ public inherited sharing class QueryCache {
      * Stores SObjects in internal storage and groups them by value in given SObject field.
      * Blank values are not cached.
      */
-    public void put(SObjectType sObjectType, Set<String> fields, List<SObject> records) {
-        for (String sObjectField : fields) {
-            Map<Object, SObject> valueMap = getFieldMap(sObjectType, sObjectField);
+    public void put(List<SObject> records) {
+        Map<String, SObject> sObjectMap = cacheStorage.getSObjectCache(sObjectType);
+        if (sObjectMap == null) {
+            sObjectMap = new Map<String, SObject>();
+        }
 
+        for (String sObjectField : cachedFields) {
             for (Integer i = 0, size = records.size(); i < size; i++) {
                 SObject record = records[i];
                 Object fieldValue = record.get(sObjectField);
 
                 if (fieldValue != null || fieldValue != '') {
-                    valueMap.put(fieldValue, record);
+                    String cacheKey = '' + sObjectField + '.' + fieldValue;
+                    sObjectMap.put(cacheKey, record);
                 }
             }
         }
+
+        cacheStorage.persistCacheMap(sObjectType, sObjectMap);
     }
 
     /**
       * @return Pair:
       * Map<Id, SObject> Cached objects
-      * List<Object> remaining values
+      * List<Object> remaining values which weren't found in cache and has to be queried
       */
-    public Result getCachedRecords(SObjectType sObjectType, String field, Object value) {
-        Map<Id, SObject> cachedRecords = new Map<Id, SObject>();
+    public Result getCachedRecords(String field, Object value) {
+        Map<String, SObject> cachedRecords = getCachedRecords(sObjectType);
+        Map<Id, SObject> resultMap = new Map<Id, SObject>();
         List<Object> listOfQueryValues = getList(value);
         List<Object> remainingValues = Runtime.newListOfTheSameType(listOfQueryValues);
 
         for (Integer i = 0; i < listOfQueryValues.size(); i++) {
             Object val = listOfQueryValues[i];
+            String cacheKey = '' + field + '.' + val;
 
-            if (val != null && val != '' && containsKey(sObjectType, field, val)) {
-                SObject record = get(sObjectType, field, val);
-                cachedRecords.put(record.Id, record);
+            if (val != null && val != '' && cachedRecords.containsKey(cacheKey)) {
+                SObject record = cachedRecords.get(cacheKey);
+                resultMap.put(record.Id, record);
 
             } else {
                 remainingValues.add(val);
             }
         }
 
-        return new Result(cachedRecords, remainingValues);
+        return new Result(resultMap, remainingValues);
+    }
+
+    /**
+     * @return True, if field is used as cache key
+     */
+    public Boolean isFieldCacheKey(String sobjectField) {
+        return cachedFields.contains(sobjectField);
+    }
+
+    private Map<String, SObject> getCachedRecords(SObjectType sObjectType) {
+        Map<String, SObject> cachedRecords = cacheStorage.getSObjectCache(sObjectType);
+        if (cachedRecords == null) {
+            cachedRecords = new Map<String, SObject>();
+
+            if (String.isNotBlank(query)) {
+                List<SObject> records = Database.query(query);
+                put(records);
+            }
+        }
+
+        return cachedRecords;
     }
 
 
@@ -119,36 +195,6 @@ public inherited sharing class QueryCache {
             throw new QueryException('Unrecognized value type: ' + value);
         }
     }
-
-    /**
-     * @return Cached SObject with given SObject field value.
-     */
-    private SObject get(SObjectType sObjectType, String field, Object value) {
-        return storage.get('' + sObjectType + '.' + field).get(value);
-    }
-
-    /**
-    * @return True, if there are any sObjects cached under given key
-    */
-    private Boolean containsKey(SObjectType sObjectType, String field, Object key) {
-        String fieldKey = '' + sObjectType + '.' + field;
-        return storage.containsKey(fieldKey) && storage.get(fieldKey).containsKey(key);
-    }
-
-
-    /**
-     * @return Map of SObjects by the given field value
-     */
-    private Map<Object, SObject> getFieldMap(SObjectType sObjectType, String field) {
-        String key = '' + sObjectType + '.' + field;
-
-        if (!storage.containsKey(key)) {
-            storage.put(key, new Map<Object, SObject>());
-        }
-
-        return storage.get(key);
-    }
-
 
     /**
      * Result of Cache retrieve operation - a pair of cached records and remaining values that were not found in cache.

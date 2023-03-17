@@ -63,7 +63,7 @@ Map key is concatenation of 2 fields without any separator:
 
 ```apex
 Map<String, JunctionObject__c> mapByParents = (Map<String, JunctionObject__c>) Collection.of(junctionObjects)
-    .mapBy(JunctionObject__c.Parent1__c, JunctionObject__c.Parent2__c);
+    .mapByConcatenation(JunctionObject__c.Parent1__c, JunctionObject__c.Parent2__c);
 ```
 
 <br/>

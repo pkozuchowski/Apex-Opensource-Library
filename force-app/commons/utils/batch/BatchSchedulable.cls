@@ -30,27 +30,21 @@
  * @see BatchSchedulableTest
  */
 public class BatchSchedulable implements Schedulable {
-    private Database.Batchable<SObject> batchInstance;
     private Integer batchSize;
+    private String batchName;
 
-    public BatchSchedulable(String batchName) {
-        this(getInstance(batchName));
+    public BatchSchedulable(Type batchClass) {
+        this(batchClass, 200);
     }
 
-    public BatchSchedulable(String batchName, Integer batchSize) {
-        this(getInstance(batchName), batchSize);
-    }
-
-    public BatchSchedulable(Database.Batchable<SObject> batchInstance) {
-        this(batchInstance, 200);
-    }
-
-    public BatchSchedulable(Database.Batchable<SObject> batchInstance, Integer batchSize) {
-        this.batchInstance = batchInstance;
+    public BatchSchedulable(Type batchClass, Integer batchSize) {
+        this.batchName = batchClass.getName();
         this.batchSize = batchSize;
     }
 
+
     public void execute(SchedulableContext scx) {
+        Database.Batchable<SObject> batchInstance = getInstance(batchName);
         Database.executeBatch(batchInstance, batchSize);
     }
 
@@ -61,7 +55,7 @@ public class BatchSchedulable implements Schedulable {
             return (Database.Batchable<SObject>) batchType.newInstance();
         } catch (Exception ex) {
             throw new TypeException('Failed to create instance of "' + name + '".\n' +
-                    'Make sure that class name is correct and class has public accessor and no-args constructor.');
+                'Make sure that class name is correct and class has public accessor and no-args constructor.');
         }
     }
 }

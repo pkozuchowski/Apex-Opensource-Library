@@ -25,70 +25,19 @@
 @IsTest
 public class BatchSchedulableTest implements Database.Batchable<Integer> {
 
-    public void execute(Database.BatchableContext param1, List<Integer> param2) {
-    }
-
-    public void finish(Database.BatchableContext param1) {
-    }
-
     public Iterable<Integer> start(Database.BatchableContext param1) {
         return new List<Integer>{1, 2, 3, 4, 5};
     }
+    public void execute(Database.BatchableContext param1, List<Integer> param2) {}
+    public void finish(Database.BatchableContext param1) {}
 
 
     @IsTest
-    static void testSchedulableUsingNameConstructor() {
-        BatchSchedulable schedulable = new BatchSchedulable('BatchSchedulableTest');
+    static void testSchedulableUsingTypeConstructor() {
+        BatchSchedulable schedulable = new BatchSchedulable(BatchSchedulableTest.class);
 
         Test.startTest();
         System.schedule('Test Batch Schedulable', '0 0 0 ? * * *', schedulable);
         Test.stopTest();
-    }
-
-    @IsTest
-    static void testSchedulableUsingNameAndBatchSizeConstructor() {
-        BatchSchedulable schedulable = new BatchSchedulable('BatchSchedulableTest', 10);
-
-        Test.startTest();
-        System.schedule('Test Batch Schedulable', '0 0 0 ? * * *', schedulable);
-        Test.stopTest();
-    }
-
-    @IsTest
-    static void testSchedulableUsingBatchConstructor() {
-        BatchSchedulable schedulable = new BatchSchedulable(
-                (Database.Batchable<SObject>) new BatchSchedulableTest()
-        );
-
-        Test.startTest();
-        System.schedule('Test Batch Schedulable', '0 0 0 ? * * *', schedulable);
-        Test.stopTest();
-    }
-
-    @IsTest
-    static void testSchedulableUsingBatchAndBatchSizeConstructor() {
-        BatchSchedulable schedulable = new BatchSchedulable(
-                (Database.Batchable<SObject>) new BatchSchedulableTest(),
-                10
-        );
-
-        Test.startTest();
-        System.schedule('Test Batch Schedulable', '0 0 0 ? * * *', schedulable);
-        Test.stopTest();
-    }
-
-    @IsTest
-    static void testNotInstanceableClass() {
-        try {
-            BatchSchedulable schedulable = new BatchSchedulable('__FakeBatchTest');
-
-            Test.startTest();
-            System.schedule('Test Batch Schedulable', '0 0 0 ? * * *', schedulable);
-            Test.stopTest();
-
-            System.assert(false);
-        } catch (Exception ex) {
-            System.assert(ex instanceof TypeException);
-        }
     }
 }

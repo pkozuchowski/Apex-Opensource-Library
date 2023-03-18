@@ -27,10 +27,9 @@
  * @see SchedulerTest
  */
 public class Scheduler {
-    public String
-            defaultSecond = '0',
-            defaultMinute = '0',
-            defaultHour = '0';
+    private static String
+        defaultSecond = '0',
+        defaultMinute = '0';
 
     /**
      * Schedules a few jobs to run every X minutes in an hour.
@@ -40,9 +39,11 @@ public class Scheduler {
      *
      * @return Scheduled jobs IDs (CronTrigger IDs) in chronological order.
      */
-    public List<Id> scheduleEveryXMinutes(String jobName, Integer everyMinutes, Schedulable job) {
-        expect(everyMinutes <= 30, 'Cannot schedule jobs to run less than twice an hour - every 30 minutes is maximum value.' +
-                'Use sheduleHourly() instead.');
+    public static List<Id> scheduleEveryXMinutes(String jobName, Integer everyMinutes, Schedulable job) {
+        expect(everyMinutes <= 30,
+            'Cannot schedule jobs to run less than twice an hour - every 30 minutes is maximum value.' +
+                'Use scheduleHourly() instead.'
+        );
 
         List<Id> jobIds = new List<Id>();
 
@@ -59,7 +60,7 @@ public class Scheduler {
      * Schedules job to run every hour at specified minutes.
      * @return Scheduled job ID (CronTrigger ID).
      */
-    public Id scheduleHourly(String jobName, Integer minute, Schedulable job) {
+    public static Id scheduleHourly(String jobName, Integer minute, Schedulable job) {
         return schedule(jobName, defaultSecond, '' + minute, '*', '?', '*', '*', '*', job);
     }
 
@@ -68,24 +69,25 @@ public class Scheduler {
      * Schedules job to run every day at specified time.
      * @return Scheduled job ID (CronTrigger ID).
      */
-    public Id scheduleDaily(String jobName, Integer hour, Integer minute, Schedulable job) {
+    public static Id scheduleDaily(String jobName, Integer hour, Integer minute, Schedulable job) {
         return schedule(jobName, defaultSecond, '' + minute, '' + hour, '?', '*', '*', '*', job);
     }
 
 
     /**
      * Schedules job to run every day on specified day of the week.
+     * @param hour Hour when this should be run
      * @param dayOfWeek 1-7 or one of the following: [SUN, MON, TUE, WED, THU, FRI, SAT]
      * @return Scheduled job ID (CronTrigger ID).
      */
-    public Id scheduleWeekly(String jobName, String dayOfWeek, Schedulable job) {
-        return schedule(jobName, defaultSecond, defaultMinute, defaultHour, '?', '*', dayOfWeek, '*', job);
+    public static Id scheduleWeekly(String jobName, Integer hour, String dayOfWeek, Schedulable job) {
+        return schedule(jobName, defaultSecond, defaultMinute, '' + hour, '?', '*', dayOfWeek, '*', job);
     }
 
 
     /**
      * Schedules job to run every month on specified day of the month.
-     *
+     * @param hour Hour when this should be run
      * @param dayOfMonth Possible values:<br/>
      * 1-31 Runs on specific day of month<br/>
      * 1,10,15 Runs on 1st, 10th and 15th day of month <br/>
@@ -96,8 +98,8 @@ public class Scheduler {
      *
      * @return Scheduled job ID (CronTrigger ID).
      */
-    public Id scheduleMonthly(String jobName, String dayOfMonth, Schedulable job) {
-        return schedule(jobName, defaultSecond, defaultMinute, defaultHour, dayOfMonth, '*', '?', '*', job);
+    public static Id scheduleMonthly(String jobName, Integer hour, String dayOfMonth, Schedulable job) {
+        return schedule(jobName, defaultSecond, defaultMinute, '' + hour, dayOfMonth, '*', '?', '*', job);
     }
 
 
@@ -105,36 +107,35 @@ public class Scheduler {
      * Schedules job to run
      * @return Scheduled job ID (CronTrigger ID).
      */
-    public Id schedule(
-            String jobName,
-            String seconds,
-            String minutes,
-            String hour,
-            String dayOfMonth,
-            String month,
-            String dayOfWeek,
-            String optionalYear,
-            Schedulable job) {
+    public static Id schedule(
+        String jobName,
+        String seconds,
+        String minutes,
+        String hour,
+        String dayOfMonth,
+        String month,
+        String dayOfWeek,
+        String optionalYear,
+        Schedulable job) {
 
         String cronExpr = String.join(new List<String>{
-                '' + seconds,
-                '' + minutes,
-                '' + hour,
-                dayOfMonth,
-                month,
-                dayOfWeek,
-                optionalYear
+            '' + seconds,
+            '' + minutes,
+            '' + hour,
+            dayOfMonth,
+            month,
+            dayOfWeek,
+            optionalYear
         }, ' ');
 
         return System.schedule(jobName, cronExpr, job);
     }
 
 
-    private void expect(Boolean condition, String message) {
+    private static void expect(Boolean condition, String message) {
         if (!condition) {
             throw new SchedulerException(message);
         }
     }
-    public class SchedulerException extends Exception {
-    }
+    public class SchedulerException extends Exception {}
 }

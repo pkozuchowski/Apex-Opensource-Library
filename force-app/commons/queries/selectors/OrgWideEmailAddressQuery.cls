@@ -29,10 +29,14 @@
 public inherited sharing class OrgWideEmailAddressQuery extends Query {
 
     /**
-     * Cache all records on first initialization
+     * Caches all OrgWideEmail records in static cache
      */
     static {
-        new OrgWideEmailAddressQuery().getList();
+        QueryCache.registerStaticCache(
+            OrgWideEmailAddress.SObjectType,
+            'SELECT FIELDS(STANDARD) FROM OrgWideEmailAddress',
+            new Set<String>{'Id', 'Address', 'Name'}
+        );
     }
 
     public OrgWideEmailAddressQuery() {
@@ -70,14 +74,5 @@ public inherited sharing class OrgWideEmailAddressQuery extends Query {
     public OrgWideEmailAddressQuery byAddress(Set<String> names) {
         appendMockName('byAddress');
         return (OrgWideEmailAddressQuery) byField(OrgWideEmailAddress.Address, 'IN', names);
-    }
-
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id',
-            'Address',
-            'DisplayName'
-        };
     }
 }

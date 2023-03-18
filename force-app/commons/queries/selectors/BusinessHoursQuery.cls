@@ -30,35 +30,20 @@
 public inherited sharing class BusinessHoursQuery extends Query {
 
     /**
-     * Cache all Business Hours on first query to save SOQL limits
+     * Caches all Business Hours records in static cache
      */
     static {
-        new BusinessHoursQuery().byField(BusinessHours.IsActive, '=', true).getList();
+        QueryCache.registerStaticCache(
+            BusinessHours.SObjectType,
+            'SELECT FIELDS(STANDARD) FROM BusinessHours',
+            new Set<String>{'Id', 'Name'}
+        );
     }
 
     public BusinessHoursQuery() {
-        super(new List<String>{
-            'Id',
-            'Name',
-            'IsDefault',
-            'IsActive',
-            'MondayStartTime',
-            'MondayEndTime',
-            'TuesdayStartTime',
-            'TuesdayEndTime',
-            'WednesdayStartTime',
-            'WednesdayEndTime',
-            'ThursdayStartTime',
-            'ThursdayEndTime',
-            'FridayStartTime',
-            'FridayEndTime',
-            'SaturdayStartTime',
-            'SaturdayEndTime',
-            'SundayStartTime',
-            'SundayEndTime'
-        }, BusinessHours.SObjectType);
+        super(BusinessHours.SObjectType);
+        this.withFields(Query.Fields.STANDARD);
     }
-
 
     /**
      * @return Active Business Hours with given name
@@ -82,13 +67,5 @@ public inherited sharing class BusinessHoursQuery extends Query {
     public QueryObject byName(Set<String> names) {
         appendMockName('byName');
         return (QueryObject) byField(BusinessHours.Name, 'IN', names);
-    }
-
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id',
-            'Name'
-        };
     }
 }

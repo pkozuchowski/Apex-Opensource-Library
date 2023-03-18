@@ -28,6 +28,15 @@
  */
 public inherited sharing class UserRoleQuery extends Query {
 
+    /**
+     * Once queried UserRoles are saved in cache and save limits on subsequent calls
+     */
+    static {
+        QueryCache.registerStaticCache(
+            UserRole.SObjectType, null, new Set<String>{'Id', 'DeveloperName'}
+        );
+    }
+
     public UserRoleQuery() {
         super(UserRole.SObjectType);
         withFields(Query.Fields.STANDARD);
@@ -57,10 +66,4 @@ public inherited sharing class UserRoleQuery extends Query {
         appendMockName('byDeveloperName');
         return (UserRoleQuery) byField(UserRole.DeveloperName, 'IN', developerNames);
     }
-
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{'Id', 'DeveloperName'};
-    }
-
 }

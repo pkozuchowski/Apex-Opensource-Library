@@ -29,10 +29,14 @@
 public inherited sharing class ProfileQuery extends Query {
 
     /**
-     * Cache all profiles
-     * */
+     * Caches all Profile records in Org cache
+     */
     static {
-        new ProfileQuery().getList();
+        QueryCache.registerOrgCache(
+            Profile.SObjectType,
+            'SELECT Id, Name FROM Profile',
+            new Set<String>{'Id', 'Name'}
+        );
     }
 
     public ProfileQuery() {
@@ -67,11 +71,4 @@ public inherited sharing class ProfileQuery extends Query {
         return (ProfileQuery) byField(Profile.Name, 'IN', names);
     }
 
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id',
-            'Name'
-        };
-    }
 }

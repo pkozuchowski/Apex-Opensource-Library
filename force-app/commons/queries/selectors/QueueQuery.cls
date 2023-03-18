@@ -30,12 +30,16 @@
 public inherited sharing class QueueQuery extends Query {
 
     /**
-     * Caches all Queues to save SOQL limits
+     * Once queried Queues are saved in cache and save limits on subsequent calls
      */
     static {
-        new QueueQuery().byField(Group.Type, '=', 'Queue').getList();
+        QueryCache.registerStaticCache(
+            Group.SObjectType,
+            '',
+//            'SELECT FIELDS(STANDARD) FROM GROUP WHERE Type = \'Queue\'', Use this to pre-init cache with all queues
+            new Set<String>{'Id', 'DeveloperName'}
+        );
     }
-
 
     public QueueQuery() {
         super(Group.SObjectType);
@@ -72,13 +76,5 @@ public inherited sharing class QueueQuery extends Query {
     public QueueQuery byName(Set<String> names) {
         appendMockName('byName');
         return (QueueQuery) byField(Group.Name, 'IN', names);
-    }
-
-
-    protected override Set<String> getFieldsToCacheBy() {
-        return new Set<String>{
-            'Id',
-            'DeveloperName'
-        };
     }
 }

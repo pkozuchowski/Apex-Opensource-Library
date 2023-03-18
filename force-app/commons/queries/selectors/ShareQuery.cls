@@ -69,8 +69,8 @@ public inherited sharing class ShareQuery extends Query {
      * This method checks for ParentId field.
      */
     private String getParentField() {
-        Map<String, SObjectField> allFields = sObjectType.getDescribe().fields.getMap();
-        String sobjectType = '' + sObjectType;
+        Map<String, SObjectField> allFields = sObjType.getDescribe().fields.getMap();
+        String sobjectType = '' + sObjType;
 
         if (allFields.containsKey('ParentId')) {
             return '' + allFields.get('ParentId');

@@ -52,7 +52,7 @@ public inherited sharing class HistoryQuery extends Query {
      * This method checks for ParentId field.
      */
     private SObjectField getParentField() {
-        Map<String, SObjectField> fields = sObjectType.getDescribe().fields.getMap();
+        Map<String, SObjectField> fields = sObjType.getDescribe().fields.getMap();
 
         if (fields.containsKey('ParentId')) {
             return fields.get('ParentId');

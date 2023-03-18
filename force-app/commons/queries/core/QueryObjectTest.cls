@@ -35,10 +35,6 @@ public class QueryObjectTest {
         public TestUserQuery byUsername(String username) {
             return (TestUserQuery) byField('Username', '=', username);
         }
-
-        protected override Set<String> getFieldsToCacheBy() {
-            return new Set<String>{'Id', 'Username'};
-        }
     }
 
     @IsTest
@@ -401,7 +397,20 @@ public class QueryObjectTest {
     }
 
     @IsTest
-    static void testCaching() {
+    static void testStaticCaching() {
+        QueryCache.registerStaticCache(User.SObjectType, '', new Set<String>{'Username'});
+        new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
+        new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
+        new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
+
+        Assert.areEqual(1, Limits.getQueries(), 'Once queried users should be saved in cache.');
+    }
+
+    @IsTest
+    static void testPlatformCaching() {
+        QueryCache.registerOrgCache(User.SObjectType,
+            'SELECT Id,Username FROM User WHERE Username = \'' + UserInfo.getUserName() + '\'',
+            new Set<String>{'Username'});
         new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
         new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
         new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();

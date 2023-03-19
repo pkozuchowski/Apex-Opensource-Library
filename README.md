@@ -26,3 +26,4 @@ https://salesforce-opensource-library.com
     * XML Serialization/Deserialization
         * [XmlParser](docs/XmlParser.md)
     * Localization - Dynamic Custom Labels / Retrieving Custom Labels by name
+10. [LWC Patterns and Utils](docs/LWC.md)

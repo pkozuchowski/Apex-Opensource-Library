@@ -39,9 +39,23 @@ List<Contact> contact = Query.Contacts
     .getList();
 ```
 
-For very specialized and complex queries, there are 2 ways:
+For very specialized and complex queries, there are 3 ways:
 ```apex
-// 1) Using QueryConditions to build query:
+// 1) Introduce case-specific filtering method in SObject's query class:
+class ContactQuery{
+    /*...code*/
+
+    public ContactQuery byMySuperSpecificCondition(Set<Id> accountIds) {
+        appendMockName('byAccountId');
+        return (ContactQuery) wheres('AccountId IN :accountIds AND ...', new Map<String,Object>{
+            'accountIds' => accountIds,
+            // other query parameters
+        });
+    }
+}
+
+
+// 2) Using QueryConditions to build query:
 QueryConditions c = new QueryConditions();
 Query.Accounts
     .groupBy('COUNT(ID) cnt, Profile.Name', 'Profile.Name')
@@ -60,7 +74,7 @@ Query.Accounts
     .getList();
 
 
-// 2) Writing WHERE clause directly
+// 3) Writing WHERE clause directly
 List<String> names = new List<String>();
 List<String> externalIds = new List<String>();
 Id recordTypeId;

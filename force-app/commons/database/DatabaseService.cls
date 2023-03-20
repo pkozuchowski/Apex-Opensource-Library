@@ -41,30 +41,27 @@ public class DatabaseService {
         return keyPrefix + ('' + (cnt++)).leftPad(12, '0');
     }
 
+
     public DatabaseService() {
         this.dmlOptions.optAllOrNone = true;
     }
 
     /**
-     * Sets sharing mode on Database Service:
-     * - With Sharing
-     * - Without Sharing
-     * - Inherited Sharing (default)
+     * Executes DMLs and Quries in With Sharing context
      */
-    public DatabaseService setSharing(Sharing sharing) {
-        switch on sharing {
-            when WITH_SHARING {
-                this.dmlIssuer = new WithSharingDMLIssuer();
-            }
-            when WITHOUT_SHARING {
-                this.dmlIssuer = new WithoutSharingDMLIssuer();
-            }
-            when INHERITED_SHARING {
-                this.dmlIssuer = new InheritedSharingDMLIssuer();
-            }
-        }
+    public DatabaseService withSharing() {
+        this.dmlIssuer = new WithSharingDMLIssuer();
         return this;
     }
+
+    /**
+     * Executes DMLs and Quries in Without Sharing context
+     */
+    public DatabaseService withoutSharing() {
+        this.dmlIssuer = new WithoutSharingDMLIssuer();
+        return this;
+    }
+
 
     /**
      * SYSTEM_MODE - Execution mode in which the the object and field-level permissions of the current user are ignored,

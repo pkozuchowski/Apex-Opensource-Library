@@ -23,5 +23,3 @@
  *  SOFTWARE.
  */
 export * from "./toastUtils"
-export * from "./dateUtils"
-export * from "./sObjectUtils"

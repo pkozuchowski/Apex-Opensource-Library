@@ -47,6 +47,7 @@ public virtual inherited sharing class QueryObject {
             return '' + this.sObjType + '.' + mockName;
         }
     }
+    private List<SObject> result;
 
 
     /**
@@ -273,17 +274,23 @@ public virtual inherited sharing class QueryObject {
     * */
 
     /**
-     * Query will be executed in "without sharing" context, returning records
-     * users does not usually have access to.
-     *
-     * Since there is no proper way to handle method chaining of builder pattern with inheritance in Apex,
-     * this method should be reimplemented where it's needed as public XXXSelector withoutSharing();
+     * Query will be executed in "with sharing" context,
+     * returning only those records user has access to.
      */
-    public QueryObject withSharing(Sharing s) {
-        databaseService.setSharing(s);
+    public QueryObject withSharing() {
+        databaseService.withSharing();
         return this;
     }
 
+
+    /**
+     * Query will be executed in "without sharing" context,
+     * returning even records not shared with user.
+     */
+    public QueryObject withoutSharing() {
+        databaseService.withoutSharing();
+        return this;
+    }
 
     /**
     * Selector will not use cached records to limit SOQLs query limit.
@@ -594,11 +601,12 @@ public virtual inherited sharing class QueryObject {
     */
     protected SObject[] executeQuery() {
         try {
-            List<SObject> result = getQueryResult();
+            if (this.result != null) return this.result;
+            this.result = getQueryResult();
 
             if (accessType != null) {
                 SObjectAccessDecision decision = Security.stripInaccessible(accessType, result);
-                result = decision.getRecords();
+                this.result = decision.getRecords();
             }
 
             return result;

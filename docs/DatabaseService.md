@@ -10,7 +10,8 @@ public static Id getFakeId(SObjectType sObjectType);
 
 public DatabaseService();
 
-public DatabaseService setSharing(Sharing sharing);
+public DatabaseService withSharing();
+public DatabaseService withoutSharing();
 public DatabaseService setDMLOptions(Database.DMLOptions options);
 public DatabaseService allOrNone(Boolean allOrNone);
 
@@ -55,24 +56,15 @@ DatabaseService databaseService = new DatabaseService().allOrNone(false);
 
 ### Changing sharing context:
 
-Database Service can switch between inherited, with sharing and without sharing DMLs just by providing parameter:
+Database Service can switch between inherited, with sharing and without sharing DMLs:
 
 ```apex
 DatabaseService databaseService = new DatabaseService()
-    .withSharing(Sharing.WITH_SHARING);
+    .withSharing();
+
+DatabaseService databaseService = new DatabaseService()
+    .withoutSharing();
 ```
-
-Possible options are:
-
-```apex
-public enum Sharing {
-    WITH_SHARING,
-    WITHOUT_SHARING,
-    INHERITED_SHARING
-}
-```
-
-This behaviour will soon be available in native apex code. Currently, in Beta.
 
 <br/>
 

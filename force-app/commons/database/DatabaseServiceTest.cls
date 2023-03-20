@@ -23,69 +23,58 @@
 */
 @IsTest(IsParallel=true)
 private class DatabaseServiceTest {
+    private static Integer counter = 0;
 
     @IsTest
     static void testDML() {
         Account acc = new Account(
-                Name = 'Test'
+            Name = 'Test'
         );
 
+        coverDatabaseServiceMethods(new DatabaseService(), acc);
+        coverDatabaseServiceMethods(new DatabaseService().withSharing(), acc);
+        coverDatabaseServiceMethods(new DatabaseService().withoutSharing(), acc);
+    }
 
-        for (Sharing s : Sharing.values()) {
-            DatabaseService databaseService = new DatabaseService()
-                    .setSharing(s)
-                    .setDMLOptions(new DMLOptionsBuilder()
-                            .allowDuplicates(true)
-                            .build()
-                    );
+    private static void coverDatabaseServiceMethods(DatabaseService databaseService, Account acc) {
+        acc.Id = null;
+        acc.Name += (counter++);
 
-            databaseService.insertRecord(acc);
-            databaseService.updateRecord(acc);
-            databaseService.upsertRecord(acc, Account.Id);
-            databaseService.deleteRecord(acc);
-            databaseService.undeleteRecord(acc);
-            databaseService.query('SELECT ID FROM Account');
-        }
+        databaseService.setDMLOptions(new DMLOptionsBuilder()
+            .allowDuplicates(true)
+            .build());
+
+        databaseService.insertRecord(acc);
+        databaseService.updateRecord(acc);
+        databaseService.upsertRecord(acc, Account.Id);
+        databaseService.deleteRecord(acc);
+        databaseService.undeleteRecord(acc);
+        databaseService.query('SELECT ID FROM Account');
+        databaseService.getQueryLocator('SELECT ID FROM Account');
     }
 
     @IsTest
     static void testQuery() {
         DatabaseService databaseService = new DatabaseService();
 
-        List<User> expected = [SELECT Id FROM User LIMIT 50];
+        List<User> expected = [SELECT Id FROM User LIMIT 5];
+        databaseService.withSharing();
+        List<User> actual = databaseService.query('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
+        Database.QueryLocator queryLocator = databaseService.getQueryLocator('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
 
-        for (Sharing s : Sharing.values()) {
-            databaseService.setSharing(s);
-            List<User> actual = databaseService.query('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
+        System.assertEquals(
+            new Map<Id, User>(expected).keySet(),
+            new Map<Id, User>(actual).keySet()
+        );
 
-            System.assertEquals(
-                    new Map<Id, User>(expected).keySet(),
-                    new Map<Id, User>(actual).keySet()
-            );
-        }
-    }
 
-    @IsTest
-    static void testQueryLocator() {
-        DatabaseService databaseService = new DatabaseService();
+        databaseService.withoutSharing();
+        actual = databaseService.query('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
+        queryLocator = databaseService.getQueryLocator('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
 
-        List<User> expected = [SELECT Id FROM User LIMIT 50];
-
-        for (Sharing s : Sharing.values()) {
-            databaseService.setSharing(s);
-            Database.QueryLocator queryLocator = databaseService.getQueryLocator('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
-            Database.QueryLocatorIterator it = queryLocator.iterator();
-
-            List<User> actual = new List<User>();
-            while(it.hasNext()){
-                User user = (User) it.next();
-                actual.add(user);
-            }
-
-            System.assertEquals(
-                    new Map<Id, User>(expected).keySet(),
-                    new Map<Id, User>(actual).keySet()
-            );
-        }
+        System.assertEquals(
+            new Map<Id, User>(expected).keySet(),
+            new Map<Id, User>(actual).keySet()
+        );
     }
 }

@@ -13,15 +13,14 @@ https://salesforce-opensource-library.com
     * [HTTP Callout Mock Router](docs/HttpCalloutMockRouter.md)
     * [Test Data Builder](docs/TestDataBuilder.md)
     * Test Data Suite
-6. Selector Layer / Queries (Documentation In Progress)
-7. Runtime
+6. [Query Object - Extensible Selector Layer with mocking and caching mechanism](docs/Query.md)
+7. [Runtime - Dynamic Apex and Reflection Utils](docs/Runtime.md)
 8. Schema
     * Record Types/ Profiles / Permission Sets
     * Custom Metadata Service
 9. Utils
     * AuraService
-    * BatchSchedulable
-    * Scheduler
+    * [Scheduler & BatchSchedulable](docs/Scheduler.md)
     * Data Structures
     * XML Serialization/Deserialization
         * [XmlParser](docs/XmlParser.md)

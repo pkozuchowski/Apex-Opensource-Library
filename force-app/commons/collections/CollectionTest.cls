@@ -497,7 +497,7 @@ private class CollectionTest {
         }
 
 
-        Conditions c = new Conditions();
+        CollectionConditions c = new CollectionConditions();
         Test.startTest();
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
             .filter(
@@ -537,7 +537,7 @@ private class CollectionTest {
             }
         }
 
-        Conditions c = new Conditions();
+        CollectionConditions c = new CollectionConditions();
 
         Test.startTest();
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)

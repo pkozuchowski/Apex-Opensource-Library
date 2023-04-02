@@ -123,15 +123,16 @@ private class LoggerTest {
 
 
         Test.startTest();
-        Logger.info(new Log(request, response));
+        Logger.info(new Log(request, response).withApexClass('TestAPI'));
         Test.stopTest();
 
 
-        Log__c log = [SELECT Request__c, Response__c FROM Log__c WHERE LoggingLevel__c = 'INFO' LIMIT 1];
+        Log__c log = [SELECT Request__c, Response__c, ApexClass__c FROM Log__c WHERE LoggingLevel__c = 'INFO' LIMIT 1];
         System.assert(log.Response__c.contains('200'));
         System.assert(log.Response__c.contains('success'));
         System.assert(log.Request__c.contains('request'));
         System.assert(log.Request__c.contains('?param=value'));
+        System.assertEquals('TestAPI', log.ApexClass__c);
     }
 
 }

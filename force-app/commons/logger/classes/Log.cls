@@ -133,6 +133,14 @@ public with sharing class Log {
     }
 
     /**
+     * Sets log's source (ex. Apex Class which created the log or callout)
+     */
+    public Log withApexClass(String apexClass) {
+        this.log.ApexClass__c = apexClass;
+        return this;
+    }
+
+    /**
      * @return Log__c record constructed from the data.
      */
     public LoggingEvent__e getLogRecord() {

@@ -23,7 +23,9 @@
 */
 
 /**
- * Utility class for easy and cached access to Schema classes and descriptions
+ * Utility class for easy and cached access to Schema classes and descriptions.
+ * Schema.getGlobalDescribe() has significant time impact on each invocation.
+ * This class helps to alleviate that by calling global describe only once through the transaction.
  */
 public without sharing class SchemaDescriptions {
     private static Map<String, Map<String, SObjectField>> fieldMap = new Map<String, Map<String, SObjectField>>();

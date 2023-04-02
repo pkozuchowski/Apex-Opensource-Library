@@ -55,7 +55,9 @@ public with sharing class Logger {
     public static void log(LoggingLevel loggingLevel, Log log) {
         if (LoggerSettings.shouldCreateLog(loggingLevel)) {
             LoggingEvent__e logRecord = log.getLogRecord();
-            logRecord.ApexClass__c = Runtime.getCaller().apexClassMethod;
+            if (String.isBlank(logRecord.ApexClass__c)) {
+                logRecord.ApexClass__c = Runtime.getCaller().apexClassMethod;
+            }
             logRecord.LoggingLevel__c = loggingLevel.name();
             System.debug(loggingLevel, JSON.serializePretty(logRecord));
 

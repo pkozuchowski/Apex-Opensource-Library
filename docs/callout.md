@@ -14,22 +14,20 @@ To build this configuration, we could derive new class from Callout class and co
 public class AcmeApiCallout extends Callout {
     private AcmeAPIAuthHandler authorizationHandler = new AcmeAPIAuthHandler();
 
-    protected override CalloutHandlersList onBeforeCalloutInit() {
-        return new CalloutHandlersList()
-            .add(match.once(), authorizationHandler);
-    }
+   protected override void setupHandlers() {
+      onBeforeCallout()
+              .add(match.once(), authorizationHandler);
 
-    protected override CalloutHandlersList onAfterCalloutInit() {
-        return new CalloutHandlersList()
-            .add(match.onUnauthorized(), authorizationHandler)
-            .add(match.onUnauthorized(), action.retry(1))
-            .add(match.onTimeout(), action.retry(1))
-            .slot('beforeValidation')
-            .add(match.onAnyErrorCode(), action.logCallout(LoggingLevel.ERROR))
-            .add(match.onAnyErrorCode(), action.throwEx())
-            .add(match.onSuccess(), action.logCallout(LoggingLevel.INFO))
-            .add(match.onSuccess(), action.returnJSON(responseType));
-    }
+      onAfterCallout()
+              .add(match.onUnauthorized(),   authorizationHandler)
+              .add(match.onUnauthorized(),   action.retry(1))
+              .add(match.onTimeout(),        action.retry(1))
+              .slot('beforeValidation')
+              .add(match.onAnyErrorCode(),   action.logCallout(LoggingLevel.ERROR))
+              .add(match.onAnyErrorCode(),   action.throwEx())
+              .add(match.onSuccess(),        action.logCallout(LoggingLevel.INFO))
+              .add(match.onSuccess(),        action.returnJSON(responseType));
+   }
 }
 ```
 
@@ -104,16 +102,14 @@ c.onAfterCallout()
 
 - Callout by default has some handlers implemented by default:
 ```apex
- protected virtual CalloutHandlersList onAfterCalloutInit() {
-     return new CalloutHandlersList()
-         .add(match.onUnauthorized(), action.retry(1))
-         .add(match.onTimeout(), action.retry(1))
-         .slot('beforeValidation')
-         .add(match.onAnyErrorCode(), action.logCallout(LoggingLevel.ERROR))
-         .add(match.onAnyErrorCode(), action.throwEx())
-         .add(match.onSuccess(), action.logCallout(LoggingLevel.INFO))
-         .add(match.onSuccess(), action.returnJSON(responseType));
- }
+onAfterCallout()
+   .add(match.onUnauthorized(),     action.retry(1))
+   .add(match.onTimeout(),          action.retry(1))
+   .slot('beforeValidation')
+   .add(match.onAnyErrorCode(),     action.logCallout(LoggingLevel.ERROR))
+   .add(match.onAnyErrorCode(),     action.throwEx())
+   .add(match.onSuccess(),          action.logCallout(LoggingLevel.INFO))
+   .add(match.onSuccess(),          action.returnJSON(responseType));
 ```
 - Client can remove/replace particular handlers. Name can be added to the handler, which then can be used to remove/replace.
 - Shorthand method can be used to configure callout with a map:

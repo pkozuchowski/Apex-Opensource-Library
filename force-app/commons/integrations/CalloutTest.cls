@@ -38,14 +38,11 @@ private class CalloutTest {
     private class AcmeApiCallout extends Callout {
         private AcmeAPIAuthHandler authorizationHandler = new AcmeAPIAuthHandler();
 
-        protected override CalloutHandlersList onBeforeCalloutInit() {
-            return new CalloutHandlersList()
-                .add(match.once(), authorizationHandler)
-                .add(match.onUnauthorized(), authorizationHandler);
-        }
+        protected override void setupHandlers() {
+            onBeforeCallout()
+                .add(match.once(), authorizationHandler);
 
-        protected override CalloutHandlersList onAfterCalloutInit() {
-            return new CalloutHandlersList()
+            onAfterCallout()
                 .add(match.onUnauthorized(), action.retry(1))
                 .add(match.onTimeout(), action.retry(1))
                 .slot('beforeValidation')

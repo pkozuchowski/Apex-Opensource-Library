@@ -91,9 +91,7 @@ public virtual class Callout {
      * @return Callout Handlers run before callout
      */
     public CalloutHandlersList onBeforeCallout() {
-        if (onBeforeCalloutHandlers == null) {
-            onBeforeCalloutHandlers = onBeforeCalloutInit();
-        }
+        initHandlers();
         return onBeforeCalloutHandlers;
     }
 
@@ -101,18 +99,26 @@ public virtual class Callout {
      * @return Callout Handlers run after callout
      */
     public virtual CalloutHandlersList onAfterCallout() {
-        if (onAfterCalloutHandlers == null) {
-            onAfterCalloutHandlers = onAfterCalloutInit();
-        }
+        initHandlers();
         return onAfterCalloutHandlers;
     }
 
-    protected virtual CalloutHandlersList onBeforeCalloutInit() {
-        return new CalloutHandlersList();
+    /**
+     * Handlers are lazily loaded, because some handlers may want to use variables set on the callout
+     * ex. responseType.
+     *
+     * This approach allows setting values on the callout, before handlers are initialized.
+     */
+    private void initHandlers() {
+        if (onBeforeCalloutHandlers == null) {
+            this.onBeforeCalloutHandlers = new CalloutHandlersList();
+            this.onAfterCalloutHandlers = new CalloutHandlersList();
+            setupHandlers();
+        }
     }
 
-    protected virtual CalloutHandlersList onAfterCalloutInit() {
-        return new CalloutHandlersList()
+    protected virtual void setupHandlers() {
+        onAfterCallout()
             .add(match.onUnauthorized(), action.retry(1))
             .add(match.onTimeout(), action.retry(1))
             .slot('beforeValidation')

@@ -70,32 +70,26 @@ private class CalloutTest {
     private class AcmeAccountAPI {
 
         public List<Account> getAccounts(List<String> accountIds) {
-            Callout c = new AcmeApiCallout()
-                .config(new Map<String, Object>{
-                    'method' => 'GET',
-                    'endpoint' => 'callout:MyCredential/api/Account',
-                    'params' => new Map<String, Object>{
-                        'debug' => true,
-                        'id' => accountIds
-                    },
-                    'responseType' => List<Account>.class
-                });
-
+            Callout c = new AcmeApiCallout();
+            c.setMethod('GET');
+            c.setEndpoint('callout:MyCredential/api/Account');
+            c.setParams(new Map<String, Object>{
+                'debug' => true,
+                'id' => accountIds
+            }, true);
+            c.setResponseType(List<Account>.class);
             c.onAfterCallout()
                 .addToSlot('beforeValidation', c.match.onNotFound(), c.action.returns(new List<Account>()));
-
 
             return (List<Account>) c.execute();
         }
 
         public Account updateAccount(Account account) {
-            Callout c = new AcmeApiCallout()
-                .config(new Map<String, Object>{
-                    'method' => 'POST',
-                    'endpoint' => 'callout:MyCredential/api/Account/' + account.Id,
-                    'data' => account,
-                    'responseType' => Account.class
-                });
+            Callout c = new AcmeApiCallout();
+            c.setMethod('POST');
+            c.setEndpoint('callout:MyCredential/api/Account/' + account.Id);
+            c.setBodyJSON(account, true);
+            c.setResponseType(Account.class);
 
             return (Account) c.execute();
         }
@@ -279,6 +273,7 @@ private class CalloutTest {
         Test.stopTest();
 
         String endpoint = request.getEndpoint();
+        System.debug(endpoint);
         Assert.isTrue(endpoint.contains('?debug=true'));
         Assert.isTrue(endpoint.contains('&id=1'));
         Assert.isTrue(endpoint.contains('&id=2'));
@@ -287,14 +282,11 @@ private class CalloutTest {
 
     @IsTest
     static void shouldAddHeaders() {
-        Callout c = new Callout(new Map<String, Object>{
-            'method' => 'GET',
-            'endpoint' => 'callout:MyCredential/api/Account',
-            'headers' => new Map<String, String>{
-                'Authorization' => 'Bearer XXX'
-            },
-            'timeout' => 12000
-        });
+        Callout c = new Callout();
+        c.setMethod('GET');
+        c.setEndpoint('callout:MyCredential/api/Account');
+        c.setHeader('Authorization', 'Bearer XXX');
+        c.setTimeout(12000);
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, new Mock(200, 'OK', new List<Account>{}));

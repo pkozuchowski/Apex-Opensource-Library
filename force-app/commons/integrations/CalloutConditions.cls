@@ -138,8 +138,8 @@ public with sharing class CalloutConditions extends Conditions {
     /**
      * Executes handler if response body matches regexp
      */
-    public Condition onContains(String subString) {
-        return new SubstringMatcher(subSTring);
+    public Condition onContains(String substring) {
+        return new SubstringMatcher(substring);
     }
 
     /**

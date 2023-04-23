@@ -50,44 +50,6 @@ public virtual class Callout {
     public Callout() {}
 
     /**
-     * Initializes callout from a map.
-     * @see Callout.config
-     */
-    public Callout(Map<String, Object> calloutMap) {
-        config(calloutMap);
-    }
-
-    /**
-     * Sets callout configuration from map. Possible values:
-     * - method : String
-     * - endpoint : String
-     * - params : Map<String,Object> - url params
-     * - headers : Map<String,String>
-     * - data : text | Object to serialize
-     * - timeout : Integer
-     * - responseType : Type
-     * - logName : String
-     */
-    public Callout config(Map<String, Object> calloutMap) {
-        if (calloutMap.containsKey('method')) setMethod((String) calloutMap.get('method'));
-        if (calloutMap.containsKey('endpoint')) setEndpoint((String) calloutMap.get('endpoint'));
-        if (calloutMap.containsKey('params')) setParams((Map<String, Object>) calloutMap.get('params'), true);
-        if (calloutMap.containsKey('headers')) setHeaders((Map<String, String>) calloutMap.get('headers'));
-        if (calloutMap.containsKey('timeout')) setTimeout((Integer) calloutMap.get('timeout'));
-        if (calloutMap.containsKey('responseType')) setResponseType((Type) calloutMap.get('responseType'));
-        if (calloutMap.containsKey('logName')) setLogName((String) calloutMap.get('logName'));
-        Object data = calloutMap.get('data');
-
-        if (data instanceof String) {
-            setBody((String) data);
-        } else if (data != null) {
-            setBodyJSON(data, false);
-        }
-
-        return this;
-    }
-
-    /**
      * @return Callout Handlers run before callout
      */
     public CalloutHandlersList onBeforeCallout() {

@@ -75,21 +75,21 @@ The callout class can then be used in methods which expose particular endpoints.
     }
 }
 ```
-In above example slot functionality was utilized to return empty list when webservice responds with 404 Not Found.  
+In the above example, slot functionality was utilized to return an empty list when webservice responds with 404 Not Found.  
 There's no limit on how many handlers can be added to the slot.
 
 ### Integration Design Guidelines
 1) Each integration should have separate module - a set of similarly named/prefixed classes not related to any business requirement.  
-   Module should be only responsible for exposing webservice endpoints in convenient way, without exposing API details.
+   Module should be only responsible for exposing webservice endpoints in a convenient way, without exposing API details.
 2) Integration module should have the following classes:
     - Callout class specifying common workflow
     - DTO / Wrapper container class where each request and response is implemented as inner class.  
       This is used for serialization/deserialization.
     - Webservice endpoint methods grouped by domain ex. AcmeCustomerAPI, AcmeOrderAPI, Acme
 3) Client code should not know about any API details
-4) Avoid using DTO inner classes on front-end. If new API version appears, it's easier to switch if you have intermediary layer between API and front-end and
+4) Avoid using DTO inner classes on the front-end. If a new API version appears, it's easier to switch if you have intermediary layer between API and front-end and
    remap your responses.  
-   It also makes it possible to support many different API versions simultaneously - for example if you want to roll out new version only for selected pilot
+   It also makes it possible to support many different API versions simultaneously - for example, if you want to roll out a new version only for selected pilot
    users.
 
 ### Trivia
@@ -111,16 +111,4 @@ onAfterCallout()
    .add(match.onSuccess(),          action.logCallout(LoggingLevel.INFO))
    .add(match.onSuccess(),          action.returnJSON(responseType));
 ```
-- Client can remove/replace particular handlers. Name can be added to the handler, which then can be used to remove/replace.
-- Shorthand method can be used to configure callout with a map:
-```apex
-Callout c = new AcmeApiCallout()
-    .config(new Map<String, Object>{
-        'method' => 'GET',
-        'endpoint' => 'callout:MyCredential/api/Account',
-        'params' => new Map<String, Object>{
-            'id' => accountIds
-        },
-        'responseType' => List<Account>.class
-    });
-```
+- Client code can remove/replace particular handlers. Name can be added to the handler, which then can be used to remove/replace.

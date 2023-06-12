@@ -51,10 +51,10 @@ Trigger Handler is apex design pattern which solves a few problems which arouse 
 }
 ```
 
-Trigger Handler frameworks encapsulates this implementation and provide easy to extend virtual class with `onBeforeInsert(List<SObject> newRecords)` methods.
+Trigger Handler frameworks encapsulates this implementation and provide easy to extend virtual class with `beforeInsert(List<SObject> newRecords)` methods.
 
-3. Trigger file is not treated as a class, but as block of apex code - similarly to anonymous apex. Therefore, it cannot extend any virtual class on its own, 
-it has to delegate everything to fully-fledged class - Trigger Handler.
+3. Trigger file is not treated as a class, but as block of apex code - similarly to anonymous apex. Therefore, it cannot extend any virtual class on its own,
+   it has to delegate everything to fully-fledged class - Trigger Handler.
 
 <br/>
 
@@ -72,13 +72,16 @@ public static void run(TriggerHandler triggerHandler);
 ###### TriggerHandler
 
 ```apex
-public virtual void onBeforeInsert(List<SObject> triggerNew, TriggerContext tc);
-public virtual void onAfterInsert(List<SObject> triggerNew, TriggerContext tc);
-public virtual void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc);
-public virtual void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc);
-public virtual void onBeforeDelete(List<SObject> triggerOld, TriggerContext tc);
-public virtual void onAfterDelete(List<SObject> triggerOld, TriggerContext tc);
-public virtual void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc);
+public virtual void beforeInsert(List<SObject> triggerNew, TriggerContext tc);
+public virtual void afterInsert(List<SObject> triggerNew, TriggerContext tc);
+
+public virtual void beforeUpdate(List<SObject> triggerNew, TriggerContext tc);
+public virtual void afterUpdate(List<SObject> triggerNew, TriggerContext tc);
+
+public virtual void beforeDelete(List<SObject> triggerOld, TriggerContext tc);
+public virtual void afterDelete(List<SObject> triggerOld, TriggerContext tc);
+
+public virtual void afterUndelete(List<SObject> triggerNew, TriggerContext tc);
 ```
 
 ###### Trigger Settings
@@ -86,9 +89,14 @@ public virtual void onAfterUndelete(List<SObject> triggerNew, TriggerContext tc)
 ```apex
 public static void disableTriggers();
 public static void enableTriggers();
+
+public static Boolean isSObjectTriggerEnabled(SObjectType sObjectType);
 public static void disableTrigger(SObjectType sObjectType);
 public static void enableTrigger(SObjectType sObjectType);
-public static Boolean isSObjectTriggerEnabled(SObjectType sObjectType);
+
+public static void disableTriggerHandler(Type triggerHandlerType);
+public static void enableTriggerHandler(Type triggerHandlerType);
+
 public static void disableAllLogic();
 public static void enableAllLogic();
 ```
@@ -126,13 +134,20 @@ Example:
 ```apex
 public inherited sharing class AccountTriggerHandler extends TriggerHandler {
 
-   public override void onAfterInsert(List<SObject> triggerNew, TriggerContext tc) {
-      new AccountContactLinker().linkContactsToAccount(triggerNew, tc);
-   }
+    public override void afterInsert(List<SObject> triggerNew, TriggerContext tc) {
+        Accounts accounts = new Accounts(triggerNew);
+        accounts.linkToStore(tc);
+        accounts.preventDuplicateAccounts(tc);
+        accounts.updatePersonContact(tc);
+        accounts.createAccountShares(tc);
+    }
 
-   public override void onAfterUpdate(List<SObject> triggerNew, TriggerContext tc) {
-      new AccountContactLinker().linkContactsToAccount(triggerNew, tc);
-   }
+    public override void afterUpdate(List<SObject> triggerNew, TriggerContext tc) {
+        Accounts accounts = new Accounts(triggerNew);
+        accounts.linkToStore(tc);
+        accounts.syncChangesWithCustomerService();
+        accounts.createCustomerCareNotes();
+    }
 }
 ```
 
@@ -141,7 +156,7 @@ public inherited sharing class AccountTriggerHandler extends TriggerHandler {
 
 ### Trigger Context
 
-This class serves following purposes:
+This class serves the following purposes:
 
 1. It encapsulates Trigger variables into an immutable object that can be passed down to other classes.
 1. It's used as marker interface which indicates that this particular method is run in Trigger context - similarly
@@ -154,18 +169,51 @@ Map<Id, SObject> getRecordsMap();
 Set<Id> getRecordsIds();
 SObject getOld(SObject record);
 Map<Id, SObject> getOldMap();
+
 Boolean isNew();
 Boolean isChanged();
 Boolean isChanged(SObject record, SObjectField field);
 Boolean isChangedTo(SObject record, SObjectField field, Object toValue);
 Boolean isChangedFrom(SObject record, SObjectField field, Object fromValue);
 Boolean isChangedFromTo(SObject record, SObjectField field, Object fromValue, Object toValue);
+
+List<SObject> getChanged(SObjectField sObjectField);
+List<SObject> getChangedToValue(SObjectField sObjectField, Set<Object> values);
+List<SObject> getChangedFromValue(SObjectField sObjectField, Set<Object> values);
+
+Boolean isFirstExecution(String featureName, Id recordId);
+void setExecuted(String featureName, Id recordId);
+Integer getExecutionCount(String featureName, Id recordId);
 ```
+<br/>
+
+##### Process records once
+To make sure that record is not needlessly processed number of times, developer can use isFirstExecution() method as follows:
+```apex
+    public class AccountAddressPopulator {
+    public void populateDefaultAddress(List<Account> records, TriggerContext ctx) {
+        String thisFeature = AccountAddressPopulator.class.getName();
+
+        for (Account acc : (Account[]) records) {
+            if (ctx.isFirstExecution(thisFeature, acc.Id)) {
+                // Increment to test trigger recursion
+                acc.NumberOfEmployees = acc.NumberOfEmployees == null ? 1 : acc.NumberOfEmployees + 1;
+                ctx.setExecuted(thisFeature, acc.Id);
+            }
+        }
+    }
+}
+```
+Using `isFirstExecution()`/`getExecutionCount()` and setExecuted() lets us control how many times this logic will be executed.  
+The `featureName` parameter corresponds to class name or feature name and is used to cover a scenario where record did not initially meet criteria to process, but
+was updated by flow or subsequent DML to meet the criteria.
+If record satisfies condition for being processed in trigger, `ctx.setExecuted()` method should be called to flag record as processed.
+
 
 <br/>
 <br/>
 
-### Trigger Settings
+### Trigger Settings~~~~
 
 Settings class for manipulating trigger execution and mocking in tests. Using this class, developer can turn off trigger execution for batch data fix for
 example.
@@ -178,14 +226,21 @@ TriggerSettings.disableTrigger(Account.SObject);
 TriggerSettings.enableTrigger(Account.SObject);
 ```
 
-2. Toggling all trigger:
+2. Toggling specific Trigger Handler
+```apex
+TriggerSettings.disableTriggerHandler(AccountTriggerHandler.class);
+// Do Something without triggers running
+TriggerSettings.enableTriggerHandler(AccountTriggerHandler.class);
+```
+
+3. Toggling all trigger:
 
 ```apex
 TriggerSettings.disableTriggers();
 TriggerSettings.enableTriggers();
 ```
 
-3. Toggling all logic on custom setting level for current user. Methods below perform DML to update LogicSwitch__c custom setting for current user.
+4Toggling all logic on custom setting level for current user. Methods below perform DML to update LogicSwitch__c custom setting for current user.
 
 ```apex
 TriggerSettings.disableAllLogic();
@@ -193,12 +248,12 @@ TriggerSettings.enableAllLogic();
 ```
 
 # Metadata Driven Trigger Handlers
-In previous version of the trigger handler, I was providing support for configurable approach where classes could have been
-configured to run in a trigger through custom metadata. This feature was removed to simplify the code, but also because 
-metadata driven trigger handlers introduce issues that outweigh the gains:
-1. Contrary to code, custom metadata is additive deployment. 
-That means that configuration may stay in system even if it's removed from the repository. This behaviour may introduce bugs that are hard to track down.
-2. It's harder to track what is actually executed. It takes longer to traverse the trigger code. 
+In the previous version of the trigger handler, I was providing support for configurable approach where classes could have been
+configured to run in a trigger through custom metadata. This feature was removed to simplify the code, but also because
+metadata driven trigger handlers introduce a number of issues that outweigh the gains:
+1. Contrary to code, custom metadata is additive deployment.
+   That means that configuration may stay in system even if it's removed from the repository or after refresh. This behavior may introduce bugs that are hard to track down.
+2. It's harder to track what is actually executed. It takes longer to traverse the trigger code.
 3. It's harder to parametrize classes and reuse code.
 
-Due to above, I'm taking down these features. They can still be found in old metadata-trigger branch, but I advise to use code instead.
+Due to the above, I'm taking down these features. They can still be found in old metadata-trigger branch, but I advise to use code instead.

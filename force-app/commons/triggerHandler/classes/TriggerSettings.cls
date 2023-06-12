@@ -35,6 +35,7 @@ public inherited sharing class TriggerSettings {
     private static Boolean triggersEnabled = true;
     private final static LogicSwitch__c logicSwitchSetting = LogicSwitch__c.getInstance();
     private final static Set<SObjectType> disabledTriggers = new Set<SObjectType>();
+    private final static Set<String> disabledTriggerHandlers = new Set<String>();
 
 
     /**
@@ -59,6 +60,35 @@ public inherited sharing class TriggerSettings {
     }
 
     /**
+     * Disables specific Trigger Handler
+     */
+    public static void disableTriggerHandler(Type triggerHandlerType) {
+        if (TriggerHandler.class.isAssignableFrom(triggerHandlerType)) {
+            String name = triggerHandlerType.getName();
+            name = name.contains('.') ? name.substringAfter('.') : name;
+            disabledTriggerHandlers.add(name);
+        }
+    }
+
+    /**
+     * Disables specific Trigger Handler
+     */
+    public static void enableTriggerHandler(Type triggerHandlerType) {
+        if (TriggerHandler.class.isAssignableFrom(triggerHandlerType)) {
+            String name = triggerHandlerType.getName();
+            name = name.contains('.') ? name.substringAfter('.') : name;
+            disabledTriggerHandlers.remove(name);
+        }
+    }
+
+    /**
+     * @return True if specific TriggerHandler class is disabled
+     */
+    public static Boolean isTriggerHandlerEnabled(String triggerHandlerName) {
+        return !disabledTriggerHandlers.contains(triggerHandlerName);
+    }
+
+    /**
     * Enabled previously disabled trigger execution for given sObjectType
     */
     public static void enableTrigger(SObjectType sObjectType) {
@@ -75,7 +105,7 @@ public inherited sharing class TriggerSettings {
     }
 
     /**
-    * Disable all logic (Workflow RUles, Triggers, Process Builders, Validation Rules) which handle LogicSwitch__c.
+    * Disable all logic (Workflow Rules, Triggers, Process Builders, Validation Rules) which handle LogicSwitch__c.
     * Disablement is done by temporarily upserting LogicSwitch__c record for running user and restoring it later with enableAllAutomations.
     * This action performs DML.
     */
@@ -85,6 +115,7 @@ public inherited sharing class TriggerSettings {
         clone.DisableTriggers__c = true;
         clone.DisableProcessBuilders__c = true;
         clone.DisableValidationRules__c = true;
+        clone.DisableFlows__c = true;
         upsert clone;
     }
 

@@ -21,7 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-public without sharing class TriggerDispatcher {
+public inherited sharing class TriggerDispatcher {
 
 
     /**
@@ -33,28 +33,28 @@ public without sharing class TriggerDispatcher {
 
     @TestVisible
     private static void run(TriggerHandler triggerHandler, TriggerContext triggerContext) {
-        if (shouldRun(triggerContext)) {
+        if (shouldRun(triggerContext, triggerHandler)) {
             switch on triggerContext.operationType {
                 when BEFORE_INSERT {
-                    triggerHandler.onBeforeInsert(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.beforeInsert(triggerContext.getRecords(), triggerContext);
                 }
                 when BEFORE_UPDATE {
-                    triggerHandler.onBeforeUpdate(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.beforeUpdate(triggerContext.getRecords(), triggerContext);
                 }
                 when BEFORE_DELETE {
-                    triggerHandler.onBeforeDelete(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.beforeDelete(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_INSERT {
-                    triggerHandler.onAfterInsert(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.afterInsert(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_UPDATE {
-                    triggerHandler.onAfterUpdate(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.afterUpdate(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_DELETE {
-                    triggerHandler.onAfterDelete(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.afterDelete(triggerContext.getRecords(), triggerContext);
                 }
                 when AFTER_UNDELETE {
-                    triggerHandler.onAfterUndelete(triggerContext.getRecords(), triggerContext);
+                    triggerHandler.afterUndelete(triggerContext.getRecords(), triggerContext);
                 }
             }
         }
@@ -67,11 +67,12 @@ public without sharing class TriggerDispatcher {
     * - if it's not disabled in Bypass Triggers settings
     * - if it's not manually disabled in code via  disableTrigger();
     */
-    private static Boolean shouldRun(TriggerContext triggerContext) {
+    private static Boolean shouldRun(TriggerContext triggerContext, TriggerHandler th) {
+        String thName = th.toString().substringBefore(':');
         return triggerContext.isExecuting
-            && TriggerSettings.isSObjectTriggerEnabled(triggerContext.sObjectType);
+            && TriggerSettings.isSObjectTriggerEnabled(triggerContext.sObjectType)
+            && TriggerSettings.isTriggerHandlerEnabled(thName);
     }
 
-    private TriggerDispatcher() {
-    }
+    private TriggerDispatcher() {}
 }

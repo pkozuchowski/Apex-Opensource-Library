@@ -63,7 +63,7 @@ private class TriggerDispatcherTest {
      * Emulation of AccountTriggerHandler class
      */
     private class TestAccountTriggerHandler extends TriggerHandler {
-        public override void onBeforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
+        public override void beforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
             new AccountAddressPopulator().populateDefaultAddress(triggerNew, tc);
         }
     }
@@ -81,6 +81,12 @@ private class TriggerDispatcherTest {
                 if (ctx.isChanged(acc, Account.BillingCountry)) {
                     acc.ShippingCountry = acc.BillingCountry;
                     acc.ShippingCity = acc.BillingCity;
+                }
+
+                if (ctx.isFirstRun('AccountAddressPopulator', acc.Id)) {
+                    // Increment to test trigger recursion
+                    acc.NumberOfEmployees = acc.NumberOfEmployees == null ? 1 : acc.NumberOfEmployees + 1;
+                    ctx.setExecuted('AccountAddressPopulator', acc.Id);
                 }
             }
         }
@@ -278,5 +284,47 @@ private class TriggerDispatcherTest {
         Assert.areEqual(3, tc.getChanged(Account.Name).size());
         Assert.areEqual(1, tc.getChangedToValue(Account.Name, new Set<Object>{'Test 3 - new'}).size());
         Assert.areEqual(2, tc.getChangedFromValue(Account.Name, new Set<Object>{'Test 1', 'Test 2'}).size());
+    }
+
+    @IsTest
+    static void testTriggerCounter() {
+        List<Account> accounts = new List<Account>{
+            new Account(Id = ID_1, Name = NAME_TEST, NumberOfEmployees = 0)
+        };
+        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
+
+
+        Test.startTest();
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        Test.stopTest();
+
+        Assert.areEqual(1, accounts[0].NumberOfEmployees);
+    }
+
+    @IsTest
+    static void testTriggerHandlerToggle() {
+        TriggerSettings.disableTriggerHandler(TestAccountTriggerHandler.class);
+
+        List<Account> accounts = new List<Account>{
+            new Account(Id = ID_1, Name = NAME_TEST, NumberOfEmployees = 0)
+        };
+        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
+
+
+        Test.startTest();
+        TriggerSettings.disableTriggerHandler(TestAccountTriggerHandler.class);
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        TriggerSettings.enableTriggerHandler(TestAccountTriggerHandler.class);
+
+        Assert.areEqual(0, tc.getRunCount('AccountAddressPopulator', accounts[0].Id));
+
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        Test.stopTest();
+
+
+        Assert.areEqual(1, tc.getRunCount('AccountAddressPopulator', accounts[0].Id));
     }
 }

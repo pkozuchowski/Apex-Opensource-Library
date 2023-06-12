@@ -29,6 +29,7 @@
  * It also contains helper method for checking field changes.
  */
 public virtual class TriggerContext {
+    private static Map<String, Integer> PROCESSED_COUNT = new Map<String, Integer>();
     public Boolean isExecuting { get; protected set; }
     public Boolean isInsert { get; protected set; }
     public Boolean isUpdate { get; protected set; }
@@ -57,7 +58,7 @@ public virtual class TriggerContext {
     }
 
     @TestVisible
-    private TriggerContext() {
+    protected TriggerContext() {
         this.isExecuting = Trigger.isExecuting == true;
         this.isInsert = Trigger.isInsert == true;
         this.isUpdate = Trigger.isUpdate == true;
@@ -193,7 +194,10 @@ public virtual class TriggerContext {
      */
     public List<SObject> getChanged(SObjectField sObjectField) {
         List<SObject> changed = new List<SObject>();
-        for (SObject record : triggerNew) {
+
+        for (Integer i = 0, j = triggerNew.size(); i < j; i++) {
+            SObject record = triggerNew[i];
+
             if (isChanged(record, sObjectField)) {
                 changed.add(record);
             }
@@ -209,7 +213,10 @@ public virtual class TriggerContext {
      */
     public List<SObject> getChangedToValue(SObjectField sObjectField, Set<Object> values) {
         List<SObject> changed = new List<SObject>();
-        for (SObject record : triggerNew) {
+
+        for (Integer i = 0, j = triggerNew.size(); i < j; i++) {
+            SObject record = triggerNew[i];
+
             if (isChanged(record, sObjectField) && values.contains(record.get(sObjectField))) {
                 changed.add(record);
             }
@@ -225,11 +232,47 @@ public virtual class TriggerContext {
      */
     public List<SObject> getChangedFromValue(SObjectField sObjectField, Set<Object> values) {
         List<SObject> changed = new List<SObject>();
-        for (SObject record : triggerNew) {
+
+        for (Integer i = 0, j = triggerNew.size(); i < j; i++) {
+            SObject record = triggerNew[i];
+
             if (isChanged(record, sObjectField) && values.contains(getOld(record).get(sObjectField))) {
                 changed.add(record);
             }
         }
         return changed;
+    }
+
+    /**
+     * @param featureName Name of class or feature that is calling this method.
+     * It is used to cover scenario where record did not initially meet criteria to process, but was updated by flow/another DML to meet the criteria.
+     * @param recordId Id of record in trigger
+     * @return True if record is executed in the trigger for the first time.
+     * If this is second (recurrent) run of a trigger for same records and you execute this method in after trigger,
+     * it will return true.
+     */
+    public Boolean isFirstRun(String featureName, Id recordId) {
+        return getRunCount(featureName, recordId) == 0;
+    }
+
+    /**
+     * @param featureName Name of class or feature that is calling this method.
+     * It is used to cover scenario where record did not initially meet criteria to process, but was updated by flow/another DML to meet the criteria.
+     * @param recordId Id of record in trigger
+     */
+    public void setExecuted(String featureName, Id recordId) {
+        Integer count = getRunCount(featureName, recordId);
+        String key = '' + recordId + featureName;
+        PROCESSED_COUNT.put(key, count + 1);
+    }
+
+    /**
+     * @param recordId Id of record in trigger
+     * @return How many times this record was in given trigger phase (ex. how many times record was in TriggerOperation.AFTER_UPDATE)
+     */
+    public Integer getRunCount(String featureName, Id recordId) {
+        String key = '' + recordId + featureName;
+        Integer count = PROCESSED_COUNT.get(key);
+        return count == null ? 0 : count;
     }
 }

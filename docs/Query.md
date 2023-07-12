@@ -11,7 +11,7 @@ Notice how simple and verbose this is:
 //Given:
 Set<String> externalIDs;
 
-List<Account> accounts = Query.Accounts.byExternalId().getList();
+List<Account> accounts = Query.Accounts.byExternalId(externalIDs).getList();
 ```
 
 ## Extend, Filter, Reduce
@@ -153,37 +153,40 @@ static void myTestMethod() {
     Test.startTest();
     List<Account> accounts = Query.Accounts
         .byExternalId(/*...*/)
-        .getList(); //returns mock
+        .getList(); //returns mocked result
     Test.stopTest();
 }
 ```
 
 Mock name is generated from the used methods:
 ```apex
-Query.Accounts.mock('.byExternalId.byRecordTypeId', new List<Account>{
-    // my mocked query result
-});
-
+// For Query in class:
 List<Account> accounts = Query.Accounts
     .byExternalId(/*...*/)
     .byRecordTypeId()
     .getList(); //returns mock
+
+//Mock as follows:
+Query.Accounts.mock('.byExternalId.byRecordTypeId', new List<Account>{
+    // my mocked query result
+});
 
 //When in doubt add .debugLogMockName(); to the query chain.
 ```
 
 Alternatively you can define your mock name to mock exactly that one query that you want.
 ```apex
-// In your test:
-Query.Accounts.mock('myAccountQuery', new List<Account>{
-    // my mocked query result
-});
-
-
 // In your class:
 List<Account> accounts = Query.Accounts
     .byExternalId(/*...*/)
     .byRecordTypeId()
     .withMockName('myAccountQuery')
     .getList(); //returns mocked result
+
+
+// In your test:
+Query.Accounts.mock('myAccountQuery', new List<Account>{
+    // my mocked query result
+});
+
 ```

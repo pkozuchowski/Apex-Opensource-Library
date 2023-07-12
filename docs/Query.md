@@ -44,7 +44,7 @@ List<Contact> contact = Query.Contacts
     .getList();
 
 // Or
-Query.Contacts.byField('Name','IN', names).getList();
+Query.Contacts.byField('Account.Name','=', 'John Beer').getList();
 ```
 
 For very specialized and complex queries, there are 3 ways:

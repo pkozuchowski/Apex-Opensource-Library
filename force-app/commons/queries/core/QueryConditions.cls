@@ -46,6 +46,15 @@ public with sharing class QueryConditions {
     private static final String SEPARATOR_OR = ' OR ';
     private static final String SEPARATOR_AND = ' AND ';
 
+
+    /**
+     * Composite condition that joins inner where clauses with logic string, the same as ListViews
+     * '{0} AND ({1} OR {2})
+     */
+    public Query.Condition logic(String logic, Query.Condition[] conditions) {
+        return new LogicExpression(logic, conditions);
+    }
+
     /**
     * Composite query condition that joins inner where clauses with AND operator
     */
@@ -257,6 +266,30 @@ public with sharing class QueryConditions {
 
         public String toSOQL(QueryBindings bindings) {
             return 'NOT (' + innerWhere.toSOQL(bindings) + ')';
+        }
+    }
+
+    /**
+     * Composite WHERE clause with custom logic presented as String:
+     * '{0} OR ({1} AND {2})
+     */
+    private class LogicExpression implements Query.Condition {
+        private String logic;
+        private Query.Condition[] conditions;
+
+        public LogicExpression(String logic, Query.Condition[] conditions){
+            this.logic = logic;
+            this.conditions = conditions;
+        }
+
+        public String toSOQL(QueryBindings bindings) {
+            List<String> conditionClauses = new List<String>();
+
+            for (Query.Condition c : conditions) {
+                conditionClauses.add(c.toSOQL(bindings));
+            }
+
+            return String.format(logic, conditionClauses);
         }
     }
 }

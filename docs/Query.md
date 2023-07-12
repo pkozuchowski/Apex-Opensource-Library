@@ -49,7 +49,16 @@ Query.Contacts.byField('Account.Name','=', 'John Beer').getList();
 
 For very specialized and complex queries, there are 3 ways:
 ```apex
-// 1) Introduce case-specific filtering method in SObject's query class:
+// 1) Using Filter logic in client code
+Query.Accounts
+    .byName('TestName')
+    .byRecordTypeDeveloperName('DeveloperName')
+    .byOwnerId(UserInfo.getUserId())
+    .withFilterLogic('{0} OR ({1} AND {2})')
+    .getList();
+
+
+// 2) Introduce case-specific filtering method in SObject's query class:
 class ContactQuery{
     /*...code*/
 
@@ -63,7 +72,7 @@ class ContactQuery{
 }
 
 
-// 2) Using QueryConditions to build query:
+// 3) Using QueryConditions to build query:
 QueryConditions c = new QueryConditions();
 Query.Accounts
     .groupBy('COUNT(ID) cnt, Profile.Name', 'Profile.Name')
@@ -82,7 +91,7 @@ Query.Accounts
     .getList();
 
 
-// 3) Writing WHERE clause directly
+// 4) Writing WHERE clause directly
 List<String> names = new List<String>();
 List<String> externalIds = new List<String>();
 Id recordTypeId;

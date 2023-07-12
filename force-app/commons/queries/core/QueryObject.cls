@@ -48,6 +48,7 @@ public virtual inherited sharing class QueryObject {
         }
     }
     private List<SObject> result;
+    private String filterLogic;
 
 
     /**
@@ -313,6 +314,23 @@ public virtual inherited sharing class QueryObject {
      */
     public QueryObject withFieldAccess(AccessType accessType) {
         this.accessType = accessType;
+        return this;
+    }
+
+
+    /**
+     * Provide filter logic for previously specified conditions
+     *
+     * @example
+     * Query.Accounts
+     *  .byName('TestName')
+     *  .byRecordTypeDeveloperName('DeveloperName')
+     *  .byOwnerId(UserInfo.getUserId())
+     *  .withFilterLogic('{0} OR ({1} AND {2})')
+     *  .getList();
+     */
+    public QueryObject withFilterLogic(String filterLogic) {
+        this.filterLogic = filterLogic;
         return this;
     }
 
@@ -693,8 +711,11 @@ public virtual inherited sharing class QueryObject {
         } else if (conditions.size() == 1) {
             return conditions.get(0);
 
-        } else {
+        } else if (String.isBlank(filterLogic)) {
             return conditionFactory.ANDs(conditions);
+
+        } else {
+            return conditionFactory.logic(filterLogic, conditions);
         }
     }
 

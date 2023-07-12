@@ -257,6 +257,21 @@ public class QueryObjectTest {
     }
 
     @IsTest
+    static void testFilterLogic() {
+        String soql = new TestUserQuery()
+            .byOwnerId(UserInfo.getUserId())
+            .byRecordTypeDeveloperName('test')
+            .byField('LastName', '=', 'Test')
+            .withFilterLogic('{0} OR ({1} AND {2})')
+            .toSOQL();
+
+        Assert.isTrue(
+            soql.contains('(OwnerId IN :var0) OR ((RecordType.DeveloperName IN :var1) AND (LastName = :var2))'),
+            'Incorrect clause: "' + soql + '"'
+        );
+    }
+
+    @IsTest
     static void coverage() {
         new TestUserQuery()
             .withFields('Name')

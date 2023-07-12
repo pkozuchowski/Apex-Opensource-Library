@@ -42,6 +42,9 @@ List<Contact> contact = Query.Contacts
     .byRecordTypeId(/*Record Type Id*/)
     .byIsActive(true)
     .getList();
+
+// Or
+Query.Contacts.byField('Name','IN', names).getList();
 ```
 
 For very specialized and complex queries, there are 3 ways:

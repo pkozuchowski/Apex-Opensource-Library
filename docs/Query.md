@@ -16,6 +16,11 @@ List<Account> accounts = Query.Accounts.byExternalId(externalIDs).getList();
 
 ## Extend, Filter, Reduce
 Query Object assumes that each query can be modified in 3 ways:
+* Extend with additional fields, relationships
+* Filtered with additional WHERE clauses
+* Reduced to result list, map, field or other type
+
+
 
 #### Extended with additional fields, relationships, limits etc
 

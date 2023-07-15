@@ -14,7 +14,7 @@
 7. [Runtime - Dynamic Apex and Reflection Utils](docs/Runtime.md)
 8. Schema
     * [Schema Constants - Record Types/ Profiles / Permission Sets](docs/SchemaConstants.md)
-    * Custom Metadata Service
+    * [Custom Metadata Service](docs/CustomMetadataService.md)
 9. Utils
     * AuraService
     * [Scheduler & BatchSchedulable](docs/Scheduler.md)

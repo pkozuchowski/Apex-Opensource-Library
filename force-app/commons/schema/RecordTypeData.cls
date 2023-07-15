@@ -24,24 +24,24 @@
  */
 
 /**
- * Similar to RecordTypeInfo, but with shorter Id and AuraEnabled
+ * Replacement to RecordType class to expose values that are only available on RecordTypeInfo;
  */
 public with sharing class RecordTypeData {
-    @AuraEnabled public final Boolean isActive;
-    @AuraEnabled public final Boolean isAvailable;
-    @AuraEnabled public final Boolean isDefault;
-    @AuraEnabled public final Boolean isMaster;
-    @AuraEnabled public final String developerName;
-    @AuraEnabled public final String name;
-    @AuraEnabled public final Id id;
+    @AuraEnabled public final Boolean IsActive;
+    @AuraEnabled public final Boolean IsAvailable;
+    @AuraEnabled public final Boolean IsDefault;
+    @AuraEnabled public final Boolean IsMaster;
+    @AuraEnabled public final String DeveloperName;
+    @AuraEnabled public final String Name;
+    @AuraEnabled public final Id Id;
 
     public RecordTypeData(RecordTypeInfo recordTypeInfo) {
-        this.developerName = recordTypeInfo.getDeveloperName();
-        this.id = recordTypeInfo.getRecordTypeId();
-        this.isActive = recordTypeInfo.isActive();
-        this.isAvailable = recordTypeInfo.isAvailable();
-        this.isDefault = recordTypeInfo.isDefaultRecordTypeMapping();
-        this.isMaster = recordTypeInfo.isMaster();
-        this.name = recordTypeInfo.getName();
+        this.DeveloperName = recordTypeInfo.getDeveloperName();
+        this.Id = recordTypeInfo.getRecordTypeId();
+        this.IsActive = recordTypeInfo.isActive();
+        this.IsAvailable = recordTypeInfo.isAvailable();
+        this.IsDefault = recordTypeInfo.isDefaultRecordTypeMapping();
+        this.IsMaster = recordTypeInfo.isMaster();
+        this.Name = recordTypeInfo.getName();
     }
 }

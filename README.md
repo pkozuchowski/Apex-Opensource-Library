@@ -13,7 +13,7 @@
 6. [Query Object - Extensible Selector Layer with mocking and caching mechanism](docs/Query.md)
 7. [Runtime - Dynamic Apex and Reflection Utils](docs/Runtime.md)
 8. Schema
-    * Record Types/ Profiles / Permission Sets
+    * [Schema Constants - Record Types/ Profiles / Permission Sets](docs/SchemaConstants.md)
     * Custom Metadata Service
 9. Utils
     * AuraService

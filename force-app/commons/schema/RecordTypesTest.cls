@@ -39,6 +39,6 @@ private class RecordTypesTest {
     static void shouldRetrieveRecordTypeId() {
         Map<String, RecordTypeInfo> recordTypeInfos = Log__c.SObjectType.getDescribe().getRecordTypeInfosByDeveloperName();
 
-        System.assertEquals(recordTypeInfos.get('ApplicationLog')?.getRecordTypeId(), RecordTypes.LOG_APPLICATION.id);
+        System.assertEquals(recordTypeInfos.get('ApplicationLog')?.getRecordTypeId(), RecordTypes.LOG_APPLICATION.Id);
     }
 }

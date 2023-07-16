@@ -11,7 +11,7 @@ It features the following methods:
 ## Examples:
 
 Consider, we have the following controller class for My Account page and associated selector.  
-In unit tests, we want to mock Account returned from the selector class.
+In unit tests, we want to mock the response 55of the selector class.
 
 ```apex
 public class MyAccountCtrl {
@@ -38,6 +38,11 @@ public class MyAccountCtrlT {
         MyAccountCtrl.accountSelector = (AccountSelector) Mock.response(AccountSelector.class, new List<Account>{
             new Account(Name = 'My Account')
         });
+
+        //or to simulate exception
+        MyAccountCtrl.accountSelector = (AccountSelector) Mock.response(AccountSelector.class,
+            new QueryException('List has no rows for assignment to SObject')
+        );
     }
 } 
 ```

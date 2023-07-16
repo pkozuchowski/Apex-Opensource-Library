@@ -35,7 +35,6 @@
  *
  * Dependencies:
  * @see BitSet
- * @see SchemaDescriptions
  */
 public with sharing class Picklist {
     private List<Entry> entries;
@@ -47,16 +46,6 @@ public with sharing class Picklist {
     private transient Map<String, String> valueToLabelCaseSensitive;
     private transient DescribeFieldResult picklistDescribe;
 
-
-    /**
-     * Constructs Picklist instance from SObjectField of picklist type.
-     *
-     * @param sobjectField Picklist sObject field - for example 'Opportunity.StageName'
-     */
-    public Picklist(String sobjectField) {
-        SObjectField field = SchemaDescriptions.getSObjectField(sobjectField);
-        init(field);
-    }
 
     /**
      * Constructs Picklist instance from SObjectField of picklist type.
@@ -185,7 +174,7 @@ public with sharing class Picklist {
         if (isDependant) {
             Map<Object, Entry[]> entriesByControllingEntry = new Map<Object, Entry[]>();
             List<Object> controllingValues = picklistDescribe.getController().getDescribe().getType() == DisplayType.PICKLIST ?
-                    new Picklist(picklistDescribe.getController()).getValues() : new List<Object>{false, true};
+                new Picklist(picklistDescribe.getController()).getValues() : new List<Object>{false, true};
 
             for (Entry entry : entries) {
                 BitSet bitset = BitSet.valueOfBase64(entry.validFor);
@@ -206,7 +195,7 @@ public with sharing class Picklist {
             return entriesByControllingEntry;
         } else {
             return new Map<Object, Entry[]>{
-                    '' => entries
+                '' => entries
             };
         }
     }

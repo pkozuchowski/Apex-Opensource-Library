@@ -30,9 +30,6 @@ Method automatically determines map's key and value type by checking field type,
 ```apex
 Map<Id, Contact> contactMap = (Map<Id, Contact>) Collection.of(contacts)
     .mapBy(Contact.AccountId);
-
-Map<Id, Contact> contactMap = (Map<Id, Contact>) Collection.of(contacts)
-    .mapBy('AccountId');
 ```
 
 ##### Map between 2 fields
@@ -119,12 +116,11 @@ Output:
 Calling getSet() or getList() with sobject field, we will get List or Set of field values:
 
 ```apex
-Set<Id> accountIds = Collection.of(contacts).getIdsSet(Contact.AccountId); // Preferred
+Set<Id> accountIds = Collection.of(contacts).getSetId(Contact.AccountId); // Preferred
 Set<Id> accountIds = (Set<Id>) Collection.of(contacts).getSet(Contact.AccountId); // Code figures out set type automatically
-Set<Id> accountIds = (Set<Id>) Collection.of(contacts).getSet('AccountId');
 
 //For Integer fields:
-Set<Integer> externalIds = Collection.of(contacts).getIntegerSet(Contact.ExternalId__c); // Preferred
+Set<Integer> externalIds = Collection.of(contacts).getSetInteger(Contact.ExternalId__c); // Preferred
 Set<Integer> externalIds = (Set<Integer>) Collection.of(contacts).getSet(Contact.ExternalId__c);
 
 // Similarly we can get List of values
@@ -224,7 +220,8 @@ Collection.of(contacts).slice(new List<Integer>{0, 2, 4, 9}); //=> returns conta
 Order SObjects by field:
 
 ```apex
-Collection.of(contacts).orderBy(Contact.Name, Ordering.ASCENDING);
+Collection.of(contacts).orderAsc(Contact.Name);
+Collection.of(contacts).orderDesc(Contact.Name);
 ```
 
 <br/>
@@ -234,10 +231,10 @@ Collection.of(contacts).orderBy(Contact.Name, Ordering.ASCENDING);
 Inspired by Javascript reduce method, this provides Reducer interface and a few out of the box methods:
 
 ```apex
-Decimal getSum(SObjectField | String field);
-Decimal getAverage(SObjectField | String field);
-Decimal getMin(SObjectField | String field);
-Decimal getMax(SObjectField | String field);
+Decimal getSum(SObjectField field);
+Decimal getMin(SObjectField field);
+Decimal getMax(SObjectField field);
+Decimal getAverage(SObjectField field);
 
 Decimal sum = Collection.of(opportunities).getSum(Opportunity.Amount);
 ```

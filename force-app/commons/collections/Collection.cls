@@ -94,7 +94,6 @@ public abstract inherited sharing class Collection {
      * Filters collection by SObjects field values
      */
     public abstract FieldFilter filter(SObjectField field);
-    public abstract FieldFilter filter(String field);
 
     /**
      * @return Collection of items filtered by Condition implementation
@@ -118,42 +117,34 @@ public abstract inherited sharing class Collection {
 
     /**@return Sum of numeric field values*/
     public abstract Decimal getSum(SObjectField field);
-    public abstract Decimal getSum(String field);
 
     /**@return Average of numeric field values*/
     public abstract Decimal getAverage(SObjectField field);
-    public abstract Decimal getAverage(String field);
 
     /**@return Minimum of numeric field values*/
     public abstract Decimal getMin(SObjectField field);
-    public abstract Decimal getMin(String field);
 
     /**@return Maximum of numeric field values*/
     public abstract Decimal getMax(SObjectField field);
-    public abstract Decimal getMax(String field);
 
     /**
      * @return List<V>, V - value type of SObject field. Cast to expected value type.
      */
-    public abstract List<Id> getIdsList(SObjectField field);
-    public abstract List<String> getStringsList(SObjectField field);
-    public abstract List<Integer> getIntegersList(SObjectField field);
+    public abstract List<Id> getListId(SObjectField field);
+    public abstract List<String> getListString(SObjectField field);
+    public abstract List<Integer> getListInteger(SObjectField field);
 
     public abstract List<Object> getList(SObjectField field);
-    public abstract List<Object> getList(String field);
-    public abstract List<Object> getList(String field, Type fieldType);
     public abstract List<Object> getList(Mapper valueMapper);
 
     /**
      * @return Set<V>, V - value type of SObject field. Cast to expected Set type.
      * ex. Set<String> names = (Set<String>) Collection.of(accounts).getSet(Account.Name);
      */
-    public abstract Set<Id> getIdsSet(SObjectField field);
-    public abstract Set<String> getStringsSet(SObjectField field);
-    public abstract Set<Integer> getIntegersSet(SObjectField field);
+    public abstract Set<Id> getSetId(SObjectField field);
+    public abstract Set<String> getSetString(SObjectField field);
+    public abstract Set<Integer> getSetInteger(SObjectField field);
     public abstract Object getSet(SObjectField field);
-    public abstract Object getSet(String field);
-    public abstract Object getSet(String field, Type fieldType);
     public abstract Object getSet(Mapper valueMapper);
 
     /**
@@ -165,10 +156,6 @@ public abstract inherited sharing class Collection {
      */
     public abstract Object mapBy(SObjectField field);
     public abstract Object mapBy(SObjectField keyField, SObjectField valueField);
-    public abstract Object mapBy(String field);
-    public abstract Object mapBy(String keyField, String valueField);
-    public abstract Object mapBy(String field, Type fieldType);
-    public abstract Object mapBy(String keyField, String valueField, Type keyType, Type valueType);
     public abstract Object mapBy(Mapper keyMapper);
     public abstract Object mapBy(Mapper keyMapper, Mapper valueMapper);
 
@@ -184,10 +171,6 @@ public abstract inherited sharing class Collection {
      */
     public abstract Object groupBy(SObjectField field);
     public abstract Object groupBy(SObjectField keyField, SObjectField valueField);
-    public abstract Object groupBy(String field);
-    public abstract Object groupBy(String keyField, String valueField);
-    public abstract Object groupBy(String field, Type fieldType);
-    public abstract Object groupBy(String keyField, String valueField, Type keyType, Type valueType);
     public abstract Object groupBy(Mapper keyMapper);
     public abstract Object groupBy(Mapper keyMapper, Mapper valueMapper);
 
@@ -200,22 +183,14 @@ public abstract inherited sharing class Collection {
     /**
      * Sorts collection by given field and order.
      * @param field Field to sort by.
-     * @param order Sorting order
      */
-    public abstract Collection orderBy(SObjectField field, Ordering order);
+    public abstract Collection orderAsc(SObjectField field);
+    public abstract Collection orderDesc(SObjectField field);
 
     /**
      * Sorts collection using given Comparator implementation.
      */
     public abstract Collection orderBy(Comparator comparator);
-
-
-    /**
-     * Simplifies batch unit testing by performing assertion on entire collection
-     */
-    public abstract Collection assert(Condition filter, String message);
-    public abstract Collection assertEquals(SObjectField field, Object value, String message);
-    public abstract Collection assertNotEquals(SObjectField field, Object value, String message);
 
 
     /*

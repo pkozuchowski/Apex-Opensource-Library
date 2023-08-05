@@ -32,9 +32,6 @@ public with sharing class CollectionConditions extends Conditions {
     /**
      * Creates filter by field value
      */
-    public FieldValueConditionFactory field(String field) {
-        return new FieldValueConditionFactory(field);
-    }
     public FieldValueConditionFactory field(SObjectField field) {
         return new FieldValueConditionFactory('' + field);
     }

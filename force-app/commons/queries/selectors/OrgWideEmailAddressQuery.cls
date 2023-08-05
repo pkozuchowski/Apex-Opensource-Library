@@ -28,16 +28,6 @@
  */
 public inherited sharing class OrgWideEmailAddressQuery extends Query {
 
-    /**
-     * Caches all OrgWideEmail records in static cache
-     */
-    static {
-        QueryCache.registerStaticCache(
-            OrgWideEmailAddress.SObjectType,
-            'SELECT FIELDS(STANDARD) FROM OrgWideEmailAddress',
-            new Set<String>{'Id', 'Address', 'Name'}
-        );
-    }
 
     public OrgWideEmailAddressQuery() {
         super(OrgWideEmailAddress.SObjectType);

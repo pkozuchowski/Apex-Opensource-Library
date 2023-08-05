@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>SOQL__c</fullName>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>This SOQL is used to pre-initialize query cache with records. If left empty, only records queried in code will be cached.</inlineHelpText>
+    <label>SOQL</label>
+    <required>false</required>
+    <type>TextArea</type>
+</CustomField>

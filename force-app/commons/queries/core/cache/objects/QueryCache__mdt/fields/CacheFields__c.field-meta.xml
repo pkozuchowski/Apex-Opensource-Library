@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>CacheFields__c</fullName>
+    <externalId>false</externalId>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Which fields will be used as Cache keys. Queries by these fields will be able to use cache.</inlineHelpText>
+    <label>Cache Fields</label>
+    <required>true</required>
+    <type>TextArea</type>
+</CustomField>

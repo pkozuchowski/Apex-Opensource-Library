@@ -28,14 +28,6 @@
  */
 public inherited sharing class UserQuery extends Query {
 
-    /**
-     * Once queried Users are saved in cache and save limits on subsequent calls
-     */
-    static {
-        QueryCache.registerStaticCache(
-            User.SObjectType, null, new Set<String>{'Id', 'Username'}
-        );
-    }
 
     public UserQuery() {
         super(new List<String>{

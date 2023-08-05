@@ -29,18 +29,6 @@
 * */
 public inherited sharing class QueueQuery extends Query {
 
-    /**
-     * Once queried Queues are saved in cache and save limits on subsequent calls
-     */
-    static {
-        QueryCache.registerStaticCache(
-            Group.SObjectType,
-            '',
-//            'SELECT FIELDS(STANDARD) FROM GROUP WHERE Type = \'Queue\'', Use this to pre-init cache with all queues
-            new Set<String>{'Id', 'DeveloperName'}
-        );
-    }
-
     public QueueQuery() {
         super(Group.SObjectType);
         withFields(Query.Fields.STANDARD);

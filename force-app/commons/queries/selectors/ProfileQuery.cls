@@ -28,16 +28,6 @@
  */
 public inherited sharing class ProfileQuery extends Query {
 
-    /**
-     * Caches all Profile records in Org cache
-     */
-    static {
-        QueryCache.registerOrgCache(
-            Profile.SObjectType,
-            'SELECT Id, Name FROM Profile',
-            new Set<String>{'Id', 'Name'}
-        );
-    }
 
     public ProfileQuery() {
         super(new List<String>{

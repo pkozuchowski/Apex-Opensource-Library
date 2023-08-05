@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Configuration for SOQL query caching</description>
+    <label>Query Cache</label>
+    <pluralLabel>Query Cache</pluralLabel>
+    <visibility>Public</visibility>
+</CustomObject>

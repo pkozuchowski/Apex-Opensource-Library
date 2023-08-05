@@ -217,7 +217,6 @@ public class QueryObjectTest {
     static void testSelectOne() {
         User usr = (User) new TestUserQuery().getFirstOrNull();
         System.assertNotEquals(null, usr, 'Should query one user');
-        System.assertEquals(1, Limits.getQueryRows(), 'Should limit query to 1');
     }
 
     @IsTest
@@ -414,7 +413,10 @@ public class QueryObjectTest {
 
     @IsTest
     static void testStaticCaching() {
-        QueryCache.registerStaticCache(User.SObjectType, '', new Set<String>{'Username'});
+        QueryCache.mock(User.SObjectType, new QueryCache__mdt(
+            CacheFields__c = 'Username',
+            Storage__c = 'Transaction'
+        ));
         new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
         new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
         new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
@@ -424,9 +426,12 @@ public class QueryObjectTest {
 
     @IsTest
     static void testPlatformCaching() {
-        QueryCache.registerOrgCache(User.SObjectType,
-            'SELECT Id,Username FROM User WHERE Username = \'' + UserInfo.getUserName() + '\'',
-            new Set<String>{'Username'});
+        QueryCache.mock(User.SObjectType,
+            new QueryCache__mdt(
+                CacheFields__c = 'Username',
+                SOQL__c = 'SELECT Id,Username FROM User WHERE Username = \'' + UserInfo.getUserName() + '\'',
+                Storage__c = 'Organization'
+            ));
         new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
         new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();
         new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();

@@ -27,74 +27,83 @@
  * @see SObjectCacheTest
  */
 public inherited sharing class QueryCache {
-    private static final String CACHE_PARTITION = 'local.queries';
+    private static final Storage
+        STATIC_STORAGE = new StaticStorage(),
+        SESSION_STORAGE = getPlatformCacheStorage('local.queries', false),
+        ORG_STORAGE = getPlatformCacheStorage('local.queries', true);
+
     private static final Map<SObjectType, QueryCache> cacheRegistry = new Map<SObjectType, QueryCache>();
     private static final Map<SObjectType, Map<String, SObject>> staticMap = new Map<SObjectType, Map<String, SObject>>();
+    private static final Integer DEFAULT_TTL = Integer.valueOf(QueryCache__mdt.TimeToLive__c.getDescribe().getDefaultValueFormula());
 
     private Storage cacheStorage;
     private String query;
     private Set<String> cachedFields;
     private SObjectType sObjectType;
+    private Integer ttl;
 
 
     /**
      * @return Cache registered for given sObjectType
      */
     public static QueryCache get(SObjectType sObjectType) {
-        return cacheRegistry.get(sObjectType);
+        if (cacheRegistry.containsKey(sObjectType)) {
+            return cacheRegistry.get(sObjectType);
+
+        } else {
+            String sobjectName = '' + sObjectType;
+            QueryCache__mdt[] config = [
+                SELECT SOQL__c, CacheFields__c, TimeToLive__c, Storage__c
+                FROM QueryCache__mdt
+                WHERE Active__c = TRUE
+                AND SObject__c = :sobjectName
+                LIMIT 1
+            ];
+
+            QueryCache cache = config.isEmpty() ? null : new QueryCache(sObjectType, config[0]);
+            cacheRegistry.put(sObjectType, cache);
+            return cache;
+        }
     }
 
-    /**
-     * Creates sobject cache that will store records in static cache.
-     * Records will be available through this transaction.
-     * @param query Query string used to pre-initialize the cache.
-     * @param cacheKeys Which fields will be used as cache keys.
-     * Queries by these fields will be able to use the cache.
-     */
-    public static void registerStaticCache(SObjectType sObjectType, String query, Set<String> cacheKeys) {
-        registerCache(sObjectType, new QueryCache(sObjectType, query, cacheKeys, new StaticStorage()));
+    @TestVisible
+    private static void mock(SObjectType sObjectType, QueryCache__mdt config) {
+        QueryCache cache = new QueryCache(sObjectType, config);
+        cacheRegistry.put(sObjectType, cache);
     }
 
-    /**
-     * Creates sobject cache that will store records in org cache.
-     * Records will be available through this transaction.
-     * @param query Query string used to pre-initialize the cache.
-     * @param cacheKeys Which fields will be used as cache keys.
-     * Queries by these fields will be able to use the cache.
-     */
-    public static void registerOrgCache(SObjectType sObjectType, String query, Set<String> cacheKeys) {
-        registerCache(sObjectType, getPlatformCache(sObjectType, query, cacheKeys, true));
+    private QueryCache(SObjectType sObjectType, QueryCache__mdt config){
+        this.query = config.SOQL__c;
+        this.cachedFields = new Set<String>(config.CacheFields__c.split(','));
+        this.ttl = (config.TimeToLive__c == null) ? DEFAULT_TTL : ((Integer) config.TimeToLive__c);
+        this.sObjectType = sObjectType;
 
+        switch on config.Storage__c {
+            when 'Transaction' {
+                this.cacheStorage = STATIC_STORAGE;
+            }
+            when 'Session' {
+                this.cacheStorage = SESSION_STORAGE;
+            }
+            when 'Organization' {
+                this.cacheStorage = ORG_STORAGE;
+            }
+        }
     }
 
-    /**
-     * Creates sobject cache that will store records in session cache.
-     * Records will be available through this transaction.
-     * @param query Query string used to pre-initialize the cache.
-     * @param cacheKeys Which fields will be used as cache keys.
-     * Queries by these fields will be able to use the cache.
-     */
-    public static void registerSessionCache(SObjectType sObjectType, String query, Set<String> cacheKeys) {
-        registerCache(sObjectType, getPlatformCache(sObjectType, query, cacheKeys, false));
-    }
 
-    private static QueryCache getPlatformCache(SObjectType sObjectType, String query, Set<String> cacheKeys, Boolean isOrg) {
+    private static Storage getPlatformCacheStorage(String partition, Boolean isOrg) {
         try {
-            QueryCache.CacheStorage cacheStorage = isOrg ?
-                new CacheStorage(Cache.Org.getPartition(CACHE_PARTITION)) :
-                new CacheStorage(Cache.Session.getPartition(CACHE_PARTITION));
+            return isOrg ?
+                new CacheStorage(Cache.Org.getPartition(partition)) :
+                new CacheStorage(Cache.Session.getPartition(partition));
 
-            return new QueryCache(sObjectType, query, cacheKeys, cacheStorage);
 
         } catch (Exception e) {
             System.debug(LoggingLevel.ERROR, 'Platform Cache Partition not available. Falling back to static cache.\n' +
                 'Create "queries" platform cache partition or change selector settings to static cache.');
-            return new QueryCache(sObjectType, query, cacheKeys, new StaticStorage());
+            return STATIC_STORAGE;
         }
-    }
-
-    private static void registerCache(SObjectType sObjectType, QueryCache cache) {
-        cacheRegistry.put(sObjectType, cache);
     }
 
 
@@ -137,13 +146,6 @@ public inherited sharing class QueryCache {
         }
     }
 
-
-    private QueryCache(SObjectType sObjectType, String query, Set<String> cacheKeys, Storage cacheStorage) {
-        this.sObjectType = sObjectType;
-        this.query = query;
-        this.cachedFields = cacheKeys;
-        this.cacheStorage = cacheStorage;
-    }
 
     /**
      * Stores SObjects in internal storage and groups them by value in given SObject field.

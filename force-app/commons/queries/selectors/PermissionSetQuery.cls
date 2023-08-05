@@ -28,16 +28,6 @@
  */
 public inherited sharing class PermissionSetQuery extends Query {
 
-    /**
-     * Caches all PermissionSet records in Org cache
-     */
-    static {
-        QueryCache.registerOrgCache(
-            PermissionSet.SObjectType,
-            'SELECT Id, Name FROM PermissionSet WHERE IsOwnedByProfile = FALSE',
-            new Set<String>{'Id', 'Name'}
-        );
-    }
 
     public PermissionSetQuery() {
         super(new List<String>{

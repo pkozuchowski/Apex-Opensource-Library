@@ -28,14 +28,6 @@
  */
 public inherited sharing class UserRoleQuery extends Query {
 
-    /**
-     * Once queried UserRoles are saved in cache and save limits on subsequent calls
-     */
-    static {
-        QueryCache.registerStaticCache(
-            UserRole.SObjectType, null, new Set<String>{'Id', 'DeveloperName'}
-        );
-    }
 
     public UserRoleQuery() {
         super(UserRole.SObjectType);

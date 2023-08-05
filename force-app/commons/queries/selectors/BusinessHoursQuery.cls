@@ -29,17 +29,6 @@
  */
 public inherited sharing class BusinessHoursQuery extends Query {
 
-    /**
-     * Caches all Business Hours records in static cache
-     */
-    static {
-        QueryCache.registerStaticCache(
-            BusinessHours.SObjectType,
-            'SELECT FIELDS(STANDARD) FROM BusinessHours',
-            new Set<String>{'Id', 'Name'}
-        );
-    }
-
     public BusinessHoursQuery() {
         super(BusinessHours.SObjectType);
         this.withFields(Query.Fields.STANDARD);

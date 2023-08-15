@@ -26,18 +26,34 @@ private class HttpCalloutMockRouterTest {
     private final static String ACCOUNT_ID = '001D000000IqhSLIAZ';
     private final static String ACCOUNT_NAME = 'Test Account';
 
+    public class OrgMocks extends HttpCalloutMockRouter {
+        public OrgMocks(){
+            mock('Salesforce APIs', new SalesforceRestAPIMocks());
+            mock('Azure APIs', new AzureMocks());
+        }
+    }
+
     private class SalesforceRestAPIMocks extends HttpCalloutMockRouter {
 
         public SalesforceRestAPIMocks() {
-            this.registerEndpointVariables(new Map<String, String>{
+            variables(new Map<String, String>{
                 'endpoint' => 'https://yourInstance.salesforce.com/services/data/v\\d+.0',
                 'id' => '([0-9a-zA-Z]{15,18})'
             });
 
-            this.registerStaticResourceMock('Query', 'GET', '{{endpoint}}/query/?q=.*', 200, 'OK', 'StaticResourceWithResponse');
-            this.registerJsonMock('Create Account', 'POST', '{{endpoint}}/sobjects/Account/', 201, 'Created', new CreateRecordResult(true));
-            this.registerJsonMock('Get Account', 'GET', '{{endpoint}}/sobjects/Account/{{id}}', 200, 'OK', new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME));
-            this.registerMock('Delete Account', 'DELETE', '{{endpoint}}/sobjects/Account/{{id}}', 204, 'No Content', '');
+            mock('Query', 'GET', '{{endpoint}}/query/?q=.*', HttpMocks.staticResource(200, 'OK', 'StaticResourceWithResponse'));
+            mock('Create Account', 'POST', '{{endpoint}}/sobjects/Account/', HttpMocks.json(201, 'Created', new CreateRecordResult(true)));
+            mock('Get Account', 'GET', '{{endpoint}}/sobjects/Account/{{id}}', HttpMocks.json(200, 'OK', new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME)));
+            mock('Delete Account', 'DELETE', '{{endpoint}}/sobjects/Account/{{id}}', HttpMocks.text(204, 'No Content', ''));
+            mock('Delete Account', 'DELETE', '{{endpoint}}/sobjects/Account/{{id}}', HttpMocks.text(204, 'No Content', ''));
+        }
+    }
+
+    private class AzureMocks extends HttpCalloutMockRouter {
+        public AzureMocks() {
+            variable('endpoint', 'https://aws.com/amazing/services/v/\\\\d');
+
+            mock('Get Account', 'GET', '{{endpoint}}/sobjects/Account/{{id}}', HttpMocks.json(200, 'OK', new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME)));
         }
     }
 
@@ -93,9 +109,9 @@ private class HttpCalloutMockRouterTest {
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, new SalesforceRestAPIMocks()
-            .overrideJsonMock('Create Account', 401, 'Unauthorized', new List<Error>{
+            .overrideMock('Create Account', HttpMocks.json(401, 'Unauthorized', new List<Error>{
                 new Error('Session expired or invalid', 'INVALID_SESSION_ID')
-            })
+            }))
         );
         HttpResponse response = new Http().send(request);
         Test.stopTest();
@@ -181,10 +197,10 @@ private class HttpCalloutMockRouterTest {
 
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class, new HttpCalloutMockRouter()
-            .registerMock('Salesforce API', new SalesforceRestAPIMocks()
-                .overrideMock('Delete Account', 401, 'Unauthorized', '')
-                .overrideMockWithStaticResource('Query', 200, 'OK', 'OtherStaticResource')
+        Test.setMock(HttpCalloutMock.class, new OrgMocks()
+            .mock('Salesforce API', new SalesforceRestAPIMocks()
+                .overrideMock('Delete Account', HttpMocks.text(401, 'Unauthorized', ''))
+                .overrideMock('Query', HttpMocks.staticResource(200, 'OK', 'OtherStaticResource'))
             ));
 
         try {

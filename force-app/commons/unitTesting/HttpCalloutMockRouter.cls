@@ -34,53 +34,14 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
 
 
     /**
-     * Registers static resource response for given endpoint.
-     * @param name Unique name of the mock, used to override the default mock in tests
-     * @param methods Comma separated list of methods ('GET,POST')
-     * @param endpointPattern Regexp pattern for endpoint
-     * @param statusCode Status code of the response
-     * @param status Status of the response
-     * @param resource Name of static resource file, which contains body of the response.
-     */
-    public HttpCalloutMockRouter registerStaticResourceMock(String name, String methods, String endpointPattern, Integer statusCode, String status, String resource) {
-        return registerMock(name, methods, endpointPattern, HttpSimpleMock.fromStaticResource(statusCode, status, resource));
-    }
-
-    /**
-     * Registers JSON response for given endpoint.
-     * @param name Unique name of the mock, used to override the default mock in tests
-     * @param methods Comma separated list of methods ('GET,POST')
-     * @param endpointPattern Regexp pattern for endpoint
-     * @param statusCode Status code of the response
-     * @param status Status of the response
-     * @param objectToSerialize Object to serialize as response's body
-     */
-    public HttpCalloutMockRouter registerJsonMock(String name, String methods, String endpointPattern, Integer statusCode, String status, Object objectToSerialize) {
-        return registerMock(name, methods, endpointPattern, statusCode, status, JSON.serialize(objectToSerialize));
-    }
-
-    /**
-     * Registers string response for given endpoint.
-     * @param name Unique name of the mock, used to override the default mock in tests
-     * @param methods Comma separated list of methods ('GET,POST')
-     * @param endpointPattern Regexp pattern for endpoint
-     * @param statusCode Status code of the response
-     * @param status Status of the response
-     * @param body Body of the response
-     */
-    public HttpCalloutMockRouter registerMock(String name, String methods, String endpointPattern, Integer statusCode, String status, String body) {
-        return registerMock(name, methods, endpointPattern, new HttpSimpleMock(statusCode, status, body));
-    }
-
-    /**
     * Register HttpCalloutMock for given Http method and endpoint pattern.
     * @param name Unique name of the mock, used to override the default mock in tests
     * @param methods Comma separated list of methods ('GET,POST')
     * @param endpointPattern Regexp pattern for endpoint
     * @param mock Mock to respond with
     * */
-    public HttpCalloutMockRouter registerMock(String name, String methods, String endpointPattern, HttpCalloutMock mock) {
-        return registerMock(name, new HttpMockEndpointRouter(methods, replaceVariables(endpointPattern), mock));
+    public HttpCalloutMockRouter mock(String name, String methods, String endpointPattern, HttpCalloutMock mock) {
+        return mock(name, new HttpMockEndpointMatcher(methods, replaceVariables(endpointPattern), mock));
     }
 
     /**
@@ -88,49 +49,11 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     * Each registered mock in queue will be asked if it can handle the request, until the first mock that can handle.
     * New mocks are registered at the beginning of the mock queue.
     * */
-    public HttpCalloutMockRouter registerMock(String name, HttpCalloutChainMock handler) {
+    public HttpCalloutMockRouter mock(String name, HttpCalloutChainMock handler) {
         registeredMocks.put(name, handler);
         return this;
     }
 
-
-    /**
-     * Overrides previously registered mock with given name with supplied substitute.
-     * This method is used when main mock class for given API defines "happy path" success responses, but developer
-     * has to test error response in one of the tests.
-     *
-     * Override uses Method and Endpoint routing (or handles method of HttpCalloutChainMock) of original mock.
-     *
-     * @param name Unique name of the mock, used to override the default mock in tests
-     * @param statusCode Status code of the response
-     * @param status Status of the response
-     * @param resource Name of static resource file, which contains body of the response.
-     */
-    public HttpCalloutMockRouter overrideMockWithStaticResource(String name, Integer statusCode, String status, String resource) {
-        return overrideMock(name, HttpSimpleMock.fromStaticResource(statusCode, status, resource));
-    }
-
-    /**
-     * @param name Unique name of the mock, used to override the default mock in tests
-     * @param methods Comma separated list of methods ('GET,POST')
-     * @param endpointPattern Regexp pattern for endpoint
-     * @param statusCode Status code of the response
-     * @param status Status of the response
-     * @param objectToSerialize Object to serialize as response's body
-     */
-    public HttpCalloutMockRouter overrideJsonMock(String name, Integer statusCode, String status, Object objectToSerialize) {
-        return overrideMock(name, HttpSimpleMock.fromJSON(statusCode, status, objectToSerialize));
-    }
-
-    /**
-     * @param name Unique name of the mock, used to override the default mock in tests
-     * @param statusCode Status code of the response
-     * @param status Status of the response
-     * @param body Body of the response
-     */
-    public HttpCalloutMockRouter overrideMock(String name, Integer statusCode, String status, String body) {
-        return overrideMock(name, new HttpSimpleMock(statusCode, status, body));
-    }
 
     /**
      * @param name Unique name of the mock, used to override the default mock in tests
@@ -159,12 +82,12 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
      * @param name Unique name of the mock, used to override the default mock in tests
      * @param regexp Regexp of the variable
      */
-    public HttpCalloutMockRouter registerEndpointVariable(String name, String regexp) {
+    public HttpCalloutMockRouter variable(String name, String regexp) {
         variables.put(name, regexp);
         return this;
     }
 
-    public HttpCalloutMockRouter registerEndpointVariables(Map<String,String> vars) {
+    public HttpCalloutMockRouter variables(Map<String, String> vars) {
         variables.putAll(vars);
         return this;
     }

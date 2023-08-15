@@ -25,20 +25,20 @@
 /**
  * Simple mock constructed with given Http status and response body
  */
-public virtual with sharing class HttpSimpleMock implements HttpCalloutMock {
+public virtual with sharing class HttpMocks implements HttpCalloutMock {
     private HttpResponse response = new HttpResponse();
 
     /**
      * Creates JSON response mock
      */
-    public static HttpCalloutMock fromJSON(Integer statusCode, String status, Object jsonObject) {
-        return new HttpSimpleMock(statusCode, status, JSON.serialize(jsonObject));
+    public static HttpCalloutMock json(Integer statusCode, String status, Object jsonObject) {
+        return new HttpMocks(statusCode, status, JSON.serialize(jsonObject));
     }
 
     /**
      * Creates Http response from static resource
      */
-    public static HttpCalloutMock fromStaticResource(Integer statusCode, String status, String staticResource) {
+    public static HttpCalloutMock staticResource(Integer statusCode, String status, String staticResource) {
         StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
         mock.setStatusCode(statusCode);
         mock.setStatus(status);
@@ -47,11 +47,18 @@ public virtual with sharing class HttpSimpleMock implements HttpCalloutMock {
         return (HttpCalloutMock) mock;
     }
 
+    /**
+     * Creates Http response from plain text
+     */
+    public static HttpCalloutMock text(Integer statusCode, String status, String body) {
+        return new HttpMocks(statusCode, status, body);
+    }
+
 
     /**
      * Creates Http mock which responds with given status and body.
      */
-    public HttpSimpleMock(Integer statusCode, String status, String body) {
+    private HttpMocks(Integer statusCode, String status, String body) {
         this.response.setStatusCode(statusCode);
         this.response.setStatus(status);
         this.response.setBody(body);

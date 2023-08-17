@@ -28,6 +28,7 @@
  * @see DatabaseServiceTest
  */
 public class DatabaseService {
+    private static Map<SObjectType, String> prefixBySObject = new Map<SObjectType, String>();
     private static Integer cnt = 0;
     private Database.DMLOptions dmlOptions = new Database.DMLOptions();
     private AccessLevel level = AccessLevel.SYSTEM_MODE;
@@ -37,7 +38,13 @@ public class DatabaseService {
      * @return Unique fake id for given SObject.
      */
     public static Id getFakeId(SObjectType sObjectType) {
-        String keyPrefix = SchemaDescriptions.getSObjectDescribe('' + sObjectType).getKeyPrefix();
+        String keyPrefix = prefixBySObject.get(sObjectType);
+
+        if (String.isBlank(keyPrefix)) {
+            keyPrefix = sObjectType.getDescribe().getKeyPrefix();
+            prefixBySObject.put(sObjectType, keyPrefix);
+        }
+
         return keyPrefix + ('' + (cnt++)).leftPad(12, '0');
     }
 

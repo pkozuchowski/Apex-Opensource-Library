@@ -28,20 +28,20 @@ Top level mocks register mock aggregators for each service, this class wouldn't 
 public class OrgMocks extends HttpCalloutMockRouter {
 
     public OrgMocks() {
-        this.registerMock('AWS Mocks', new AWSMocks());
-        this.registerMock('Microdwarf Mocks', new MicrodwarfMocks());
-        this.registerMock('Salesforce Mocks', new SalesforceMocks());
-        this.registerMock('Noodle Mocks', new NoodleMocks());
+        this.mock('AWS Mocks', new AWSMocks());
+        this.mock('Microdwarf Mocks', new MicrodwarfMocks());
+        this.mock('Salesforce Mocks', new SalesforceMocks());
+        this.mock('Noodle Mocks', new NoodleMocks());
     }
 }
 
 public with sharing class AWSMocks extends HttpCalloutMockRouter {
 
     public AWSMocks() {
-        this.registerEndpointVariable('endpoint', 'https://aws.com/amazing/services/v/\\d');
+        this.variable('endpoint', 'https://aws.com/amazing/services/v/\\d');
 
-        this.registerMock('Auth', 'POST', '{{endpoint}}/auth', 200, 'OK', '{"sessionToken":"000001"}');
-        this.registerJsonMock('Save Quote', 'POST', '{{endpoint}}/quotes', 200, 'OK', new SaveQuoteResult());
+        this.mock('Auth', 'POST', '{{endpoint}}/auth', 200, 'OK', '{"sessionToken":"000001"}');
+        this.mock('Save Quote', 'POST', '{{endpoint}}/quotes', 200, 'OK', new SaveQuoteResult());
         //... Other AWS Mocks
     }
 }
@@ -49,17 +49,17 @@ public with sharing class AWSMocks extends HttpCalloutMockRouter {
 public class MicrodwarfMocks extends HttpCalloutMockRouter {
 
     public MicrodwarfMocks() {
-        this.registerEndpointVariables(new Map<String, String>{
+        this.variables(new Map<String, String>{
             'endpoint' => 'https://microdwarf.com/api', // Pattern for Microdwarf Endpoint shared by all requests
             'mdId' => '[\\d]{10}', // ID pattern of Microdwarf database entities,
             'container' => '[a-zA-Z\\s]+', //Matches blob container name
             'blob' => '[a-zA-Z\\s]+' //Matches blob name
         });
 
-        this.registerMock('Auth', 'POST', '{{endpoint}}/auth', 200, 'OK', '{"sessionToken":"000001"}');
-        this.registerJsonMock('Get Blob', 'GET', '{{endpoint}}/blobs/{container}/{blob}', 200, 'OK', new GetBlobResult());
-        this.registerJsonMock('Put Blob', 'PUT', '{{endpoint}}/blobs/{container}/{blob}', 200, 'OK', new CreateBlobResult());
-        this.registerJsonMock('Delete Blob', 'Delete', '{{endpoint}}/blobs/{container}/{blob}', 200, 'OK', new DeleteBlobResult());
+        this.mock('Auth', 'POST', '{{endpoint}}/auth', 200, 'OK', '{"sessionToken":"000001"}');
+        this.mock('Get Blob', 'GET', '{{endpoint}}/blobs/{container}/{blob}', 200, 'OK', new GetBlobResult());
+        this.mock('Put Blob', 'PUT', '{{endpoint}}/blobs/{container}/{blob}', 200, 'OK', new CreateBlobResult());
+        this.mock('Delete Blob', 'Delete', '{{endpoint}}/blobs/{container}/{blob}', 200, 'OK', new DeleteBlobResult());
         //... Other MD Mocks
     }
 }
@@ -67,15 +67,15 @@ public class MicrodwarfMocks extends HttpCalloutMockRouter {
 public class SalesforceRestAPIMocks extends HttpCalloutMockRouter {
 
     public SalesforceRestAPIMocks() {
-        this.registerEndpointVariables(new Map<String, String>{
+        this.variables(new Map<String, String>{
             'endpoint' => Url.getOrgDomainUrl().toExternalForm() + '/services/data/v\\d.0',
             'id' => '([0-9a-zA-Z]{15,18})'
         });
 
         this.registerStaticResourceMock('Query', 'GET', '{{endpoint}}/query/?q=.*', 200, 'OK', 'StaticResourceWithResponse');
-        this.registerJsonMock('Create Account', 'POST', '{{endpoint}}/sobjects/Account/', 201, 'Created', new CreateRecordResult(true));
-        this.registerJsonMock('Get Account', 'GET', '{{endpoint}}/sobjects/Account/{{id}}', 200, 'OK', new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME));
-        this.registerMock('Delete Account', 'DELETE', '{{endpoint}}/sobjects/Account/{{id}}', 204, 'No Content', '');
+        this.mock('Create Account', 'POST', '{{endpoint}}/sobjects/Account/', 201, 'Created', new CreateRecordResult(true));
+        this.mock('Get Account', 'GET', '{{endpoint}}/sobjects/Account/{{id}}', 200, 'OK', new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME));
+        this.mock('Delete Account', 'DELETE', '{{endpoint}}/sobjects/Account/{{id}}', 204, 'No Content', '');
     }
 }
 //...

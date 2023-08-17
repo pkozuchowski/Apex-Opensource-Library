@@ -28,9 +28,33 @@
  * There is also an option to override default API responses in particular unit tests with different response.
  */
 public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
+    @TestVisible static List<HttpCalloutMock__mdt> configuration {
+        get {
+            if (configuration == null) {
+                configuration = HttpCalloutMock__mdt.getAll().values();
+            }
+            return configuration;
+        }
+        set;
+    }
+
     private Map<String, String> variables = new Map<String, String>();
     private Map<String, HttpCalloutChainMock> registeredMocks = new Map<String, HttpCalloutChainMock>();
     private Map<String, HttpCalloutMock> mocksOverrides = new Map<String, HttpCalloutMock>();
+
+
+    /**
+     * @return Loads Mocks from custom metadata
+     */
+    public HttpCalloutMockRouter loadConfiguration() {
+        for (HttpCalloutMock__mdt mockMdt : configuration) {
+            if (mockMdt.Default__c) {
+                mock(mockMdt.DeveloperName, mockMdt.Methods__c, mockMdt.Endpoint__c, HttpMocks.config(mockMdt));
+            }
+        }
+
+        return this;
+    }
 
 
     /**
@@ -73,8 +97,8 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     /**
      * Registers regexp variable which will can be referenced in endpoint:
      * <pre>
-     * router.registerEndpointVariable('endpoint', 'https://api.sf.com/rest'); // Regexp for API endpoint
-     * router.registerEndpointVariable('id', '([a-z0-9]{32}') // Regexp for external id
+     * router.variable('endpoint', 'https://api.sf.com/rest'); // Regexp for API endpoint
+     * router.variable('id', '([a-z0-9]{32}') // Regexp for external id
      *
      * router.registerStaticResourceMock('GET','{{endpoint}}/accounts/{{id}}', 200, 'OK', 'Mock_GetAccountResource');
      * </pre>
@@ -102,7 +126,6 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
         for (String name : registeredMocks.keySet()) {
             HttpCalloutChainMock mock = registeredMocks.get(name);
             HttpCalloutMock mockOverride = mocksOverrides.get(name);
-
 
             if (mock.handles(request)) {
                 return (mockOverride != null ? mockOverride : mock).respond(request);
@@ -142,6 +165,5 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     }
 
 
-    public class HttpCalloutMockRouterException extends Exception {
-    }
+    public class HttpCalloutMockRouterException extends Exception {}
 }

@@ -51,9 +51,10 @@ private class HttpCalloutMockRouterTest {
 
     private class AzureMocks extends HttpCalloutMockRouter {
         public AzureMocks() {
-            variable('endpoint', 'https://aws.com/amazing/services/v/\\\\d');
+            variable('endpoint', 'https://aws.com/amazing/services/.*');
 
-            mock('Get Account', 'GET', '{{endpoint}}/sobjects/Account/{{id}}', HttpMocks.json(200, 'OK', new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME)));
+            mock('Get Account', 'GET', '{{endpoint}}/Account',
+                HttpMocks.text(200, 'OK', '{"name":"Test"}'));
         }
     }
 
@@ -79,6 +80,22 @@ private class HttpCalloutMockRouterTest {
 
 
     @IsTest
+    static void testAWSCallout() {
+        HttpRequest request = new HttpRequest();
+        request.setMethod('GET');
+        request.setEndpoint('https://aws.com/amazing/services/Account');
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new OrgMocks());
+        HttpResponse response = new Http().send(request);
+        Test.stopTest();
+
+
+        Assert.areEqual('{"name":"Test"}', response.getBody());
+    }
+
+
+    @IsTest
     static void testSuccessfulCreateAccountCall() {
         HttpRequest request = new HttpRequest();
         request.setMethod('POST');
@@ -98,6 +115,7 @@ private class HttpCalloutMockRouterTest {
         CreateRecordResult result = (CreateRecordResult) JSON.deserialize(response.getBody(), CreateRecordResult.class);
         System.assertEquals(true, result.success);
     }
+
 
     @IsTest
     static void testErrorCreateAccountCall() {
@@ -208,5 +226,44 @@ private class HttpCalloutMockRouterTest {
         } catch (Exception e) {
         }
         Test.stopTest();
+    }
+
+
+    @IsTest
+    static void testConfigurationBasedRouter() {
+        HttpCalloutMockRouter.configuration = new List<HttpCalloutMock__mdt>{
+            new HttpCalloutMock__mdt(
+                DeveloperName = 'SF_REST_Query',
+                Default__c = true,
+                Methods__c = 'GET',
+                Endpoint__c = '{{sfRestEndpoint}}/data/v\\d+.0/query/.*',
+                Response__c = '{"records":["Name":"Test 1"},{"Name":"Test 2"}]}',
+                StatusCode__c = 200,
+                Status__c = 'OK',
+                Headers__c = 'Header1:Value1\n' +
+                    'Header2:Value2'
+            )
+        };
+
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new HttpCalloutMockRouter()
+            .variables(new Map<String, String>{
+                'sfRestEndpoint' => 'https://' + DomainCreator.getOrgMyDomainHostname() + '/services'
+            })
+            .loadConfiguration());
+
+        HttpRequest request = new HttpRequest();
+        request.setMethod('GET');
+        request.setEndpoint('https://' + DomainCreator.getOrgMyDomainHostname() + '/services/data/v47.0/query/?q=SELECT+name+from+Account');
+
+        HttpResponse response = new Http().send(request);
+        Test.stopTest();
+
+
+        Assert.areEqual(200, response.getStatusCode());
+        Assert.areEqual('{"records":["Name":"Test 1"},{"Name":"Test 2"}]}', response.getBody());
+        Assert.areEqual('Value1', response.getHeader('Header1'));
+        Assert.areEqual('Value2', response.getHeader('Header2'));
     }
 }

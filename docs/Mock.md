@@ -16,7 +16,7 @@ In unit tests, we want to mock the response 55of the selector class.
 ```apex
 public class MyAccountCtrl {
     @TestVisible AccountSelector accountSelector = new AccountSelector();
-
+    
     public static Account getMyAccount() {
         try {
             Id myId = UserInfo.getUserId();

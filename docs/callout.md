@@ -1,15 +1,13 @@
 # Callout Framework
 Callout class is a building block for constructing outbound integrations, where each callout should go through similar flow.
 
-Consider following example - we are creating integration with Acme APIs, which consist of X different endpoints:
+Consider an example of integration with external webservices where a few endpoints are used: 
 - searching orders
 - fetching order details
 - creating new order
-- fetching customer details
-- etc
 
-All calls to Acme APIs should have streamlined workflow - callouts should be authorized, logged with appropriate logging level, retried in specific cases.  
-To build this configuration, we could derive new class from Callout class and configure it as follows:
+All calls to the API should have streamlined workflow - callouts should be authorized, logged with appropriate logging level, retried on timeout.    
+To implement this configuration, we could derive a new class from Callout class and configure it as follows:
 ```apex
 public class AcmeApiCallout extends Callout {
     private AcmeAPIAuthHandler authorizationHandler = new AcmeAPIAuthHandler();
@@ -93,7 +91,7 @@ There's no limit on how many handlers can be added to the slot.
    users.
 
 ### Trivia
-- It's not required to extend Callout class, it can be used as is or configured without inheritance:
+- It's not required to extend Callout class, it can be used as is or configured without an inheritance:
 ```apex
 Callout c = new Callout();
 c.onAfterCallout()

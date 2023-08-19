@@ -39,6 +39,14 @@ public inherited sharing class TestDataBuilder {
 
 
     /**
+     * Any DMLs performed by this builder will be mocked and Fake Ids will be generated on insert.
+     */
+    public TestDataBuilder mockDMLs() {
+        this.databaseService.useMock();
+        return this;
+    }
+
+    /**
      * Creates test record with default field values, overridden by given prototype field values.
      *
      * @param prototype Example of record to create - fields specified in the constructor will override defaults

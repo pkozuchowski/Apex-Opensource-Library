@@ -212,6 +212,5 @@ public with sharing class Picklist {
         private Boolean active;
     }
 
-    public class PicklistException extends Exception {
-    }
+    public class PicklistException extends Exception {}
 }

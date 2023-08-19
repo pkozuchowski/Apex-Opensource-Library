@@ -60,7 +60,7 @@ public virtual class Callout {
     /**
      * @return Callout Handlers run after callout
      */
-    public virtual CalloutHandlersList onAfterCallout() {
+    public CalloutHandlersList onAfterCallout() {
         initHandlers();
         return onAfterCalloutHandlers;
     }

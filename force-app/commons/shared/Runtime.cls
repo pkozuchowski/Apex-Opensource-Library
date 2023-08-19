@@ -217,7 +217,7 @@ public with sharing class Runtime {
         @AuraEnabled public Integer column { get; private set; }
 
         private StackTraceLine(String line) {
-            this.apexClassMethod = line.remove('Class.').substringBefore(':');
+            this.apexClassMethod = line.substringAfter('Class.').substringBefore(':');
             this.apexClass = apexClassMethod.substringBeforeLast('.');
             this.method = apexClassMethod.substringAfterLast('.');
             this.line = Integer.valueOf(line.substringBetween('line ', ','));

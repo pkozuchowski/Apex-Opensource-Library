@@ -177,8 +177,10 @@ public virtual with sharing class CalloutHandlers {
         }
 
         public Object handle(Callout c) {
-            Logger.log(level, new Log(c.getRequest(), c.getResponse())
-                .withApexClass(c.getLogName()));
+            throw new CalloutException('');
+//             Implement this method with your logger implementation.
+//            Logger.log(level, new Log(c.getRequest(), c.getResponse())
+//                .withApexClass(c.getLogName()));
             return null;
         }
     }

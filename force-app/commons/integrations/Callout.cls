@@ -221,7 +221,7 @@ public virtual class Callout {
     }
 
     /**
-     * @return Callout Exception for the latest
+     * @return Callout Exception from the latest execution
      */
     public CalloutException getCalloutException() {
         return ex;

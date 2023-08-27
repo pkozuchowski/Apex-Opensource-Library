@@ -28,7 +28,7 @@
  * There is also an option to override default API responses in particular unit tests with different response.
  */
 public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
-    @TestVisible static List<HttpCalloutMock__mdt> configuration {
+    private static List<HttpCalloutMock__mdt> configuration {
         get {
             if (configuration == null) {
                 configuration = HttpCalloutMock__mdt.getAll().values();
@@ -37,7 +37,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
         }
         set;
     }
-
+    public static Boolean configurationMocked = false;
     private Map<String, String> variables = new Map<String, String>();
     private Map<String, HttpCalloutChainMock> registeredMocks = new Map<String, HttpCalloutChainMock>();
     private Map<String, HttpCalloutMock> mocksOverrides = new Map<String, HttpCalloutMock>();
@@ -54,6 +54,11 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
         }
 
         return this;
+    }
+
+    @TestVisible static void mockConfiguration(List<HttpCalloutMock__mdt> config) {
+        configuration = config;
+        configurationMocked = true;
     }
 
 

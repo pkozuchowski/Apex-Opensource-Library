@@ -114,11 +114,14 @@ public virtual with sharing class HttpMocks {
         }
 
         protected HttpCalloutMock__mdt getResponseBody() {
-            return [
-                SELECT Status__c, StatusCode__c, Response__c, StaticResource__c, Headers__c
-                FROM HttpCalloutMock__mdt
-                WHERE DeveloperName = :config.DeveloperName
-            ];
+            if (!HttpCalloutMockRouter.configurationMocked) {
+                return [
+                    SELECT Status__c, StatusCode__c, Response__c, StaticResource__c, Headers__c
+                    FROM HttpCalloutMock__mdt
+                    WHERE DeveloperName = :config.DeveloperName
+                ];
+            }
+            return config;
         }
 
         private void setHeaders(HttpCalloutMock__mdt mdt, HttpResponse response) {

@@ -51,7 +51,7 @@ private class HttpCalloutMockRouterTest {
 
     private class AzureMocks extends HttpCalloutMockRouter {
         public AzureMocks() {
-            variable('endpoint', 'https://aws.com/amazing/services/.*');
+            variable('endpoint', 'https://aws.com/amazing/services');
 
             mock('Get Account', 'GET', '{{endpoint}}/Account',
                 HttpMocks.text(200, 'OK', '{"name":"Test"}'));
@@ -231,7 +231,7 @@ private class HttpCalloutMockRouterTest {
 
     @IsTest
     static void testConfigurationBasedRouter() {
-        HttpCalloutMockRouter.configuration = new List<HttpCalloutMock__mdt>{
+        HttpCalloutMockRouter.mockConfiguration(new List<HttpCalloutMock__mdt>{
             new HttpCalloutMock__mdt(
                 DeveloperName = 'SF_REST_Query',
                 Default__c = true,
@@ -243,7 +243,7 @@ private class HttpCalloutMockRouterTest {
                 Headers__c = 'Header1:Value1\n' +
                     'Header2:Value2'
             )
-        };
+        });
 
 
         Test.startTest();

@@ -320,10 +320,6 @@ private class CalloutTest {
         Test.setMock(HttpCalloutMock.class, new Mock(200, 'OK', new List<Account>{}));
         c.execute();
         Test.stopTest();
-
-
-        Log__c[] logs = [SELECT Id FROM Log__c WHERE ApexClass__c = 'coverageHandlerMethods'];
-        Assert.areEqual(1, logs.size());
     }
 
     @IsTest

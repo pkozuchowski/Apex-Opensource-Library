@@ -56,7 +56,7 @@ private class LocalizationTest {
         System.assertEquals('Abmelden', Localization.getCustomLabel('Site.logout', 'de'));
         System.assertEquals(
                 new Map<String, String>{'Site.logout' => 'Abmelden'},
-                Localization.getCustomLabels(new List<String>{'Site.logout'}, 'de')
+                Localization.getCustomLabelsWithLocale(new List<String>{'Site.logout'}, 'de')
         );
     }
 
@@ -168,25 +168,6 @@ private class LocalizationTest {
     }
 
     @IsTest
-    static void shouldCheckSObjectValidityCtrl() {
-        PageReference localizationPage = Page.Localization;
-        localizationPage.getParameters().putAll(new Map<String, String>{
-                'picklists' => 'AccountFake.Type'
-        });
-
-
-        Test.startTest();
-        Test.setCurrentPage(localizationPage);
-        LocalizationCtrl ctrl = new LocalizationCtrl();
-        ctrl.init();
-        Test.stopTest();
-
-
-        Map<String, String> content = (Map<String, String>) JSON.deserialize(ctrl.content, Map<String, String>.class);
-        System.assertEquals('Invalid SObject: AccountFake', content.get('LocalizationCtrlException'));
-    }
-
-    @IsTest
     static void shouldCheckSObjectValidity() {
         PageReference localizationPage = Page.Localization;
         localizationPage.getParameters().putAll(new Map<String, String>{
@@ -209,6 +190,6 @@ private class LocalizationTest {
 
 
         System.assertNotEquals(null, ex);
-        System.assertEquals('Invalid SObject: AccountFake', ex.getMessage());
+        System.assert(ex.getMessage().contains('Invalid sobject provided'));
     }
 }

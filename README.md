@@ -21,7 +21,7 @@
     * Data Structures
     * XML Serialization/Deserialization
         * [XmlParser](docs/XmlParser.md)
-    * Localization - Dynamic Custom Labels / Retrieving Custom Labels by name
+    * [Localization - Dynamic Custom Labels / Retrieving Custom Labels by name](docs/localization.md)
     * [Mocking Utility](docs/Mock.md)
 10. [LWC Patterns and Utils](docs/LWC.md)
 11. [Callout - Integrations Framework](docs/callout.md) 

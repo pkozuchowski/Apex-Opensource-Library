@@ -49,7 +49,7 @@ public with sharing class Localization {
      * @return Value of the Custom Label translated to given locale
      */
     public static String getCustomLabel(String labelName, String locale) {
-        return getCustomLabels(new List<String>{labelName}, locale).get(labelName);
+        return getCustomLabelsWithLocale(new List<String>{labelName}, locale).get(labelName);
     }
 
     /**
@@ -59,7 +59,7 @@ public with sharing class Localization {
      */
     @AuraEnabled
     public static Map<String, String> getCustomLabels(String[] labelNames) {
-        return getCustomLabels(labelNames, null);
+        return getCustomLabelsWithLocale(labelNames, null);
     }
 
     /**
@@ -69,7 +69,7 @@ public with sharing class Localization {
      * @return Map of label developer names and translations in given locale
      */
     @AuraEnabled
-    public static Map<String, String> getCustomLabels(String[] labelNames, String locale) {
+    public static Map<String, String> getCustomLabelsWithLocale(String[] labelNames, String locale) {
         return (Map<String, String>) getContent(new Map<String, String>{
                 'labels' => String.join(labelNames, ','),
                 'locale' => locale
@@ -93,7 +93,7 @@ public with sharing class Localization {
      * @return Field's label translated to given locale
      */
     public static String getFieldLabel(String field, String locale) {
-        return getFieldLabels(new List<String>{field}, locale).get(field);
+        return getFieldLabelsWithLocale(new List<String>{field}, locale).get(field);
     }
 
     /**
@@ -103,7 +103,7 @@ public with sharing class Localization {
      */
     @AuraEnabled
     public static Map<String, String> getFieldLabels(String[] fields) {
-        return getFieldLabels(fields, null);
+        return getFieldLabelsWithLocale(fields, null);
     }
 
     /**
@@ -113,7 +113,7 @@ public with sharing class Localization {
      * @return Map of field API names and translated labels and given locale
      */
     @AuraEnabled
-    public static Map<String, String> getFieldLabels(String[] fields, String locale) {
+    public static Map<String, String> getFieldLabelsWithLocale(String[] fields, String locale) {
         return (Map<String, String>) getContent(new Map<String, String>{
                 'fields' => String.join(fields, ','),
                 'locale' => locale
@@ -150,6 +150,8 @@ public with sharing class Localization {
     private static Object getContent(Map<String, String> parameters, Type resultType) {
         try {
             String content = LocalizationCtrl.getJsonPageContent(parameters);
+            System.debug('content: ' + content);
+            System.debug('parameters: ' + parameters);
 
             /*Check if VF Page had exception while getting it's content*/
             if (content.contains('"LocalizationCtrlException"')) {
@@ -160,6 +162,8 @@ public with sharing class Localization {
             return JSON.deserialize(content, resultType);
 
         } catch (Exception e) {
+            System.debug(e);
+            System.debug(e.getStackTraceString());
             throw new LocalizationException(e.getMessage());
         }
     }

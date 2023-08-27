@@ -49,8 +49,10 @@ public without sharing class LocalizationCtrl {
             this.initPicklists();
 
         } catch (Exception e) {
+            System.debug(e.getMessage());
+            System.debug(e.getStackTraceString());
             this.content = JSON.serialize(new Map<String, String>{
-                    'LocalizationCtrlException' => e.getMessage()
+                'LocalizationCtrlException' => e.getMessage() + '\n' + e.getStackTraceString()
             });
         }
     }
@@ -66,8 +68,8 @@ public without sharing class LocalizationCtrl {
             Map<String, String> labelsByField = new Map<String, String>();
 
             for (String sObjectFieldConcatenation : fields) {
-                String label = SchemaDescriptions.getSObjectFieldDescribe(sObjectFieldConcatenation).getLabel();
-                labelsByField.put(sObjectFieldConcatenation, label);
+                SObjectField sObjectField = getsObjectField(sObjectFieldConcatenation);
+                labelsByField.put(sObjectFieldConcatenation, sObjectField.getDescribe().getLabel());
             }
 
             this.content = JSON.serialize(labelsByField);
@@ -81,12 +83,22 @@ public without sharing class LocalizationCtrl {
             Map<String, Map<String, String>> optionsByField = new Map<String, Map<String, String>>();
 
             for (String sObjectFieldConcatenation : picklists) {
-                Picklist picklist = new Picklist(sObjectFieldConcatenation);
+                SObjectField sObjectField = getsObjectField(sObjectFieldConcatenation);
+                Picklist picklist = new Picklist(sObjectField);
                 optionsByField.put(sObjectFieldConcatenation, picklist.getEntriesMap());
             }
 
             this.content = JSON.serialize(optionsByField);
         }
+    }
+
+    private SObjectField getsObjectField(String sObjectFieldConcatenation) {
+        String[] objectField = sObjectFieldConcatenation.split('\\.');
+        List<DescribeSObjectResult> describeSObjectResults = Schema.describeSObjects(new List<String>{
+            objectField[0]
+        });
+        SObjectField sObjectField = describeSObjectResults[0].fields.getMap().get(objectField[1]);
+        return sObjectField;
     }
 
     private List<String> getParams(String name) {
@@ -115,7 +127,7 @@ public without sharing class LocalizationCtrl {
     @TestVisible
     private static String sanitizeJSONString(String pageContent) {
         String content = pageContent
-                .replaceAll(',(\\s)*}', '}');
+            .replaceAll(',(\\s)*}', '}');
 
         List<String> parts = content.split(LOCALIZATION_VALUE);
         for (Integer i = 0; i < parts.size(); i++) {
@@ -123,9 +135,9 @@ public without sharing class LocalizationCtrl {
 
             if (part.startsWith(LOCALIZATION_START)) {
                 parts.set(i, part
-                        .replaceAll('"', '\\\\"')
-                        .replaceAll(LOCALIZATION_START, '')
-                        .trim()
+                    .replaceAll('"', '\\\\"')
+                    .replaceAll(LOCALIZATION_START, '')
+                    .trim()
                 );
             }
         }

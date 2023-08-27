@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-import apexGetCustomLabels from '@salesforce/apex/Localization.getCustomLabels';
-import apexGetFieldLabels from '@salesforce/apex/Localization.getFieldLabels';
+import apexGetCustomLabels from '@salesforce/apex/Localization.getCustomLabelsWithLocale';
+import apexGetFieldLabels from '@salesforce/apex/Localization.getFieldLabelsWithLocale';
 import apexGetPicklistLabels from '@salesforce/apex/Localization.getPicklistsLabels';
 
 /**

@@ -57,7 +57,6 @@ public virtual class TriggerContext {
         }
     }
 
-    @TestVisible
     protected TriggerContext() {
         this.isExecuting = Trigger.isExecuting == true;
         this.isInsert = Trigger.isInsert == true;
@@ -76,6 +75,27 @@ public virtual class TriggerContext {
         if (getRecords() != null) {
             this.sObjectType = getRecords().getSObjectType();
         }
+    }
+
+    public TriggerContext(TriggerOperation operation, List<SObject> triggerNew, List<SObject> triggerOld) {
+        this.isExecuting = true;
+        this.operationType = operation;
+        String op = operation.name();
+        this.isInsert = op.contains('INSERT');
+        this.isUpdate = op.contains('UPDATE');
+        this.isDelete = op.contains('DELETE');
+        this.isUndelete = op.contains('UNDELETE');
+        this.isBefore = op.contains('BEFORE');
+        this.isAfter = op.contains('AFTER');
+
+        this.triggerNew = triggerNew;
+        this.triggerOld = triggerOld;
+        this.triggerOldMap = triggerOld == null ? null : new Map<Id, SObject>(triggerOld);
+        if (triggerNew != null && operation != TriggerOperation.BEFORE_INSERT) {
+            this.triggerNewMap = new Map<Id, SObject>(triggerNew);
+        }
+        this.sObjectType = getRecords().getSObjectType();
+        this.size = getRecords().size();
     }
 
 

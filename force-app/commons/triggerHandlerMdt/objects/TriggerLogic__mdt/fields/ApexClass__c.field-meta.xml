@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ApexClass__c</fullName>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>Name of public Apex Class implementing FieldDefaultRule interface.
+Inner class can be referenced as well ex. &quot;AccountFieldDefaults.NameDefault&quot;, but both inner and outer class have to be public.</inlineHelpText>
+    <label>Apex Class</label>
+    <length>255</length>
+    <required>true</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

@@ -33,30 +33,35 @@ public inherited sharing class TriggerDispatcher {
 
     @TestVisible
     private static void run(TriggerHandler triggerHandler, TriggerContext triggerContext) {
-        if (shouldRun(triggerContext, triggerHandler)) {
-            switch on triggerContext.operationType {
-                when BEFORE_INSERT {
-                    triggerHandler.beforeInsert(triggerContext.getRecords(), triggerContext);
-                }
-                when BEFORE_UPDATE {
-                    triggerHandler.beforeUpdate(triggerContext.getRecords(), triggerContext);
-                }
-                when BEFORE_DELETE {
-                    triggerHandler.beforeDelete(triggerContext.getRecords(), triggerContext);
-                }
-                when AFTER_INSERT {
-                    triggerHandler.afterInsert(triggerContext.getRecords(), triggerContext);
-                }
-                when AFTER_UPDATE {
-                    triggerHandler.afterUpdate(triggerContext.getRecords(), triggerContext);
-                }
-                when AFTER_DELETE {
-                    triggerHandler.afterDelete(triggerContext.getRecords(), triggerContext);
-                }
-                when AFTER_UNDELETE {
-                    triggerHandler.afterUndelete(triggerContext.getRecords(), triggerContext);
+        try {
+            if (shouldRun(triggerContext, triggerHandler)) {
+                switch on triggerContext.operationType {
+                    when BEFORE_INSERT {
+                        triggerHandler.beforeInsert(triggerContext.getRecords(), triggerContext);
+                    }
+                    when BEFORE_UPDATE {
+                        triggerHandler.beforeUpdate(triggerContext.getRecords(), triggerContext);
+                    }
+                    when BEFORE_DELETE {
+                        triggerHandler.beforeDelete(triggerContext.getRecords(), triggerContext);
+                    }
+                    when AFTER_INSERT {
+                        triggerHandler.afterInsert(triggerContext.getRecords(), triggerContext);
+                    }
+                    when AFTER_UPDATE {
+                        triggerHandler.afterUpdate(triggerContext.getRecords(), triggerContext);
+                    }
+                    when AFTER_DELETE {
+                        triggerHandler.afterDelete(triggerContext.getRecords(), triggerContext);
+                    }
+                    when AFTER_UNDELETE {
+                        triggerHandler.afterUndelete(triggerContext.getRecords(), triggerContext);
+                    }
                 }
             }
+        } catch (Exception e) {
+//            Logger.error(new Log(e));
+            throw e;
         }
     }
 

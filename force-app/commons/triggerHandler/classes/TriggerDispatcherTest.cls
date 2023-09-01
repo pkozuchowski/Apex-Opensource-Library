@@ -33,31 +33,6 @@ private class TriggerDispatcherTest {
         COUNTRY_USA = 'USA',
         CITY_NY = 'New York';
 
-    /**
-     * This constructor can be called in Unit Tests to mock trigger execution for certain
-     */
-    private class TestTriggerContextImpl extends TriggerContext {
-        private TestTriggerContextImpl(TriggerOperation operation, List<SObject> triggerNew, List<SObject> triggerOld) {
-            this.isExecuting = true;
-            this.operationType = operation;
-            this.isInsert = operation.name().contains('INSERT');
-            this.isUpdate = operation.name().contains('UPDATE');
-            this.isDelete = operation.name().contains('DELETE');
-            this.isUndelete = operation.name().contains('UNDELETE');
-            this.isBefore = operation.name().contains('BEFORE');
-            this.isAfter = operation.name().contains('AFTER');
-            this.size = triggerNew.size();
-
-            this.triggerNew = triggerNew;
-            this.triggerOld = triggerOld;
-            this.triggerOldMap = triggerOld == null ? null : new Map<Id, SObject>(triggerOld);
-            if (triggerNew != null && operation != TriggerOperation.BEFORE_INSERT) {
-                this.triggerNewMap = new Map<Id, SObject>(triggerNew);
-            }
-            this.sObjectType = getRecords().getSObjectType();
-        }
-    }
-
 
     /**
      * Emulation of AccountTriggerHandler class
@@ -100,7 +75,7 @@ private class TriggerDispatcherTest {
             new Account(Id = ID_2, Name = NAME_TEST),
             new Account(Id = ID_3, Name = NAME_TEST)
         };
-        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
 
 
         Test.startTest();
@@ -133,7 +108,7 @@ private class TriggerDispatcherTest {
             Phone = '(541) 754-3011'
         );
 
-        TriggerContext ctx = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, new List<SObject>{record}, new List<SObject>{oldRecord});
+        TriggerContext ctx = new TriggerContext(TriggerOperation.AFTER_UPDATE, new List<SObject>{record}, new List<SObject>{oldRecord});
 
         System.assertEquals(false, ctx.isNew());
         System.assertEquals(true, ctx.isChanged());
@@ -155,7 +130,7 @@ private class TriggerDispatcherTest {
         System.assertEquals(true, ctx.isChangedFromTo(record, Account.BillingCity, null, CITY_NY));
 
 
-        ctx = new TestTriggerContextImpl(TriggerOperation.AFTER_INSERT, new List<SObject>{record}, new List<SObject>{oldRecord});
+        ctx = new TriggerContext(TriggerOperation.AFTER_INSERT, new List<SObject>{record}, new List<SObject>{oldRecord});
         System.assertEquals(false, ctx.isChanged(record, Account.BillingCountry));
         System.assertEquals(false, ctx.isChangedTo(record, Account.BillingCity, CITY_NY));
         System.assertEquals(false, ctx.isChangedFrom(record, Account.BillingCity, null));
@@ -172,7 +147,7 @@ private class TriggerDispatcherTest {
         List<Account> accounts = new List<Account>{
             new Account(Id = ID_1, Name = NAME_TEST)
         };
-        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
+        TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_UPDATE, accounts, accounts);
 
 
         Test.startTest();
@@ -200,7 +175,7 @@ private class TriggerDispatcherTest {
         List<Account> accounts = new List<Account>{
             new Account(Id = ID_1, Name = NAME_TEST)
         };
-        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
+        TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_UPDATE, accounts, accounts);
 
 
         Test.startTest();
@@ -222,7 +197,7 @@ private class TriggerDispatcherTest {
         List<Account> accounts = new List<Account>{
             new Account(Id = ID_1, Name = NAME_TEST)
         };
-        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE, accounts, accounts);
+        TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_UPDATE, accounts, accounts);
 
 
         Test.startTest();
@@ -267,7 +242,7 @@ private class TriggerDispatcherTest {
 
     @IsTest
     static void testGetChangedRecords() {
-        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.AFTER_UPDATE,
+        TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_UPDATE,
             new List<Account>{
                 new Account(Id = ID_1, Name = 'Test 1 - new'),
                 new Account(Id = ID_2, Name = 'Test 2 - new'),
@@ -291,7 +266,7 @@ private class TriggerDispatcherTest {
         List<Account> accounts = new List<Account>{
             new Account(Id = ID_1, Name = NAME_TEST, NumberOfEmployees = 0)
         };
-        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
 
 
         Test.startTest();
@@ -311,7 +286,7 @@ private class TriggerDispatcherTest {
         List<Account> accounts = new List<Account>{
             new Account(Id = ID_1, Name = NAME_TEST, NumberOfEmployees = 0)
         };
-        TriggerContext tc = new TestTriggerContextImpl(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
 
 
         Test.startTest();

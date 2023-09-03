@@ -39,7 +39,9 @@ public with sharing class TriggerCommons {
 
         public void execute(List<SObject> records, TriggerContext ctx) {
             for (SObject sobj : records) {
-                sobj.put(field, value);
+                if (sobj.get(field) == null) {
+                    sobj.put(field, value);
+                }
             }
         }
     }
@@ -58,7 +60,9 @@ public with sharing class TriggerCommons {
 
         public void execute(List<SObject> records, TriggerContext ctx) {
             for (SObject sobj : records) {
-                sobj.put(target, sobj.get(source));
+                if (sobj.get(source) == null) {
+                    sobj.put(target, sobj.get(source));
+                }
             }
         }
     }

@@ -53,16 +53,11 @@ private class MetadataTriggerHandlerTest {
         }
     }
 
-    public class TestTriggerLogic implements TriggerLogic {
-        public void execute(List<SObject> records, TriggerContext ctx) {
-            for (Account acc : (Account[]) records) {
-                if (String.isBlank(acc.BillingCountry)) {
-                    acc.BillingCountry = COUNTRY_USA;
-                }
-
-                if (ctx.isChanged(acc, Account.BillingCountry)) {
+    public class AccountShippingCountryFiller implements TriggerLogic {
+        public void execute(List<Account> records, TriggerContext ctx) {
+            for (Account acc : records) {
+                if (ctx.isChanged(acc, Account.BillingCountry) && String.isBlank(acc.ShippingCountry)) {
                     acc.ShippingCountry = acc.BillingCountry;
-                    acc.ShippingCity = acc.BillingCity;
                 }
             }
         }

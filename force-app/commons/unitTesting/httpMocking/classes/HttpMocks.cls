@@ -53,6 +53,16 @@ public virtual with sharing class HttpMocks {
         return new SimpleMock(statusCode, status, body);
     }
 
+
+    /**
+     * @return Router with all custom metadata mocks loaded.
+     */
+    public static HttpCalloutMockRouter config() {
+        return new HttpCalloutMockRouter()
+            .loadConfiguration();
+    }
+
+
     /**
      * Responds with status and code defined in HttpCalloutMock__mdt custom metadata
      */
@@ -77,7 +87,7 @@ public virtual with sharing class HttpMocks {
         private SimpleMock(Integer statusCode, String status, String body) {
             this.response.setStatusCode(statusCode);
             this.response.setStatus(status);
-            this.response.setBody(body);
+            this.response.setBody(body == null ? '' : body);
         }
 
         public HttpResponse respond(HttpRequest request) {
@@ -90,7 +100,7 @@ public virtual with sharing class HttpMocks {
     private virtual class ConfigMock implements HttpCalloutMock {
         private HttpCalloutMock__mdt config;
 
-        public ConfigMock(HttpCalloutMock__mdt config){
+        public ConfigMock(HttpCalloutMock__mdt config) {
             this.config = config;
         }
 
@@ -100,8 +110,13 @@ public virtual with sharing class HttpMocks {
             if (String.isNotBlank(config.StaticResource__c)) {
                 mock = staticResource((Integer) config.StatusCode__c, config.Status__c, config.StaticResource__c);
 
+            } else if (String.isNotBlank(config.ApexClass__c)) {
+                mock = (HttpCalloutMock) Type.forName(config.ApexClass__c).newInstance();
+
             } else {
-                config = getResponseBody();
+                if (String.isNotBlank(config.Response__c)) {
+                    config = HttpMocksConfig.getResponse(config.DeveloperName);
+                }
                 mock = text((Integer) config.StatusCode__c, config.Status__c, config.Response__c);
             }
 
@@ -111,17 +126,6 @@ public virtual with sharing class HttpMocks {
             }
 
             return response;
-        }
-
-        protected HttpCalloutMock__mdt getResponseBody() {
-            if (!HttpCalloutMockRouter.configurationMocked) {
-                return [
-                    SELECT Status__c, StatusCode__c, Response__c, StaticResource__c, Headers__c
-                    FROM HttpCalloutMock__mdt
-                    WHERE DeveloperName = :config.DeveloperName
-                ];
-            }
-            return config;
         }
 
         private void setHeaders(HttpCalloutMock__mdt mdt, HttpResponse response) {

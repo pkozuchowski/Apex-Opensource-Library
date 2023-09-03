@@ -28,16 +28,6 @@
  * There is also an option to override default API responses in particular unit tests with different response.
  */
 public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
-    private static List<HttpCalloutMock__mdt> configuration {
-        get {
-            if (configuration == null) {
-                configuration = HttpCalloutMock__mdt.getAll().values();
-            }
-            return configuration;
-        }
-        set;
-    }
-    public static Boolean configurationMocked = false;
     private Map<String, String> variables = new Map<String, String>();
     private Map<String, HttpCalloutChainMock> registeredMocks = new Map<String, HttpCalloutChainMock>();
     private Map<String, HttpCalloutMock> mocksOverrides = new Map<String, HttpCalloutMock>();
@@ -47,18 +37,15 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
      * @return Loads Mocks from custom metadata
      */
     public HttpCalloutMockRouter loadConfiguration() {
-        for (HttpCalloutMock__mdt mockMdt : configuration) {
+        variables(HttpMocksConfig.getVariables());
+
+        for (HttpCalloutMock__mdt mockMdt : HttpMocksConfig.getMocks()) {
             if (mockMdt.Default__c) {
                 mock(mockMdt.DeveloperName, mockMdt.Methods__c, mockMdt.Endpoint__c, HttpMocks.config(mockMdt));
             }
         }
 
         return this;
-    }
-
-    @TestVisible static void mockConfiguration(List<HttpCalloutMock__mdt> config) {
-        configuration = config;
-        configurationMocked = true;
     }
 
 

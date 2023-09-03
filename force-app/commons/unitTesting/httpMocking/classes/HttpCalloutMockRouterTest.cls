@@ -26,7 +26,7 @@ private class HttpCalloutMockRouterTest {
     private final static String ACCOUNT_ID = '001D000000IqhSLIAZ';
     private final static String ACCOUNT_NAME = 'Test Account';
 
-    public class OrgMocks extends HttpCalloutMockRouter {
+    private class OrgMocks extends HttpCalloutMockRouter {
         public OrgMocks(){
             mock('Salesforce APIs', new SalesforceRestAPIMocks());
             mock('Azure APIs', new AzureMocks());
@@ -231,7 +231,10 @@ private class HttpCalloutMockRouterTest {
 
     @IsTest
     static void testConfigurationBasedRouter() {
-        HttpCalloutMockRouter.mockConfiguration(new List<HttpCalloutMock__mdt>{
+        HttpMocksConfig.mockVariables(new Map<String, String>{
+            'sfRestEndpoint' => 'https://' + DomainCreator.getOrgMyDomainHostname() + '/services'
+        });
+        HttpMocksConfig.mock(new List<HttpCalloutMock__mdt>{
             new HttpCalloutMock__mdt(
                 DeveloperName = 'SF_REST_Query',
                 Default__c = true,
@@ -247,11 +250,7 @@ private class HttpCalloutMockRouterTest {
 
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class, new HttpCalloutMockRouter()
-            .variables(new Map<String, String>{
-                'sfRestEndpoint' => 'https://' + DomainCreator.getOrgMyDomainHostname() + '/services'
-            })
-            .loadConfiguration());
+        Test.setMock(HttpCalloutMock.class, HttpMocks.config());
 
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');

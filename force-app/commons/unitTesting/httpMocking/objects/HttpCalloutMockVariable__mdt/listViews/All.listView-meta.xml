@@ -3,14 +3,7 @@
     <fullName>All</fullName>
     <columns>MasterLabel</columns>
     <columns>DeveloperName</columns>
-    <columns>Default__c</columns>
-    <columns>Methods__c</columns>
-    <columns>Endpoint__c</columns>
-    <columns>StatusCode__c</columns>
-    <columns>Status__c</columns>
-    <columns>Response__c</columns>
-    <columns>StaticResource__c</columns>
-    <columns>ApexClass__c</columns>
+    <columns>Pattern__c</columns>
     <filterScope>Everything</filterScope>
     <label>All</label>
     <language>en_US</language>

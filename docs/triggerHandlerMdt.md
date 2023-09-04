@@ -1,4 +1,4 @@
-# Trigger Handler
+# Metadata Trigger Handler
 *Custom Metadata-driven orchestrator for Apex Trigger Logic*
 
 ---

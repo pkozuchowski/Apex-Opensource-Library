@@ -1,5 +1,8 @@
 # Trigger Handler
 *Orchestrator for Apex Trigger Logic*
+[Source Code](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/triggerHandler)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga57AAA)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga57AAA)
 
 ---
 ## Documentation
@@ -209,13 +212,3 @@ AND(
 
 All toggles are defined as negatives (Disable X vs Enable X) because that makes them enabled by default — both in real usage and in unit tests.  
 You won't have to insert them in every test class or remember about manual steps to enable custom setting.
-
-
----
-### CLI
-
-Deploy with the following script:
-```bash
-sf project deploy start -l RunLocalTests -o <sfdxOrgAlias> \
-  -d "force-app/commons/triggerHandler"
-```

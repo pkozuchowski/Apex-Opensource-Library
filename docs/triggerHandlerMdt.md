@@ -1,5 +1,8 @@
 # Metadata Trigger Handler
 *Custom Metadata-driven orchestrator for Apex Trigger Logic*
+[Source Code](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/triggerHandlerMdt)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga5MAAQ)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga5MAAQ)
 
 ---
 ## Documentation

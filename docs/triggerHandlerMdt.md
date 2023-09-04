@@ -9,7 +9,8 @@ Metadata Trigger Handler is a Dependency-Injection oriented pattern that moves o
 Custom Metadata records.  
 Each record defines SObject, Trigger operation, Apex Class name and optional Parameters and Custom Permission.  
 Framework initializes and parametrizes each of the defined classes and executes its code.   
-![th-mdt-full.png](/img/th-mdt-full.png)
+![image](https://github.com/pkozuchowski/Apex-Opensource-Library/assets/4470967/3d2527e1-e01d-4db8-9c6b-c1a9853f1606)
+
 
 Apex Classes defined in the custom metadata must implement TriggerLogic interface:
 ```apex

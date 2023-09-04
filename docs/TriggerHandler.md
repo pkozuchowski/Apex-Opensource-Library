@@ -153,12 +153,11 @@ To make sure that record is not needlessly processed number of times, a develope
 ```
 Using `isFirstRun()`/`getExecutionCount()` and setExecuted() lets us control how many times this logic will be executed.  
 The `featureName` parameter corresponds to class name or feature name and is used to cover a scenario where record did not initially meet criteria to process,
-but
-was updated by flow or subsequent DML to meet the criteria.
+but was updated by flow or subsequent DML to meet the criteria.
 If record satisfies condition for being processed in trigger, `ctx.setExecuted()` method should be called to flag record as processed.
 
 ## Trigger Settings
-Settings class for manipulating trigger execution.
+Settings class for manipulating trigger execution.  
 
 <br/>
 
@@ -210,3 +209,13 @@ AND(
 
 All toggles are defined as negatives (Disable X vs Enable X) because that makes them enabled by default — both in real usage and in unit tests.  
 You won't have to insert them in every test class or remember about manual steps to enable custom setting.
+
+
+---
+### CLI
+
+Deploy with the following script:
+```bash
+sf project deploy start -l RunLocalTests -o <sfdxOrgAlias> \
+  -d "force-app/commons/triggerHandler"
+```

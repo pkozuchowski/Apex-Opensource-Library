@@ -1,42 +1,30 @@
 # Database Service
+*Intermediate layer between Database system class and business logic, which allows DML mocking and selecting
+sharing context in runtime.*
 
-Intermediate layer between Database system class and business logic, which allows DML mocking and selecting
-sharing context.
 
-### Interface
+---
+## Documentation
 
-```apex
-public static Id getFakeId(SObjectType sObjectType);
+DatabaseService encapsulates `System.Database` methods and allow for altering behaviour of the DMLs:
+- `with sharing` and `without sharing` context can be set on the DatabaseService class
+- DML options can be set once and reused in all DMLs done by the DatabaseService
+- DMLs can be mocked in unit tests
 
-public DatabaseService();
+```apex | Usage | MyService performs update "without sharing" even though the class itself is "with sharing"
+public with sharing class MyService {
+    private DatabaseService databaseService = new DatabaseService()
+        .withoutSharing();
 
-public DatabaseService withSharing();
-public DatabaseService withoutSharing();
-public DatabaseService setDMLOptions(Database.DMLOptions options);
-public DatabaseService allOrNone(Boolean allOrNone);
+    public void updateContacts(List<Contact> contacts) {
+        databaseService.updateRecords(contacts);
+    }
+}
 
-public DatabaseMock useMock();
-
-public List<SObject> query(String query);
-public List<SObject> query(String query, Map<String, Object> boundVars);
-
-public Database.QueryLocator getQueryLocator(String query);
-public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars);
-
-public Database.SaveResult insertRecord(SObject record);
-public Database.SaveResult updateRecord(SObject record);
-public Database.UpsertResult upsertRecord(SObject record, SObjectField field);
-public Database.DeleteResult deleteRecord(SObject record);
-public Database.UndeleteResult undeleteRecord(SObject record);
-
-public List<Database.SaveResult> insertRecords(List<SObject> records);
-public List<Database.SaveResult> updateRecords(List<SObject> records);
-public List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field);
-public List<Database.DeleteResult> deleteRecords(List<SObject> records);
-public List<Database.UndeleteResult> undeleteRecords(List<SObject> records);
 ```
 
-### Setting DML options:
+<details>
+    <summary>Setting DML options</summary>
 
 Provided DML options are applied to all DMLs. Developer can set them through setDmlOptions() method and there's short-hand
 method for allOrNone() parameter. DML Options can be constructed with builder class:
@@ -50,11 +38,13 @@ DatabaseService databaseService = new DatabaseService()
         .build()
     );
 
-///////////////////////////////
+//Shortcut for All or None option
 DatabaseService databaseService = new DatabaseService().allOrNone(false);
 ```
+</details>
 
-### Changing sharing context:
+<details>
+    <summary>Changing sharing context</summary>
 
 Database Service can switch between inherited, with sharing and without sharing DMLs:
 
@@ -65,16 +55,24 @@ DatabaseService databaseService = new DatabaseService()
 DatabaseService databaseService = new DatabaseService()
     .withoutSharing();
 ```
+</details>
 
-<br/>
+```apex
+new DatabaseService()
+    .withoutSharing()
+    .updateRecords(accounts);
+```
 
-### Mocking DMLs - Pure Apex Tests
 
-Pure Apex Tests are tests that do not commit anything to database and mock all queries.  
-These tests are much more efficient than standard tests and allow us to test more exotic scenarios, but comes at cost of harder setup (DML/Query mocking)
+---
+## Mocking DMLs - Pure Apex Tests
+
+Pure Apex Tests are tests that do not commit anything to the database and mock all queries.  
+These tests are much more efficient than standard tests and allow us to test more exotic scenarios, but comes at cost of harder setup (require DML and SOQL
+mocking)
 and doesn't test interaction between classes in a trigger.
 
-To mock DMLs, our business class should have instance of DatabaseService, through which it performs DMLS.  
+To mock DMLs, our business class should have instance of DatabaseService, through which it performs DMLs.  
 Database Service instance should be visible to the tests.
 
 For example purposes, let's assume this class does some inserts and updates;
@@ -146,9 +144,7 @@ Assert.areEqual(Contact.SObjectType, c.Id.getSobjectType());
 Fake ids will look, depending on sObject, like this:
 `001000000000001, 001000000000002, 003000000000003`
 
-<br/>
-
-#### Mocking DML Exceptions
+### Mocking DML Exceptions
 
 To test all possible scenarios for our code, we need possibility to check how the code behaves on DML exception.  
 This can be mocked using DatabaseMock class using following methods.
@@ -188,8 +184,57 @@ dbMock.mockDmlError(new Contact(LastName = 'Doe'));
 dbMock.mockDmlError(DmlType.INSERT_DML, new Contact(AccountId = null, LastName = 'Doe'));
 ```
 
-
 ### Notes
 
 Query mocks are not supported via DatabaseMock right now, but they are supported via selector layer - Query package.
 I will cover them there.
+
+---
+### Interface
+
+```apex
+
+class DatabaseService {
+    static Id getFakeId(SObjectType sObjectType);
+
+    DatabaseService withSharing();
+    DatabaseService withoutSharing();
+    DatabaseService setDMLOptions(Database.DMLOptions options);
+    DatabaseService allOrNone(Boolean allOrNone);
+
+    DatabaseMock useMock();
+
+    List<SObject> query(String query);
+    List<SObject> query(String query, Map<String, Object> boundVars);
+
+    Database.QueryLocator getQueryLocator(String query);
+    Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars);
+
+    Database.SaveResult insertRecord(SObject record);
+    Database.SaveResult updateRecord(SObject record);
+    Database.UpsertResult upsertRecord(SObject record, SObjectField field);
+    Database.DeleteResult deleteRecord(SObject record);
+    Database.UndeleteResult undeleteRecord(SObject record);
+
+    List<Database.SaveResult> insertRecords(List<SObject> records);
+    List<Database.SaveResult> updateRecords(List<SObject> records);
+    List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field);
+    List<Database.DeleteResult> deleteRecords(List<SObject> records);
+    List<Database.UndeleteResult> undeleteRecords(List<SObject> records);
+}
+```
+
+```apex | DatabaseMock
+public with sharing class DatabaseMock {
+    List<SObject> insertedRecords;
+    List<SObject> updatedRecords;
+    List<SObject> upsertedRecords;
+    List<SObject> deletedRecords;
+    List<SObject> undeletedRecords;
+
+    DatabaseMock mockDmlError(SObject matcherRecord);
+    DatabaseMock mockDmlError(DmlType dmlType);
+    DatabaseMock mockDmlError(DmlType dmlType, SObject matcherRecord);
+    DatabaseMock mockDmlError(DmlType dmlType, SObject matcherRecord, String errorMsg);
+    List<DatabaseService.DmlError> getDMLErrors(DmlType issuedDML, SObject record);
+```

@@ -21,10 +21,6 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
- * /
- * *
- *  Please find newest source code at https://github.com/pkozuchowski/Apex-Opensource-Library
- * /
  */
 public interface Condition {
     Boolean isTrue(Object item);

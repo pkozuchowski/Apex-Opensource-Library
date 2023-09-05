@@ -25,28 +25,28 @@
 
 import {ShowToastEvent} from "lightning/platformShowToastEvent";
 
-export class ToastUtils {
+export class Toasts {
 
     static showUnexpectedErrorToast(cmp) {
-        ToastUtils.showErrorToast(cmp,
+        Toasts.showErrorToast(cmp,
             "Unexpected error has occurred. Try again or contact your Salesforce administrator for help."
         );
     }
 
     static showErrorToast(cmp, title, message, messageData, mode) {
-        ToastUtils.showToast(cmp, "error", title, message, messageData, mode)
+        Toasts.showToast(cmp, "error", title, message, messageData, mode)
     }
 
     static showWarningToast(cmp, title, message, messageData, mode) {
-        ToastUtils.showToast(cmp, "warning", title, message, messageData, mode)
+        Toasts.showToast(cmp, "warning", title, message, messageData, mode)
     }
 
     static showInfoToast(cmp, title, message, messageData, mode) {
-        ToastUtils.showToast(cmp, "info", title, message, messageData, mode)
+        Toasts.showToast(cmp, "info", title, message, messageData, mode)
     }
 
     static showSuccessToast(cmp, title, message, messageData, mode) {
-        ToastUtils.showToast(cmp, "success", title, message, messageData, mode)
+        Toasts.showToast(cmp, "success", title, message, messageData, mode)
     }
 
     static showToast(cmp, variant, title, message, messageData, mode) {

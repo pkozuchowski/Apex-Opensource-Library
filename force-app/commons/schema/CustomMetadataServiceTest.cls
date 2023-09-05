@@ -30,25 +30,11 @@ private class CustomMetadataServiceTest {
     */
     @IsTest
     static void coverage() {
-        SObjectType metadataType = getCustomMetadataType();
-
         try {
             CustomMetadataService.deploy(new List<SObject>{
-                    metadataType.newSObject(null, true)
+                new RecordType(DeveloperName = 'Test', Name='Test')
             });
         } catch (Exception ex) {
         }
-    }
-
-    private static SObjectType getCustomMetadataType() {
-        Map<String, SObjectType> globalDescribe = Schema.getGlobalDescribe();
-
-        for (String sObjectName : globalDescribe.keySet()) {
-            if (sObjectName.endsWith('__mdt')) {
-                return globalDescribe.get(sObjectName);
-            }
-        }
-
-        return null;
     }
 }

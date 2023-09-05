@@ -46,11 +46,12 @@ public with sharing class CustomMetadataService {
         Metadata.DeployContainer mdContainer = new Metadata.DeployContainer();
 
         for (SObject record : customMetadataRecords) {
-            Metadata.CustomMetadata customMetadata = new Metadata.CustomMetadata();
-            customMetadata.fullName = ('' + record.getSObjectType()).remove('__mdt') + '.' + record.get('DeveloperName');
-            customMetadata.label = (String) record.get('Label');
-
             Map<String, Object> populatedFields = record.getPopulatedFieldsAsMap().clone();
+
+            Metadata.CustomMetadata customMetadata = new Metadata.CustomMetadata();
+            customMetadata.fullName = ('' + record.getSObjectType()).remove('__mdt') + '.' + populatedFields.get('DeveloperName');
+            customMetadata.label = (String) populatedFields.get('Label');
+
             populatedFields.remove('Id');
             populatedFields.remove('Label');
             populatedFields.remove('DeveloperName');

@@ -1,6 +1,12 @@
 # Callout Framework
 *Define common behaviour for outgoing callouts.*
 
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/callout)
+
+```bash
+sf project deploy start -d force-app/commons/callout -d force-app/commons/shared -o sfdxOrg
+```
+
 ---
 # Documentation
 Callout class is a building block for constructing outbound integrations, where each callout should go through similar flow
@@ -234,8 +240,7 @@ private class RetryHandler implements Callout.Handler {
 ---
 ## Interfaces
 
-<details>
-    <summary>Callout</summary>
+### Callout
 
 | Method                                                                | Description                                                                          |
 |-----------------------------------------------------------------------|--------------------------------------------------------------------------------------|
@@ -254,9 +259,6 @@ private class RetryHandler implements Callout.Handler {
 | `HttpResponse getResponse()`                                          | returns HttpResponse                                                                 |
 | `HttpRequest getRequest()`                                            | returns HttpRequest                                                                  |
 | `Object getCalloutException()`                                        | returns Callout Exception from the latest execution                                  |
-
-</details>
-
 
 <details>
     <summary>CalloutHandlersList</summary>

@@ -1,6 +1,11 @@
 # Scheduler
 *Shorthand for easy scheduling.*
 
+[Scheduler](https://github.com/pkozuchowski/Apex-Opensource-Library/blob/master/force-app/commons/batch/Scheduler.cls)
+
+```bash
+sf project deploy start -m "ApexClass:Scheduler*" -o sfdxOrg
+```
 ---
 ## Documentation
 Scheduler is utility for easy job scheduling:

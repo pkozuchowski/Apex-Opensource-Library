@@ -21,37 +21,34 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest
+@IsTest(IsParallel=true)
 private class TestDataSuiteTest {
 
     @TestSetup
     static void testSetup() {
-        TestDataBuilder dataBuilder = new TestDataBuilder();
+        List<Account> accounts = new List<Account>{
+            new Account(Id='001000000000001', Name = '1'),
+            new Account(Id='001000000000002', Name = '2')
+        };
 
-        List<Account> accounts = dataBuilder
-            .create(new Account(Name = '1'))
-            .create(new Account(Name = '2'))
-            .insertRecords();
+        List<Case> cases = new List<Case>{
+            new Case(Subject = 'Case 1', AccountId = accounts[0].Id),
+            new Case(Subject = 'Case 2', AccountId = accounts[0].Id),
+            new Case(Subject = 'Case 3', AccountId = accounts[0].Id)
+        };
 
-        Case[] cases = (Case[]) dataBuilder
-            .create(new Case(Subject = 'Case 1', AccountId = accounts[0].Id))
-            .similarly(new Case(Subject = 'Case 2'))
-            .similarly(new Case(Subject = 'Case 3'))
-            .insertRecords();
-
-        Contact[] contacts = (Contact[]) dataBuilder
-            .create(new Contact(FirstName = 'Joe', LastName = 'Doe1', AccountId = accounts[0].Id))
-            .similarly(new Contact(LastName = 'Doe2'))
-            .similarly(new Contact(LastName = 'Doe3'))
-            .similarly(new Contact(LastName = 'Doe4'))
-            .insertRecords();
-
+        List<Contact> contacts = new List<Contact>{
+            new Contact(LastName = 'Doe1', AccountId = accounts[0].Id),
+            new Contact(LastName = 'Doe2', AccountId = accounts[0].Id),
+            new Contact(LastName = 'Doe3', AccountId = accounts[0].Id),
+            new Contact(LastName = 'Doe4', AccountId = accounts[0].Id)
+        };
 
         TestDataSuite suite1 = TestDataSuiteManager.registerSuite('Account with related');
         suite1.registerRecord('Account', accounts[0]);
         suite1.registerRecords(Case.Subject, cases);
-        suite1.registerRecordsUnderGroup('Contacts to process', (Contact[]) Collection.of(contacts).slice(0, 1).get());
-        suite1.registerRecordsUnderGroup('Contacts to remove', (Contact[]) Collection.of(contacts).slice(2, 3).get());
+        suite1.registerRecordsUnderGroup('Contacts to process', new List<Contact>{contacts[0], contacts[1]});
+        suite1.registerRecordsUnderGroup('Contacts to remove', new List<Contact>{contacts[2], contacts[3]});
 
         TestDataSuite suite2 = TestDataSuiteManager.registerSuite('Account without related');
         suite2.registerRecord('Account', accounts[1]);

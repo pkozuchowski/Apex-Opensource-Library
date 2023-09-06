@@ -2,6 +2,10 @@
 *Deploy Custom Metadata from Apex.*
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/blob/master/force-app/commons/schema/CustomMetadataService.cls)
 
+```bash
+sf project deploy start -m "ApexClass:CustomMetadataService*" -o sfdxOrg
+```
+
 ---
 ## Documentation
 

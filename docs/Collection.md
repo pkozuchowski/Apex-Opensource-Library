@@ -1,8 +1,11 @@
 # Collection
 *Collection class operates on Apex Lists and simplifies most common operations.*
 
-[Source Code](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/collections)
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/collections)
 
+```bash
+sf project deploy start -d force-app/commons/collections -d force-app/commons/shared -o sfdxOrg
+```
 
 ---
 ## Documentation
@@ -16,8 +19,8 @@ Collection class provides methods simplifying the most common data operations in
 - Sorting records by given field or comparator
 
 Additionally, it provides utility methods operating on lists.
-
-```apex | Examples
+#### Examples
+```apex
 // Get first 10 won opportunities ordered by expected revenue
 List<Opportunity> wonOpportunities = (List<Opportunity>)
     Collection.of(opportunities)
@@ -44,11 +47,11 @@ Collection class can reduce list of items to map - depending on used method, thi
   Mapper interface derives value from Collection item that will be put in the map.  
   Example use case for this is when you have custom mapping that is occurring often through the code.
 
-Mapping expects the key to be unique, if it's not - the last item in the list
+Mapping expects the key to be unique, if it's not - the last item in the list wins.
 
-### Recipes
-
-```apex | Mapping by field | Map collection of sObjects by any field.
+#### Mapping by field 
+Map collection of sObjects by any field. Framework will check field's type and dynamically construct map with correct key and value type.
+```apex
 Map<Id, Opportunity> opportunityByAccountId = (Map<Id, Opportunity>)
     Collection.of(opportunities).mapBy(Opportunity.AccountId);
 
@@ -56,17 +59,24 @@ Map<String, Opportunity> opportunityByName = (Map<String, Opportunity>)
     Collection.of(opportunities).mapBy(Opportunity.Name);
 ```
 
-```apex | Mapping between two fields | Selected fields will be mapped as key to value map.
+#### Mapping between two fields
+Selected fields will be mapped as a key to value map.
+```apex
 Map<Id, Id> ownerByAccountId = (Map<Id, Id>)
     Collection.of(opportunities).mapBy(Opportunity.AccountId, Opportunity.OwnerId);
 ```
 
-```apex | Mapping by concatenation of 2 fields | Map's key will be concatenation of 2 fields. There's no separator between fields.
+#### Mapping by concatenation
+Map's key will be a concatenation of two fields. There's no separator between fields.
+```apex
 Map<String, JunctionObject__c> mapByParents = (Map<String, JunctionObject__c>)
     Collection.of(junctions).mapByConcatenation(JunctionObject__c.Parent1__c, JunctionObject__c.Parent2__c);
 ```
 
-```apex | Mapping by custom mapper class | Sometimes organizations will have very specific data translations that are often executed through the code. In that case, it's possible to implement Mapper interface and reuse it in many places. 
+#### Mapping by custom mapper class
+Sometimes organizations will have very specific data translations that are often executed through the code.
+In that case, it's possible to implement Mapper interface and reuse it in many places.
+```apex
 Map<Integer, Account> accountsByDay = (Map<Integer, Account>)
     Collection.of(accounts).mapBy(new MapperByCreatedDay());
 
@@ -95,8 +105,9 @@ The result map's value will be a list of items mapped by the same key.
 Grouping provides the same methods as mapping.
 
 ### Recipes
-
-```apex | Grouping by field | Group collection of sObjects by any field.
+#### Grouping by field
+Group collection of sObjects by any field.
+```apex
 Map<Id, Opportunity[]> opportunitiesByAccountId = (Map<Id, Opportunity[]>)
     Collection.of(opportunities).groupBy(Opportunity.AccountId);
 
@@ -106,13 +117,15 @@ Map<Id, Opportunity[]> opportunitiesByOwner = (Map<Id, Opportunity[]>)
 Map<String, Opportunity[]> opportunitiesByStage = (Map<String, Opportunity[]>)
     Collection.of(opportunities).mapBy(Opportunity.StageName);
 ```
-
-```apex | Grouping between two fields | Selected fields will be mapped as key to list of values map.
+#### Grouping between two fields
+Selected fields will be mapped as key to list of values map.
+```apex
 Map<Id, Id[]> accountIdsByOwner = (Map<Id, Id[]>)
     Collection.of(opportunities).groupBy(Opportunity.OwnerId, Opportunity.AccountId);
 ```
-
-```apex | Group by concatenation of 2 fields | Map's key will be concatenation of 2 fields. There's no separator between fields
+#### Group by concatenation of 2 fields
+Map's key will be concatenation of 2 fields. There's no separator between fields
+```apex
 Map<String, JunctionObject__c[]> = (Map<String, JunctionObject__c[]>)
     Collection.of(junctions).groupByConcatenation(JunctionObject__c.Parent1__c, JunctionObject__c.Parent2__c);
 ```
@@ -124,8 +137,8 @@ Map<String, JunctionObject__c[]> = (Map<String, JunctionObject__c[]>)
 
 Calling getSet() or getList() with sobject field, we will get List or Set of field values.  
 Mapper interface can also be used to derive values from sObjects or any other item type.
-
-```apex | Getting Set of values
+#### Getting Set of values
+```apex
 Set<String> strings = Collection.of(opportunities).getSetString(Opportunity.Name);
 Set<Id> ids = Collection.of(opportunities).getSetId(Opportunity.Id);
 Set<Integer> integers = Collection.of(opportunities).getSetInteger(Opportunity.FiscalYear);
@@ -133,8 +146,8 @@ Set<Integer> integers = Collection.of(opportunities).getSetInteger(Opportunity.F
 //Any Type
 Set<Datetime> createdDates = (Set<Datetime>) Collection.of(opportunities).getSet(Opportunity.CreatedDate);
 ```
-
-```apex | Getting List of values
+#### Getting List of values
+```apex
 List<String> strings = Collection.of(opportunities).getListString(Opportunity.Name);
 List<Id> ids = Collection.of(opportunities).getListId(Opportunity.Id);
 List<Integer> integers = Collection.of(opportunities).getListInteger(Opportunity.FiscalYear);
@@ -142,8 +155,8 @@ List<Integer> integers = Collection.of(opportunities).getListInteger(Opportunity
 //Any Type
 List<Datetime> createdDates = (List<Datetime>) Collection.of(opportunities).getList(Opportunity.CreatedDate);
 ```
-
-```apex | All Methods
+#### All Methods
+```apex
 Set<Id> getSetId(SObjectField field);
 Set<String> getSetString(SObjectField field);
 Set<Integer> getSetInteger(SObjectField field);
@@ -166,20 +179,20 @@ List<Object> getList(Mapper valueMapper);
 
 Collection can filter out records based on given conditions.  
 Filtering can be combined with any other reduction method - mapping, grouping, getting set and so on.
-
-```apex | Methods
+#### Methods
+```apex
 FieldFilter filter(SObjectField field);
 Collection filter(Condition filter);
 Collection filterAlike(SObject prototype);
 ```
-
-```apex | Filtering sObjects by value of the field.
+#### Filtering sObjects by value of the field.
+```apex
 Opportunity opp = (Opportunity) Collection.of(opportunities)
     .filter(Opportunity.Stage).equals('Won')
     .getFirst();
 ```
-
-```apex | Filtering with complex logic
+#### Filtering with complex logic
+```apex
 CollectionConditions c = new CollectionConditions();
 List<Opportunity> filtered = (List<Opportunity>) Collection.of(opportunities)
     .filter(
@@ -195,8 +208,9 @@ List<Opportunity> filtered = (List<Opportunity>) Collection.of(opportunities)
     )
     .get();
 ```
-
-```apex | Filtering similar records | Will filter records that have the same value set as given example
+#### Filtering similar records
+Will filter records that have the same value set as given example
+```apex
 List<Opportunity> filtered = (List<Opportunity>) Collection.of(opportunities)
     .filterAlike(new Opportunity(
         StageName = 'Prospect',
@@ -211,15 +225,15 @@ List<Opportunity> filtered = (List<Opportunity>) Collection.of(opportunities)
   <summary>Ordering collection</summary>
 
 Order methods can sort list by sobject field or custom comparator.
-
-```apex | Order by SObject field.
+#### Order by SObject field.
+```apex
 List<Opportunity> sortedOpportunities = (List<Opportunity>)
     Collection.of(opportunities)
         .orderAsc(Opportunity.CreatedDate)
         .get();
 ```
-
-```apex | Order using custom comparator class
+#### Order using custom comparator class
+```apex
 List<Opportunity> opportunities = (List<Opportunity>)
     Collection.of(opportunities)
         .orderBy(new ReverseProbabilityComparator())
@@ -263,13 +277,14 @@ Decimal sum = Collection.of(opportunities).getSum(Opportunity.Amount);
 
 <details>
   <summary>List Utilities</summary>
-
-```apex | Slicing list
+#### Slicing list
+```apex
 Collection.of(contacts).slice(0, 10).get(); //=> returns first 10 contacts  
 Collection.of(contacts).slice(new List<Integer>{0, 2, 4, 9}).get(); //=> returns contacts from given indexes  
 ```
-
-```apex | First / Last and other | These methods are NPE safe and will return null if list is empty.
+#### First / Last and other
+These methods are NPE safe and will return null if list is empty.
+```apex
 Collection.of(contacts).getFirst(); //=> returns first element or null
 Collection.of(contacts).getLast();  //=> returns last element or null  
 Collection.of(contacts).removeLast();  //=> removes last element   
@@ -351,7 +366,9 @@ interface Collection {
 ```
 </details>
 
-```apex | Field Filter | These methods are available when filtering sobject list by field:
+#### Field Filter
+These methods are available when filtering sobject list by field:
+```apex
 public interface FieldFilter {
     Collection equals(Object value);
     Collection notEquals(Object value);
@@ -365,17 +382,21 @@ public interface FieldFilter {
     Collection isNotIn(Set<Object> values);
     Collection isNotIn(List<Object> values);
     Collection contains(String value);
-}           
+}
 ```
 
-```apex | Mapper | Mapper is a class that takes single collection item and converts it to value. This value can be used as maps/groups/set/list key or value.
+#### Mapper
+Mapper is a class that takes single collection item and converts it to value. This value can be used as maps/groups/set/list key or value.
+```apex
 interface Mapper {
     Type valueType();
     Object value(Object item);
 }
 ```
 
-```apex | Reducer | Reducer takes entire collection and converts it to another value. This could be for example sum, min/max of the items fields, but also any different custom reduction.
+#### Reducer
+Reducer takes entire collection and converts it to another value. This could be for example sum, min/max of the items fields, but also any different custom reduction.
+```apex
 interface Reducer {
     Object reduce(Object accumulator, Object item, Integer index);
 }

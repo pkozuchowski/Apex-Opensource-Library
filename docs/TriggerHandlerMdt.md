@@ -1,8 +1,5 @@
-# Metadata Trigger Handler
+# Trigger Handler
 *Custom Metadata-driven orchestrator for Apex Trigger Logic*
-[Source Code](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/triggerHandlerMdt)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga5MAAQ)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga5MAAQ)
 
 ---
 ## Documentation
@@ -12,14 +9,13 @@ Metadata Trigger Handler is a Dependency-Injection oriented pattern that moves o
 Custom Metadata records.  
 Each record defines SObject, Trigger operation, Apex Class name and optional Parameters and Custom Permission.  
 Framework initializes and parametrizes each of the defined classes and executes its code.   
-![image](https://github.com/pkozuchowski/Apex-Opensource-Library/assets/4470967/3d2527e1-e01d-4db8-9c6b-c1a9853f1606)
-
+![th-mdt-full.png](/img/th-mdt-full.png)
 
 Apex Classes defined in the custom metadata must implement TriggerLogic interface:
 ```apex
 public interface TriggerLogic {
-  void setParameters(String parameters);
-  void execute(List<SObject> records, TriggerContext ctx);
+    void setParameters(String parameters);
+    void execute(List<SObject> records, TriggerContext ctx);
 }
 ```
 
@@ -27,15 +23,15 @@ Example of a class that copies BillingCountry to ShippingCountry when it's blank
 ```apex
 public class AccountShippingCountryFiller implements TriggerLogic {
 
-  public void execute(List<Account> records, TriggerContext ctx) {
-    for (Account acc : records) {
-      if (ctx.isChanged(acc, Account.BillingCountry) && String.isBlank(acc.ShippingCountry)) {
-        acc.ShippingCountry = acc.BillingCountry;
-      }
+    public void execute(List<Account> records, TriggerContext ctx) {
+        for (Account acc : records) {
+            if (ctx.isChanged(acc, Account.BillingCountry) && String.isBlank(acc.ShippingCountry)) {
+                acc.ShippingCountry = acc.BillingCountry;
+            }
+        }
     }
-  }
 
-  public void setParameters(String parameters) {}
+    public void setParameters(String parameters) {}
 }
 ```
 
@@ -53,7 +49,7 @@ trigger AccountTrigger on Account (before insert, before update, before delete, 
 - Introduces per-class configuration layer which can be enriched with Feature Management, performance profiling, and other features.
 
 #### Cons
-- Custom Metadata is an additive deployment, which means that deleting logic from the source of truth does not remove it from the org.  
+- Custom Metadata is an additive deployment, which means that deleting logic from the source of truth does not remove it from the org.
   Depending on the situation, CI/CD pipeline or the lack of it, missed manual steps — it's possible to have unwanted trigger logic running in the org, without
   being aware of it.
 - It's harder to navigate through the trigger code. Developers will have to jump between custom metadata page and IDE to check what's executed.

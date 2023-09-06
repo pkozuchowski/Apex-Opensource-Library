@@ -1,6 +1,13 @@
 # Mock Utility
 *Mock response of the called method.*
 
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/blob/master/force-app/commons/mocks/Mock.cls)
+
+
+```bash
+sf project deploy start -m "ApexClass:Mock" -o sfdxOrg
+```
+
 ---
 ## Documentation
 A very light-weight Mocking utility (less than 100 lines of code) that simplifies mocking.
@@ -34,7 +41,7 @@ public class MyAccountCtrl {
 
 #### Mock response of any method
 If the code only calls one method from mocked class, we can skip the method name. In that case, all calls will return mocked response.
-```apex | Mock any response
+```apex
 public class MyAccountCtrlTest {
 
     @IsTest
@@ -46,7 +53,8 @@ public class MyAccountCtrlTest {
 } 
 ```
 
-```apex | Mock exception | If response value is an exception, that exception will be thrown when mocked method is called.
+If response value is an exception, that exception will be thrown when mocked method is called.
+```apex
 MyAccountCtrl.accountSelector = (AccountSelector) Mock.response(AccountSelector.class,
     new QueryException('List has no rows for assignment to SObject')
 );

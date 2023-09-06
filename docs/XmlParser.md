@@ -1,6 +1,12 @@
 # XML to JSON
 *Translate XML document into JSON*
 
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/blob/master/force-app/commons/xml/XmlParser.cls)
+
+```bash
+sf project deploy start -m "ApexClass:XmlParser*" -o sfdxOrg
+```
+
 ---
 ## Documentation
 Simple parser that traverses through XML document and maps it into untyped Map<String,Object map.
@@ -205,9 +211,23 @@ test
 
 
 ---
-## Methods
+## Specification
 
-- `void setAttributePrefix(String prefix)` - Sets prefix in JSON key that will indicate attribute. Defaults to '@'
+### XmlParser
+
+<details>
+    <summary>setAttributePrefix(String prefix)</summary>
+
+```apex
+public void setAttributePrefix(String prefix);
+```
+Return all records registered in given group.
+Respects order in which records were added to the group.
+
+###### Parameters
+- `String prefix` - Prefix in JSON key that will indicate attribute. Defaults to '@'
+
+###### Usage
 ```xml
 
 <person gender="female">
@@ -215,7 +235,12 @@ test
     <lastname>Smith</lastname>
 </person>
 ```
-
+```apex
+XmlParser parser = new XmlParser(personXML);
+parser.setAttributePrefix('@');
+parser.getUntypedMap();
+```
+Result:
 ```json
 {
     "person": {
@@ -225,15 +250,55 @@ test
     }
 }
 ```
+</details>
 
-- `Map<String,Object> getUntyped()` - returns raw Map<String,Object>
-- `Object getAs(Type apexType, Boolean withEnvelope)` - Deserializes untyped map to given apex type.
-    - `apexType` - Apex Type to deserialize to
-    - `withEnvelope` - If true, only xml's root element is deserialized into type instead of envelope
-```text
-{ // <----- This is object returned withEnvelope=true
-     "Profile":{ // <--- This is object returned withEnvelope=false
-         "classAccesses":[...]
-     }
+<details>
+    <summary>getUntyped()</summary>
+
+```apex
+public Map<String, Object> getUntyped();
+```
+Returns untyped `Map<String,Object>` parsed from XML String.
+
+###### Usage
+```apex
+XmlParser parser = new XmlParser(personXML);
+Map<String, Object> result = parser.getUntypedMap();
+```
+Result:
+```json
+{
+    "person": {
+        "@gender": "female",
+        "firstname": "Anna",
+        "lastname": "Smith"
+    }
 }
 ```
+</details>
+
+<details>
+    <summary>getAs(Type apexType, Boolean withEnvelope)</summary>
+
+```apex
+public Object getAs(Type apexType, Boolean withEnvelope);
+```
+Parses XML into a concrete apex type.
+
+###### Parameters
+- `Type apexType` - Apex Type to deserialize to
+- `Boolean withEnvelope` If true, only xml's root element is deserialized into type instead of envelope
+  ```text
+  { // <----- This is with envelope
+       "Profile":{ // <--- This is without envelope
+           "classAccesses":[...]
+       }
+  }
+  ```
+
+###### Usage
+```apex
+XmlParser parser = new XmlParser(personXML);
+Contact anna = parser.getAs(Contact.class, true);
+```
+</details>

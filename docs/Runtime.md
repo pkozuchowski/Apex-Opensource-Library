@@ -1,6 +1,12 @@
 # Runtime
 *Reflective Apex Utility*
 
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/blob/master/force-app/commons/shared/Runtime.cls)
+
+```bash
+sf project deploy start -m "ApexClass:Runtime*" -o sfdxOrg
+```
+
 ---
 ## Documentation
 Utility class that helps with Reflective/Dynamic aspects of Apex:
@@ -25,21 +31,21 @@ Runtime.getSObjectFieldType(Account.Name); // -> returns String.class
 
 #### List utils:
 - `Type getListItemType(List<Object> o)`  
-    Returns Type of given list single element.
+  Returns Type of given list single element.
 - `Type getIterableItemType(Iterable<Object> o)`  
-    Returns Type of given iterable (list or set) single element.
+  Returns Type of given iterable (list or set) single element.
 - `List<Object> newListOfTheSameType(List<Object> original)`  
-    Returns a new empty list of the same SObject type as original.
+  Returns a new empty list of the same SObject type as original.
 - `List<Object> newListOfItemType(Type itemType)`  
-    Returns a new list of a given item type.
+  Returns a new list of a given item type.
 - `List<SObject> newListOfItemType(SObjectType itemType)`  
-    Returns a new list of a given item type (List<SObject>)
+  Returns a new list of a given item type (List<SObject>)
 - `List<Object> newListOfFieldType(SObjectField field)`  
-    Returns new list with the same item type like given SObject field.
+  Returns new list with the same item type like given SObject field.
 - `List<Object> newListOfItemType(Type itemType, List<Object> fallback)`   
-    Returns list of a given item type or fallback in case of exception  
-    - `fallback` 
-        Rallback type, in case a primary type is not constructible (ex. because the type is private).
+  Returns list of a given item type or fallback in case of exception
+    - `fallback`
+      Rallback type, in case a primary type is not constructible (ex. because the type is private).
 
 ```apex
 List<Object> lst = new List<Account>();

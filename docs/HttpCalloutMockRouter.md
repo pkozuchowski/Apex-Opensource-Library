@@ -1,6 +1,12 @@
 # HTTP Callout Router
 *Configuration-driven, endpoint pattern-based router for Http Mocks.*
 
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/httpMocks)
+
+```bash
+sf project deploy start -d force-app/commons/httpMocks -o sfdxOrg
+```
+
 ---
 # Documentation
 HTTP Callout Router is a configuration-driven framework for mocking Http Callouts that matches mocks by endpoint pattern and HTTP method.  

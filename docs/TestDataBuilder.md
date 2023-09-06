@@ -1,12 +1,19 @@
 # Test Data Builder
 *Setup test records for unit tests.*
 
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/testDataBuilder)
+
+```bash
+sf project deploy start -d "force-app/commons/testDataBuilder" \
+ -d "force-app/commons/database" \
+ -o sfdxOrg
+```
+
 ---
 # Test Data Builder
-Test Data Builder is a utility class for creating test records with default fields in unit tests.
-It takes an example record, applies default values (and we can have different sets of default fields for each sObject type), multiplies it if needed and
-inserts.  
-It can also create sets of similar records, where the following records have only minor changes compared to previously created record.
+Test Data Builder is a utility class for creating test records with default fields in unit tests.  
+It takes an example record, applies default values (and we can have different sets of default fields for each sObject type), multiplies record if needed and
+inserts. It can also create sets of similar records, where the following records have only minor changes compared to previously created record.
 
 ```apex
 @TestSetup

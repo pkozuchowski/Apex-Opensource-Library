@@ -1,6 +1,18 @@
 # Localization
 *Dynamically retrieve Custom Labels, Field and Picklist labels for given locale.*
 
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/localization)
+
+```bash
+sf project deploy start \
+-d force-app/commons/utils/localization \
+-d force-app/commons/utils/dataStructures/BitSet.cls \
+-d force-app/commons/utils/dataStructures/BitSetTest.cls \
+-d force-app/commons/schema/Picklist.cls \
+-d force-app/commons/schema/PicklistTest.cls \
+-o sfdxOrg
+```
+
 ---
 ## Documentation
 

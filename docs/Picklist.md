@@ -1,6 +1,12 @@
 # Picklist
 *Access Picklist metadata*
 
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/blob/master/force-app/commons/schema/Picklist.cls)
+
+```bash
+sf project deploy start -m ApexClass:Picklist* -m ApexClass:BitSet* -o sfdxOrg
+```
+
 ---
 ## Documentation
 This class provides easy access to picklist field values, labels or controlling values.

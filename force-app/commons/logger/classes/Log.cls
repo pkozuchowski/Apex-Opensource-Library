@@ -28,6 +28,15 @@
  * This class can be extended to provide context-specific logs.
  */
 public with sharing class Log {
+    private static RecordTypeInfo RT_APPLICATION, RT_CALLOUT;
+    static {
+        Map<String, RecordTypeInfo> recordTypeByDeveloperName =
+            Log__c.SObjectType.getDescribe().getRecordTypeInfosByDeveloperName();
+
+        RT_APPLICATION = recordTypeByDeveloperName.get('ApplicationLog');
+        RT_CALLOUT = recordTypeByDeveloperName.get('CalloutLog');
+    }
+
     private LoggingEvent__e log = new LoggingEvent__e();
     private Map<String, Object> parameters = new Map<String, Object>();
 
@@ -37,7 +46,7 @@ public with sharing class Log {
      */
     public Log(String message) {
         this(new LoggingEvent__e(
-            RecordTypeId__c = RecordTypes.LOG_APPLICATION.id,
+            RecordTypeId__c = RT_APPLICATION.recordTypeId,
             Message__c = message
         ));
     }
@@ -48,7 +57,7 @@ public with sharing class Log {
      */
     public Log(Exception ex) {
         this(new LoggingEvent__e(
-            RecordTypeId__c = RecordTypes.LOG_APPLICATION.id,
+            RecordTypeId__c = RT_CALLOUT.recordTypeId,
             Message__c = Stringifier.toString(ex)
         ));
     }
@@ -60,7 +69,7 @@ public with sharing class Log {
      */
     public Log(HttpRequest request, HttpResponse response) {
         this(new LoggingEvent__e(
-            RecordTypeId__c = RecordTypes.LOG_CALLOUT.id,
+            RecordTypeId__c = RT_CALLOUT.getRecordTypeId(),
             Outbound__c = true,
             Request__c = Stringifier.toString(request),
             Response__c = Stringifier.toString(response),
@@ -75,7 +84,7 @@ public with sharing class Log {
      */
     public Log(RestRequest request, RestResponse response) {
         this(new LoggingEvent__e(
-            RecordTypeId__c = RecordTypes.LOG_CALLOUT.id,
+            RecordTypeId__c = RT_CALLOUT.getRecordTypeId(),
             Outbound__c = false,
             Request__c = Stringifier.toString(request),
             Response__c = Stringifier.toString(response),

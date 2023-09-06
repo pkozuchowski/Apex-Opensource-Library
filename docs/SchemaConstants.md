@@ -1,6 +1,12 @@
 # Setup Object Constants
 *How to store and reference Setup Objects*
 
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/constants)
+
+```bash
+sf project deploy start -d force-app/commons/constants -o sfdxOrg
+```
+
 ---
 ## Documentation
 Setup Object constants are, for example, names and ids of Profiles, Permission Sets, Custom Permissions, Record Types and other setup entities.   
@@ -24,7 +30,8 @@ public with sharing class Profiles {
         return cache.get(name);
     }
 
-    //example of lazy evaluation and caching in static map, but Platform Cache would be much better and more performant
+    // Example of lazy evaluation and caching in static map,
+    // but Platform Cache would be much better and more performant.
     private static Map<String, Profile> cache = new Map<String, Profile>();
     static {
         for (Profile p : [SELECT Id, Name FROM Profile]) {

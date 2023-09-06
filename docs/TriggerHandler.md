@@ -1,8 +1,9 @@
 # Trigger Handler
 *Orchestrator for Apex Trigger Logic*
-[Source Code](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/triggerHandler)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga57AAA)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga57AAA)
+
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/triggerHandler) 
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga52AAA) 
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga52AAA)
 
 ---
 ## Documentation
@@ -160,7 +161,7 @@ but was updated by flow or subsequent DML to meet the criteria.
 If record satisfies condition for being processed in trigger, `ctx.setExecuted()` method should be called to flag record as processed.
 
 ## Trigger Settings
-Settings class for manipulating trigger execution.  
+Settings class for manipulating trigger execution.
 
 <br/>
 

@@ -3,14 +3,14 @@
 
 
 ---
-# Overview
+# Documentation
 Each organization should have a Constant class to store picklist values and other constants. When picklist change, we only have to change it in one place in
 code rather than looking for all usages.  
 This class can be constructed in two ways:
 
 ## Simple Approach
 Each constant is just a static variable in Constants class.  
-- Use BEM naming convention as follows - SOBJECT_FIELD_VALUE. Example: ORDER_STATUS_COMPLETED  
+- Use BEM naming convention as follows — SOBJECT_FIELD_VALUE. Example: ORDER_STATUS_COMPLETED  
 - Field modifiers should be declared once or minimal number of times. Declaring them for each field obfuscates the code and counts against Apex character limit.
 
 ```apex
@@ -70,6 +70,7 @@ String orderStatus = Constants.ORDER.STATUS.NEW;
 ##### Pros
 - Constants are easier to navigate for IDE, since we can use dot-notation to traverse objects   
   *(note that this argument is only half-correct because if we type ORDER_ then IDE will only autocomplete variables that start with that)
+- Constants are organized in classes.
 - It's possible to create shorthands in client code. If we have to reference values of one picklist multiple times, we can do it with less code:
 ```apex
 //Old
@@ -89,13 +90,13 @@ for (Order o : orders) {
 ```
 
 ##### Cons
-- Constants class is obfuscated and bloats
-- Class initialization is less performant
+- Constants class is obfuscated and bloats.
+- Constants class initialization may be less performant (though this can be alleviated through lazy-evaluation).
 
 ## Lazily-Evaluated Constants
-Use methods or get properties to lazily-evaluate constants that are performance-heavy to initialize and which may not be even used most of the time.
+Use methods or get properties to lazily-evaluate constants for better performance:
 
-```apex | Lazily Evaluated
+```apex
 public class Constants {
 
     public String ACCOUNT_LABEL {
@@ -109,4 +110,10 @@ public class Constants {
         return Schema.Order.SObjectType.getDescribe().getLabel();
     }
 }
+```
+
+Lazily evaluated Account constants vs initialized:
+```apex
+    public static AccountConsts ORDER = new AccountConsts();
+    public static AccountConsts ORDER { get {return new AccountConsts();} }
 ```

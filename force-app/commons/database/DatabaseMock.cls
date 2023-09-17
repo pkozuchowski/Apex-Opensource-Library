@@ -28,6 +28,7 @@
  */
 public with sharing class DatabaseMock {
     @TestVisible final static String GENERIC_ERROR = 'Mocked DML Error';
+    public Map<String, Object> queryMocks = new Map<String, Object>();
 
     public List<SObject> insertedRecords = new List<SObject>();
     public List<SObject> updatedRecords = new List<SObject>();
@@ -36,6 +37,16 @@ public with sharing class DatabaseMock {
     public List<SObject> undeletedRecords = new List<SObject>();
 
     private final List<ErrorMatcher> errorMatchers = new List<ErrorMatcher>();
+
+
+    /**
+     * @param mockId Unique Id of the query
+     * @param queryResults What query should return
+     */
+    public DatabaseMock mockQuery(String mockId, Object queryResults) {
+        queryMocks.put(mockId, queryResults);
+        return this;
+    }
 
     /**
      * Any DML against records that has the same field as provided in param, will have DML Error

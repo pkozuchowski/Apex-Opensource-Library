@@ -117,7 +117,17 @@ public class DatabaseService {
      * @param boundVars Variables to bind to query ex. {'names' => ['Name 1', 'Name 2']}
      */
     public List<SObject> query(String query, Map<String, Object> boundVars) {
-        return dmlIssuer.query(query, boundVars == null ? new Map<String, Object>() : boundVars, level);
+        return query(null, query, boundVars);
+    }
+
+    /**
+     * Executes database query with given bound variables
+     * @param mockId Name used for mocking purposes
+     * @param query Query string (ex. 'SELECT Id FROM Account WHERE Name IN: names')
+     * @param boundVars Variables to bind to query ex. {'names' => ['Name 1', 'Name 2']}
+     */
+    public List<SObject> query(String mockId, String query, Map<String, Object> boundVars) {
+        return dmlIssuer.query(mockId, query, boundVars == null ? new Map<String, Object>() : boundVars, level);
     }
 
 
@@ -204,7 +214,7 @@ public class DatabaseService {
         List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone, AccessLevel accessLevel);
         List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel);
         List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel);
-        List<SObject> query(String query, Map<String, Object> boundVars, AccessLevel accessLevel);
+        List<SObject> query(String mockId, String query, Map<String, Object> boundVars, AccessLevel accessLevel);
         Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars, AccessLevel accessLevel);
     }
 
@@ -229,7 +239,7 @@ public class DatabaseService {
         public List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel) {
             return Database.undelete(records, allOrNone, accessLevel);
         }
-        public List<SObject> query(String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
+        public List<SObject> query(String mockId, String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
             return Database.queryWithBinds(query, boundVars, accessLevel);
         }
         public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
@@ -259,7 +269,7 @@ public class DatabaseService {
         public List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel) {
             return Database.undelete(records, allOrNone, accessLevel);
         }
-        public List<SObject> query(String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
+        public List<SObject> query(String mockId, String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
             return Database.queryWithBinds(query, boundVars, accessLevel);
         }
         public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
@@ -287,7 +297,7 @@ public class DatabaseService {
         public List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel) {
             return Database.undelete(records, allOrNone, accessLevel);
         }
-        public List<SObject> query(String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
+        public List<SObject> query(String mockId, String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
             return Database.queryWithBinds(query, boundVars, accessLevel);
         }
         public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
@@ -337,8 +347,8 @@ public class DatabaseService {
             );
         }
 
-        public List<SObject> query(String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
-            return Database.queryWithBinds(query, boundVars, accessLevel);
+        public List<SObject> query(String mockId, String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
+            return (List<SObject>) mock.queryMocks.get(mockId);
         }
 
         public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars, AccessLevel accessLevel) {

@@ -211,4 +211,16 @@ private class DatabaseMockTest {
             Assert.areEqual(DatabaseMock.GENERIC_ERROR, e.getMessage());
         }
     }
+
+    @IsTest
+    static void shouldMockQuery() {
+        dbMock.mockQuery('getById', new List<Account>{new Account(Name = 'Test')});
+
+        List<SObject> result = dbService.query('getById', 'SELECT Id FROM Account WHERE Name = :accName',
+            new Map<String, Object>{'accName' => 'Test'});
+
+        Assert.isInstanceOfType(result, List<Account>.class);
+        Assert.areEqual(1, result.size());
+        Assert.areEqual('Test', result[0].get('Name'));
+    }
 }

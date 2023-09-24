@@ -3,9 +3,98 @@
     {
       "path": "force-app",
       "default": true
+    },
+    {
+      "path": "force-app/commons/triggerHandler",
+      "package": "Trigger Handler",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "default": false,
+      "versionDescription": ""
+    },
+    {
+      "path": "force-app/commons/triggerHandlerMdt",
+      "package": "Metadata Trigger Handler",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "default": false,
+      "versionDescription": "Custom Metadata driven Trigger Handler Framework",
+      "dependencies": [
+        {
+          "package": "Trigger Handler",
+          "versionNumber": "1.0.0.LATEST"
+        }
+      ]
+    },
+    {
+      "path": "force-app/commons/shared",
+      "package": "Libra Shared",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "default": false,
+      "versionDescription": ""
+    },
+    {
+      "path": "force-app/commons/callout",
+      "package": "Callout",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "default": false,
+      "versionDescription": "",
+      "dependencies": [
+        {
+          "package": "Libra Shared",
+          "versionNumber": "1.0.0.LATEST"
+        }
+      ]
+    },
+    {
+      "path": "force-app/commons/collections",
+      "package": "Collection",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "default": false,
+      "versionDescription": "",
+      "dependencies": [
+        {
+          "package": "Libra Shared",
+          "versionNumber": "1.0.0.LATEST"
+        }
+      ]
+    },
+    {
+      "path": "./force-app/commons/queries",
+      "package": "Query Framework",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "default": false,
+      "versionDescription": "",
+      "dependencies": [
+        {
+          "package": "Libra Shared",
+          "versionNumber": "1.0.0.LATEST"
+        }
+      ]
     }
   ],
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "55.0"
+  "sourceApiVersion": "55.0",
+  "packageAliases": {
+    "Trigger Handler": "0Ho08000000CaS0CAK",
+    "Trigger Handler@0.1.0-1": "04t08000000ga52AAA",
+    "Trigger Handler@1.0.0-1": "04t08000000ga57AAA",
+    "Trigger Handler@1.0.0-2": "04t08000000ga5RAAQ",
+    "Metadata Trigger Handler": "0Ho08000000CaS5CAK",
+    "Metadata Trigger Handler@1.0.0-1": "04t08000000ga5MAAQ",
+    "Metadata Trigger Handler@1.0.0-2": "04t08000000ga8uAAA",
+    "Libra Shared": "0Ho08000000CaSACA0",
+    "Libra Shared@0.1.0-1": "04t08000000ga5bAAA",
+    "Libra Shared@1.0.0-1": "04t08000000ga8zAAA",
+    "Callout": "0Ho08000000CaSFCA0",
+    "Callout@1.0.0-1": "04t08000000ga94AAA",
+    "Collection": "0Ho08000000CaSKCA0",
+    "Collection@1.0.0-1": "04t08000000ga99AAA",
+    "Query Framework": "0Ho08000000CaSPCA0"
+  }
 }

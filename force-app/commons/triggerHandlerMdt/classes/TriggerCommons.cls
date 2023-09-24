@@ -60,9 +60,7 @@ public with sharing class TriggerCommons {
 
         public void execute(List<SObject> records, TriggerContext ctx) {
             for (SObject sobj : records) {
-                if (sobj.get(source) == null) {
-                    sobj.put(target, sobj.get(source));
-                }
+                sobj.put(target, sobj.get(source));
             }
         }
     }

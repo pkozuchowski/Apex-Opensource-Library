@@ -30,16 +30,16 @@ private class MetadataTriggerHandlerTest {
         COUNTRY_USA = 'USA';
 
     private static List<Account> accounts = new List<Account>{
-        new Account(Id = '001000000000000', Name = 'Test 1'),
-        new Account(Id = '001000000000001', Name = 'Test 2'),
-        new Account(Id = '001000000000002', Name = 'Test 3')
+        new Account(Id = '001000000000000', Name = 'Test 1', BillingCountry = COUNTRY_USA),
+        new Account(Id = '001000000000001', Name = 'Test 2', BillingCountry = COUNTRY_USA),
+        new Account(Id = '001000000000002', Name = 'Test 3', BillingCountry = COUNTRY_USA)
     };
 
     @IsTest
     static void triggerShouldExecuteTriggerLogicClassesDefinedInSettings() {
-        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
         MetadataTriggerHandler.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(ApexClass__c = 'MetadataTriggerHandlerTest.TestTriggerLogic')
+            new TriggerLogic__mdt(ApexClass__c = 'MetadataTriggerHandlerTest.AccountShippingCountryFiller')
         });
 
 
@@ -56,7 +56,7 @@ private class MetadataTriggerHandlerTest {
     public class AccountShippingCountryFiller implements TriggerLogic {
         public void execute(List<Account> records, TriggerContext ctx) {
             for (Account acc : records) {
-                if (ctx.isChanged(acc, Account.BillingCountry) && String.isBlank(acc.ShippingCountry)) {
+                if (ctx.isNew() && String.isBlank(acc.ShippingCountry)) {
                     acc.ShippingCountry = acc.BillingCountry;
                 }
             }

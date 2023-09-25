@@ -73,8 +73,50 @@
         {
           "package": "Libra Shared",
           "versionNumber": "1.0.0.LATEST"
+        },
+        {
+          "package": "DatabaseService",
+          "versionNumber": "0.1.0.LATEST"
         }
       ]
+    },
+    {
+      "path": "./force-app/commons/database",
+      "package": "DatabaseService",
+      "versionName": "ver 0.1",
+      "versionNumber": "0.1.0.NEXT",
+      "default": false,
+      "versionDescription": ""
+    },
+    {
+      "path": "./force-app/commons/httpMocks",
+      "package": "HttpMockRouter",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "default": false,
+      "versionDescription": ""
+    },
+    {
+      "path": "./force-app/commons/testDataBuilder",
+      "package": "TestDataBuilder",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "default": false,
+      "versionDescription": "",
+      "dependencies": [
+        {
+          "package": "DatabaseService",
+          "versionNumber": "0.1.0.LATEST"
+        }
+      ]
+    },
+    {
+      "path": "./force-app/commons/testDataSuite",
+      "package": "TestDataSuite",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "default": false,
+      "versionDescription": ""
     }
   ],
   "namespace": "",
@@ -95,6 +137,15 @@
     "Callout@1.0.0-1": "04t08000000ga94AAA",
     "Collection": "0Ho08000000CaSKCA0",
     "Collection@1.0.0-1": "04t08000000ga99AAA",
-    "Query Framework": "0Ho08000000CaSPCA0"
+    "DatabaseService": "0Ho08000000CaSUCA0",
+    "DatabaseService@0.1.0-1": "04t08000000ga9OAAQ",
+    "Query Framework": "0Ho08000000CaSPCA0",
+    "Query Framework@1.0.0-1": "04t08000000ga9TAAQ",
+    "HttpMockRouter": "0Ho08000000CaSZCA0",
+    "HttpMockRouter@1.0.0-1": "04t08000000ga9YAAQ",
+    "TestDataBuilder": "0Ho08000000CaSeCAK",
+    "TestDataBuilder@1.0.0-1": "04t08000000ga9dAAA",
+    "TestDataSuite": "0Ho08000000CaSjCAK",
+    "TestDataSuite@1.0.0-1": "04t08000000ga9iAAA"
   }
 }

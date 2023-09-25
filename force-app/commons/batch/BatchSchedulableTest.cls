@@ -23,12 +23,12 @@
 */
 
 @IsTest
-public class BatchSchedulableTest implements Database.Batchable<Integer> {
+public class BatchSchedulableTest implements Database.Batchable<SObject> {
 
-    public Iterable<Integer> start(Database.BatchableContext param1) {
-        return new List<Integer>{1, 2, 3, 4, 5};
+    public Database.QueryLocator start(Database.BatchableContext param1) {
+        return Database.getQueryLocator('SELECT Id FROM User LIMIT 10');
     }
-    public void execute(Database.BatchableContext param1, List<Integer> param2) {}
+    public void execute(Database.BatchableContext param1, List<SObject> param2) {}
     public void finish(Database.BatchableContext param1) {}
 
 

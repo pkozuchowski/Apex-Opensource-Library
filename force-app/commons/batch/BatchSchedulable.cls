@@ -30,29 +30,36 @@
  * @see BatchSchedulableTest
  */
 public class BatchSchedulable implements Schedulable {
+    private static final Integer DEFAULT_BATCH_SIZE = 200;
+
     private Integer batchSize;
     private String batchName;
+    private Map<String, Object> params = new Map<String, Object>();
 
     public BatchSchedulable(Type batchClass) {
-        this(batchClass, 200);
+        this(batchClass, null);
     }
 
-    public BatchSchedulable(Type batchClass, Integer batchSize) {
+    public BatchSchedulable(Type batchClass, Map<String, Object> params) {
+        this(batchClass, params, null);
+    }
+
+    public BatchSchedulable(Type batchClass, Map<String, Object> params, Integer batchSize) {
         this.batchName = batchClass.getName();
-        this.batchSize = batchSize;
+        this.batchSize = batchSize == null ? DEFAULT_BATCH_SIZE : batchSize;
+        this.params = params == null ? this.params : params;
     }
 
 
     public void execute(SchedulableContext scx) {
-        Database.Batchable<SObject> batchInstance = getInstance(batchName);
+        Database.Batchable<Object> batchInstance = getInstance(batchName);
         Database.executeBatch(batchInstance, batchSize);
     }
 
-
-    private static Database.Batchable<SObject> getInstance(String name) {
+    private Database.Batchable<Object> getInstance(String name) {
         try {
             Type batchType = Type.forName(name);
-            return (Database.Batchable<SObject>) batchType.newInstance();
+            return (Database.Batchable<Object>) JSON.deserialize(JSON.serialize(params), batchType);
         } catch (Exception ex) {
             throw new TypeException('Failed to create instance of "' + name + '".\n' +
                 'Make sure that class name is correct and class has public accessor and no-args constructor.');

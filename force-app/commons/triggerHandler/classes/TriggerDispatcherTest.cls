@@ -302,4 +302,19 @@ private class TriggerDispatcherTest {
 
         Assert.areEqual(1, tc.getRunCount('AccountAddressPopulator', accounts[0].Id));
     }
+
+
+    @IsTest
+    static void testOperationCoverage() {
+        List<Account> accounts = new List<Account>{
+            new Account(Id = ID_1, Name = NAME_TEST, NumberOfEmployees = 0)
+        };
+        TriggerContext t = TriggerContext.getInstance();
+        Assert.isNull(t.operationType);
+
+        for (TriggerOperation op : TriggerOperation.values()) {
+            TriggerContext tc = new TriggerContext(op, accounts, accounts);
+            TriggerDispatcher.run(new TriggerHandler(), tc);
+        }
+    }
 }

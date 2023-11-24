@@ -60,7 +60,8 @@ public inherited sharing class TriggerDispatcher {
                 }
             }
         } catch (Exception e) {
-//            Logger.error(new Log(e));
+            // Plug-in Logger implementation
+            // Logger.error(new Log(e));
             throw e;
         }
     }

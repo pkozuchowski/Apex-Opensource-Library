@@ -23,14 +23,14 @@
  *  SOFTWARE.
  * /
  * *
- *  Please find newest source code at https://github.com/amorek/Apex-Opensource-Library
+ *  Please find newest source code at https://github.com/pkozuchowski/Apex-Opensource-Library
  * /
  */
 
 public with sharing class HttpMocksConfig {
     private static Map<String, HttpCalloutMock__mdt> mocks = HttpCalloutMock__mdt.getAll();
     private static Map<String, String> variables = new Map<String, String>();
-    private static Boolean isMocked;
+    private static Boolean isMocked = false;
 
 
     static {

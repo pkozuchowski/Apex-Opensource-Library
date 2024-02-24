@@ -1,0 +1,14 @@
+{
+    "short_name": "Apex Libra",
+    "name": "Salesforce Library of Accelerators, Frameworks and Utilities",
+    "icons": [
+        {
+            "src": "cloud.svg",
+            "sizes": "any"
+        }
+    ],
+    "start_url": "./index.html",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff"
+}

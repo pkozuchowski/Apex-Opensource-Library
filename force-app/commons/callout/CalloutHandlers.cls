@@ -120,17 +120,24 @@ public virtual with sharing class CalloutHandlers {
         }
 
         public Object handle(Callout c) {
-            HttpResponse httpResponse = c.getResponse();
-            String body = httpResponse?.getBody();
-            if (String.isNotBlank(body) && errorResponseType != null) {
-                ex = (CalloutResponseException) JSON.deserialize(body, errorResponseType);
+            if (c.getCalloutException() != null) {
+                ex.initCause(c.getCalloutException());
+                ex.setMessage(c.getCalloutException().getMessage());
+
+            } else {
+                HttpResponse httpResponse = c.getResponse();
+                String body = httpResponse?.getBody();
+                if (String.isNotBlank(body) && errorResponseType != null) {
+                    ex = (CalloutResponseException) JSON.deserialize(body, errorResponseType);
+                }
+
+                if (String.isEmpty(ex.getMessage())) {
+                    ex.setMessage(httpResponse?.getStatusCode() + ' ' + httpResponse?.getStatus());
+                }
+                ex.setHttpResponse(httpResponse);
+
             }
 
-            if (String.isEmpty(ex.getMessage())) {
-                ex.setMessage(httpResponse?.getStatusCode() + ' ' + httpResponse?.getStatus());
-            }
-
-            ex.setHttpResponse(httpResponse);
             throw ex;
         }
     }

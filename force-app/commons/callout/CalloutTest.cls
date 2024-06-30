@@ -377,6 +377,28 @@ private class CalloutTest {
         Test.stopTest();
     }
 
+    @IsTest
+    static void shouldHandleStandardCalloutException() {
+
+        try {
+            Test.setMock(HttpCalloutMock.class, new CalloutExceptionMock());
+            Callout c = new Callout();
+            c.setMethod('GET');
+            c.setEndpoint('callout:NonExistingNamedCredential');
+            c.execute();
+            Assert.fail('Should catch standard callout exception');
+
+        } catch (CalloutResponseException e) {
+            Assert.areEqual(e.getMessage(), 'Time out');
+        }
+    }
+
+    private class CalloutExceptionMock implements HttpCalloutMock {
+        public HttpResponse respond(HttpRequest request) {
+            throw new CalloutException('Time out');
+        }
+    }
+
     private class ErrorResponseException extends CalloutResponseException {
         public OdataError odata_error;
     }

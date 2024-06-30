@@ -84,6 +84,8 @@ public virtual class Callout {
             .add(match.onUnauthorized(), action.retry(1))
             .add(match.onTimeout(), action.retry(1))
             .slot('beforeValidation')
+            .add(match.onException(), action.logCallout(LoggingLevel.ERROR))
+            .add(match.onException(), action.throwEx())
             .add(match.onAnyErrorCode(), action.logCallout(LoggingLevel.ERROR))
             .add(match.onAnyErrorCode(), action.throwEx())
             .add(match.onSuccess(), action.logCallout(LoggingLevel.INFO))
@@ -273,6 +275,9 @@ public virtual class Callout {
     private Object getResult(Object handlerResponse) {
         if (handlerResponse != null) {
             return handlerResponse;
+
+        } else if (ex != null) {
+            throw ex;
 
         } else if (responseType != null) {
             return JSON.deserialize(response.getBody(), responseType);

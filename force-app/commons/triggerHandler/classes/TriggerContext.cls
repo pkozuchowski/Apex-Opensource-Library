@@ -83,7 +83,7 @@ public virtual class TriggerContext {
         String op = operation.name();
         this.isInsert = op.contains('INSERT');
         this.isUpdate = op.contains('UPDATE');
-        this.isDelete = op.contains('DELETE');
+        this.isDelete = op.contains('_DELETE');
         this.isUndelete = op.contains('UNDELETE');
         this.isBefore = op.contains('BEFORE');
         this.isAfter = op.contains('AFTER');

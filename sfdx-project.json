@@ -8,7 +8,7 @@
       "path": "force-app/commons/triggerHandler",
       "package": "Trigger Handler",
       "versionName": "ver 1.0",
-      "versionNumber": "1.0.1.NEXT",
+      "versionNumber": "1.0.2.NEXT",
       "default": false,
       "versionDescription": ""
     },
@@ -125,6 +125,7 @@
   "packageAliases": {
     "Trigger Handler": "0Ho08000000CaS0CAK",
     "Trigger Handler@1.0.1-1": "04t08000000cSiXAAU",
+    "Trigger Handler@1.0.2-1": "04t08000000UK6aAAG",
     "Metadata Trigger Handler": "0Ho08000000CaS5CAK",
     "Metadata Trigger Handler@1.0.0-1": "04t08000000ga5MAAQ",
     "Metadata Trigger Handler@1.0.0-2": "04t08000000ga8uAAA",

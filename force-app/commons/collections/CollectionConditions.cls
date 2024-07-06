@@ -81,7 +81,7 @@ public with sharing class CollectionConditions extends Conditions {
     private class FieldValueCondition implements Condition {
         private Object value;
         private String field;
-        private Comparator comparator;
+        private Comparator<Object> comparator;
         private final Condition expectedResult;
 
         public FieldValueCondition(String field, Condition expectedResult, Object value) {

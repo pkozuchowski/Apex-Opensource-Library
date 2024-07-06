@@ -3,8 +3,8 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/collections)
 [Dependency](/apex/runtime)
-[Install in Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga99AAA)
-[Install in Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga99AAA)
+[Install in Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK6uAAG)
+[Install in Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK6uAAG)
 
 ```bash
 sf project deploy start \
@@ -33,7 +33,7 @@ List<Opportunity> wonOpportunities = (List<Opportunity>)
 		.filter(Opportunity.StageName).equals('Won')
 		.orderByDesc(Opportunity.ExpectedRevenue)
 		.slice(0, 10)
-		.get();
+		.getList();
 
 
 // Map opportunities by Account Id
@@ -140,36 +140,37 @@ Calling getSet() or getList() with sobject field, we will get List or Set of fie
 Mapper interface can also be used to derive values from sObjects or any other item type.
 #### Getting Set of values
 ```apex
-Set<String> strings = Collection.of(opportunities).getSetString(Opportunity.Name);
-Set<Id> ids = Collection.of(opportunities).getSetId(Opportunity.Id);
-Set<Integer> integers = Collection.of(opportunities).getSetInteger(Opportunity.FiscalYear);
+Set<String> strings = Collection.of(opportunities).collect(Opportunity.Name).getSetString();
+Set<Id> ids = Collection.of(opportunities).collect(Opportunity.Id).getSetId();
+Set<Integer> integers = Collection.of(opportunities).collect(Opportunity.FiscalYear).getSetInteger();
 
 //Any Type
-Set<Datetime> createdDates = (Set<Datetime>) Collection.of(opportunities).getSet(Opportunity.CreatedDate);
+Set<Datetime> createdDates = (Set<Datetime>) Collection.of(opportunities)
+        .collect(Opportunity.CreatedDate)
+        .getSet();
 ```
+
 #### Getting List of values
 ```apex
-List<String> strings = Collection.of(opportunities).getListString(Opportunity.Name);
-List<Id> ids = Collection.of(opportunities).getListId(Opportunity.Id);
-List<Integer> integers = Collection.of(opportunities).getListInteger(Opportunity.FiscalYear);
+List<String> strings = Collection.of(opportunities).collect(Opportunity.Name).getListString();
+List<Id> ids = Collection.of(opportunities).collect(Opportunity.Id).getListId();
+List<Integer> integers = Collection.of(opportunities).collect(Opportunity.FiscalYear).getListInteger();
 
 //Any Type
-List<Datetime> createdDates = (List<Datetime>) Collection.of(opportunities).getList(Opportunity.CreatedDate);
+List<Datetime> createdDates = (List<Datetime>) Collection.of(opportunities).collect(Opportunity.CreatedDate).getList();
 ```
+
 #### All Methods
 ```apex
-Set<Id> getSetId(SObjectField field);
-Set<String> getSetString(SObjectField field);
-Set<Integer> getSetInteger(SObjectField field);
-Object getSet(SObjectField field);
-Object getSet(Mapper valueMapper);
+Set<Id> getSetId();
+Set<String> getSetString();
+Set<Integer> getSetInteger();
+Object getSet();
 
-
-List<Id> getListId(SObjectField field);
-List<String> getListString(SObjectField field);
-List<Integer> getListInteger(SObjectField field);
-List<Object> getList(SObjectField field);
-List<Object> getList(Mapper valueMapper);
+List<Id> getListId();
+List<String> getListString();
+List<Integer> getListInteger();
+List<Object> getList();
 ```
 
 
@@ -206,7 +207,7 @@ List<Opportunity> filtered = (List<Opportunity>) Collection.of(opportunities)
 			c.field(Opportunity.NextStep).notEquals('Analysis')
 		)
 	)
-	.get();
+	.getList();
 ```
 #### Filtering similar records
 Will filter records that have the same value set as given example
@@ -216,45 +217,42 @@ List<Opportunity> filtered = (List<Opportunity>) Collection.of(opportunities)
 		StageName = 'Prospect',
 		AccountId = myAccount.Id
 	))
-	.get();
+	.getList();
 ```
 
 
 
 ## Ordering collection
 
-Order methods can sort list by sobject field or custom comparator.
+Order methods can sort a list by sobject field or custom comparator.
 #### Order by SObject field.
 ```apex
 List<Opportunity> sortedOpportunities = (List<Opportunity>)
 	Collection.of(opportunities)
 		.orderAsc(Opportunity.CreatedDate)
-		.get();
+		.getList();
 ```
-#### Order using custom comparator class
-**Note!** As of Winter '24, Salesforce introduces standard Comparator interface. It only took 20 years, but we are getting there.  
-Framework will be refactored to use standard comparator closer to the Salesforce release.
+#### Order using comparator class
+Implement standard System.Comparator<T> class to use it for ordering items: 
 
 ```apex
 List<Opportunity> opportunities = (List<Opportunity>)
-	Collection.of(opportunities)
-		.orderBy(new ReverseProbabilityComparator())
-		.get();
+    Collection.of(opportunities)
+        .orderBy((Comparator<Object>) new ReverseProbabilityComparator())
+        .getList();
 
-private class ReverseProbabilityComparator implements Comparator {
-	public Integer compare(Object thisItem, Object otherItem) {
-		Opportunity thisOpp = (Opportunity) thisItem;
-		Opportunity otherOpp = (Opportunity) otherItem;
+private class ReverseProbabilityComparator implements Comparator<Opportunity> {
+  public Integer compare(Opportunity thisOpp, Opportunity otherOpp) {
+    if (thisOpp.Probability < otherOpp.Probability) {
+      return 1;
 
-		if (thisOpp.Probability < otherOpp.Probability) {
-			return 1;
-		} else if (thisOpp.Probability > otherOpp.Probability) {
-			return -1;
+    } else if (thisOpp.Probability > otherOpp.Probability) {
+      return -1;
 
-		} else {
-			return 0;
-		}
-	}
+    } else {
+      return 0;
+    }
+  }
 }
 
 ```
@@ -265,13 +263,16 @@ private class ReverseProbabilityComparator implements Comparator {
 Reduce a collection to single aggregated value or completely different data structure.  
 Framework provides a few out of the box arithmetic reductions, but any kind of transformation is possible by implementing custom Reducer class.
 ```apex
-Decimal getSum(SObjectField field);
-Decimal getAverage(SObjectField field);
-Decimal getMin(SObjectField field);
-Decimal getMax(SObjectField field);
+Collection collect(SObjectField field);
+Collection collect(Mapper mapper);
+
+Decimal getSum();
+Decimal getAverage();
+Decimal getMin();
+Decimal getMax();
 Object reduce(Reducer reducer, Object initialValue);
 
-Decimal sum = Collection.of(opportunities).getSum(Opportunity.Amount);
+Decimal sum = Collection.of(opportunities).collect(Opportunity.Amount).getSum();
 ```
 
 
@@ -281,8 +282,8 @@ Decimal sum = Collection.of(opportunities).getSum(Opportunity.Amount);
 
 #### Slicing list
 ```apex
-Collection.of(contacts).slice(0, 10).get(); //=> returns first 10 contacts  
-Collection.of(contacts).slice(new List<Integer>{0, 2, 4, 9}).get(); //=> returns contacts from given indexes  
+Collection.of(contacts).slice(0, 10).getList(); //=> returns first 10 contacts  
+Collection.of(contacts).slice(new List<Integer>{0, 2, 4, 9}).getList(); //=> returns contacts from given indexes  
 ```
 #### First / Last and other
 These methods are NPE safe and will return null if list is empty.
@@ -330,23 +331,21 @@ interface Collection {
 	
 	Object reduce(Reducer reducer, Object initialValue);
 	
-	Decimal getSum(SObjectField field);
-	Decimal getAverage(SObjectField field);
-	Decimal getMin(SObjectField field);
-	Decimal getMax(SObjectField field);
+	Decimal getSum();
+	Decimal getAverage();
+	Decimal getMin();
+	Decimal getMax();
 	
 	
-	List<Id> getListId(SObjectField field);
-	List<String> getListString(SObjectField field);
-	List<Integer> getListInteger(SObjectField field);
-	List<Object> getList(SObjectField field);
-	List<Object> getList(Mapper valueMapper);
+	List<Id> getListId();
+	List<String> getListString();
+	List<Integer> getListInteger();
+	List<Object> getList();
 	
-	Set<Id> getSetId(SObjectField field);
-	Set<String> getSetString(SObjectField field);
-	Set<Integer> getSetInteger(SObjectField field);
-	Object getSet(SObjectField field);
-	Object getSet(Mapper valueMapper);
+	Set<Id> getSetId();
+	Set<String> getSetString();
+	Set<Integer> getSetInteger();
+	Object getSet();
 	
 	Object mapBy(SObjectField field);
 	Object mapBy(SObjectField keyField, SObjectField valueField);
@@ -364,7 +363,7 @@ interface Collection {
 	
 	Collection orderAsc(SObjectField field);
 	Collection orderDesc(SObjectField field);
-	Collection orderBy(Comparator comparator);
+	Collection orderBy(Comparator<Object> comparator);
 }
 ```
 </details>
@@ -404,3 +403,18 @@ interface Reducer {
 	Object reduce(Object accumulator, Object item, Integer index);
 }
 ```
+
+---
+# Change Log
+
+### 2.0.0
+- Changed custom Comparator interface to standard that was introduced in Winter '24
+- getList/getSet reducers are more robust, but now require collect calls
+- Arithmetic reducers are more robust and work on collections of numeric values
+```apex
+Collection.of(accounts).collect(Account.AnnualRevenue).getList();
+Collection.of(accounts).collect(Account.AnnualRevenue).getSet();
+Collection.of(accounts).collect(Account.AnnualRevenue).getSum();
+```
+- Fixed wrong type returned in getList method
+- API Version bumped to 61.0

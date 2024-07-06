@@ -36,24 +36,20 @@
  * @see CollectionTest
  */
 public inherited sharing class CollectionImpl extends Collection {
-
-    /*Flyweights for reducers*/
-    private final static ArithmeticReducer
-        MAX = new ReducerToMax(),
-        MIN = new ReducerToMin(),
-        AVERAGE = new ReducerToAverage(),
-        SUM = new ReducerToSum();
-
     private final static CollectionConditions conditionsFactory = new CollectionConditions();
 
     private List<Object> items;
-
+    private Type itemType;
 
     public CollectionImpl(List<Object> items) {
-        this.items = items;
+        this(items, items == null ? null : Runtime.getListItemType(items));
     }
 
-    public override List<Object> get() { return items; }
+    public CollectionImpl(List<Object> items, Type itemType) {
+        this.items = items;
+        this.itemType = itemType;
+    }
+
     public override Object getFirst() { return isEmpty() ? null : items[0]; }
     public override Object getLast() { return isEmpty() ? null : items[items.size() - 1]; }
     public override Object getRandom() { return isEmpty() ? null : items[(Integer) Math.floor(Math.random() * size())]; }
@@ -149,51 +145,55 @@ public inherited sharing class CollectionImpl extends Collection {
         return previousValue;
     }
 
-    public override Decimal getSum(SObjectField field) { return (Decimal) this.reduce(SUM.ofField(field), 0.0); }
-    public override Decimal getMin(SObjectField field) { return (Decimal) this.reduce(MIN.ofField(field), null); }
-    public override Decimal getMax(SObjectField field) { return (Decimal) this.reduce(MAX.ofField(field), null); }
-    public override Decimal getAverage(SObjectField field) { return (Decimal) this.reduce(AVERAGE.ofField(field), null); }
+    public override Collection collect(SObjectField field) {
+        return collect(new FieldMapper(field));
+    }
 
-    public override List<Id> getListId(SObjectField field) {
-        return (List<Id>) getList(new FieldMapper(field, Id.class));
-    }
-    public override List<String> getListString(SObjectField field) {
-        return (List<Id>) getList(new FieldMapper(field, String.class));
-    }
-    public override List<Integer> getListInteger(SObjectField field) {
-        return (List<Integer>) getList(new FieldMapper(field, Integer.class));
-    }
-    public override List<Object> getList(SObjectField field) {
-        return (List<Id>) getList(new FieldMapper(field));
-    }
-    public override List<Object> getList(Mapper valueMapper) {
+    public override Collection collect(Collection.Mapper valueMapper) {
         List<Object> values = Runtime.newListOfItemType(valueMapper.valueType());
 
         for (Integer i = 0, size = size(); i < size; i++) {
             values.add(valueMapper.value(items[i]));
         }
 
-        return values;
+        return new CollectionImpl(values, valueMapper.valueType());
     }
 
+    public override Decimal getSum() { return (Decimal) this.reduce(new ReducerToSum(), 0.0); }
+    public override Decimal getMin() { return (Decimal) this.reduce(new ReducerToMin(), null); }
+    public override Decimal getMax() { return (Decimal) this.reduce(new ReducerToMax(), null); }
+    public override Decimal getAverage() { return getSum() / size(); }
 
-    public override Set<Id> getSetId(SObjectField field) {
-        return (Set<Id>) getSet(new FieldMapper(field, Id.class));
+    /*Get List*/
+    public override List<Id> getListId() {
+        return (List<Id>) getList();
     }
-    public override Set<String> getSetString(SObjectField field) {
-        return (Set<String>) getSet(new FieldMapper(field, String.class));
+    public override List<String> getListString() {
+        return (List<String>) getList();
     }
-    public override Set<Integer> getSetInteger(SObjectField field) {
-        return (Set<Integer>) getSet(new FieldMapper(field, Integer.class));
+    public override List<Integer> getListInteger() {
+        return (List<Integer>) getList();
     }
-    public override Object getSet(SObjectField field) {
-        return getSet(new FieldMapper(field));
-    }
-    public override Object getSet(Mapper valueMapper) {
-        return mapToUntypedMap(valueMapper, new ItemMapper(items)).keySet();
+    public override List<Object> getList() {
+        return this.items;
     }
 
+    /*Get Set*/
+    public override Set<Id> getSetId() {
+        return (Set<Id>) getSet();
+    }
+    public override Set<String> getSetString() {
+        return (Set<String>) getSet();
+    }
+    public override Set<Integer> getSetInteger() {
+        return (Set<Integer>) getSet();
+    }
+    public override Object getSet() {
+        ItemMapper itemMapper = new ItemMapper(items);
+        return mapToUntypedMap(itemMapper, itemMapper).keySet();
+    }
 
+    /*Map by*/
     public override Object mapBy(SObjectField field) {
         return mapBy(new FieldMapper(field));
     }
@@ -223,7 +223,7 @@ public inherited sharing class CollectionImpl extends Collection {
         return imap;
     }
 
-
+    /*Group by*/
     public override Object groupBy(SObjectField field) {
         return groupBy(new FieldMapper(field));
     }
@@ -257,38 +257,16 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
     public override Collection orderAsc(SObjectField field) {
-        assertSObjectCollection();
-        return orderBy(new CompareByField(field, 1));
+        return orderBy((Comparator<Object>) new Comparators.SObjectComparator(field, 1));
     }
 
     public override Collection orderDesc(SObjectField field) {
-        assertSObjectCollection();
-        return orderBy(new CompareByField(field, -1));
+        return orderBy((Comparator<Object>) new Comparators.SObjectComparator(field, -1));
     }
 
-
-    public override Collection orderBy(Comparator comparator) {
-        List<ComparableObject> comparables = new List<ComparableObject>();
-
-        for (Integer i = 0, size = size(); i < size; i++) {
-            comparables.add(new ComparableObject(items[i], comparator));
-        }
-
-        comparables.sort();
-        List<Object> sorted = Runtime.newListOfTheSameType(items);
-
-        for (Integer i = 0, size = comparables.size(); i < size; i++) {
-            sorted.add(comparables[i].item);
-        }
-
-        return Collection.of(sorted);
-    }
-
-
-    private void assertSObjectCollection() {
-        if (!(items instanceof List<SObject>)) {
-            throw new CollectionException('Operation only applies to SObject collection.');
-        }
+    public override Collection orderBy(Comparator<Object> comparator) {
+        this.items.sort(comparator);
+        return this;
     }
 
 
@@ -327,21 +305,9 @@ public inherited sharing class CollectionImpl extends Collection {
     * REDUCERS
     * */
     private abstract class ArithmeticReducer implements Reducer {
-        private SObjectField field;
-
-        public Reducer ofField(SObjectField field) {
-            this.field = field;
-            return this;
-        }
-
         public Object reduce(Object accumulator, Object item, Integer index) {
-            Decimal fieldValue = (Decimal) ((SObject) item).get(field);
-
-            if (fieldValue != null) {
-                return reduce((Decimal) accumulator, fieldValue, index);
-            } else {
-                return accumulator;
-            }
+            Decimal fieldValue = (Decimal) item;
+            return fieldValue == null ? accumulator : reduce((Decimal) accumulator, fieldValue, index);
         }
 
         protected abstract Decimal reduce(Decimal accumulator, Decimal fieldValue, Integer index);
@@ -353,34 +319,15 @@ public inherited sharing class CollectionImpl extends Collection {
         }
     }
 
-    private class ReducerToAverage extends ArithmeticReducer {
-        private Decimal sum = 0;
-
-        protected override Decimal reduce(Decimal accumulator, Decimal fieldValue, Integer index) {
-            this.sum += fieldValue;
-            return this.sum / (index + 1);
-        }
-    }
-
     private class ReducerToMax extends ArithmeticReducer {
         protected override Decimal reduce(Decimal maxSoFar, Decimal fieldValue, Integer index) {
-            if (maxSoFar == null) {
-                return fieldValue;
-
-            } else {
-                return Math.max(fieldValue, maxSoFar);
-            }
+            return maxSoFar == null ? fieldValue : Math.max(fieldValue, maxSoFar);
         }
     }
 
     private class ReducerToMin extends ArithmeticReducer {
         protected override Decimal reduce(Decimal minSoFar, Decimal fieldValue, Integer index) {
-            if (minSoFar == null) {
-                return fieldValue;
-
-            } else {
-                return Math.min(fieldValue, minSoFar);
-            }
+            return minSoFar == null ? fieldValue : Math.min(fieldValue, minSoFar);
         }
     }
 
@@ -401,11 +348,6 @@ public inherited sharing class CollectionImpl extends Collection {
             this.field = field;
         }
 
-        public FieldMapper(SObjectField field, Type fieldType) {
-            this.fieldType = fieldType;
-            this.field = field;
-        }
-
         public Type valueType() { return fieldType; }
         public Object value(Object item) { return ((SObject) item).get(field); }
     }
@@ -422,16 +364,8 @@ public inherited sharing class CollectionImpl extends Collection {
     * Maps collection by pair of fields and separator. ex.
     * Junction object by both parent fields.
     * This mapper will always map by String key.
-    *
-    * @example
-    * <pre>
-    *       Map<String, JunctionObject> junctionRecordsByParents =
-    *           Collection.mapBy(junctionRecords,
-    *               new Collection.MapByFieldPair(JunctionObject.ParentId1, '_', JunctionObject.ParentId2)
-    *           );
-    * </pre>
     * */
-    public class ConcatenatedFieldsMapper implements Collection.Mapper {
+    private class ConcatenatedFieldsMapper implements Collection.Mapper {
         private SObjectField fieldLeft;
         private SObjectField fieldRight;
 
@@ -445,43 +379,6 @@ public inherited sharing class CollectionImpl extends Collection {
         }
 
         public Type valueType() { return String.class; }
-    }
-
-
-    /**
-     * Compares records by values of the SObject field.
-     */
-    public class CompareByField implements Comparator {
-        private SObjectField field;
-        private Integer direction;
-        private Comparator comparator;
-
-        public CompareByField(SObjectField field, Integer direction) {
-            this.field = field;
-            this.direction = direction;
-            this.comparator = Comparators.getByField(field);
-        }
-
-        public Integer compare(Object thisItem, Object otherItem) {
-            Object thisValue = ((SObject) thisItem).get(field);
-            Object otherValue = ((SObject) otherItem).get(field);
-
-            return comparator.compare(thisValue, otherValue) * direction;
-        }
-    }
-
-    private virtual class ComparableObject implements Comparable {
-        private Object item;
-        private Comparator comparator;
-
-        public ComparableObject(Object item, Comparator comparator) {
-            this.item = item;
-            this.comparator = comparator;
-        }
-
-        public Integer compareTo(Object other) {
-            return comparator.compare(this.item, ((ComparableObject) other).item);
-        }
     }
 
 

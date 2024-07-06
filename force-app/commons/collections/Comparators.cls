@@ -24,96 +24,98 @@
 
 public with sharing class Comparators {
 
-    public final static Map<Schema.SoapType, Comparator> comparatorsByFieldType = new Map<SoapType, Comparator>{
-            SoapType.ID => new Comparators.StringComparator(),
-            SoapType.STRING => new Comparators.StringComparator(),
-            SoapType.DATE => new Comparators.DatetimeComparator(),
-            SoapType.DATETIME => new Comparators.DateTimeComparator(),
-            SoapType.INTEGER => new Comparators.IntegerComparator(),
-            SoapType.DECIMAL => new Comparators.DecimalComparator(),
-            SoapType.DOUBLE => new Comparators.DoubleComparator(),
-            SoapType.BOOLEAN => new Comparators.BooleanComparator(),
-            SoapType.TIME => new Comparators.BooleanComparator()
+    public final static Map<Schema.SoapType, Comparator<Object>> comparatorsByFieldType = new Map<SoapType, Comparator<Object>>{
+        SoapType.ID => (Comparator<Object>) new StringComparator(),
+        SoapType.STRING => (Comparator<Object>) new StringComparator(),
+        SoapType.DATE => (Comparator<Object>) new DateTimeComparator(),
+        SoapType.DATETIME => (Comparator<Object>) new DateTimeComparator(),
+        SoapType.INTEGER => (Comparator<Object>) new LongComparator(),
+        SoapType.LONG => (Comparator<Object>) new LongComparator(),
+        SoapType.DECIMAL => (Comparator<Object>) new DoubleComparator(),
+        SoapType.DOUBLE => (Comparator<Object>) new DoubleComparator(),
+        SoapType.BOOLEAN => (Comparator<Object>) new BooleanComparator(),
+        SoapType.TIME => (Comparator<Object>) new TimeComparator()
     };
 
-    public static Comparator getByField(SObjectField field) {
-        Comparator comparator = comparatorsByFieldType.get(field.getDescribe().getSoapType());
+    public static Comparator<Object> getByField(SObjectField field) {
+        SoapType soapType = field.getDescribe().getSoapType();
+        Comparator<Object> comparator = (Comparator<Object>) comparatorsByFieldType
+            .get(soapType);
         return comparator == null ? new Comparators.AnyComparator() : comparator;
     }
 
-    public static Comparator getForPrimitive(Object o1) {
-        if (o1 instanceof Id) return new StringComparator();
-        if (o1 instanceof String) return new StringComparator();
-        if (o1 instanceof Datetime) return new DateTimeComparator();
-        if (o1 instanceof Time) return new TimeComparator();
-        if (o1 instanceof Integer) return new IntegerComparator();
-        if (o1 instanceof Decimal) return new DecimalComparator();
-        if (o1 instanceof Double) return new DoubleComparator();
-        if (o1 instanceof Long) return new IntegerComparator();
-        if (o1 instanceof Boolean) return new BooleanComparator();
+    public static Comparator<Object> getForPrimitive(Object o1) {
+        if (o1 instanceof Id) return (Comparator<Object>) new StringComparator();
+        if (o1 instanceof String) return (Comparator<Object>) new StringComparator();
+        if (o1 instanceof Datetime) return (Comparator<Object>) new DateTimeComparator();
+        if (o1 instanceof Time) return (Comparator<Object>) new TimeComparator();
+        if (o1 instanceof Integer) return (Comparator<Object>) new LongComparator();
+        if (o1 instanceof Decimal) return (Comparator<Object>) new DoubleComparator();
+        if (o1 instanceof Double) return (Comparator<Object>) new DoubleComparator();
+        if (o1 instanceof Long) return (Comparator<Object>) new LongComparator();
+        if (o1 instanceof Boolean) return (Comparator<Object>) new BooleanComparator();
 
         return new AnyComparator();
     }
 
-    public class AnyComparator implements Comparator {
+    public class AnyComparator implements Comparator<Object> {
         public Integer compare(Object thisItem, Object otherItem) {
             String a = thisItem == null ? '' : '' + thisItem;
             String b = otherItem == null ? '' : '' + otherItem;
             return a.compareTo(b);
         }
     }
-    public class BooleanComparator implements Comparator {
+    public class BooleanComparator implements Comparator<Boolean> {
         public Integer compare(Object thisItem, Object otherItem) {
             Boolean a = (Boolean) thisItem, b = (Boolean) otherItem;
             return a == b ? 0 : 1;
         }
     }
-    public class DateTimeComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            Datetime a = (Datetime) thisItem, b = (Datetime) otherItem;
-            if (a > b) return 1;
-            if (a < b) return -1;
-            return 0;
+    public class DateTimeComparator implements Comparator<Datetime> {
+        public Integer compare(Datetime a, Datetime b) {
+            return a == b ? 0 : a > b ? 1 : -1;
         }
     }
-    public class DecimalComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            Decimal a = (Decimal) thisItem, b = (Decimal) otherItem;
-            if (a > b) return 1;
-            if (a < b) return -1;
-            return 0;
+    public class DoubleComparator implements Comparator<Double> {
+        public Integer compare(Double a, Double b) {
+            return a == b ? 0 : a > b ? 1 : -1;
         }
     }
-    public class DoubleComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            Double a = (Double) thisItem, b = (Double) otherItem;
-            if (a > b) return 1;
-            if (a < b) return -1;
-            return 0;
+    public class LongComparator implements Comparator<Long> {
+        public Integer compare(Long a, Long b) {
+            return a == b ? 0 : a > b ? 1 : -1;
         }
     }
-    public class IntegerComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            Integer a = (Integer) thisItem, b = (Integer) otherItem;
-            if (a > b) return 1;
-            if (a < b) return -1;
-            return 0;
+    public class StringComparator implements Comparator<String> {
+        public Integer compare(String a, String b) {
+            return a == b ? 0 : a > b ? 1 : -1;
         }
     }
-    public class StringComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            String a = (String) thisItem, b = (String) otherItem;
-            if (a > b) return 1;
-            if (a < b) return -1;
-            return 0;
+    public class TimeComparator implements Comparator<Time> {
+        public Integer compare(Time a, Time b) {
+            return a == b ? 0 : a > b ? 1 : -1;
         }
     }
-    public class TimeComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            Time a = (Time) thisItem, b = (Time) otherItem;
-            if (a > b) return 1;
-            if (a < b) return -1;
-            return 0;
+
+    /**
+     * Compares records by values of the SObject field.
+     */
+    public class SObjectComparator implements Comparator<SObject> {
+        private SObjectField field;
+        private Integer direction;
+        private Comparator<Object> comparator;
+
+        public SObjectComparator(SObjectField field, Integer direction) {
+            this.field = field;
+            this.direction = direction;
+            this.comparator = Comparators.getByField(field);
+        }
+
+        public Integer compare(SObject a, SObject b) {
+            Object thisValue = a.get(field);
+            Object otherValue = b.get(field);
+
+            return comparator.compare(thisValue, otherValue) * direction;
         }
     }
 }

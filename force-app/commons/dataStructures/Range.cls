@@ -21,7 +21,7 @@
 public with sharing class Range {
     private Object fromInclusive;
     private Object toInclusive;
-    private Comparator comparator;
+    private Comparator<Object> comparator;
 
     /**
      * Obtains a range with the specified minimum and maximum values (both inclusive).
@@ -41,12 +41,12 @@ public with sharing class Range {
      * @param comparator - the comparator to be used
      * @return the range object, not null
      */
-    public static Range between(Object fromInclusive, Object toInclusive, Comparator comparator) {
+    public static Range between(Object fromInclusive, Object toInclusive, Comparator<Object> comparator) {
         return new Range(fromInclusive, toInclusive, comparator);
     }
 
 
-    private Range(Object fromInclusive, Object toInclusive, Comparator comparator) {
+    private Range(Object fromInclusive, Object toInclusive, Comparator<Object> comparator) {
         this.fromInclusive = fromInclusive;
         this.toInclusive = toInclusive;
         this.comparator = comparator;
@@ -110,7 +110,7 @@ public with sharing class Range {
      * @return true if this range is entirely before the specified element
      */
     public Boolean isAfter(Object element) {
-        return comparator.compare(fromInclusive, element) > 0;
+        return element == null ? false : comparator.compare(fromInclusive, element) > 0;
     }
 
     /**
@@ -119,7 +119,7 @@ public with sharing class Range {
      * @return true if this range is entirely before the specified element
      */
     public Boolean isBefore(Object element) {
-        return comparator.compare(toInclusive, element) < 0;
+        return element == null ? false : comparator.compare(toInclusive, element) < 0;
     }
 
     /**
@@ -140,7 +140,7 @@ public with sharing class Range {
      */
     public Boolean containsRange(Range otherRange) {
         return comparator.compare(this.fromInclusive, otherRange.fromInclusive) <= 0
-                && comparator.compare(this.toInclusive, otherRange.toInclusive) >= 0;
+            && comparator.compare(this.toInclusive, otherRange.toInclusive) >= 0;
     }
 
     /**
@@ -193,7 +193,7 @@ public with sharing class Range {
         if (other instanceof Range) {
             Range otherRange = (Range) other;
             return comparator.compare(this.fromInclusive, otherRange.fromInclusive) == 0
-                    && comparator.compare(this.toInclusive, otherRange.toInclusive) == 0;
+                && comparator.compare(this.toInclusive, otherRange.toInclusive) == 0;
 
         } else {
             return false;

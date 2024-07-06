@@ -44,9 +44,6 @@ public abstract inherited sharing class Collection {
         return new CollectionImpl(items);
     }
 
-    /** @return Salesforce List collection */
-    public abstract List<Object> get();
-
     /** @return First item or null if collection is empty */
     public abstract Object getFirst();
 
@@ -115,37 +112,40 @@ public abstract inherited sharing class Collection {
      */
     public abstract Object reduce(Reducer reducer, Object initialValue);
 
-    /**@return Sum of numeric field values*/
-    public abstract Decimal getSum(SObjectField field);
+    /**
+     * @return Collection of field values.
+     */
+    public abstract Collection collect(SObjectField field);
+    public abstract Collection collect(Mapper mapper);
 
-    /**@return Average of numeric field values*/
-    public abstract Decimal getAverage(SObjectField field);
+    /**@return Sum of numeric values*/
+    public abstract Decimal getSum();
 
-    /**@return Minimum of numeric field values*/
-    public abstract Decimal getMin(SObjectField field);
+    /**@return Average of numeric values*/
+    public abstract Decimal getAverage();
 
-    /**@return Maximum of numeric field values*/
-    public abstract Decimal getMax(SObjectField field);
+    /**@return Minimum of numeric values*/
+    public abstract Decimal getMin();
+
+    /**@return Maximum of numeric values*/
+    public abstract Decimal getMax();
 
     /**
      * @return List<V>, V - value type of SObject field. Cast to expected value type.
      */
-    public abstract List<Id> getListId(SObjectField field);
-    public abstract List<String> getListString(SObjectField field);
-    public abstract List<Integer> getListInteger(SObjectField field);
-
-    public abstract List<Object> getList(SObjectField field);
-    public abstract List<Object> getList(Mapper valueMapper);
+    public abstract List<Id> getListId();
+    public abstract List<String> getListString();
+    public abstract List<Integer> getListInteger();
+    public abstract List<Object> getList();
 
     /**
      * @return Set<V>, V - value type of SObject field. Cast to expected Set type.
      * ex. Set<String> names = (Set<String>) Collection.of(accounts).getSet(Account.Name);
      */
-    public abstract Set<Id> getSetId(SObjectField field);
-    public abstract Set<String> getSetString(SObjectField field);
-    public abstract Set<Integer> getSetInteger(SObjectField field);
-    public abstract Object getSet(SObjectField field);
-    public abstract Object getSet(Mapper valueMapper);
+    public abstract Set<Id> getSetId();
+    public abstract Set<String> getSetString();
+    public abstract Set<Integer> getSetInteger();
+    public abstract Object getSet();
 
     /**
      * @return Map<K, V>, K - value type, V - collection item type. LIFO - Last item in collection replace previous in map.
@@ -190,7 +190,7 @@ public abstract inherited sharing class Collection {
     /**
      * Sorts collection using given Comparator implementation.
      */
-    public abstract Collection orderBy(Comparator comparator);
+    public abstract Collection orderBy(Comparator<Object> comparator);
 
 
     /*

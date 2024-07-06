@@ -51,8 +51,8 @@
     {
       "path": "force-app/commons/collections",
       "package": "Collection",
-      "versionName": "ver 1.0",
-      "versionNumber": "1.0.0.NEXT",
+      "versionName": "ver 2.0",
+      "versionNumber": "2.0.0.NEXT",
       "default": false,
       "versionDescription": "",
       "dependencies": [
@@ -137,6 +137,8 @@
     "Callout@1.0.1-2": "04t08000000UK6VAAW",
     "Collection": "0Ho08000000CaSKCA0",
     "Collection@1.0.0-1": "04t08000000ga99AAA",
+    "Collection@1.0.1-1": "04t08000000UK6pAAG",
+    "Collection@2.0.0-1": "04t08000000UK6uAAG",
     "DatabaseService": "0Ho08000000CaSUCA0",
     "DatabaseService@0.1.0-1": "04t08000000ga9OAAQ",
     "Query Framework": "0Ho08000000CaSPCA0",

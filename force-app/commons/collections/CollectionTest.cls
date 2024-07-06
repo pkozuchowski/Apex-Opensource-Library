@@ -116,7 +116,7 @@ private class CollectionTest {
 
     @IsTest
     static void testGetters() {
-        System.assertEquals(opportunities, Collection.of(opportunities).get());
+        System.assertEquals(opportunities, Collection.of(opportunities).getList());
         System.assertEquals(opportunities.get(0), Collection.of(opportunities).get(0));
         System.assertEquals(opportunities.get(0), Collection.of(opportunities).getFirst());
         System.assertEquals(opportunities.get(opportunities.size() - 1), Collection.of(opportunities).getLast());
@@ -131,7 +131,7 @@ private class CollectionTest {
     @IsTest
     static void testSliceRange() {
         List<Integer> ints = new List<Integer>{0, 1, 2, 3, 4, 5, 6};
-        List<Integer> slice = (List<Integer>) Collection.of(ints).slice(1, 3).get();
+        List<Integer> slice = (List<Integer>) Collection.of(ints).slice(1, 3).getList();
         List<Integer> expected = new List<Integer>{1, 2, 3};
 
         System.assertEquals(expected, slice);
@@ -140,7 +140,7 @@ private class CollectionTest {
     @IsTest
     static void testSliceIndexes() {
         List<Integer> ints = new List<Integer>{0, 1, 2, 3, 4, 5, 6};
-        List<Integer> slice = (List<Integer>) Collection.of(ints).slice(new List<Integer>{0, 1, 3, 5}).get();
+        List<Integer> slice = (List<Integer>) Collection.of(ints).slice(new List<Integer>{0, 1, 3, 5}).getList();
         List<Integer> expected = new List<Integer>{0, 1, 3, 5};
 
         System.assertEquals(expected, slice);
@@ -184,12 +184,12 @@ private class CollectionTest {
 
 
         Test.startTest();
-        Set<Id> actualIds = (Set<Id>) Collection.of(opportunities).getSet(Opportunity.AccountId);
-        Set<String> actualStrings = (Set<String>) Collection.of(opportunities).getSet(Opportunity.Name);
-        Set<Decimal> actualDecimals = (Set<Decimal>) Collection.of(opportunities).getSet(Opportunity.Probability);
-        Set<Date> actualDates = (Set<Date>) Collection.of(opportunities).getSet(Opportunity.LastActivityDate);
-        Set<Datetime> actualDatetimes = (Set<Datetime>) Collection.of(opportunities).getSet(Opportunity.CreatedDate);
-        Set<Boolean> actualBooleans = (Set<Boolean>) Collection.of(opportunities).getSet(Opportunity.HasOpenActivity);
+        Set<Id> actualIds = (Set<Id>) Collection.of(opportunities).collect(Opportunity.AccountId).getSet();
+        Set<String> actualStrings = (Set<String>) Collection.of(opportunities).collect(Opportunity.Name).getSet();
+        Set<Decimal> actualDecimals = (Set<Decimal>) Collection.of(opportunities).collect(Opportunity.Probability).getSet();
+        Set<Date> actualDates = (Set<Date>) Collection.of(opportunities).collect(Opportunity.LastActivityDate).getSet();
+        Set<Datetime> actualDatetimes = (Set<Datetime>) Collection.of(opportunities).collect(Opportunity.CreatedDate).getSet();
+        Set<Boolean> actualBooleans = (Set<Boolean>) Collection.of(opportunities).collect(Opportunity.HasOpenActivity).getSet();
         Test.stopTest();
 
 
@@ -209,7 +209,7 @@ private class CollectionTest {
             expected.add(opportunity.CreatedDate.day());
         }
 
-        Set<Integer> actual = (Set<Integer>) Collection.of(opportunities).getSet(new MapperByCreatedDay());
+        Set<Integer> actual = (Set<Integer>) Collection.of(opportunities).collect(new MapperByCreatedDay()).getSet();
         System.assertEquals(expected, actual);
     }
 
@@ -491,9 +491,9 @@ private class CollectionTest {
         for (Opportunity opp : opportunities) {
             Boolean accept = (
                 opp.NextStep.contains('Analysis')
-                    && opp.HasOpenActivity == true
-                    && opp.LastActivityDate <= Date.today()
-                    && opp.LastActivityDate > Date.today().addDays(-2)
+                && opp.HasOpenActivity == true
+                && opp.LastActivityDate <= Date.today()
+                && opp.LastActivityDate > Date.today().addDays(-2)
             ) || opp.NextStep != 'Analysis';
 
             if (accept) {
@@ -516,7 +516,7 @@ private class CollectionTest {
                     c.field(Opportunity.NextStep).notEquals('Analysis')
                 )
             )
-            .get();
+            .getList();
 
         Test.stopTest();
 
@@ -533,9 +533,9 @@ private class CollectionTest {
         for (Opportunity opp : opportunities) {
             Boolean accept =
                 opp.Name != null
-                    && wantedSteps.indexOf(opp.NextStep) > -1
-                    && unwantedSteps.indexOf(opp.NextStep) == -1
-                    && opp.LastActivityDate < Date.today();
+                && wantedSteps.indexOf(opp.NextStep) > -1
+                && unwantedSteps.indexOf(opp.NextStep) == -1
+                && opp.LastActivityDate < Date.today();
 
             if (accept) {
                 expected.add(opp);
@@ -554,7 +554,7 @@ private class CollectionTest {
                     c.field(Opportunity.LastActivityDate).lessThan(Date.today())
                 )
             )
-            .get();
+            .getList();
 
         Test.stopTest();
 
@@ -582,8 +582,8 @@ private class CollectionTest {
             }
         }
 
-        List<Opportunity> actualAcceptedOpps = (List<Opportunity>) Collection.of(opportunities).filter(Opportunity.StageName).isIn(acceptedStages).get();
-        List<Opportunity> actualRejectedOpps = (List<Opportunity>) Collection.of(opportunities).filter(Opportunity.StageName).isNotIn(acceptedStages).get();
+        List<Opportunity> actualAcceptedOpps = (List<Opportunity>) Collection.of(opportunities).filter(Opportunity.StageName).isIn(acceptedStages).getList();
+        List<Opportunity> actualRejectedOpps = (List<Opportunity>) Collection.of(opportunities).filter(Opportunity.StageName).isNotIn(acceptedStages).getList();
 
         System.assertEquals(expectedAcceptedOpps, actualAcceptedOpps);
         System.assertEquals(expectedRejectedOpps, actualRejectedOpps);
@@ -612,7 +612,8 @@ private class CollectionTest {
         Test.startTest();
         Set<Id> actual = (Set<Id>) Collection.of(opportunities)
             .filter(Opportunity.AccountId).isIn(accounts.values())
-            .getSet(Opportunity.Id);
+            .collect(Opportunity.Id)
+            .getSet();
         Test.stopTest();
 
 
@@ -639,7 +640,7 @@ private class CollectionTest {
 
 
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
-            .filterAlike(prototype).get();
+            .filterAlike(prototype).getList();
         System.assertEquals(expected, actual);
     }
 
@@ -649,9 +650,9 @@ private class CollectionTest {
     * */
     @IsTest
     static void testGetList() {
-        List<String> strings = Collection.of(opportunities).getListString(Opportunity.Name);
-        List<Id> ids = Collection.of(opportunities).getListId(Opportunity.Id);
-        List<Integer> integers = Collection.of(opportunities).getListInteger(Opportunity.FiscalYear);
+        List<String> strings = Collection.of(opportunities).collect(Opportunity.Name).getListString();
+        List<Id> ids = Collection.of(opportunities).collect(Opportunity.Id).getListId();
+        List<Integer> integers = Collection.of(opportunities).collect(Opportunity.FiscalYear).getListInteger();
 
         Assert.isFalse(strings.isEmpty());
         Assert.isFalse(ids.isEmpty());
@@ -665,15 +666,15 @@ private class CollectionTest {
             expected.add(opportunity.AccountId);
         }
 
-        List<Id> actual = (List<Id>) Collection.of(opportunities).getList(Opportunity.AccountId);
+        List<Id> actual = (List<Id>) Collection.of(opportunities).collect(Opportunity.AccountId).getListId();
         System.assertEquals(expected, actual);
     }
 
     @IsTest
     static void testGetSet() {
-        Set<String> strings = Collection.of(opportunities).getSetString(Opportunity.Name);
-        Set<Id> ids = Collection.of(opportunities).getSetId(Opportunity.Id);
-        Set<Integer> integers = Collection.of(opportunities).getSetInteger(Opportunity.FiscalYear);
+        Set<String> strings = Collection.of(opportunities).collect(Opportunity.Name).getSetString();
+        Set<Id> ids = Collection.of(opportunities).collect(Opportunity.Id).getSetId();
+        Set<Integer> integers = Collection.of(opportunities).collect(Opportunity.FiscalYear).getSetInteger();
 
         Assert.isFalse(strings.isEmpty());
         Assert.isFalse(ids.isEmpty());
@@ -687,7 +688,7 @@ private class CollectionTest {
             expected.add(opportunity.AccountId);
         }
 
-        Set<Id> actual = (Set<Id>) Collection.of(opportunities).getSet(Opportunity.AccountId);
+        Set<Id> actual = (Set<Id>) Collection.of(opportunities).collect(Opportunity.AccountId).getSet();
         System.assertEquals(expected, actual);
     }
 
@@ -704,8 +705,10 @@ private class CollectionTest {
             expected += opportunity.Amount != null ? opportunity.Amount : 0;
         }
 
-        Decimal actual = Collection.of(opportunities).getSum(Opportunity.Amount);
+        Decimal actual = Collection.of(opportunities).collect(Opportunity.Amount).getSum();
         System.assertEquals(expected, actual);
+
+        Assert.areEqual(15, Collection.of(new List<Integer>{1, 2, 3, 4, 5}).getSum());
     }
 
     /**
@@ -722,10 +725,11 @@ private class CollectionTest {
             }
         }
 
-        Decimal actual = Collection.of(opportunities).getMax(Opportunity.Amount);
+        Decimal actual = Collection.of(opportunities).collect(Opportunity.Amount).getMax();
 
         System.assertEquals(max, actual);
         System.assertNotEquals(null, actual);
+        Assert.areEqual(5, Collection.of(new List<Integer>{1, 2, 3, 4, 5}).getMax());
     }
 
     /**
@@ -742,10 +746,16 @@ private class CollectionTest {
             }
         }
 
-        Decimal actual = Collection.of(opportunities).getMin(Opportunity.Amount);
+        Decimal actual = Collection.of(opportunities).collect(Opportunity.Amount).getMin();
 
         System.assertEquals(min, actual);
         System.assertNotEquals(null, actual);
+        Assert.areEqual(1, Collection.of(new List<Integer>{1, 2, 3, 4, 5}).getMin());
+    }
+
+    @IsTest
+    static void testReduceToAverage() {
+        Assert.areEqual(3, Collection.of(new List<Integer>{1, 2, 3, 4, 5}).getAverage());
     }
 
     /**
@@ -761,16 +771,14 @@ private class CollectionTest {
         }
 
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
-            .orderBy(new ReverseProbabilityComparator())
-            .get();
+            .orderBy((Comparator<Object>) new ReverseProbabilityComparator())
+            .getList();
 
         System.assertEquals(actual, expected);
     }
-    private class ReverseProbabilityComparator implements Comparator {
-        public Integer compare(Object thisItem, Object otherItem) {
-            Opportunity thisOpp = (Opportunity) thisItem;
-            Opportunity otherOpp = (Opportunity) otherItem;
 
+    private class ReverseProbabilityComparator implements Comparator<Opportunity> {
+        public Integer compare(Opportunity thisOpp, Opportunity otherOpp) {
             if (thisOpp.Probability < otherOpp.Probability) {
                 return 1;
 
@@ -788,7 +796,7 @@ private class CollectionTest {
     static void testOrderByField() {
         Opportunity previous;
 
-        List<Opportunity> sortedOpportunities = (List<Opportunity>) Collection.of(opportunities).orderAsc(Opportunity.CreatedDate).get();
+        List<Opportunity> sortedOpportunities = (List<Opportunity>) Collection.of(opportunities).orderAsc(Opportunity.CreatedDate).getList();
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {
                 System.assert(opportunity.CreatedDate >= previous.CreatedDate);
@@ -798,7 +806,7 @@ private class CollectionTest {
         previous = null;
 
 
-        sortedOpportunities = (List<Opportunity>) Collection.of(opportunities).orderDesc(Opportunity.Name).get();
+        sortedOpportunities = (List<Opportunity>) Collection.of(opportunities).orderDesc(Opportunity.Name).getList();
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {
                 System.assertEquals(-1, opportunity.Name.compareTo(previous.Name));
@@ -810,7 +818,7 @@ private class CollectionTest {
 
         sortedOpportunities = (List<Opportunity>) Collection.of(opportunities)
             .orderAsc(Opportunity.Probability)
-            .get();
+            .getList();
         for (Opportunity opportunity : sortedOpportunities) {
             if (previous != null) {
                 System.assert(opportunity.Probability >= previous.Probability);

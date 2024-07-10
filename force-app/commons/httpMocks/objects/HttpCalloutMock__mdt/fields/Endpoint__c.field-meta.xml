@@ -3,6 +3,8 @@
     <fullName>Endpoint__c</fullName>
     <externalId>false</externalId>
     <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Regexp pattern for endpoint. It can contain variables denoted by double curly braces. 
+Make sure it matches different URL parameters.</inlineHelpText>
     <label>Endpoint</label>
     <length>255</length>
     <required>true</required>

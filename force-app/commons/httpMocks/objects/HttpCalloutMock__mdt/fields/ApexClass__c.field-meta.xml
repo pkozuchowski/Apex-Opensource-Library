@@ -3,6 +3,7 @@
     <fullName>ApexClass__c</fullName>
     <externalId>false</externalId>
     <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>Name of Apex Class implementing HttpCalloutMock interface that produces response. Alternative to Response__c &amp; StaticResource__c. Class  must be public and have public no-args constructor.</inlineHelpText>
     <label>Apex Class</label>
     <length>255</length>
     <required>false</required>

@@ -132,8 +132,8 @@ public virtual with sharing class HttpMocks {
             List<String> headers = mdt.Headers__c.split('\n');
 
             for (String keyValue : headers) {
-                List<String> keyValueSplit = keyValue.split(':');
-                response.setHeader(keyValueSplit[0], keyValueSplit[1]);
+                List<String> keyValueSplit = keyValue.split(':', 2);
+                response.setHeader(keyValueSplit[0].trim(), keyValueSplit[1].trim());
             }
         }
     }

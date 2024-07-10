@@ -27,7 +27,7 @@ private class HttpCalloutMockRouterTest {
     private final static String ACCOUNT_NAME = 'Test Account';
 
     private class OrgMocks extends HttpCalloutMockRouter {
-        public OrgMocks(){
+        public OrgMocks() {
             mock('Salesforce APIs', new SalesforceRestAPIMocks());
             mock('Azure APIs', new AzureMocks());
         }
@@ -264,5 +264,34 @@ private class HttpCalloutMockRouterTest {
         Assert.areEqual('{"records":["Name":"Test 1"},{"Name":"Test 2"}]}', response.getBody());
         Assert.areEqual('Value1', response.getHeader('Header1'));
         Assert.areEqual('Value2', response.getHeader('Header2'));
+    }
+
+    @IsTest
+    static void shouldHandleHeaderWithColons() {
+        HttpMocksConfig.mock(new List<HttpCalloutMock__mdt>{
+            new HttpCalloutMock__mdt(
+                DeveloperName = 'SF_REST_Query',
+                Default__c = true,
+                Methods__c = 'GET',
+                Endpoint__c = 'https://salesforce.com/api/test',
+                Response__c = '',
+                StatusCode__c = 200,
+                Status__c = 'OK',
+                Headers__c = 'Location: https://salesforce.com/goaway'
+            )
+        });
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, HttpMocks.config());
+
+        HttpRequest request = new HttpRequest();
+        request.setMethod('GET');
+        request.setEndpoint('https://salesforce.com/api/test');
+
+        HttpResponse response = new Http().send(request);
+        Test.stopTest();
+
+
+        Assert.areEqual('https://salesforce.com/goaway', response.getHeader('Location'));
     }
 }

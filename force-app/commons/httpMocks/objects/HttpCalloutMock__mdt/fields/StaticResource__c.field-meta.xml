@@ -3,6 +3,7 @@
     <fullName>StaticResource__c</fullName>
     <externalId>false</externalId>
     <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Alternative ot Response__c. If this is provided with Static Resource name, it&apos;s body will be used as response.</inlineHelpText>
     <label>Static Resource</label>
     <length>255</length>
     <required>false</required>

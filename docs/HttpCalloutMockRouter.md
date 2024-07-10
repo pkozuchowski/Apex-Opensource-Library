@@ -1,9 +1,9 @@
-# HTTP Callout Router
+# HTTP Callout Mock Router
 *Configuration-driven, endpoint pattern-based router for Http Mocks.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/httpMocks)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000cSySAAU)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000cSySAAU)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK7EAAW)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK7EAAW)
 
 ```bash
 sf project deploy start -d force-app/commons/httpMocks -o sfdxOrg
@@ -107,8 +107,7 @@ Test.setMock(HttpCalloutMock.class, new OrgMocks()
 - **Response__c** - Body of the Http Response
 - **StaticResource__c** - Alternative ot Response__c. If this is provided with Static Resource name, it's body will be used as response.
 - **ApexClass__c** - Name of Apex Class implementing HttpCalloutMock interface that produces response. Alternative to Response__c & StaticResource__c. Class
-  must be
-  public and have public no-args constructor.
+  must be public and have public no-args constructor.
 - **Headers__c** - Http Headers of the response. Each header should be on separate line and in key:value format.
 
 ---
@@ -213,3 +212,9 @@ public class MyCustomMock implements HttpCalloutMock {
     }
 }
 ```
+
+---
+# Change Log
+### 1.0.2
+- Fixed bug in HTTP Headers specified in metadata, where header value would not be parsed correctly if it contained colon, which would cause issues for Location headers.
+- Added help text to custom metadata fields.

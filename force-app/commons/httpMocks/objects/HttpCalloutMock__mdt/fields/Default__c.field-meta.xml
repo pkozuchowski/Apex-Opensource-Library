@@ -2,8 +2,8 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Default__c</fullName>
     <defaultValue>true</defaultValue>
-    <externalId>false</externalId>
     <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Default mocks are loaded in the router, while all non-defaults can be used to override default mock in unit tests.</inlineHelpText>
     <label>Default</label>
     <type>Checkbox</type>
 </CustomField>

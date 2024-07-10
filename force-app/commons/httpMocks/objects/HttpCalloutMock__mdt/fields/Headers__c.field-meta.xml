@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Headers__c</fullName>
-    <externalId>false</externalId>
     <fieldManageability>SubscriberControlled</fieldManageability>
+    <inlineHelpText>Specify header per line, in following format:
+HeaderName: HeaderValue
+
+ex. 
+Content-Type: application/json; charset=utf-8
+Expires: -1
+Server: Microsoft-IIS/10.0
+X-AspNet-Version: 4.0.30319
+X-Powered-By: ASP.NET
+Date: Wed, 10 Jul 2024 17:06:24 GMT
+Connection: close
+Content-Length: 41</inlineHelpText>
     <label>Headers</label>
     <required>false</required>
     <type>TextArea</type>

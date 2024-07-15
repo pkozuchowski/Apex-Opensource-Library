@@ -26,7 +26,7 @@
  * Selector Layer class for Permission Sets. Records are queried only once and cached to minimize SOQL limits usage.
  * @see PermissionSetQueryTest
  */
-public inherited sharing class PermissionSetQuery extends Query {
+public inherited sharing class PermissionSetQuery extends QueryObject {
 
 
     public PermissionSetQuery() {
@@ -47,7 +47,6 @@ public inherited sharing class PermissionSetQuery extends Query {
      * Filter Permission Set by given name or null if it does not exist.
      */
     public PermissionSetQuery byName(Set<String> names) {
-        appendMockName('byName');
         return (PermissionSetQuery) byField(PermissionSet.Name, 'IN', names);
     }
 }

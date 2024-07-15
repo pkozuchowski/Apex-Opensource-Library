@@ -25,7 +25,7 @@
 /**
  * Selector layer for Content Document (Files)
  */
-public inherited sharing class ContentDocumentQuery extends Query {
+public inherited sharing class ContentDocumentQuery extends QueryObject {
 
     public ContentDocumentQuery() {
         super(new List<String>{
@@ -56,7 +56,6 @@ public inherited sharing class ContentDocumentQuery extends Query {
      * Filters Content Document with Latest Version linked to given records
      */
     public ContentDocumentQuery byLinkedEntityId(Set<Id> linkedEntityId) {
-        appendMockName('byLinkedEntityId');
         List<ContentDocumentLink> links = Database.query('SELECT ContentDocumentId FROM ContentDocumentLink WHERE LinkedEntityId IN :linkedEntityId');
 
         Set<Id> documentIds = new Set<Id>();

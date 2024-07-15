@@ -24,7 +24,7 @@
 @IsTest(IsParallel=true)
 public class QueryObjectTest {
 
-    private class TestUserQuery extends Query {
+    private class TestUserQuery extends QueryObject {
 
         private TestUserQuery() {
             super(new List<String>{
@@ -35,6 +35,26 @@ public class QueryObjectTest {
         public TestUserQuery byUsername(String username) {
             return (TestUserQuery) byField('Username', '=', username);
         }
+    }
+
+    private class TestServiceClass {
+        private List<User> users;
+
+        public void doSomething() {
+            List<User> users = new TestUserQuery().byUsername('Test@test.com').getList();
+        }
+    }
+
+    @IsTest
+    static void testMocking() {
+        new TestUserQuery().mock('QueryObjectTest.TestServiceClass.doSomething', new List<User>{
+            new User(Username = 'test')
+        });
+
+        TestServiceClass service = new TestServiceClass();
+        service.doSomething();
+
+        System.debug(service.users);
     }
 
     @IsTest
@@ -103,10 +123,10 @@ public class QueryObjectTest {
 
         Assert.areEqual(
             '(SELECT COUNT(ID) cnt, Profile.Name FROM User ' +
-                'GROUP BY Profile.Name ' +
-                'HAVING ((COUNT(ID) > :var0) AND (COUNT(ID) < :var1)),' +
+            'GROUP BY Profile.Name ' +
+            'HAVING ((COUNT(ID) > :var0) AND (COUNT(ID) < :var1)),' +
 
-                ' {var0=0, var1=10})',
+            ' {var0=0, var1=10})',
             soql
         );
     }
@@ -139,9 +159,9 @@ public class QueryObjectTest {
     static void testSelectById() {
         User user = (User) new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
 
-        System.assertEquals(UserInfo.getUserId(), user.Id);
-        System.assertEquals(UserInfo.getName(), user.Name);
-        System.assertEquals(UserInfo.getUserEmail(), user.Email);
+        Assert.areEqual(UserInfo.getUserId(), user.Id);
+        Assert.areEqual(UserInfo.getName(), user.Name);
+        Assert.areEqual(UserInfo.getUserEmail(), user.Email);
     }
 
     @IsTest
@@ -177,18 +197,18 @@ public class QueryObjectTest {
             new User(Id = UserInfo.getUserId())
         }).getFirstOrNull();
 
-        System.assertEquals(UserInfo.getUserId(), user.Id);
-        System.assertEquals(UserInfo.getName(), user.Name);
-        System.assertEquals(UserInfo.getUserEmail(), user.Email);
+        Assert.areEqual(UserInfo.getUserId(), user.Id);
+        Assert.areEqual(UserInfo.getName(), user.Name);
+        Assert.areEqual(UserInfo.getUserEmail(), user.Email);
     }
 
     @IsTest
     static void testSelectByField() {
         User user = (User) new TestUserQuery().byField(User.Username, '=', UserInfo.getUserName()).getFirstOrNull();
 
-        System.assertEquals(UserInfo.getUserId(), user.Id);
-        System.assertEquals(UserInfo.getName(), user.Name);
-        System.assertEquals(UserInfo.getUserEmail(), user.Email);
+        Assert.areEqual(UserInfo.getUserId(), user.Id);
+        Assert.areEqual(UserInfo.getName(), user.Name);
+        Assert.areEqual(UserInfo.getUserEmail(), user.Email);
     }
 
     @IsTest
@@ -229,7 +249,18 @@ public class QueryObjectTest {
     static void testCountBy() {
         Integer cnt = [SELECT COUNT() FROM User];
         Integer queryCount = new TestUserQuery().getCount();
-        System.assertEquals(cnt, queryCount, 'getCount() should return Integer');
+        Assert.areEqual(cnt, queryCount, 'getCount() should return Integer');
+    }
+
+    @IsTest
+    static void testCountMock() {
+        new TestUserQuery().mock('QueryObjectTest.testCountMock', 123);
+        Assert.areEqual(123, new TestUserQuery().getCount());
+
+        new TestUserQuery().mock('QueryObjectTest.testCountMock', new List<User>{
+            new User()
+        });
+        Assert.areEqual(1, Query.Users.getCount());
     }
 
     @IsTest
@@ -282,7 +313,6 @@ public class QueryObjectTest {
             .withFieldAccess(AccessType.READABLE)
             .byId(UserInfo.getUserId())
             .withLimit(100)
-            .debugLogMockName()
             .getFirstOrNull();
 
         new TestUserQuery().byId(UserInfo.getUserId()).getCount();
@@ -338,8 +368,8 @@ public class QueryObjectTest {
 
         QueryBindings b1 = new QueryBindings();
         String soql = c.field(Account.Id).equals('test').toSOQL(b1);
-        System.assertEquals('(Id = :var0)', soql);
-        System.assertEquals('test', b1.getMap().get('var0'));
+        Assert.areEqual('(Id = :var0)', soql);
+        Assert.areEqual('test', b1.getMap().get('var0'));
 
 
         c.field(Account.Id).notEquals('test');
@@ -361,8 +391,8 @@ public class QueryObjectTest {
 
         String name = bindings.registerBinding(queryValues);
 
-        System.assertEquals(':var0', name, 'registerBinding() should return unique variable name that can be inserted into soql string');
-        System.assertEquals(':var1', bindings.registerBinding(1), 'Each binding should get unique name');
+        Assert.areEqual(':var0', name, 'registerBinding() should return unique variable name that can be inserted into soql string');
+        Assert.areEqual(':var1', bindings.registerBinding(1), 'Each binding should get unique name');
     }
 
     @IsTest
@@ -375,8 +405,8 @@ public class QueryObjectTest {
         };
 
         String newSoql = bindings.replaceReferences(soql, vars);
-        System.assertEquals('Name IN :var0', newSoql, 'Should replace all manually-typed variables with unique names');
-        System.assertEquals(bindings.getMap().get('var0'), vars.get('names'), 'Values should be registered in bindings');
+        Assert.areEqual('Name IN :var0', newSoql, 'Should replace all manually-typed variables with unique names');
+        Assert.areEqual(bindings.getMap().get('var0'), vars.get('names'), 'Values should be registered in bindings');
     }
 
     @IsTest
@@ -392,6 +422,17 @@ public class QueryObjectTest {
 
         Assert.areEqual(mockedResult.size(), queryResult.size());
         Assert.areEqual(mockedResult[0].Username, queryResult[0].Username);
+    }
+
+    @IsTest
+    static void testMockingWithClientMethodName() {
+        new TestUserQuery().mock('QueryObjectTest.testMockingWithClientMethodName', new List<User>{
+            new User(Username = 'Test')
+        });
+
+        User[] users = new TestUserQuery().byUsername('Test').getList();
+        Assert.areEqual(1, users.size());
+        Assert.areEqual('Test', users.get(0).Username);
     }
 
     @IsTest

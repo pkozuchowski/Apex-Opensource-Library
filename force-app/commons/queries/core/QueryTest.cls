@@ -66,7 +66,7 @@ private class QueryTest {
 
     @IsTest
     static void testQueryMocking() {
-        Query.Accounts.mock('.byName.byRecordTypeDeveloperName', new List<Account>{
+        Query.Accounts.mock('QueryTest.testQueryMocking', new List<Account>{
             new Account(Name = 'Test')
         });
 
@@ -84,8 +84,8 @@ private class QueryTest {
     }
 
     @IsTest
-    static void testCountMock(){
-        Query.Accounts.mock('.byName', 10);
+    static void testCountMock() {
+        Query.Accounts.mock('QueryTest.testCountMock', 10);
 
 
         Test.startTest();

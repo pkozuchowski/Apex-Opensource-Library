@@ -26,7 +26,7 @@
  * Selector Layer class for Permission Set Assignments.
  * @see PermissionSetQueryTest
  */
-public inherited sharing class PermissionSetAssignmentQuery extends Query {
+public inherited sharing class PermissionSetAssignmentQuery extends QueryObject {
 
     public PermissionSetAssignmentQuery() {
         super(new List<String>{
@@ -42,7 +42,6 @@ public inherited sharing class PermissionSetAssignmentQuery extends Query {
      * Filter Permission Sets Assignments to those of current user
      */
     public PermissionSetAssignmentQuery byCurrentUser() {
-        appendMockName('byCurrentUser');
         return byAssigneeId(UserInfo.getUserId());
     }
 
@@ -58,7 +57,6 @@ public inherited sharing class PermissionSetAssignmentQuery extends Query {
      * Filter Permission Sets Assignments to those of given users
      */
     public PermissionSetAssignmentQuery byAssigneeId(Set<Id> assigneeId) {
-        appendMockName('byAssigneeId');
         return (PermissionSetAssignmentQuery) byField(PermissionSetAssignment.AssigneeId, 'IN', assigneeId);
     }
 
@@ -74,7 +72,6 @@ public inherited sharing class PermissionSetAssignmentQuery extends Query {
      * Filter Permission Sets Assignments to those associated with given permission sets
      */
     public PermissionSetAssignmentQuery byPermissionSetId(Set<Id> permissionSetId) {
-        appendMockName('byPermissionSetId');
         return (PermissionSetAssignmentQuery) byField(PermissionSetAssignment.PermissionSetId, 'IN', permissionSetId);
     }
 }

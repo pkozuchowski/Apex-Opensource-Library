@@ -25,7 +25,7 @@
 /**
  * General selector for History records (AccountHistory, CustomObject__History etc).
  */
-public inherited sharing class HistoryQuery extends Query {
+public inherited sharing class HistoryQuery extends QueryObject {
     private SObjectField parentField;
 
     /**
@@ -42,7 +42,6 @@ public inherited sharing class HistoryQuery extends Query {
      * @return Share records for given records
      */
     public HistoryQuery byParentId(Set<Id> parentIds) {
-        appendMockName('byDeveloperName');
         return (HistoryQuery) byField(parentField, 'IN', parentIds);
     }
 

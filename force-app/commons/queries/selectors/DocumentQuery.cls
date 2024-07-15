@@ -25,7 +25,7 @@
 /**
  * Selector layer for Document SObjects
  */
-public inherited sharing class DocumentQuery extends Query {
+public inherited sharing class DocumentQuery extends QueryObject {
 
     public DocumentQuery() {
         super(Document.SObjectType);
@@ -44,7 +44,6 @@ public inherited sharing class DocumentQuery extends Query {
      * @return Documents by given developer names
      */
     public DocumentQuery byDeveloperName(Set<String> developerNames) {
-        appendMockName('byDeveloperName');
         return (DocumentQuery) byField(Document.DeveloperName, 'IN', developerNames);
     }
 }

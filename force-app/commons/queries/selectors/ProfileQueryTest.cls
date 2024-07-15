@@ -39,9 +39,9 @@ private class ProfileQueryTest {
     @IsTest
     static void testSelectById() {
         Map<Id, Profile> expected = new Map<Id, Profile>([
-                SELECT Id
-                FROM Profile
-                WHERE Name IN ('Standard User', 'System Administrator')
+            SELECT Id
+            FROM Profile
+            WHERE Name IN ('Standard User', 'System Administrator')
         ]);
         Map<Id, Profile> actual = (Map<Id, Profile>) new ProfileQuery().byId((Set<Id>) expected.keySet()).getMapById();
 
@@ -51,9 +51,9 @@ private class ProfileQueryTest {
     @IsTest
     static void testSelectByName() {
         Map<Id, Profile> expected = new Map<Id, Profile>([
-                SELECT Id
-                FROM Profile
-                WHERE Name IN ('Standard User', 'System Administrator')
+            SELECT Id
+            FROM Profile
+            WHERE Name IN ('Standard User', 'System Administrator')
         ]);
         Map<Id, Profile> actual = (Map<Id, Profile>) new ProfileQuery().byName(new Set<String>{'Standard User', 'System Administrator'}).getMapById();
 

@@ -28,7 +28,7 @@
  * Use through Query facade:
  * Query.Accounts.byName(...);
  */
-public virtual inherited sharing class AccountQuery extends Query {
+public virtual inherited sharing class AccountQuery extends QueryObject {
 
     public AccountQuery() {
         super(new List<String>{
@@ -109,7 +109,6 @@ public virtual inherited sharing class AccountQuery extends Query {
      * Filters Accounts with given names
      */
     public AccountQuery byName(Set<String> names) {
-        appendMockName('byName');
         return (AccountQuery) byField(Account.Name, 'IN', names);
     }
 

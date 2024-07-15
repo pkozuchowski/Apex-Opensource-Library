@@ -25,7 +25,7 @@
 /**
  * General selector for Share records (AccountShare, Share__History etc).
  */
-public inherited sharing class ShareQuery extends Query {
+public inherited sharing class ShareQuery extends QueryObject {
     private String parentField;
 
     public ShareQuery(SObjectType shareObjectType) {
@@ -39,7 +39,6 @@ public inherited sharing class ShareQuery extends Query {
      * @return Share records for given user or group ids
      */
     public ShareQuery byUserOrGroupId(Set<Id> userOrGroupIds) {
-        appendMockName('byUserOrGroupId');
         return (ShareQuery) byField('UserOrGroupId', 'IN', userOrGroupIds);
     }
 
@@ -47,7 +46,6 @@ public inherited sharing class ShareQuery extends Query {
      * @return Share records for given records
      */
     public ShareQuery byParentId(Set<Id> parentIds) {
-        appendMockName('byParentId');
         return (ShareQuery) byField(parentField, 'IN', parentIds);
     }
 
@@ -55,7 +53,6 @@ public inherited sharing class ShareQuery extends Query {
      * @return Share records for given records and users/groups
      */
     public ShareQuery byParentIdAndUserOrGroupId(Set<Id> parentIds, Set<Id> userOrGroupIds) {
-        appendMockName('byParentIdAndUserOrGroupId');
         wheres(conditionFactory.ANDs(
             conditionFactory.field(parentField).isIn(parentIds),
             conditionFactory.field('UserOrGroupId').isIn(userOrGroupIds)

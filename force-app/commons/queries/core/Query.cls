@@ -28,7 +28,7 @@
  * Query.EmailTemplates.byDeveloperName('FirmQuote');
  */
 @JsonAccess(Serializable='never' Deserializable='never')
-public inherited sharing virtual class Query extends QueryObject {
+public inherited sharing virtual class Query {
     public final static AccountQuery Accounts { get {return new AccountQuery();} }
     public final static AttachmentQuery Attachments { get {return new AttachmentQuery();} }
     public final static BusinessHoursQuery BusinessHours { get {return new BusinessHoursQuery();} }
@@ -65,28 +65,31 @@ public inherited sharing virtual class Query extends QueryObject {
      * @return Query instance for generic SObjectType
      *
      */
-    public static Query fromSObject(SObjectType sObjectType) {
-        return new Query(sObjectType);
-    }
-
-
-    /**
-     * Constructs Query for given sObjectType without any fields selected.
-     * @param sObjectType to query from
-     */
-    protected Query(SObjectType sObjectType) {
-        super(sObjectType);
+    public static QueryObject fromSObject(SObjectType sObjectType) {
+        return new QueryObject(sObjectType);
     }
 
     /**
-     * Constructs QueryObject for given sObjectType and given fields selected.
-     * @param fields to select
-     * @param sObjectType to query from
-     */
-    protected Query(List<String> fields, SObjectType sObjectType) {
-        super(fields, sObjectType);
+     * Mocks query result using either mockId or client's class name and method.
+     * <pre>
+     *     class AccountQuotingService{
+     *         public void generateQuotes(Set<Id> accountIds){
+     *              List<Account> accs = Query.Accounts.byId(accountIds).getList();
+     *         }
+     *     }
+     *
+     * </pre>
+     *
+     * In unit tests:
+     * <pre>
+     *     Query.mock(Account.SObjectType, 'AccountQuotingService.generateQuotes', mockedResults);
+     *     // or
+     *     Query.Accounts.mock('AccountQuotingService.generateQuotes', mockedResults);
+     * </pre>
+    */
+    public static void mock(SObjectType sobjType, String mockIdOrClientName, Object result) {
+        Query.fromSObject(sobjType).mock(mockIdOrClientName, result);
     }
-
 
     /**
      * Represents SOQL FIELDS() token which can be used to select group of fields

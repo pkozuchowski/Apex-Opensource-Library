@@ -26,7 +26,7 @@
  * Selector layer for Email Templates.
  * By default templates are queried without body for saving heap space.
  */
-public inherited sharing class EmailTemplateQuery extends Query {
+public inherited sharing class EmailTemplateQuery extends QueryObject {
 
     public EmailTemplateQuery() {
         super(new List<String>{
@@ -69,7 +69,6 @@ public inherited sharing class EmailTemplateQuery extends Query {
      * @return Email Templates By given names
      */
     public EmailTemplateQuery byDeveloperName(Set<String> developerNames) {
-        appendMockName('byDeveloperName');
         return (EmailTemplateQuery) byField(EmailTemplate.DeveloperName, 'IN', developerNames);
     }
 }

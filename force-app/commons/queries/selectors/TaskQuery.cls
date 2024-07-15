@@ -25,7 +25,7 @@
 /**
  * Selector layer for Task SObjects
  */
-public inherited sharing class TaskQuery extends Query {
+public inherited sharing class TaskQuery extends QueryObject {
 
     public TaskQuery() {
         super(new List<String>{
@@ -58,7 +58,6 @@ public inherited sharing class TaskQuery extends Query {
      * Filters Tasks associated with given Accounts
      */
     public TaskQuery byAccountId(Set<Id> accountIds) {
-        appendMockName('byAccountId');
         return (TaskQuery) byField(Task.AccountId, 'IN', accountIds);
     }
 
@@ -74,7 +73,6 @@ public inherited sharing class TaskQuery extends Query {
      * Filters Tasks associated with given Accounts
      */
     public TaskQuery byWhatId(Set<Id> whatIds) {
-        appendMockName('byWhatId');
         return (TaskQuery) byField(Task.WhatId, 'IN', whatIds);
     }
 
@@ -90,7 +88,6 @@ public inherited sharing class TaskQuery extends Query {
      * Filters Tasks associated with given Accounts
      */
     public TaskQuery byWhoId(Set<Id> whoIds) {
-        appendMockName('byWhoId');
         return (TaskQuery) byField(Task.WhoId, 'IN', whoIds);
     }
 

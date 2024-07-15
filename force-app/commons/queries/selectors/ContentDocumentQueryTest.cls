@@ -28,10 +28,10 @@ private class ContentDocumentQueryTest {
     @TestSetup
     static void testSetup() {
         ContentVersion contentVersionInsert = new ContentVersion(
-                Title = 'Test',
-                PathOnClient = 'Test.jpg',
-                VersionData = Blob.valueOf('Test Data'),
-                IsMajorVersion = true
+            Title = 'Test',
+            PathOnClient = 'Test.jpg',
+            VersionData = Blob.valueOf('Test Data'),
+            IsMajorVersion = true
         );
         insert contentVersionInsert;
     }

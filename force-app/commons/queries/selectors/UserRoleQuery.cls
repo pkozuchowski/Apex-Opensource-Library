@@ -26,7 +26,7 @@
  * Selector Layer class for UserRoles.
  * @see UserRoleQueryTest
  */
-public inherited sharing class UserRoleQuery extends Query {
+public inherited sharing class UserRoleQuery extends QueryObject {
 
 
     public UserRoleQuery() {
@@ -39,8 +39,8 @@ public inherited sharing class UserRoleQuery extends Query {
     * @return UserRole of current user
     */
     public UserRoleQuery byCurrentUser() {
-        appendMockName('byCurrentUser');
-        return (UserRoleQuery) byField(UserRole.Id, '=', UserInfo.getUserRoleId());
+        return (UserRoleQuery) byId(UserInfo.getUserRoleId());
+//        return (UserRoleQuery) byField(UserRole.Id, '=', UserInfo.getUserRoleId());
     }
 
     /**
@@ -55,7 +55,6 @@ public inherited sharing class UserRoleQuery extends Query {
      * @return UserRoles by given developer names
      */
     public UserRoleQuery byDeveloperName(Set<String> developerNames) {
-        appendMockName('byDeveloperName');
         return (UserRoleQuery) byField(UserRole.DeveloperName, 'IN', developerNames);
     }
 }

@@ -26,7 +26,7 @@
  * Selector Layer for Org wide email addresses.
  * Cached for limits savings.
  */
-public inherited sharing class OrgWideEmailAddressQuery extends Query {
+public inherited sharing class OrgWideEmailAddressQuery extends QueryObject {
 
 
     public OrgWideEmailAddressQuery() {
@@ -46,7 +46,6 @@ public inherited sharing class OrgWideEmailAddressQuery extends Query {
      * @return OrgWideEmailAddress by given Display Names
      */
     public OrgWideEmailAddressQuery byDisplayName(Set<String> names) {
-        appendMockName('byDisplayName');
         return (OrgWideEmailAddressQuery) byField(OrgWideEmailAddress.DisplayName, 'IN', names);
     }
 
@@ -62,7 +61,6 @@ public inherited sharing class OrgWideEmailAddressQuery extends Query {
      * @return OrgWideEmailAddress by given Email Addresses
      */
     public OrgWideEmailAddressQuery byAddress(Set<String> names) {
-        appendMockName('byAddress');
         return (OrgWideEmailAddressQuery) byField(OrgWideEmailAddress.Address, 'IN', names);
     }
 }

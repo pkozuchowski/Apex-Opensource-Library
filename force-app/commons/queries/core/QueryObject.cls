@@ -28,6 +28,8 @@
 @JsonAccess(Serializable='never' Deserializable='never')
 public virtual inherited sharing class QueryObject {
     private final static Map<String, Object> queryMocks = new Map<String, Object>();
+    private final static Set<SObjectType> mockedSObjects = new Set<SObjectType>();
+
     protected final QueryConditions conditionFactory = new QueryConditions();
     protected final QueryBuilder queryBuilder = new QueryBuilder();
     protected final DatabaseService databaseService = new DatabaseService();
@@ -55,7 +57,7 @@ public virtual inherited sharing class QueryObject {
      * Constructs QueryObject for given sObjectType without any fields selected.
      * @param sObjectType to query from
      */
-    protected QueryObject(SObjectType sObjectType) {
+    public QueryObject(SObjectType sObjectType) {
         this.sObjType = sObjectType;
         this.cache = QueryCache.get(sObjectType);
     }
@@ -65,7 +67,7 @@ public virtual inherited sharing class QueryObject {
      * @param fields to select
      * @param sObjectType to query from
      */
-    protected QueryObject(List<String> fields, SObjectType sObjectType) {
+    public QueryObject(List<String> fields, SObjectType sObjectType) {
         this(sObjectType);
         this.withFields(fields);
     }
@@ -104,8 +106,12 @@ public virtual inherited sharing class QueryObject {
      */
     public QueryObject withAllFields() {
         List<SObjectField> allFields = sObjType.getDescribe().fields.getMap().values();
+        Set<String> excluded = new Set<String>{'SystemModstamp'};
+
         for (SObjectField sObjectField : allFields) {
-            this.queryBuilder.addField('' + sObjectField);
+            if (!excluded.contains('' + sObjectField)) {
+                this.queryBuilder.addField('' + sObjectField);
+            }
         }
         return this;
     }
@@ -140,25 +146,6 @@ public virtual inherited sharing class QueryObject {
         return this;
     }
 
-
-    /**
-     * Appends mock name. Query methods append to mock name and that name can be used to mock:
-     * <pre>
-     *     Query.Accounts
-     *         .byRecordTypeId(...) // appends 'byRecordTypeId' mock name
-     *         .byName(...)         // appends 'byName' mock Name
-     * </pre>
-     *
-     * Then in tests:
-     * <pre>
-     *     Query.Accounts.mock('.byRecordTypeId.byName', mockedResults);
-     * </pre>
-     */
-    protected QueryObject appendMockName(String mockName) {
-        this.mockName += '.' + mockName;
-        return this;
-    }
-
     /**
      * Give this query unique name, which can be referenced in Unit Tests to mock results for named query.
      */
@@ -180,20 +167,10 @@ public virtual inherited sharing class QueryObject {
      *     Query.Accounts.byName('Test').getList(); // returns mock accounts
      * </pre>
      */
-    public QueryObject mock(String mockName, Object result) {
+    public void mock(String mockName, Object result) {
+        mockedSObjects.add(sObjType);
         queryMocks.put('' + this.sObjType + '.' + mockName, result);
-        return this;
     }
-
-    /**
-     * This method prints log with expected mock name.
-     * Use this when in doubt what mocked name is expected.
-     */
-    public QueryObject debugLogMockName() {
-        System.debug('Mock Name: \'' + mockName + '\'');
-        return this;
-    }
-
 
     /**
      * Sets limit on query
@@ -359,7 +336,6 @@ public virtual inherited sharing class QueryObject {
     * Filters records by Id
     */
     public virtual QueryObject byId(Set<Id> recordIds) {
-        appendMockName('byId');
         return byField('Id', 'IN', recordIds);
     }
 
@@ -375,7 +351,6 @@ public virtual inherited sharing class QueryObject {
      * Filters records by RecordTypeId
      */
     public virtual QueryObject byRecordTypeId(Set<Id> recordTypeId) {
-        appendMockName('byRecordTypeId');
         return byField('RecordTypeId', 'IN', recordTypeId);
     }
 
@@ -390,7 +365,6 @@ public virtual inherited sharing class QueryObject {
      * Filters records by RecordTypeId
      */
     public virtual QueryObject byRecordTypeDeveloperName(Set<String> recordTypeDeveloperName) {
-        appendMockName('byRecordTypeDeveloperName');
         return byField('RecordType.DeveloperName', 'IN', recordTypeDeveloperName);
     }
 
@@ -406,7 +380,6 @@ public virtual inherited sharing class QueryObject {
      * Filters records by OwnerId
      */
     public virtual QueryObject byOwnerId(Set<Id> ownerIds) {
-        appendMockName('byOwnerId');
         return byField('OwnerId', 'IN', ownerIds);
     }
 
@@ -605,11 +578,17 @@ public virtual inherited sharing class QueryObject {
     * @return Count of records
     */
     public Integer getCount() {
-        if (queryMocks.containsKey(mockKey)) {
-            return (Integer) queryMocks.get(mockKey);
-        } else {
+        Object mock = getMock();
+
+        if (mock == null) {
             queryBuilder.setFields(new List<String>{'COUNT(Id) cnt'});
             return (Integer) getList().get(0).get('cnt');
+
+        } else if (mock instanceof List<SObject>) {
+            return ((List<SObject>) mock).size();
+
+        } else {
+            return (Integer) mock;
         }
     }
 
@@ -637,8 +616,9 @@ public virtual inherited sharing class QueryObject {
     }
 
     private List<SObject> getQueryResult() {
-        if (queryMocks.containsKey(mockKey)) {
-            return (SObject[]) queryMocks.get(mockKey);
+        Object mock = getMock();
+        if (mock != null) {
+            return (List<SObject>) mock;
         }
 
         List<SObject> result = Runtime.newListOfItemType(sObjType);
@@ -665,6 +645,27 @@ public virtual inherited sharing class QueryObject {
         }
 
         return result;
+    }
+
+    private Object getMock() {
+        if (Test.isRunningTest()
+            && mockedSObjects.contains(this.sObjType)) {
+
+            if (queryMocks.containsKey(mockKey)) {
+                return queryMocks.get(mockKey);
+
+            } else {
+                for (Runtime.StackTraceLine line : Runtime.getStackTrace()) {
+                    String mockName = '' + this.sObjType + '.' + line.apexClassMethod;
+
+                    if (queryMocks.containsKey(mockName)) {
+                        return queryMocks.get(mockName);
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
 

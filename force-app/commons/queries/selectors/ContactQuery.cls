@@ -25,7 +25,7 @@
 /**
  * Selector layer for Contact SObjects
  */
-public inherited sharing class ContactQuery extends Query {
+public inherited sharing class ContactQuery extends QueryObject {
 
     public ContactQuery() {
         super(new List<String>{
@@ -77,7 +77,6 @@ public inherited sharing class ContactQuery extends Query {
      * Filters Contacts with given names
      */
     public ContactQuery byName(Set<String> names) {
-        appendMockName('byName');
         return (ContactQuery) byField(Contact.Name, 'IN', names);
     }
 
@@ -93,7 +92,6 @@ public inherited sharing class ContactQuery extends Query {
      * Filters Contacts with given emails
      */
     public ContactQuery byEmail(Set<String> emails) {
-        appendMockName('byEmail');
         return (ContactQuery) byField(Contact.Email, 'IN', emails);
     }
 
@@ -109,7 +107,6 @@ public inherited sharing class ContactQuery extends Query {
      * Filters Contacts related to given account Ids
      */
     public ContactQuery byAccountId(Set<Id> accountIds) {
-        appendMockName('byAccountId');
         return (ContactQuery) byField(Contact.AccountId, 'IN', accountIds);
     }
 
@@ -125,7 +122,6 @@ public inherited sharing class ContactQuery extends Query {
      * Filters Contacts with given Phone
      */
     public ContactQuery byPhone(Set<String> phone) {
-        appendMockName('byPhone');
         return (ContactQuery) byField(Contact.Phone, 'IN', phone);
     }
 }

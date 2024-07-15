@@ -27,7 +27,7 @@
 * Queues are cached to save SOQL queries in subsequent calls.
 * @see QueueQueryTest.cls
 * */
-public inherited sharing class QueueQuery extends Query {
+public inherited sharing class QueueQuery extends QueryObject {
 
     public QueueQuery() {
         super(Group.SObjectType);
@@ -46,7 +46,6 @@ public inherited sharing class QueueQuery extends Query {
      * Filters List of Queues for given Developer Names.
      */
     public QueueQuery byDeveloperName(Set<String> developerNames) {
-        appendMockName('byDeveloperName');
         return (QueueQuery) byField(Group.DeveloperName, 'IN', developerNames);
     }
 
@@ -62,7 +61,6 @@ public inherited sharing class QueueQuery extends Query {
      * Filters Queues with given names (label).
      */
     public QueueQuery byName(Set<String> names) {
-        appendMockName('byName');
         return (QueueQuery) byField(Group.Name, 'IN', names);
     }
 }

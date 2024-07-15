@@ -210,70 +210,85 @@ Consecutive call with the same query will get all 50 records from the cache and 
 
 ---
 # Mocking
-It's possible to mock query response in the unit test as follows:
+You can easily mock the query using class and method name where the query was invoked, or by associating query with a mock Id:
+
+If our client code looks like this:
+```apex
+public with sharing class AccountQuotingService {
+
+    public void generateQuotes(Set<Id> accountIds) {
+        List<Accounts> accounts = Query.Accounts.byId(accountIds).getList();
+        
+        // ... 
+    }
+
+}
+```
+
+Then, the easiest way to mock it is as follows:
+```apex
+@IsTest
+static void myTestMethod() {
+    Query.Accounts.mock('AccountQuotingService.generateQuotes', new List<Account>{
+        // my mocked query result
+    });
+    
+    // or
+    
+    Query.mock(Account.SObjectType, 'AccountQuotingService.generateQuotes', new List<Account>{
+        // my mocked query result
+    });
+}
+
+```
+
+Alternatively, you can still use mock name:
+```apex
+public with sharing class AccountQuotingService {
+
+    public void generateQuotes(Set<Id> accountIds) {
+        List<Accounts> accounts = Query.Accounts.byId(accountIds)
+            .withMockName('myAccountQuery')
+            .getList();
+        
+        // ... 
+    }
+
+}
+```
 
 ```apex
 @IsTest
 static void myTestMethod() {
-	Query.Accounts.mock('.byExternalId', new List<Account>{
-		// my mocked query result
-	});
-
-	Test.startTest();
-	List<Account> accounts = Query.Accounts
-		.byExternalId(/*...*/)
-		.getList(); //returns mocked result
-	Test.stopTest();
+    Query.Accounts.mock('myAccountQuery', new List<Account>{
+        // my mocked query result
+    });
+    
+    // or
+    
+    Query.mock(Account.SObjectType, 'myAccountQuery', new List<Account>{
+        // my mocked query result
+    });
 }
-```
-
-Mock name is generated from the used methods:
-```apex
-// For Query in class:
-List<Account> accounts = Query.Accounts
-	.byExternalId(/*...*/)
-	.byRecordTypeId()
-	.getList(); //returns mock
-
-//Mock as follows:
-Query.Accounts.mock('.byExternalId.byRecordTypeId', new List<Account>{
-	// my mocked query result
-});
-
-//When in doubt add .debugLogMockName(); to the query chain.
-```
-
-Alternatively, you can define your mock name to mock exactly that one query that you want.
-```apex
-// In your class:
-List<Account> accounts = Query.Accounts
-	.byExternalId(/*...*/)
-	.withMockName('myAccountQuery')
-	.getList(); //returns mocked result
-
-
-// In your test:
-Query.Accounts.mock('myAccountQuery', new List<Account>{
-	// my mocked query result
-});
 
 ```
+
 
 ---
 # Specification
 
 ## Constructing Query
 Query can be constructed in two ways:
-- by extending Query class
+- by extending QueryObject class
 - by using a generic query
 
 ### Extending Query class
 The default way is to introduce a new class for our SObject—this allows us to introduce SObject specific methods.
 If we want to have selector for Account, then we should create `AccountQuery` class that
-extends `Query`.
+extends `QueryObject`.
 In the constructor, we should define default fields (optional) and sObject type (required):
 ```apex
-public with sharing class AccountQuery extends Query {
+public with sharing class AccountQuery extends QueryObject {
 	public AccountQuery() {
 		super(new List<String>{
 			'Id',
@@ -807,7 +822,7 @@ public QueryObject mock(String mockName, Object result);
 Mocks output of the query with the given result.
 
 #### Parameters
-- `String mockName` - Unique identifier of the query used for mocking.
+- `String mockName` - Unique identifier of the query used for mocking or Apex Class and Method name where query was invoked.
 - `Object result` - Query result to mock - Integer or List of SObjects
 
 #### Usage
@@ -1186,7 +1201,7 @@ Query Framework uses Builder with an inheritance pattern, which has one downside
 
 Consider the following selector:
 ```apex
-public with sharing class AccountQuery extends Query {
+public with sharing class AccountQuery extends QueryObject {
 
 	public AccountQuery() {
 		super(new List<String>{
@@ -1226,7 +1241,7 @@ new AccountQuery()
 
 - Reintroduce method you need in AccountQuery and cast type. Unfortunately, we have to use different method name:
 ```apex
-public with sharing class AccountQuery extends Query {
+public with sharing class AccountQuery extends QueryObject {
 
 	public AccountQuery withFieldsx(String fields) {
 		return (AccountQuery) withFields(fields);
@@ -1241,3 +1256,12 @@ q.withFields('Id, Name');
 q.byName('Test Account');
 return q.getList();
 ```
+
+---
+# Change Log
+### 1.1.0
+- Added new mocking method without using mock ids.
+```
+
+```
+- 

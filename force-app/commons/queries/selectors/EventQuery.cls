@@ -25,7 +25,7 @@
 /**
  * Selector layer for Event SObjects
  */
-public inherited sharing class EventQuery extends Query {
+public inherited sharing class EventQuery extends QueryObject {
 
     public EventQuery() {
         super(new List<String>{
@@ -56,7 +56,6 @@ public inherited sharing class EventQuery extends Query {
      * Filters Events associated with given Accounts
      */
     public EventQuery byAccountId(Set<Id> accountIds) {
-        appendMockName('byDeveloperName');
         return (EventQuery) byField(Event.AccountId, 'IN', accountIds);
     }
 
@@ -72,7 +71,6 @@ public inherited sharing class EventQuery extends Query {
      * Filters Events associated with given whatIds
      */
     public EventQuery byWhatId(Set<Id> whatIds) {
-        appendMockName('byDeveloperName');
         return (EventQuery) byField(Event.WhatId, 'IN', whatIds);
     }
 
@@ -88,7 +86,6 @@ public inherited sharing class EventQuery extends Query {
      * Filters Events associated with given WhoIds
      */
     public EventQuery byWhoId(Set<Id> whoIds) {
-        appendMockName('byDeveloperName');
         return (EventQuery) byField(Event.WhoId, 'IN', whoIds);
     }
 }

@@ -25,7 +25,7 @@
 /**
  * Selector layer for Email Message SObjects
  */
-public inherited sharing class EmailMessageQuery extends Query {
+public inherited sharing class EmailMessageQuery extends QueryObject {
 
     public EmailMessageQuery() {
         super(EmailMessage.SObjectType);
@@ -44,7 +44,6 @@ public inherited sharing class EmailMessageQuery extends Query {
      * Filters Email Messages associated with given records
      */
     public EmailMessageQuery byParentId(Set<Id> parentIds) {
-        appendMockName('byParentId');
         return (EmailMessageQuery) byField(EmailMessage.ParentId, 'IN', parentIds);
     }
 }

@@ -25,7 +25,7 @@
 /**
  * Selector layer for Static Resources.
  */
-public inherited sharing class StaticResourceQuery extends Query {
+public inherited sharing class StaticResourceQuery extends QueryObject {
 
     public StaticResourceQuery() {
         super(StaticResource.SObjectType);
@@ -44,7 +44,6 @@ public inherited sharing class StaticResourceQuery extends Query {
      * Filters Static Resource by given names
      */
     public StaticResourceQuery byName(Set<String> names) {
-        appendMockName('byName');
         return (StaticResourceQuery) byField(StaticResource.Name, 'IN', names);
     }
 }

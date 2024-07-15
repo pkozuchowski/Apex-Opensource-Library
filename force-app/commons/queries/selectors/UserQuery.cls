@@ -26,7 +26,7 @@
  * Selector layer for User sObject
  * @see UserQueryTest
  */
-public inherited sharing class UserQuery extends Query {
+public inherited sharing class UserQuery extends QueryObject {
 
 
     public UserQuery() {
@@ -52,7 +52,6 @@ public inherited sharing class UserQuery extends Query {
      * Filters User with given names.
      */
     public UserQuery byName(Set<String> names) {
-        appendMockName('byName');
         return (UserQuery) byField(User.Name, 'IN', names);
     }
 
@@ -67,7 +66,6 @@ public inherited sharing class UserQuery extends Query {
      * Filters User with given emails.
      */
     public UserQuery byEmail(Set<String> emails) {
-        appendMockName('byEmail');
         return (UserQuery) byField(User.Email, 'IN', emails);
     }
 
@@ -82,7 +80,6 @@ public inherited sharing class UserQuery extends Query {
      * Filters User with given usernames.
      */
     public UserQuery byUsername(Set<String> usernames) {
-        appendMockName('byUsername');
         return (UserQuery) byField(User.Username, 'IN', usernames);
     }
 
@@ -90,7 +87,6 @@ public inherited sharing class UserQuery extends Query {
      * Filters User record identified by UserInfo.getUserId().
      */
     public User getCurrentUser() {
-        appendMockName('getCurrentUser');
         return (User) byId(UserInfo.getUserId()).getFirstOrNull();
     }
 }

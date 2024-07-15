@@ -25,7 +25,7 @@
 /**
  * Selector layer for PricebookEntry SObject.
  */
-public inherited sharing class PricebookEntryQuery extends Query {
+public inherited sharing class PricebookEntryQuery extends QueryObject {
 
     public PricebookEntryQuery() {
         super(PricebookEntry.SObjectType);
@@ -44,7 +44,6 @@ public inherited sharing class PricebookEntryQuery extends Query {
      * Filters PricebookEntry records with given productIds.
      */
     public PricebookEntryQuery byProductId(Set<Id> productIds) {
-        appendMockName('byProductId');
         return (PricebookEntryQuery) byField(PricebookEntry.Product2Id, 'IN', productIds);
     }
 
@@ -60,7 +59,6 @@ public inherited sharing class PricebookEntryQuery extends Query {
      * Filters PricebookEntry records with given pricebookIds.
      */
     public PricebookEntryQuery byPricebookId(Set<Id> pricebookIds) {
-        appendMockName('byPricebookId');
         return (PricebookEntryQuery) byField(PricebookEntry.Pricebook2Id, 'IN', pricebookIds);
     }
 }

@@ -25,7 +25,7 @@
 /**
  * Selector layer for Lead SObjects
  */
-public inherited sharing class LeadQuery extends Query {
+public inherited sharing class LeadQuery extends QueryObject {
 
     public LeadQuery() {
         super(new List<String>{
@@ -54,7 +54,6 @@ public inherited sharing class LeadQuery extends Query {
      * Filters Leads by given names
      */
     public LeadQuery byName(Set<String> names) {
-        appendMockName('byName');
         return (LeadQuery) byField(Lead.Name, 'IN', names);
     }
 
@@ -69,7 +68,6 @@ public inherited sharing class LeadQuery extends Query {
      * Filters Leads by given emails
      */
     public LeadQuery byEmail(Set<String> emails) {
-        appendMockName('byEmail');
         return (LeadQuery) byField(Lead.Email, 'IN', emails);
     }
 
@@ -84,7 +82,6 @@ public inherited sharing class LeadQuery extends Query {
      * Filters Leads by given companies
      */
     public LeadQuery byCompany(Set<String> companies) {
-        appendMockName('byCompany');
         return (LeadQuery) byField(Lead.Company, 'IN', companies);
     }
 }

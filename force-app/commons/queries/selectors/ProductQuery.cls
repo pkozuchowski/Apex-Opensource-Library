@@ -27,7 +27,7 @@
  * Use through Query facade:
  * Query.Products.byName(...);
  */
-public virtual inherited sharing class ProductQuery extends Query {
+public virtual inherited sharing class ProductQuery extends QueryObject {
 
     public ProductQuery() {
         super(new List<String>{
@@ -62,13 +62,12 @@ public virtual inherited sharing class ProductQuery extends Query {
      * Adds pricebook entries to given pricebooks
      */
     public ProductQuery withPricebookEntries(Set<Id> pricebookIds) {
-        appendMockName('getStandardPricebookId');
         this.withChildren(
             Query.fromSObject(PricebookEntry.SObjectType)
-                 .withFields(new List<String>{
+                .withFields(new List<String>{
                     'Id'
-                 })
-                 .byField('Pricebook2Id', 'IN', pricebookIds),
+                })
+                .byField('Pricebook2Id', 'IN', pricebookIds),
             'PricebookEntries');
 
         return this;
@@ -86,7 +85,6 @@ public virtual inherited sharing class ProductQuery extends Query {
      * Filters Product2s with given names
      */
     public ProductQuery byName(Set<String> names) {
-        appendMockName('byName');
         return (ProductQuery) byField(Product2.Name, 'IN', names);
     }
 
@@ -101,7 +99,6 @@ public virtual inherited sharing class ProductQuery extends Query {
      * Filters Product2s with given names
      */
     public ProductQuery byProductCode(Set<String> productCodes) {
-        appendMockName('byProductCode');
         return (ProductQuery) byField(Product2.ProductCode, 'IN', productCodes);
     }
 
@@ -116,7 +113,6 @@ public virtual inherited sharing class ProductQuery extends Query {
      * Filters Product2s with given names
      */
     public ProductQuery byExternalId(Set<String> externalIds) {
-        appendMockName('byExternalId');
         return (ProductQuery) byField(Product2.ExternalId, 'IN', externalIds);
     }
 }

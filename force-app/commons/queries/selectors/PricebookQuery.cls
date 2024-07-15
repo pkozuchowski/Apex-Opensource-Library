@@ -26,7 +26,7 @@
  * Selector layer for Pricebook2 SObject.
  * @see PricebookQueryTest
  */
-public inherited sharing class PricebookQuery extends Query {
+public inherited sharing class PricebookQuery extends QueryObject {
 
     public PricebookQuery() {
         super(Pricebook2.SObjectType);
@@ -56,7 +56,6 @@ public inherited sharing class PricebookQuery extends Query {
      * Filters Pricebook2 records with given names.
      */
     public PricebookQuery byName(Set<String> names) {
-        appendMockName('byName');
         return (PricebookQuery) byField(Pricebook2.Name, 'IN', names);
     }
 
@@ -64,7 +63,6 @@ public inherited sharing class PricebookQuery extends Query {
      * Filters Id of Standard Pricebook. In Unit Test context Test.getStandardPricebookId() value is returned.
      */
     public Id getStandardPricebookId() {
-        appendMockName('getStandardPricebookId');
         if (Test.isRunningTest()) {
             return Test.getStandardPricebookId();
         } else {

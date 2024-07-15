@@ -25,7 +25,7 @@
 /**
  * Selector layer for Case SObjects
  */
-public inherited sharing class CaseQuery extends Query {
+public inherited sharing class CaseQuery extends QueryObject {
 
     public CaseQuery() {
         super(new List<String>{
@@ -65,7 +65,6 @@ public inherited sharing class CaseQuery extends Query {
      * Filters Cases by given names
      */
     public CaseQuery bySubject(Set<String> names) {
-        appendMockName('bySubject');
         return (CaseQuery) byField(Case.Subject, 'IN', names);
     }
 
@@ -81,7 +80,6 @@ public inherited sharing class CaseQuery extends Query {
      * Filters Cases related to given account Ids
      */
     public CaseQuery byAccountId(Set<Id> accountIds) {
-        appendMockName('byAccountId');
         return (CaseQuery) byField(Case.AccountId, 'IN', accountIds);
     }
 
@@ -97,7 +95,6 @@ public inherited sharing class CaseQuery extends Query {
      * Filters Cases related to given contact Ids
      */
     public CaseQuery byContactId(Set<Id> contactIds) {
-        appendMockName('byContactId');
         return (CaseQuery) byField(Case.ContactId, 'IN', contactIds);
     }
 }

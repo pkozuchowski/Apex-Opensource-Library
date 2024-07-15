@@ -25,7 +25,7 @@
 /**
  * Selector layer for Opportunity SObjects
  */
-public inherited sharing class OpportunityQuery extends Query {
+public inherited sharing class OpportunityQuery extends QueryObject {
 
     public OpportunityQuery() {
         super(new List<String>{
@@ -63,7 +63,6 @@ public inherited sharing class OpportunityQuery extends Query {
      * Filters Opportunities by given names
      */
     public OpportunityQuery byName(Set<String> names) {
-        appendMockName('byName');
         return (OpportunityQuery) byField(Opportunity.Name, 'IN', names);
     }
 
@@ -79,7 +78,6 @@ public inherited sharing class OpportunityQuery extends Query {
      * Filters Opportunities related to given account Ids
      */
     public OpportunityQuery byAccountId(Set<Id> accountIds) {
-        appendMockName('byAccountId');
         return (OpportunityQuery) byField(Opportunity.AccountId, 'IN', accountIds);
     }
 }

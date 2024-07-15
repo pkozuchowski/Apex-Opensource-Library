@@ -35,6 +35,6 @@ private class UserRoleQueryTest {
     static void testSelectOfCurrentUser() {
         Id value = UserInfo.getUserRoleId();
         UserRoleQuery query = new UserRoleQuery().byCurrentUser();
-        QueryObjectTest.assertSOQLContainsFieldClause(query, UserRole.Id, '=', value);
+        QueryObjectTest.assertSOQLContainsFieldClause(query, UserRole.Id, 'IN', value);
     }
 }

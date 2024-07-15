@@ -27,7 +27,7 @@
  * Results are cached for better performance and SOQL Limits savings.
  * @see BusinessHoursQueryTest
  */
-public inherited sharing class BusinessHoursQuery extends Query {
+public inherited sharing class BusinessHoursQuery extends QueryObject {
 
     public BusinessHoursQuery() {
         super(BusinessHours.SObjectType);
@@ -38,7 +38,6 @@ public inherited sharing class BusinessHoursQuery extends Query {
      * @return Active Business Hours with given name
      */
     public QueryObject byDefault(Boolean isDefault) {
-        appendMockName('byDefault');
         return byField(BusinessHours.IsDefault, '=', isDefault);
     }
 
@@ -54,7 +53,6 @@ public inherited sharing class BusinessHoursQuery extends Query {
      * @return Active Business Hours with given name
      */
     public QueryObject byName(Set<String> names) {
-        appendMockName('byName');
         return (QueryObject) byField(BusinessHours.Name, 'IN', names);
     }
 }

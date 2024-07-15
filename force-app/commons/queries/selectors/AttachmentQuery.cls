@@ -25,7 +25,7 @@
 /**
  * Selector layer for Attachment SObjects
  */
-public inherited sharing class AttachmentQuery extends Query {
+public inherited sharing class AttachmentQuery extends QueryObject {
 
     public AttachmentQuery() {
         super(Attachment.SObjectType);
@@ -36,7 +36,6 @@ public inherited sharing class AttachmentQuery extends Query {
      * Filters Attachments associated with given record
      */
     public AttachmentQuery byParentIdAndName(Id parentId, String name) {
-        appendMockName('byParentIdAndName');
         return (AttachmentQuery) byParentId(parentId)
             .byField(Attachment.Name, '=', name);
     }
@@ -52,7 +51,6 @@ public inherited sharing class AttachmentQuery extends Query {
      * Filters Attachments associated with given records
      */
     public AttachmentQuery byParentId(Set<Id> parentIds) {
-        appendMockName('byParentId');
         return (AttachmentQuery) byField(Attachment.ParentId, 'IN', parentIds);
     }
 }

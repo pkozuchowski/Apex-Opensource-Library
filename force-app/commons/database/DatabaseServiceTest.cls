@@ -21,9 +21,33 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest(IsParallel=true)
+@IsTest(IsParallel=false)
 private class DatabaseServiceTest {
+    private static final String STR = 'DatabaseServiceTest@test.com';
+
     private static Integer counter = 0;
+
+    @TestSetup
+    static void testSetup() {
+        new TestDataBuilder()
+            .create(new User(Username = STR,
+                ProfileId = Query.Profiles.byName('Standard User').getFirstIdOrNull())
+            )
+            .create(new SomeRecord__c())
+            .create(new SomeRecord__c())
+            .create(new SomeRecord__c())
+            .insertRecords();
+    }
+
+    @IsTest
+    static void testSharing() {
+        User u = (User) Query.Users.byUsername(STR).getFirst();
+        System.debug([SELECT Id FROM SomeRecord__c]);
+        System.runAs(u) {
+            Assert.areEqual(0, new DatabaseService().withSharing().query('SELECT Id FROM SomeRecord__c').size());
+            Assert.areEqual(3, new DatabaseService().withoutSharing().query('SELECT Id FROM SomeRecord__c').size());
+        }
+    }
 
     @IsTest
     static void testDML() {

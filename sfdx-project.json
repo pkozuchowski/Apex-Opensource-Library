@@ -83,8 +83,8 @@
     {
       "path": "./force-app/commons/database",
       "package": "DatabaseService",
-      "versionName": "ver 0.1",
-      "versionNumber": "0.1.0.NEXT",
+      "versionName": "ver 1.1",
+      "versionNumber": "1.1.0.NEXT",
       "default": false,
       "versionDescription": ""
     },

@@ -31,8 +31,7 @@ public class DatabaseService {
     private static Map<SObjectType, String> prefixBySObject = new Map<SObjectType, String>();
     private static Integer cnt = 0;
     private Database.DMLOptions dmlOptions = new Database.DMLOptions();
-    private AccessLevel level = AccessLevel.SYSTEM_MODE;
-    private DMLIssuer dmlIssuer = new InheritedSharingDMLIssuer();
+    private DMLIssuer dmlIssuer = new DMLIssuer();
 
     /**
      * @return Unique fake id for given SObject.
@@ -76,7 +75,7 @@ public class DatabaseService {
      * USER_MODE - Execution mode in which the object permissions, field-level security, and sharing rules of the current user are enforced.
      */
     public DatabaseService setAccessLevel(AccessLevel level) {
-        this.level = level;
+        this.dmlIssuer.level = level;
         return this;
     }
 
@@ -127,9 +126,18 @@ public class DatabaseService {
      * @param boundVars Variables to bind to query ex. {'names' => ['Name 1', 'Name 2']}
      */
     public List<SObject> query(String mockId, String query, Map<String, Object> boundVars) {
-        return dmlIssuer.query(mockId, query, boundVars == null ? new Map<String, Object>() : boundVars, level);
+        return dmlIssuer.query(mockId, query, boundVars == null ? new Map<String, Object>() : boundVars);
     }
 
+    /**
+     * Creates a cursor when the specified SOQL query is executed.
+     * @param query Query string (ex. 'SELECT Id FROM Account WHERE Name IN: names')
+     * @param boundVars Variables to bind to query ex. {'names' => ['Name 1', 'Name 2']}
+     * @return Database.Cursor for given query
+     */
+    public Database.Cursor getCursor(String query, Map<String, Object> boundVars) {
+        return dmlIssuer.getCursor(query, boundVars);
+    }
 
     /**
      * @param query Query string (ex. 'SELECT Id FROM Account')
@@ -145,14 +153,14 @@ public class DatabaseService {
      * @return QueryLocator for given query and bound variables
      */
     public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
-        return dmlIssuer.getQueryLocator(query, boundVars == null ? new Map<String, Object>() : boundVars, level);
+        return dmlIssuer.getQueryLocator(query, boundVars == null ? new Map<String, Object>() : boundVars);
     }
 
     public Database.SaveResult insertRecord(SObject record) {
         return insertRecords(new List<SObject>{record})[0];
     }
     public List<Database.SaveResult> insertRecords(List<SObject> records) {
-        return dmlIssuer.insertRecords(records, dmlOptions, level);
+        return dmlIssuer.insertRecords(records, dmlOptions);
     }
 
 
@@ -160,7 +168,7 @@ public class DatabaseService {
         return updateRecords(new List<SObject>{record})[0];
     }
     public List<Database.SaveResult> updateRecords(List<SObject> records) {
-        return dmlIssuer.updateRecords(records, dmlOptions, level);
+        return dmlIssuer.updateRecords(records, dmlOptions);
     }
 
 
@@ -168,7 +176,7 @@ public class DatabaseService {
         return upsertRecords(nonGenericSObjectList(record), field)[0];
     }
     public List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field) {
-        return dmlIssuer.upsertRecords(records, field, dmlOptions?.optAllOrNone == true, level);
+        return dmlIssuer.upsertRecords(records, field, dmlOptions?.optAllOrNone == true);
     }
 
 
@@ -177,7 +185,7 @@ public class DatabaseService {
     }
 
     public List<Database.DeleteResult> deleteRecords(List<SObject> records) {
-        return dmlIssuer.deleteRecords(records, isAllOrNone(), level);
+        return dmlIssuer.deleteRecords(records, isAllOrNone());
     }
 
 
@@ -186,7 +194,7 @@ public class DatabaseService {
     }
 
     public List<Database.UndeleteResult> undeleteRecords(List<SObject> records) {
-        return dmlIssuer.undeleteRecords(records, isAllOrNone(), level);
+        return dmlIssuer.undeleteRecords(records, isAllOrNone());
     }
 
 
@@ -206,44 +214,65 @@ public class DatabaseService {
 
 
     /**
-    * Interface for classes that will handle DML operations
+    * Issues DMLs with inherited sharing
     * */
-    public interface DMLIssuer {
-        List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options, AccessLevel accessLevel);
-        List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options, AccessLevel accessLevel);
-        List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone, AccessLevel accessLevel);
-        List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel);
-        List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel);
-        List<SObject> query(String mockId, String query, Map<String, Object> boundVars, AccessLevel accessLevel);
-        Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars, AccessLevel accessLevel);
+    private virtual inherited sharing class DMLIssuer {
+        private AccessLevel level = AccessLevel.SYSTEM_MODE;
+
+        public virtual List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options) {
+            return Database.insert(records, options, level);
+        }
+        public virtual List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options) {
+            return Database.update(records, options, level);
+        }
+        public virtual List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone) {
+            return Database.upsert(records, field, allOrNone, level);
+        }
+        public virtual List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone) {
+            return Database.delete(records, allOrNone, level);
+        }
+        public virtual List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone) {
+            return Database.undelete(records, allOrNone, level);
+        }
+        public virtual List<SObject> query(String mockId, String query, Map<String, Object> boundVars) {
+            return Database.queryWithBinds(query, boundVars, level);
+        }
+        public virtual Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
+            return Database.getQueryLocatorWithBinds(query, boundVars, level);
+        }
+        public virtual Database.Cursor getCursor(String query, Map<String, Object> boundVars) {
+            return Database.getCursorWithBinds(query, boundVars, level);
+        }
     }
 
     /**
     * Issues DMLs with sharing
     * */
-    private with sharing class WithSharingDMLIssuer implements DMLIssuer {
-        private InheritedSharingDMLIssuer inheritedIssuer = new InheritedSharingDMLIssuer();
-
-        public List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options, AccessLevel accessLevel) {
-            return Database.insert(records, options, accessLevel);
+    @SuppressWarnings('PMD')
+    private with sharing class WithSharingDMLIssuer extends DMLIssuer {
+        public override List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options) {
+            return super.insertRecords(records, options);
         }
-        public List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options, AccessLevel accessLevel) {
-            return Database.update(records, options, accessLevel);
+        public override List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options) {
+            return super.updateRecords(records, options);
         }
-        public List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone, AccessLevel accessLevel) {
-            return Database.upsert(records, field, allOrNone, accessLevel);
+        public override List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone) {
+            return super.upsertRecords(records, field, allOrNone);
         }
-        public List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel) {
-            return Database.delete(records, allOrNone, accessLevel);
+        public override List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone) {
+            return super.deleteRecords(records, allOrNone);
         }
-        public List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel) {
-            return Database.undelete(records, allOrNone, accessLevel);
+        public override List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone) {
+            return super.undeleteRecords(records, allOrNone);
         }
-        public List<SObject> query(String mockId, String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
-            return Database.queryWithBinds(query, boundVars, accessLevel);
+        public override List<SObject> query(String mockId, String query, Map<String, Object> boundVars) {
+            return super.query(mockId, query, boundVars);
         }
-        public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
-            return Database.getQueryLocatorWithBinds(query, boundVars, accessLevel);
+        public override Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
+            return super.getQueryLocator(query, boundVars);
+        }
+        public override Database.Cursor getCursor(String query, Map<String, Object> boundVars) {
+            return super.getCursor(query, boundVars);
         }
     }
 
@@ -251,57 +280,31 @@ public class DatabaseService {
     /**
     * Issues DMLs without sharing
     * */
-    private without sharing class WithoutSharingDMLIssuer implements DMLIssuer {
-        private InheritedSharingDMLIssuer issuer = new InheritedSharingDMLIssuer();
-
-        public List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options, AccessLevel accessLevel) {
-            return Database.insert(records, options, accessLevel);
+    @SuppressWarnings('PMD')
+    private without sharing class WithoutSharingDMLIssuer extends DMLIssuer {
+        public override List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options) {
+            return super.insertRecords(records, options);
         }
-        public List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options, AccessLevel accessLevel) {
-            return Database.update(records, options, accessLevel);
+        public override List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options) {
+            return super.updateRecords(records, options);
         }
-        public List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone, AccessLevel accessLevel) {
-            return Database.upsert(records, field, allOrNone, accessLevel);
+        public override List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone) {
+            return super.upsertRecords(records, field, allOrNone);
         }
-        public List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel) {
-            return Database.delete(records, allOrNone, accessLevel);
+        public override List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone) {
+            return super.deleteRecords(records, allOrNone);
         }
-        public List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel) {
-            return Database.undelete(records, allOrNone, accessLevel);
+        public override List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone) {
+            return super.undeleteRecords(records, allOrNone);
         }
-        public List<SObject> query(String mockId, String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
-            return Database.queryWithBinds(query, boundVars, accessLevel);
+        public override List<SObject> query(String mockId, String query, Map<String, Object> boundVars) {
+            return super.query(mockId, query, boundVars);
         }
-        public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
-            return Database.getQueryLocatorWithBinds(query, boundVars, accessLevel);
+        public override Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
+            return super.getQueryLocator(query, boundVars);
         }
-    }
-
-
-    /**
-    * Issues DMLs with inherited sharing
-    * */
-    private inherited sharing class InheritedSharingDMLIssuer implements DMLIssuer {
-        public List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options, AccessLevel accessLevel) {
-            return Database.insert(records, options, accessLevel);
-        }
-        public List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options, AccessLevel accessLevel) {
-            return Database.update(records, options, accessLevel);
-        }
-        public List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone, AccessLevel accessLevel) {
-            return Database.upsert(records, field, allOrNone, accessLevel);
-        }
-        public List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel) {
-            return Database.delete(records, allOrNone, accessLevel);
-        }
-        public List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel) {
-            return Database.undelete(records, allOrNone, accessLevel);
-        }
-        public List<SObject> query(String mockId, String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
-            return Database.queryWithBinds(query, boundVars, accessLevel);
-        }
-        public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
-            return Database.getQueryLocatorWithBinds(query, boundVars, accessLevel);
+        public override Database.Cursor getCursor(String query, Map<String, Object> boundVars) {
+            return super.getCursor(query, boundVars);
         }
     }
 
@@ -310,49 +313,49 @@ public class DatabaseService {
      * Mocks all DML operations and saves them in DatabaseMock instance.
      * Queries are not mocked.
      */
-    private class MockedDmlIssuer implements DMLIssuer {
+    private class MockedDmlIssuer extends DMLIssuer {
         private final DatabaseMock mock;
 
         private MockedDmlIssuer(DatabaseMock mock) {
             this.mock = mock;
         }
 
-        public List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options, AccessLevel accessLevel) {
+        public override List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options) {
             return (List<Database.SaveResult>) doMockedDML(
                 DmlType.INSERT_DML, records, options.optAllOrNone, mock.insertedRecords, List<Database.SaveResult>.class
             );
         }
 
-        public List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options, AccessLevel accessLevel) {
+        public override List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options) {
             return (List<Database.SaveResult>) doMockedDML(
                 DmlType.UPDATE_DML, records, options.optAllOrNone, mock.updatedRecords, List<Database.SaveResult>.class
             );
         }
 
-        public List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone, AccessLevel accessLevel) {
+        public override List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone) {
             return (List<Database.UpsertResult>) doMockedDML(
                 DmlType.UPSERT_DML, records, allOrNone, mock.upsertedRecords, List<Database.UpsertResult>.class
             );
         }
 
-        public List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel) {
+        public override List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone) {
             return (List<Database.DeleteResult>) doMockedDML(
                 DmlType.DELETE_DML, records, allOrNone, mock.deletedRecords, List<Database.DeleteResult>.class
             );
         }
 
-        public List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone, AccessLevel accessLevel) {
+        public override List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone) {
             return (List<Database.UndeleteResult>) doMockedDML(
                 DmlType.UNDELETE_DML, records, allOrNone, mock.undeletedRecords, List<Database.UndeleteResult>.class
             );
         }
 
-        public List<SObject> query(String mockId, String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
+        public override List<SObject> query(String mockId, String query, Map<String, Object> boundVars) {
             return (List<SObject>) mock.queryMocks.get(mockId);
         }
 
-        public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars, AccessLevel accessLevel) {
-            return Database.getQueryLocatorWithBinds(query, boundVars, accessLevel);
+        public override Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
+            return Database.getQueryLocatorWithBinds(query, boundVars, level);
         }
 
         private Object doMockedDML(DmlType dmlType, List<SObject> records, Boolean allOrNone, List<SObject> targetList, Type resultType) {

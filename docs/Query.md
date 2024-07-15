@@ -244,20 +244,6 @@ static void myTestMethod() {
 
 Alternatively, you can still use mock name:
 ```apex
-public with sharing class AccountQuotingService {
-
-    public void generateQuotes(Set<Id> accountIds) {
-        List<Accounts> accounts = Query.Accounts.byId(accountIds)
-            .withMockName('myAccountQuery')
-            .getList();
-        
-        // ... 
-    }
-
-}
-```
-
-```apex
 @IsTest
 static void myTestMethod() {
     Query.Accounts.mock('myAccountQuery', new List<Account>{
@@ -273,6 +259,28 @@ static void myTestMethod() {
 
 ```
 
+### Special cases:
+Static initialization and static block is mocked just by class name: 
+
+
+```apex
+public with sharing class AccountQuotingService {
+    private static List<Profile> profiles = Query.Profiles.getList();
+}
+```
+
+```apex
+Query.Accounts.mock('AccountQuotingService', new List<Account>{
+    // my mocked query result
+});
+```
+
+All constructors are mocked as follows:
+```apex
+Query.Accounts.mock('AccountQuotingService.<init>', new List<Account>{
+// my mocked query result
+});
+```
 
 ---
 # Specification
@@ -1261,6 +1269,8 @@ return q.getList();
 # Change Log
 ### 1.1.0
 - Added new mocking method without using mock ids.
+- Added ORDER BY
+- Removed Query - QueryObject syntactic sugar inheritance 
 ```
 
 ```

@@ -466,6 +466,28 @@ public virtual inherited sharing class QueryObject {
 
 
     /**
+     * Adds ORDER By clause to the query
+     * ex. .orderBy('CreatedDate DESC');`
+     */
+    public QueryObject orderBy(SObjectField field, Boolean ascending, Boolean nullFirst) {
+        return orderBy(String.format('{0} {1} NULLS {2}', new List<Object>{
+            '' + field,
+            ascending ? 'ASC' : 'DESC',
+            nullFirst ? 'FIRST' : 'LAST'
+        }));
+    }
+
+    /**
+     * Adds ORDER By clause to the query
+     * ex. .orderBy('CreatedDate DESC');`
+     */
+    public QueryObject orderBy(String orderByClause) {
+        this.queryBuilder.setOrderBy(orderByClause);
+        return this;
+    }
+
+
+    /**
      *
      * Query reducing methods
      *

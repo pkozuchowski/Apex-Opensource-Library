@@ -479,9 +479,15 @@ public class QueryObjectTest {
 
         Assert.areEqual(1, Limits.getQueries(), 'Once queried users should be saved in cache.');
     }
+    
+    @IsTest
+    static void testOrderBy(){
+        String soql = new TestUserQuery().orderBy(User.CreatedDate, true, true).toSOQL();
+        Assert.isTrue(soql.contains('ORDER BY CreatedDate ASC NULLS FIRST'));
+    }
 
     public static void assertEquals(SObject[] expected, SObject[] actual) {
-        System.assertEquals(
+        Assert.areEqual(
             new Map<Id, SObject>(expected).keySet(),
             new Map<Id, SObject>(actual).keySet()
         );

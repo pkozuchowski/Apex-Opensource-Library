@@ -310,7 +310,7 @@ public class QueryObjectTest {
             .withoutSharing()
             .withSharing()
             .usingCache(true)
-            .withFieldAccess(AccessType.READABLE)
+            .stripInaccessible(AccessType.READABLE)
             .byId(UserInfo.getUserId())
             .withLimit(100)
             .getFirstOrNull();
@@ -426,7 +426,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testMockingWithClientMethodName() {
-        new TestUserQuery().mock('QueryObjectTest.testMockingWithClientMethodName', new List<User>{
+        Query.mock(User.SObjectType,'QueryObjectTest.testMockingWithClientMethodName', new List<User>{
             new User(Username = 'Test')
         });
 
@@ -479,11 +479,21 @@ public class QueryObjectTest {
 
         Assert.areEqual(1, Limits.getQueries(), 'Once queried users should be saved in cache.');
     }
-    
+
     @IsTest
-    static void testOrderBy(){
+    static void testOrderBy() {
         String soql = new TestUserQuery().orderBy(User.CreatedDate, true, true).toSOQL();
         Assert.isTrue(soql.contains('ORDER BY CreatedDate ASC NULLS FIRST'));
+    }
+
+    @IsTest
+    static void testWithAccessLevel() {
+        SObject[] sObjects = new TestUserQuery()
+            .with(AccessLevel.SYSTEM_MODE)
+            .withLimit(1)
+            .getList();
+
+        Assert.isNotNull(sObjects, 'Cant really test this anyhow.');
     }
 
     public static void assertEquals(SObject[] expected, SObject[] actual) {

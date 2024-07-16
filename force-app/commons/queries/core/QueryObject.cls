@@ -287,10 +287,20 @@ public virtual inherited sharing class QueryObject {
      * Enforces Object and Field level security on records.
      * Inaccessible fields are stripped from result and inaccessible objects throws exception.
      *
-     * @throws System.NoAccessException No access to entity
+     * @throws System.NoAccessException No access to entity when user does not have READ permission to sOObject
      */
-    public QueryObject withFieldAccess(AccessType accessType) {
+    public QueryObject stripInaccessible(AccessType accessType) {
         this.accessType = accessType;
+        return this;
+    }
+
+    /**
+     * Enforces Object and Field level security on records.
+     * @throws System.NoAccessException No access to entity when user does not have READ permission to sOObject
+     * or any of the fields
+     */
+    public QueryObject with(AccessLevel accessLevel) {
+        this.databaseService.setAccessLevel(accessLevel);
         return this;
     }
 
@@ -669,6 +679,9 @@ public virtual inherited sharing class QueryObject {
         return result;
     }
 
+    /**
+     * @return Mocked query results, if sObject was mocked and class that invoked query is mocked.
+     */
     private Object getMock() {
         if (Test.isRunningTest()
             && mockedSObjects.contains(this.sObjType)) {

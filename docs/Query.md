@@ -1270,6 +1270,8 @@ return q.getList();
 ### 1.1.0
 - Added new mocking method without using mock ids.
 - Added ORDER BY
+- Renamed `withFieldAccess` to `stripInaccessible` to avoid confusion of AccessType with AccessLevel
+- Added method `with(AccessLevel.SYSTEM_MODE)` to enforce all fields and sobjects permissions
 - Removed Query - QueryObject syntactic sugar inheritance 
 ```
 

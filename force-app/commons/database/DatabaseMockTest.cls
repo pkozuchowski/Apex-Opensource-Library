@@ -28,7 +28,6 @@ private class DatabaseMockTest {
     private static DatabaseService dbService = new DatabaseService();
     private static DatabaseMock dbMock = dbService.useMock();
 
-
     /**
      * Example of class that does some business logic and will have DMLs mocked.
      */
@@ -222,5 +221,13 @@ private class DatabaseMockTest {
         Assert.isInstanceOfType(result, List<Account>.class);
         Assert.areEqual(1, result.size());
         Assert.areEqual('Test', result[0].get('Name'));
+    }
+
+    @IsTest
+    static void testMockCursor() {
+        Database.Cursor c = (Database.Cursor) Test.createStub(List<Database.Cursor>.class, new DatabaseMock.CursorMock(new List<User>{
+            new User(LastName = 'Dupa'),
+            new User(LastName = 'Dupa1')
+        }));
     }
 }

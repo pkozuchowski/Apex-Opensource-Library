@@ -241,7 +241,7 @@ public class DatabaseService {
             return Database.getQueryLocatorWithBinds(query, boundVars, level);
         }
         public virtual Database.Cursor getCursor(String query, Map<String, Object> boundVars) {
-            return Database.getCursorWithBinds(query, boundVars, level);
+            return Database.getCursorWithBinds(query, boundVars ?? new Map<String, Object>(), level);
         }
     }
 

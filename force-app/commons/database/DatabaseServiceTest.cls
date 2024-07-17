@@ -31,9 +31,9 @@ private class DatabaseServiceTest {
     static void testSetup() {
         new TestDataBuilder()
             .create(new User(Username = STR,
-                ProfileId = Query.Profiles.byName('Standard User').getFirstIdOrNull())
+                ProfileId = Query.Profiles.byName('Standard User2').getFirstIdOrNull())
             )
-            .create(new SomeRecord__c())
+            .create(new SomeRecord__c(Text__c = '1', Accessible__c = '2'))
             .create(new SomeRecord__c())
             .create(new SomeRecord__c())
             .insertRecords();
@@ -46,6 +46,8 @@ private class DatabaseServiceTest {
         System.runAs(u) {
             Assert.areEqual(0, new DatabaseService().withSharing().query('SELECT Id FROM SomeRecord__c').size());
             Assert.areEqual(3, new DatabaseService().withoutSharing().query('SELECT Id FROM SomeRecord__c').size());
+            Database.query('SELECT Id,Accessible__c,Text__c FROM SomeRecord__c');
+            Database.query('SELECT Id,Accessible__c,Text__c FROM SomeRecord__c', AccessLevel.USER_MODE);
         }
     }
 
@@ -74,6 +76,7 @@ private class DatabaseServiceTest {
         databaseService.deleteRecord(acc);
         databaseService.undeleteRecord(acc);
         databaseService.query('SELECT ID FROM Account');
+        databaseService.getCursor('SELECT ID FROM Account', null);
         databaseService.getQueryLocator('SELECT ID FROM Account');
     }
 

@@ -53,46 +53,4 @@ private class QueryTest {
         System.assertNotEquals(null, Query.UserRoles);
         System.assertNotEquals(null, Query.Users);
     }
-
-    @IsTest
-    static void testGenericQuery() {
-        List<User> users = Query.fromSObject(User.SObjectType)
-            .withFields('Id, Username')
-            .withLimit(1)
-            .getList();
-
-        System.assertEquals(1, users.size());
-    }
-
-    @IsTest
-    static void testQueryMocking() {
-        Query.Accounts.mock('QueryTest.testQueryMocking', new List<Account>{
-            new Account(Name = 'Test')
-        });
-
-
-        Test.startTest();
-        List<Account> result = Query.Accounts
-            .byName('Test')
-            .byRecordTypeDeveloperName('PersonAccount')
-            .getList();
-        Test.stopTest();
-
-
-        Assert.areEqual(1, result.size());
-        Assert.areEqual('Test', result[0].Name);
-    }
-
-    @IsTest
-    static void testCountMock() {
-        Query.Accounts.mock('QueryTest.testCountMock', 10);
-
-
-        Test.startTest();
-        Integer result = Query.Accounts.byName('Test').getCount();
-        Test.stopTest();
-
-
-        Assert.areEqual(10, result);
-    }
 }

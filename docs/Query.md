@@ -44,10 +44,10 @@ Query Framework assumes that each query may need to be tailored to the specific 
 Consider this example, where we can add additional fields to the selector's base field set.
 ```apex
 List<Contact> contact = Query.Contacts
-	.byAccountId(/*...ids*/)
-	.withParentAccount()
-	.withFields('FirstName, LastName, CreatedBy.Name')
-	.getList();
+    .byAccountId(/*...ids*/)
+    .withParentAccount()
+    .withFields('FirstName, LastName, CreatedBy.Name')
+    .getList();
 ```
 
 ### Define WHERE Clause
@@ -55,86 +55,86 @@ List<Contact> contact = Query.Contacts
 Where clause can be combined from methods implemented in ContactQuery and generic methods implemented in QueryObject class.
 ```apex
 List<Contact> contact = Query.Contacts
-	.byAccountId(/*...ids*/)
-	.byRecordTypeId(/*Record Type Id*/)
-	.getList();
+    .byAccountId(/*...ids*/)
+    .byRecordTypeId(/*Record Type Id*/)
+    .getList();
 ```
 
 For very specialized and complex queries, there are multiple ways to define the conditions:
 - Combining field filters and declaring filter logic.
   Each identifier in the logic string (`{0}`) corresponds to the `byCondition()` method above in the order they were declared.
-	```apex
-	Query.Accounts
-		.byName('TestName')
-		.byRecordTypeDeveloperName('SMB')
-		.byOwnerId(UserInfo.getUserId())
-		.withFilterLogic('{0} OR ({1} AND {2})')
-		.getList();
-	```
+```apex
+Query.Accounts
+    .byName('TestName')
+    .byRecordTypeDeveloperName('SMB')
+    .byOwnerId(UserInfo.getUserId())
+    .withFilterLogic('{0} OR ({1} AND {2})')
+    .getList();
+```
 - Introduce case-specific filtering method in SObject's query class:
-	```apex
-	class ContactQuery {
+```apex
+class ContactQuery {
 
-		public ContactQuery byMySuperSpecificCondition(String name, String recordTypeName, Id ownerId) {
-			appendMockName('byMySuperSpecificCondition');
-			return (ContactQuery) wheres('Name =:name OR (RecordType.DeveloperName = :recordTypeName AND OwnerId = :ownerId)', 
-				new Map<String, Object>{
-				'name' => name,
-				'recordTypeName' => recordTypeName,
-				'ownerId' => ownerId
-			});
-		}
-	}
-	```
-	```apex
-  Query.Accounts.byMySuperSpecificCondition(
-	   'TestName', 'SMB', UserInfo.getUserId()
-  ).getList();
-	```
-  You can even mix that with other methods:
-	```apex
-  Query.Accounts
-  .byMySuperSpecificCondition( 'TestName', 'SMB', UserInfo.getUserId() )
-  .byIsActive(true)
-  .getList();
-	```
-
-- Using QueryConditions to build the query:
-	```apex
-	QueryConditions c = new QueryConditions();
-	Query.Accounts
-		.wheres(
-			c.ORs(
-				c.field(Account.Name).equals('TestName'),
-				c.ANDs(
-					c.field('RecordType.DeveloperName').equals('SMB'),
-					c.field(Account.OwnerId).equals(UserInfo.getUserId())
-				)
-			)
-		)
-		.getList();
-	```
+    public ContactQuery byMySuperSpecificCondition(String name, String recordTypeName, Id ownerId) {
+        appendMockName('byMySuperSpecificCondition');
+        return (ContactQuery) wheres('Name =:name OR (RecordType.DeveloperName = :recordTypeName AND OwnerId = :ownerId)',
+            new Map<String, Object>{
+                'name' => name,
+                'recordTypeName' => recordTypeName,
+                'ownerId' => ownerId
+            });
+    }
+}
+```
+```apex
+Query.Accounts.byMySuperSpecificCondition(
+    'TestName', 'SMB', UserInfo.getUserId()
+).getList();
+```
+You can even mix that with other methods:
+```apex
+Query.Accounts
+    .byMySuperSpecificCondition('TestName', 'SMB', UserInfo.getUserId())
+    .byIsActive(true)
+    .getList();
+```
 
 - Writing WHERE clause directly in client code:
-	```apex
-	List<String> names = new List<String>();
-	List<String> externalIds = new List<String>();
-	Id recordTypeId;
-	
-	Query.Accounts
-		.wheres('Name IN :names OR (RecordTypeId =:rtId AND ExternalID IN :externalIds)', new Map<String, Object>{
-			'names' => names,
-			'rtId' => recordTypeId,
-			'externalIds' => externalIds
-		})
-		.getList();
-	```
+```apex
+List<String> names = new List<String>();
+List<String> externalIds = new List<String>();
+Id recordTypeId;
+
+Query.Accounts
+    .wheres('Name IN :names OR (RecordTypeId =:rtId AND ExternalID IN :externalIds)', new Map<String, Object>{
+        'names' => names,
+        'rtId' => recordTypeId,
+        'externalIds' => externalIds
+    })
+    .getList();
+```
+
+- Using QueryConditions to build the query:
+```apex
+QueryConditions c = new QueryConditions();
+Query.Accounts
+    .wheres(
+        c.ORs(
+            c.field(Account.Name).equals('TestName'),
+            c.ANDs(
+                c.field('RecordType.DeveloperName').equals('SMB'),
+                c.field(Account.OwnerId).equals(UserInfo.getUserId())
+            )
+        )
+    )
+    .getList();
+```
 
 ### Reduce to result
 Query result can be reduced to different things:
 ```apex
 //given
-ContactQuery contactQuery = Query.Contacts.byEmail();
+ContactQuery contactQuery = Query.Contacts.byEmail('test@email.com');
 
 List<Contact> contacts = contactQuery.getList();
 Contact c = ContactQuery.getFirst();
@@ -150,8 +150,48 @@ Map<Id, Contact> contactById = contactQuery.getMapById();
 Map<String, Contact> contactByEmail = ContactQuery.getMapByString(Contact.Email);
 
 Id contactId = contactQuery.getFirstIdOrNull();
-String contactEmail = contactQuery.
+String contactEmail = (String) contactQuery.getFirstFieldOrNull(Contact.Email);
 ```
+
+---
+# Direct Queries
+
+Sometimes, you don't want to introduce a new query class or use a generic query, but you'd still want to benefit from the Query capabilities.
+This is possible using direct queries.
+
+Consider this example:
+```apex
+public with sharing class QuotingService {
+
+    public void generateQuotes(Set<Id> accountIds) {
+        List<Account> accounts = Query.of([
+            SELECT Id, Name, CreatedBy.Name
+            FROM Account
+            WHERE Id IN :accountIds
+        ]).getList();
+
+        // Rest of the business logic
+    }
+} 
+```
+
+Direct Query wraps query results into Query object. Now, we can use that to mock the query outcome in tests:
+```apex
+@IsTest
+static void testGenerateQuotes() {
+    Query.mock(Account.SObject, 'QuotingService.generateQuotes', new List<Account>{
+        new Account(Name = 'My Mock Account')
+    });
+}
+```
+While a query is still issued against a database, the class received only a mocked result. This does not impact test performance much,
+since a majority of the test slowdowns come from data creation and this query will be empty in tests.
+
+Another benefit is that our pure apex tests will track query limit usage realistically.
+
+With Direct Queries, you can also benefit from reducer methods:
+![DirectQueryReduce.png](DirectQueryReduce.png)
+
 
 ---
 # Caching
@@ -218,7 +258,7 @@ public with sharing class AccountQuotingService {
 
     public void generateQuotes(Set<Id> accountIds) {
         List<Accounts> accounts = Query.Accounts.byId(accountIds).getList();
-        
+
         // ... 
     }
 
@@ -232,9 +272,9 @@ static void myTestMethod() {
     Query.Accounts.mock('AccountQuotingService.generateQuotes', new List<Account>{
         // my mocked query result
     });
-    
+
     // or
-    
+
     Query.mock(Account.SObjectType, 'AccountQuotingService.generateQuotes', new List<Account>{
         // my mocked query result
     });
@@ -249,9 +289,9 @@ static void myTestMethod() {
     Query.Accounts.mock('myAccountQuery', new List<Account>{
         // my mocked query result
     });
-    
+
     // or
-    
+
     Query.mock(Account.SObjectType, 'myAccountQuery', new List<Account>{
         // my mocked query result
     });
@@ -260,8 +300,7 @@ static void myTestMethod() {
 ```
 
 ### Special cases:
-Static initialization and static block is mocked just by class name: 
-
+Static initialization and static block is mocked just by class name:
 
 ```apex
 public with sharing class AccountQuotingService {
@@ -297,12 +336,12 @@ extends `QueryObject`.
 In the constructor, we should define default fields (optional) and sObject type (required):
 ```apex
 public with sharing class AccountQuery extends QueryObject {
-	public AccountQuery() {
-		super(new List<String>{
-			'Id',
-			'Name'
-		}, Account.SObjectType);
-	}
+    public AccountQuery() {
+        super(new List<String>{
+            'Id',
+            'Name'
+        }, Account.SObjectType);
+    }
 }
 ```
 
@@ -310,15 +349,15 @@ Then we can add Account-specific methods — that could be methods that add more
 Condition methods should append mock name - this way, we can use this string for mocking in unit tests, without specifying mock name explicitly.
 ```apex
 public AccountQuery withContacts() {
-	withChildren(new List<String>{
-		'Id'
-	}, 'Contacts');
-	return this;
+    withChildren(new List<String>{
+        'Id'
+    }, 'Contacts');
+    return this;
 }
 
 public AccountQuery byName(Set<String> names) {
-	appendMockName('byName');
-	return (AccountQuery) byField(Account.Name, 'IN', names);
+    appendMockName('byName');
+    return (AccountQuery) byField(Account.Name, 'IN', names);
 }
 ```
 
@@ -338,8 +377,8 @@ It's possible to construct a query without an inheritance, but it will be only p
 
 ```apex
 Query.fromSObject(Account.SObjectType)
-	.byField(Account.Name, '=', 'Test Account')
-	.getList();
+    .byField(Account.Name, '=', 'Test Account')
+    .getList();
 ```
 
 ## QueryObject
@@ -367,8 +406,8 @@ Query is restricted to 200 records in case of ALL and CUSTOM fields.
 #### Usage
 ```apex
 Query.Accounts
-	.withFields(Query.Fields.ALL)
-	.getList();
+    .withFields(Query.Fields.ALL)
+    .getList();
 ```
 </details>
 
@@ -389,10 +428,10 @@ Adds given fields to the query.
 #### Usage
 ```apex
 Query.Accounts
-	.withFields('Id, Name, Parent.Name')
-	//or
-	.withFields(new List<String>{'Id', 'Name', 'Parent.Name'})
-	.getList();
+    .withFields('Id, Name, Parent.Name')
+    //or
+    .withFields(new List<String>{'Id', 'Name', 'Parent.Name'})
+    .getList();
 ```
 </details>
 
@@ -410,8 +449,8 @@ to 200 records
 #### Usage
 ```apex
 Query.Accounts
-	.withAllFields()
-	.getList();
+    .withAllFields()
+    .getList();
 ```
 </details>
 
@@ -433,10 +472,10 @@ Adds subquery with given fields and relationship name. Disables caching.
 #### Usage
 ```apex
 Query.Accounts
-	.withChildren('FirstName, LastName', 'Contacts')
-	//or 
-	.withChildren(new List<String>{'FirstName', 'LastName', 'Contacts'})
-	.getList();
+    .withChildren('FirstName, LastName', 'Contacts')
+    //or 
+    .withChildren(new List<String>{'FirstName', 'LastName', 'Contacts'})
+    .getList();
 ```
 </details>
 
@@ -456,8 +495,8 @@ Adds subquery using another Query instance.
 #### Usage
 ```apex
 Query.Accounts
-	.withChildren(Query.Contacts.byLastName('Doe'), 'Contacts')
-	.getList();
+    .withChildren(Query.Contacts.byLastName('Doe'), 'Contacts')
+    .getList();
 ```
 </details>
 
@@ -478,11 +517,11 @@ Provide filter logic for previously specified conditions
 #### Usage
 ```apex
 Query.Accounts
-	.byName('TestName')
-	.byRecordTypeDeveloperName('SMB')
-	.byOwnerId(UserInfo.getUserId())
-	.withFilterLogic('{0} OR ({1} AND {2})')
-	.toString();
+    .byName('TestName')
+    .byRecordTypeDeveloperName('SMB')
+    .byOwnerId(UserInfo.getUserId())
+    .withFilterLogic('{0} OR ({1} AND {2})')
+    .toString();
 ```
 Evaluates to:
 ```sql
@@ -657,17 +696,17 @@ Adds explicitly typed WHERE condition.
 #### Usage
 ```apex | Example 1 - Usage in internal method
 public AccountQuery byParentIds(Set<Id> parentIds) {
-	wheres('ParentId IN :parentIds', new Map<String, Object>{'parentIds' => parentIds});
-	return this;
+    wheres('ParentId IN :parentIds', new Map<String, Object>{'parentIds' => parentIds});
+    return this;
 }
 ```
 
 ```apex | Example 2 - Usage in client code
 Query.Accounts
-	.wheres('Parent.OwnerId IN :owners AND RecordType.DeveloperName = :rt', new Map<String, Object>{
-		'owners' => owners,
-		'rt' => 'PersonAccount'
-	});
+    .wheres('Parent.OwnerId IN :owners AND RecordType.DeveloperName = :rt', new Map<String, Object>{
+        'owners' => owners,
+        'rt' => 'PersonAccount'
+    });
 ```
 
 </details>
@@ -685,18 +724,18 @@ Adds WHERE clause constructed from QueryConditions class.
 - `wheres` - Condition
 #### Usage
 ```apex
-	QueryConditions c = new QueryConditions();
+    QueryConditions c = new QueryConditions();
 Query.Accounts
-	.wheres(
-		c.ORs(
-			c.field(Account.Name).equals('TestName'),
-			c.ANDs(
-				c.field('RecordType.DeveloperName').equals('SMB'),
-				c.field(Account.OwnerId).equals(UserInfo.getUserId())
-			)
-		)
-	)
-	.getList();
+    .wheres(
+        c.ORs(
+            c.field(Account.Name).equals('TestName'),
+            c.ANDs(
+                c.field('RecordType.DeveloperName').equals('SMB'),
+                c.field(Account.OwnerId).equals(UserInfo.getUserId())
+            )
+        )
+    )
+    .getList();
 ```
 
 </details>
@@ -717,10 +756,10 @@ Sets GROUP BY clause on the query.
 #### Usage
 ```apex
 Query.fromSObject(User.SObjectType)
-	.withFields('COUNT(Id), ProfileId')
-	.groupBy('ProfileId')
-	.havingCondition('COUNT(ID) > 1')
-	.toSOQL();
+    .withFields('COUNT(Id), ProfileId')
+    .groupBy('ProfileId')
+    .havingCondition('COUNT(ID) > 1')
+    .toSOQL();
 ```
 </details>
 
@@ -741,10 +780,10 @@ Sets HAVING condition on the query
 #### Usage
 ```apex
 Query.fromSObject(User.SObjectType)
-	.withFields('COUNT(Id), ProfileId')
-	.groupBy('ProfileId')
-	.havingCondition('COUNT(ID) > :count', new Map<String, Object>{'count' => userCount})
-	.toSOQL();
+    .withFields('COUNT(Id), ProfileId')
+    .groupBy('ProfileId')
+    .havingCondition('COUNT(ID) > :count', new Map<String, Object>{'count' => userCount})
+    .toSOQL();
 ```
 </details>
 
@@ -764,13 +803,13 @@ Sets given condition as HAVING clause.
 ```apex
 QueryConditions c = new QueryConditions();
 Query.Users
-	.selectFields('COUNT(ID), Email')
-	.havingConditions(
-		c.ANDs(
-			c.field('COUNT(ID)').greaterThan(5),
-			c.field('COUNT(ID)').lessThan(10)
-		)
-			.getList();
+    .selectFields('COUNT(ID), Email')
+    .havingConditions(
+        c.ANDs(
+            c.field('COUNT(ID)').greaterThan(5),
+            c.field('COUNT(ID)').lessThan(10)
+        )
+            .getList();
 ```
 
 </details>
@@ -791,9 +830,9 @@ Sets LIMIT clause on the query.
 #### Usage
 ```apex
 Query.Accounts
-	.byName('Test')
-	.withLimit(10)
-	.getList();
+    .byName('Test')
+    .withLimit(10)
+    .getList();
 ```
 </details>
 
@@ -812,10 +851,10 @@ Sets OFFSET clause on the query.
 #### Usage
 ```apex
 Query.Accounts
-	.byName('Test')
-	.withLimit(10)
-	.withOffset(10)
-	.getList();
+    .byName('Test')
+    .withLimit(10)
+    .withOffset(10)
+    .getList();
 ```
 </details>
 
@@ -878,9 +917,9 @@ Use this when in doubt what mocked name is expected.
 #### Usage
 ```apex
 Query.Account
-	.byName('Test')
-	.byRecordTypeDeveloperName('SMB')
-	.debugLogMockName();
+    .byName('Test')
+    .byRecordTypeDeveloperName('SMB')
+    .debugLogMockName();
 // > '.byName.byRecordTypeDeveloperName'
 ```
 </details>
@@ -899,8 +938,8 @@ Query will be executed in "with sharing" context,returning only those records us
 #### Usage
 ```apex
 Query.Accounts
-	.withSharing()
-	.getList();
+    .withSharing()
+    .getList();
 ```
 </details>
 
@@ -916,8 +955,8 @@ Query will be executed in "without sharing" context,returning only those records
 #### Usage
 ```apex
 Query.Accounts
-	.withoutSharing()
-	.getList();
+    .withoutSharing()
+    .getList();
 ```
 </details>
 
@@ -940,8 +979,8 @@ Calls Security.stripInaccessible on the query result.
 #### Usage
 ```apex
 Query.Accounts
-	.withFieldAccess(AccessType.READABLE)
-	.getList();
+    .withFieldAccess(AccessType.READABLE)
+    .getList();
 ```
 </details>
 
@@ -960,13 +999,13 @@ Toggle usage of the cached records to limit SOQLs query limit.
 #### Usage
 ```apex | Query Profiles without resorting to cache.
 Query.Profile
-	.usingCache(false)
-	.getList();
+    .usingCache(false)
+    .getList();
 ```
 </details>
 
 
-### Reductors
+### Reducers
 <details>
 	<summary>getList()</summary>
 
@@ -978,8 +1017,8 @@ Returns standard query result list.
 #### Usage
 ```apex
 List<Account> accounts = Query.Account
-	.byName('Test')
-	.getList();
+    .byName('Test')
+    .getList();
 ```
 </details>
 
@@ -1026,8 +1065,8 @@ Executes query and returns Id of the first record. If query result list is empty
 #### Usage
 ```apex
 Id systemAdmin = Query.Profile
-	.byName('System Administrator')
-	.getFirstIdOrNull();
+    .byName('System Administrator')
+    .getFirstIdOrNull();
 ```
 </details>
 
@@ -1046,8 +1085,8 @@ Executes query and returns field of first record or null if list has no results
 #### Usage
 ```apex
 Id ownerId = (Id) Query.Account
-	.byName('Test Account')
-	.getFirstFieldOrNull(Account.OwnerId);
+    .byName('Test Account')
+    .getFirstFieldOrNull(Account.OwnerId);
 ```
 </details>
 
@@ -1067,9 +1106,9 @@ Executes query and returns field of first record or fallback value if list has n
 #### Usage
 ```apex
 public static Id getDefaultOwner() {
-	Query.User
-		.byName('DEFAULT OWNER')
-		.getFirstFieldOrFallback(User.Id, UserInfo.getUserId());
+    Query.User
+        .byName('DEFAULT OWNER')
+        .getFirstFieldOrFallback(User.Id, UserInfo.getUserId());
 }
 ```
 </details>
@@ -1086,8 +1125,8 @@ Returns Ids of SObjects.
 #### Usage
 ```apex
 Set<Id> accountIds = Query.Account
-	.byName('Test')
-	.getIds();
+    .byName('Test')
+    .getIds();
 ```
 </details>
 
@@ -1103,7 +1142,7 @@ Executes query and returns records mapped by Ids.
 #### Usage
 ```apex
 Map<Id, Account> accountIds = (Map<Id, Account>) Query.Account
-	.getMapById();
+    .getMapById();
 ```
 </details>
 
@@ -1123,7 +1162,7 @@ Executes query and maps result records by given SObject Field.
 #### Usage
 ```apex
 Map<String, Account> accountIds = (Map<String, Account>) Query.Account
-	.getMapByString(Account.Name);
+    .getMapByString(Account.Name);
 ```
 </details>
 
@@ -1169,9 +1208,9 @@ Returns SOQL string for given query. Useful for unit testing query methods.
 #### Usage
 ```apex
 Query.Accounts
-	.byName('Test Account')
-	.byRecordTypDeveloperName('SMB')
-	.toSOQL();
+    .byName('Test Account')
+    .byRecordTypDeveloperName('SMB')
+    .toSOQL();
 
 // > SELECT Id, Name FROM Account WHERE ((Name IN :var0) AND (RecordType.DeveloperName IN :var1))
 ```
@@ -1188,9 +1227,9 @@ Returns SOQL string with bindings for given query. Useful for unit testing query
 #### Usage
 ```apex
 Query.Accounts
-	.byName('Test Account')
-	.byRecordTypDeveloperName('SMB')
-	.toSOQL();
+    .byName('Test Account')
+    .byRecordTypDeveloperName('SMB')
+    .toSOQL();
 
 // > SELECT Id, Name FROM Account WHERE ((Name IN :var0) AND (RecordType.DeveloperName IN :var1)), 
 // {var0={Test Account}, var1={SMB}})
@@ -1211,16 +1250,16 @@ Consider the following selector:
 ```apex
 public with sharing class AccountQuery extends QueryObject {
 
-	public AccountQuery() {
-		super(new List<String>{
-			'Id', 'Name'
-		}, Account.SObjectType);
-	}
+    public AccountQuery() {
+        super(new List<String>{
+            'Id', 'Name'
+        }, Account.SObjectType);
+    }
 
-	public AccountQuery byName(Set<String> names) {
-		appendMockName('byName');
-		return (AccountQuery) byField(Account.Name, 'IN', names);
-	}
+    public AccountQuery byName(Set<String> names) {
+        appendMockName('byName');
+        return (AccountQuery) byField(Account.Name, 'IN', names);
+    }
 }
 ```
 
@@ -1230,8 +1269,8 @@ As you can see, it returns `QueryObject`, not `AccountQuery`.
 
 ```apex
 new AccountQuery()
-	.withFields('Id, Name, BillingCity') // < this returns QueryObject, which doesn't have byName() method
-	.byName('Test Account');
+    .withFields('Id, Name, BillingCity') // < this returns QueryObject, which doesn't have byName() method
+    .byName('Test Account');
 ```
 
 In modern languages, this is solved by generic types, but unfortunately Apex is 20 years behind the rest of the world.
@@ -1242,18 +1281,18 @@ This problem can be solved in 3 ways:
 - Reordering methods, so the AccountQuery method is called first:
 ```apex
 new AccountQuery()
-	.byName('Test Account')
-	.withFields('Id, Name, BillingCity')
-	.getList();
+    .byName('Test Account')
+    .withFields('Id, Name, BillingCity')
+    .getList();
 ```
 
 - Reintroduce method you need in AccountQuery and cast type. Unfortunately, we have to use different method name:
 ```apex
 public with sharing class AccountQuery extends QueryObject {
 
-	public AccountQuery withFieldsx(String fields) {
-		return (AccountQuery) withFields(fields);
-	}
+    public AccountQuery withFieldsx(String fields) {
+        return (AccountQuery) withFields(fields);
+    }
 }
 ```
 
@@ -1267,13 +1306,13 @@ return q.getList();
 
 ---
 # Change Log
+### 2.0.0
+- Added Direct Queries
 ### 1.1.0
 - Added new mocking method without using mock ids.
 - Added ORDER BY
 - Renamed `withFieldAccess` to `stripInaccessible` to avoid confusion of AccessType with AccessLevel
 - Added method `with(AccessLevel.SYSTEM_MODE)` to enforce all fields and sobjects permissions
-- Removed Query - QueryObject syntactic sugar inheritance 
-```
+- Added `getCursor()` method
+- Removed Query - QueryObject syntactic sugar inheritance
 
-```
-- 

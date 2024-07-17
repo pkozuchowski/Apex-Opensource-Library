@@ -41,12 +41,16 @@ public class QueryObjectTest {
         private List<User> users;
 
         public void doSomething() {
-            List<User> users = new TestUserQuery().byUsername('Test@test.com').getList();
+            this.users = new TestUserQuery().byUsername('Test@test.com').getList();
+        }
+
+        public void doSomething2() {
+            this.users = Query.of([SELECT Username FROM User LIMIT 1]).getList();
         }
     }
 
     @IsTest
-    static void testMocking() {
+    static void testMockingQuery() {
         new TestUserQuery().mock('QueryObjectTest.TestServiceClass.doSomething', new List<User>{
             new User(Username = 'test')
         });
@@ -54,7 +58,36 @@ public class QueryObjectTest {
         TestServiceClass service = new TestServiceClass();
         service.doSomething();
 
-        System.debug(service.users);
+        List<User> results = service.users;
+        Assert.areEqual(1, results.size());
+        Assert.areEqual('test', results.get(0).Username);
+    }
+
+    @IsTest
+    static void testMockingQueryDirectly() {
+        new TestUserQuery().mock('QueryObjectTest.TestServiceClass.doSomething2', new List<User>{
+            new User(Username = 'test')
+        });
+
+        TestServiceClass service = new TestServiceClass();
+        service.doSomething2();
+
+        List<User> results = service.users;
+        Assert.areEqual(1, results.size());
+        Assert.areEqual('test', results.get(0).Username);
+        Assert.areEqual(1, Limits.getQueries());
+    }
+
+    @IsTest
+    static void testLiveQuery() {
+        Set<Id> ids = Query.of([
+            SELECT Id
+            FROM User
+            LIMIT 1
+        ]).getIds();
+
+        Assert.areEqual(1, ids.size());
+        Assert.areEqual(1, Limits.getQueries());
     }
 
     @IsTest
@@ -257,11 +290,12 @@ public class QueryObjectTest {
         new TestUserQuery().mock('QueryObjectTest.testCountMock', 123);
         Assert.areEqual(123, new TestUserQuery().getCount());
 
-        new TestUserQuery().mock('QueryObjectTest.testCountMock', new List<User>{
+        Query.mock(User.SObjectType, 'QueryObjectTest.testCountMock', new List<User>{
             new User()
         });
         Assert.areEqual(1, Query.Users.getCount());
     }
+
 
     @IsTest
     static void testGetFirst() {
@@ -310,9 +344,9 @@ public class QueryObjectTest {
             .withoutSharing()
             .withSharing()
             .usingCache(true)
-            .stripInaccessible(AccessType.READABLE)
             .byId(UserInfo.getUserId())
             .withLimit(100)
+            .stripInaccessible(AccessType.READABLE)
             .getFirstOrNull();
 
         new TestUserQuery().byId(UserInfo.getUserId()).getCount();
@@ -426,7 +460,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testMockingWithClientMethodName() {
-        Query.mock(User.SObjectType,'QueryObjectTest.testMockingWithClientMethodName', new List<User>{
+        Query.mock(User.SObjectType, 'QueryObjectTest.testMockingWithClientMethodName', new List<User>{
             new User(Username = 'Test')
         });
 
@@ -451,6 +485,7 @@ public class QueryObjectTest {
         Assert.isTrue(usersByUsername.containsKey('2@example.com'));
         Assert.isTrue(usersByUsername.containsKey('3@example.com'));
     }
+
 
     @IsTest
     static void testStaticCaching() {
@@ -494,6 +529,16 @@ public class QueryObjectTest {
             .getList();
 
         Assert.isNotNull(sObjects, 'Cant really test this anyhow.');
+    }
+
+    @IsTest
+    static void testGenericQuery() {
+        List<User> users = Query.fromSObject(User.SObjectType)
+            .withFields('Id, Username')
+            .withLimit(1)
+            .getList();
+
+        System.assertEquals(1, users.size());
     }
 
     public static void assertEquals(SObject[] expected, SObject[] actual) {

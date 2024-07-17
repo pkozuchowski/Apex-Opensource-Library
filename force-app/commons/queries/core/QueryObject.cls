@@ -26,16 +26,12 @@
  * Base class for selectors. Contains query builder and common query methods.
  */
 @JsonAccess(Serializable='never' Deserializable='never')
-public virtual inherited sharing class QueryObject {
-    private final static Map<String, Object> queryMocks = new Map<String, Object>();
-    private final static Set<SObjectType> mockedSObjects = new Set<SObjectType>();
-
+public virtual inherited sharing class QueryObject extends Query.Results {
     protected final QueryConditions conditionFactory = new QueryConditions();
     protected final QueryBuilder queryBuilder = new QueryBuilder();
     protected final DatabaseService databaseService = new DatabaseService();
     protected final List<Query.Condition> whereConditions = new List<Query.Condition>();
     protected final List<Query.Condition> havingConditions = new List<Query.Condition>();
-    protected final SObjectType sObjType;
     protected final QueryBindings bindings = new QueryBindings();
 
     private AccessType accessType = null;
@@ -43,13 +39,6 @@ public virtual inherited sharing class QueryObject {
     private Boolean useCache = !Test.isRunningTest();
     private Boolean saveResultsToCache = true;
     private String subqueryRelationshipName;
-    private String mockName = '';
-    private String mockKey {
-        get {
-            return '' + this.sObjType + '.' + mockName;
-        }
-    }
-    private List<SObject> result;
     private String filterLogic;
 
 
@@ -70,6 +59,14 @@ public virtual inherited sharing class QueryObject {
     public QueryObject(List<String> fields, SObjectType sObjectType) {
         this(sObjectType);
         this.withFields(fields);
+    }
+
+    /**
+     * Constructs QueryObject from given query results.
+     */
+    public QueryObject(List<SObject> results) {
+        this(results.getSObjectType());
+        this.result = results;
     }
 
 
@@ -147,14 +144,6 @@ public virtual inherited sharing class QueryObject {
     }
 
     /**
-     * Give this query unique name, which can be referenced in Unit Tests to mock results for named query.
-     */
-    public QueryObject withMockName(String mockName) {
-        this.mockName = mockName;
-        return this;
-    }
-
-    /**
      * @return Mocks output of the query with given result.
      *
      * Usage in Unit Test:
@@ -168,8 +157,7 @@ public virtual inherited sharing class QueryObject {
      * </pre>
      */
     public void mock(String mockName, Object result) {
-        mockedSObjects.add(sObjType);
-        queryMocks.put('' + this.sObjType + '.' + mockName, result);
+        Query.mock(sObjType, mockName, result);
     }
 
     /**
@@ -282,17 +270,6 @@ public virtual inherited sharing class QueryObject {
         return this;
     }
 
-
-    /**
-     * Enforces Object and Field level security on records.
-     * Inaccessible fields are stripped from result and inaccessible objects throws exception.
-     *
-     * @throws System.NoAccessException No access to entity when user does not have READ permission to sOObject
-     */
-    public QueryObject stripInaccessible(AccessType accessType) {
-        this.accessType = accessType;
-        return this;
-    }
 
     /**
      * Enforces Object and Field level security on records.
@@ -503,95 +480,21 @@ public virtual inherited sharing class QueryObject {
      *
      */
 
-
-    /**
-     * @return Id of first record or null if list has no results
-     */
-    public Id getFirstIdOrNull() {
-        return getFirstOrNull()?.Id;
-    }
-
-    /**
-     * @return Field of first record or null if list has no results
-     */
-    public Object getFirstFieldOrNull(SObjectField field) {
-        return getFirstOrNull()?.get(field);
-    }
-
-    /**
-     * @return Field of first record or fallback value if list has no results
-     */
-    public Object getFirstFieldOrFallback(SObjectField field, Object fallbackValue) {
-        Object val = getFirstOrNull()?.get(field);
-        return val == null ? fallbackValue : val;
-    }
-
-
     /**
      * @return First and only record returned by query
      * @throws System.ListException if query did not return results
      */
-    public SObject getFirst() {
+    public override SObject getFirst() {
         this.queryBuilder.setLimit(1);
-        List<SObject> result = executeQuery();
-        return result.get(0);
+        return super.getFirst();
     }
 
     /**
      * @return First record or null if list has no results
      */
-    public SObject getFirstOrNull() {
+    public override SObject getFirstOrNull() {
         this.queryBuilder.setLimit(1);
-        List<SObject> result = executeQuery();
-        return result.isEmpty() ? null : result.get(0);
-    }
-
-
-    /**
-     * @return List of SObjects for given conditions
-     */
-    public SObject[] getList() {
-        return executeQuery();
-    }
-
-
-    /**
-     * @return Ids for SObjects
-     */
-    public Set<Id> getIds() {
-        return getMapById().keySet();
-    }
-
-    /**
-     * @return SObject map by Ids
-     */
-    public Map<Id, SObject> getMapById() {
-        Map<Id, SObject> resultMap = (Map<Id, SObject>) Type.forName('Map<Id,' + sObjType + '>').newInstance();
-        resultMap.putAll(getList());
-
-        return resultMap;
-    }
-
-    /**
-     * @return SObject map by unique string
-     */
-    public Map<String, SObject> getMapByString(SObjectField field) {
-        return getMapByString('' + field);
-    }
-
-    /**
-     * @return SObject map by unique string
-     */
-    public Map<String, SObject> getMapByString(String field) {
-        Map<String, SObject> resultMap = (Map<String, SObject>) Type.forName('Map<String,' + sObjType + '>')
-            .newInstance();
-
-        for (SObject record : getList()) {
-            String key = '' + record.get(field);
-            resultMap.put(key, record);
-        }
-
-        return resultMap;
+        return super.getFirstOrNull();
     }
 
 
@@ -599,11 +502,14 @@ public virtual inherited sharing class QueryObject {
      * @return Query Locator for current query
      */
     public Database.QueryLocator getQueryLocator() {
-        this.queryBuilder
-            .fromObject(sObjType)
-            .setWhere(compileConditions(whereConditions).toSOQL(bindings));
+        return this.databaseService.getQueryLocator(toSOQL(), bindings.getMap());
+    }
 
-        return this.databaseService.getQueryLocator(queryBuilder.toSOQL(), bindings.getMap());
+    /**
+     * @return Database.Cursor for current query.
+     */
+    public Database.Cursor getCursor() {
+        return this.databaseService.getCursor(toSOQL(), bindings.getMap());
     }
 
     /**
@@ -628,10 +534,10 @@ public virtual inherited sharing class QueryObject {
     /**
     * Executes query and caches results
     */
-    protected SObject[] executeQuery() {
+    protected override SObject[] executeQuery() {
         try {
-            if (this.result != null) return this.result;
-            this.result = getQueryResult();
+            this.result = (SObject[]) getMock() ?? result;
+            this.result = result ?? getQueryResult();
 
             if (accessType != null) {
                 SObjectAccessDecision decision = Security.stripInaccessible(accessType, result);
@@ -648,11 +554,6 @@ public virtual inherited sharing class QueryObject {
     }
 
     private List<SObject> getQueryResult() {
-        Object mock = getMock();
-        if (mock != null) {
-            return (List<SObject>) mock;
-        }
-
         List<SObject> result = Runtime.newListOfItemType(sObjType);
         Query.Condition compiledExpr = compileConditions(whereConditions);
         Boolean doQuery = true;
@@ -663,9 +564,12 @@ public virtual inherited sharing class QueryObject {
         }
 
         if (doQuery) {
-            this.queryBuilder.setWhere(compiledExpr.toSOQL(bindings));
-            this.queryBuilder.setHaving(compileConditions(havingConditions).toSOQL(bindings));
-            this.queryBuilder.fromObject(sObjType);
+            this.queryBuilder
+                .setWhere(compiledExpr.toSOQL(bindings))
+                .setHaving(compileConditions(havingConditions).toSOQL(bindings))
+                .fromObject(sObjType)
+                .toSOQL();
+
             SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), bindings.getMap());
 
             if (cache != null && !(records instanceof AggregateResult[])) {
@@ -677,30 +581,6 @@ public virtual inherited sharing class QueryObject {
         }
 
         return result;
-    }
-
-    /**
-     * @return Mocked query results, if sObject was mocked and class that invoked query is mocked.
-     */
-    private Object getMock() {
-        if (Test.isRunningTest()
-            && mockedSObjects.contains(this.sObjType)) {
-
-            if (queryMocks.containsKey(mockKey)) {
-                return queryMocks.get(mockKey);
-
-            } else {
-                for (Runtime.StackTraceLine line : Runtime.getStackTrace()) {
-                    String mockName = '' + this.sObjType + '.' + line.apexClassMethod;
-
-                    if (queryMocks.containsKey(mockName)) {
-                        return queryMocks.get(mockName);
-                    }
-                }
-            }
-        }
-
-        return null;
     }
 
 

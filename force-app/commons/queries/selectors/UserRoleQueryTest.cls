@@ -28,13 +28,13 @@ private class UserRoleQueryTest {
     static void testSelectByDeveloperName() {
         String value = 'UserRoleDevName';
         UserRoleQuery query = new UserRoleQuery().byDeveloperName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, UserRole.DeveloperName, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, UserRole.DeveloperName, new Set<String>{value});
     }
 
     @IsTest
     static void testSelectOfCurrentUser() {
         Id value = UserInfo.getUserRoleId();
         UserRoleQuery query = new UserRoleQuery().byCurrentUser();
-        QueryObjectTest.assertSOQLContainsFieldClause(query, UserRole.Id, 'IN', value);
+        QueryObjectTest.assertSOQLContainsFieldClause(query, UserRole.Id, 'IN', new Set<Id>{value});
     }
 }

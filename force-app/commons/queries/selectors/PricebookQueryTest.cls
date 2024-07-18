@@ -47,7 +47,7 @@ private class PricebookQueryTest {
     static void testSelectByName() {
         String value = 'Pricebook Name';
         PricebookQuery query = new PricebookQuery().byName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Pricebook2.Name, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Pricebook2.Name, new Set<String>{value});
     }
 
 }

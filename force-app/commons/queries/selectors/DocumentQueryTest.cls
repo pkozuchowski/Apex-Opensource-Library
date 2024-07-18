@@ -29,6 +29,6 @@ public inherited sharing class DocumentQueryTest {
     static void testSelectByDeveloperName() {
         String value = 'Doc_Name';
         DocumentQuery query = new DocumentQuery().byDeveloperName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Document.DeveloperName, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Document.DeveloperName, new Set<String>{value});
     }
 }

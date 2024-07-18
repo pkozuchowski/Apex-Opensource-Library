@@ -29,6 +29,6 @@ public inherited sharing class EmailMessageQueryTest {
     static void testSelectByParentId() {
         Id value = '001000000000000';
         EmailMessageQuery query = new EmailMessageQuery().byParentId(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, EmailMessage.ParentId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, EmailMessage.ParentId, new Set<Id>{value});
     }
 }

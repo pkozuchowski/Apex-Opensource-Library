@@ -35,20 +35,20 @@ private class UserQueryTest {
     static void testSelectByName() {
         String value = UserInfo.getName();
         UserQuery query = new UserQuery().byName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, User.Name, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, User.Name, new Set<String>{value});
     }
 
     @IsTest
     static void testSelectByEmail() {
         String value = UserInfo.getUserEmail();
         UserQuery query = new UserQuery().byEmail(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, User.Email, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, User.Email, new Set<String>{value});
     }
 
     @IsTest
     static void testSelectByUsername() {
         String value = UserInfo.getUserName();
         UserQuery query = new UserQuery().byUsername(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, User.Username, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, User.Username, new Set<String>{value});
     }
 }

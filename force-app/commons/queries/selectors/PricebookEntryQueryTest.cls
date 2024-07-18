@@ -28,13 +28,13 @@ private class PricebookEntryQueryTest {
     static void testSelectByPricebookId() {
         Id value = '01s3O0000028iRmQAI';
         PricebookEntryQuery query = new PricebookEntryQuery().byPricebook2Id(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, PricebookEntry.Pricebook2Id, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, PricebookEntry.Pricebook2Id, new Set<Id>{value});
     }
 
     @IsTest
     static void testSelectByProductId() {
         Id value = '01s3O0000028iRmQAI';
         PricebookEntryQuery query = new PricebookEntryQuery().byProduct2Id(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, PricebookEntry.Product2Id, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, PricebookEntry.Product2Id, new Set<Id>{value});
     }
 }

@@ -37,27 +37,27 @@ private class ContactQueryTest {
     static void testSelectByName() {
         String value = 'John Doe';
         ContactQuery query = new ContactQuery().byName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Contact.Name, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Contact.Name, new Set<String>{value});
     }
 
     @IsTest
     static void testSelectByEmail() {
         String value = 'john@test.com';
         ContactQuery query = new ContactQuery().byEmail(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Contact.Email, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Contact.Email, new Set<String>{value});
     }
 
     @IsTest
     static void testSelectByAccountId() {
         Id value = '001000000000000';
         ContactQuery query = new ContactQuery().byAccountId(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Contact.AccountId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Contact.AccountId, new Set<Id>{value});
     }
 
     @IsTest
     static void testSelectByPhone() {
         String value = '123 456 789';
         ContactQuery query = new ContactQuery().byPhone(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Contact.Phone, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Contact.Phone, new Set<String>{value});
     }
 }

@@ -28,13 +28,13 @@ private class OrgWideEmailAddressQueryTest {
     static void testSelectByDisplayName() {
         String value = 'test@example.com';
         OrgWideEmailAddressQuery query = new OrgWideEmailAddressQuery().byDisplayName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, OrgWideEmailAddress.DisplayName, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, OrgWideEmailAddress.DisplayName, new Set<String>{value});
     }
 
     @IsTest
     static void testSelectByAddress() {
         String value = 'test@example.com';
         OrgWideEmailAddressQuery query = new OrgWideEmailAddressQuery().byAddress(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, OrgWideEmailAddress.Address, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, OrgWideEmailAddress.Address, new Set<String>{value});
     }
 }

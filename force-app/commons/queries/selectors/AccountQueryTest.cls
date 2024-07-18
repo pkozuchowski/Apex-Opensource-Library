@@ -46,6 +46,6 @@ private without sharing class AccountQueryTest {
     @IsTest
     static void testSelectByName() {
         AccountQuery query = new AccountQuery().byName('Test Account');
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Account.Name, 'Test Account');
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Account.Name, new Set<String>{'Test Account'});
     }
 }

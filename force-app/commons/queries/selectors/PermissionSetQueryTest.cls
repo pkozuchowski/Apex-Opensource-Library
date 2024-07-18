@@ -28,6 +28,6 @@ private class PermissionSetQueryTest {
     static void testSelectByName() {
         String value = 'Sales_Manager';
         PermissionSetQuery query = new PermissionSetQuery().byName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, PermissionSet.Name, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, PermissionSet.Name, new Set<String>{value});
     }
 }

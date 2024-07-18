@@ -29,20 +29,20 @@ public inherited sharing class EventQueryTest {
     static void testSelectByAccountId() {
         Id value = '001000000000000';
         EventQuery query = new EventQuery().byAccountId(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Event.AccountId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Event.AccountId, new Set<Id>{value});
     }
 
     @IsTest
     static void testSelectByWhatId() {
         Id value = '001000000000000';
         EventQuery query = new EventQuery().byWhatId(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Event.WhatId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Event.WhatId, new Set<Id>{value});
     }
 
     @IsTest
     static void testSelectByWhoId() {
         Id value = UserInfo.getUserId();
         EventQuery query = new EventQuery().byWhoId(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Event.WhoId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Event.WhoId, new Set<Id>{value});
     }
 }

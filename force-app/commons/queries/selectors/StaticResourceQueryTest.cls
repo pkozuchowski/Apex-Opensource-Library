@@ -28,6 +28,6 @@ private class StaticResourceQueryTest {
     static void testSelectByName() {
         String value = 'StaticResourceName';
         StaticResourceQuery query = new StaticResourceQuery().byName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, StaticResource.Name, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, StaticResource.Name, new Set<String>{value});
     }
 }

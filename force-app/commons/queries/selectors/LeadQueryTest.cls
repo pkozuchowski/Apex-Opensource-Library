@@ -28,20 +28,20 @@ private class LeadQueryTest {
     static void testSelectByName() {
         String value = 'John Doe';
         LeadQuery query = new LeadQuery().byName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Lead.Name, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Lead.Name, new Set<String>{value});
     }
 
     @IsTest
     static void testSelectByEmail() {
         String value = 'john@example.com';
         LeadQuery query = new LeadQuery().byEmail(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Lead.Email, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Lead.Email, new Set<String>{value});
     }
 
     @IsTest
     static void testSelectByCompany() {
         String value = 'Company Name';
         LeadQuery query = new LeadQuery().byCompany(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Lead.Company, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Lead.Company, new Set<String>{value});
     }
 }

@@ -39,18 +39,18 @@ private class ProductQueryTest {
     @IsTest
     static void testSelectByName() {
         ProductQuery productQuery = new ProductQuery().byName('Product Name');
-        QueryObjectTest.assertSOQLContainsFieldInClause(productQuery, Product2.Name, 'Product Name');
+        QueryObjectTest.assertSOQLContainsFieldInClause(productQuery, Product2.Name, new Set<String>{'Product Name'});
     }
 
     @IsTest
     static void testSelectByProductCode() {
         ProductQuery productQuery = new ProductQuery().byProductCode('productCode');
-        QueryObjectTest.assertSOQLContainsFieldInClause(productQuery, Product2.ProductCode, 'productCode');
+        QueryObjectTest.assertSOQLContainsFieldInClause(productQuery, Product2.ProductCode, new Set<String>{'productCode'});
     }
 
     @IsTest
     static void testSelectByExternalId() {
         ProductQuery productQuery = new ProductQuery().byExternalId('externalId');
-        QueryObjectTest.assertSOQLContainsFieldInClause(productQuery, Product2.ExternalId, 'externalId');
+        QueryObjectTest.assertSOQLContainsFieldInClause(productQuery, Product2.ExternalId, new Set<String>{'externalId'});
     }
 }

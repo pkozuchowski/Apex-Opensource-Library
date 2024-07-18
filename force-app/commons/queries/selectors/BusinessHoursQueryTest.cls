@@ -43,6 +43,6 @@ private class BusinessHoursQueryTest {
     static void testSelectByName() {
         String value = 'Test Value';
         QueryObject query = new BusinessHoursQuery().byName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, BusinessHours.Name, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, BusinessHours.Name, new Set<String>{value});
     }
 }

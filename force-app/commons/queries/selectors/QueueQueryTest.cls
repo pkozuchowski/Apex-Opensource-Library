@@ -28,7 +28,7 @@ private class QueueQueryTest {
     static void testSelectByName() {
         String value = 'Group Name';
         QueueQuery query = new QueueQuery().byName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Group.Name, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Group.Name, new Set<String>{value});
         Assert.isTrue(query.toSOQL().containsIgnoreCase('FROM Group'));
     }
 
@@ -36,7 +36,7 @@ private class QueueQueryTest {
     static void testSelectByDeveloeprName() {
         String value = 'GroupDeveloperName';
         QueueQuery query = new QueueQuery().byDeveloperName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Group.DeveloperName, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Group.DeveloperName, new Set<String>{value});
         Assert.isTrue(query.toSOQL().containsIgnoreCase('FROM Group'));
     }
 }

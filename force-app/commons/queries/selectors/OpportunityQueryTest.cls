@@ -35,13 +35,13 @@ private class OpportunityQueryTest {
     static void testSelectByName() {
         String value = 'Opportunity Name';
         OpportunityQuery query = new OpportunityQuery().byName(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Opportunity.Name, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Opportunity.Name, new Set<String>{value});
     }
 
     @IsTest
     static void testSelectByAccountId() {
         Id value = '001000000000000';
         OpportunityQuery query = new OpportunityQuery().byAccountId(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Opportunity.AccountId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Opportunity.AccountId, new Set<Id>{value});
     }
 }

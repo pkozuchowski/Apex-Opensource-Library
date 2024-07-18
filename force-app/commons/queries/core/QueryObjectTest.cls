@@ -541,6 +541,23 @@ public class QueryObjectTest {
         System.assertEquals(1, users.size());
     }
 
+    @IsTest
+    static void testAssertionMethods() {
+        assertSOQLContainsFieldClause(
+            Query.fromSObject(Account.SObjectType).byField(Account.Name, '=', 'Test'),
+            Account.Name,
+            '=',
+            'Test'
+        );
+
+        assertSOQLContainsFieldClause(
+            Query.fromSObject(Account.SObjectType).byField(Account.Name, 'IN', new Set<String>{'Test'}),
+            Account.Name,
+            'IN',
+            new Set<String>{'Test'}
+        );
+    }
+
     public static void assertEquals(SObject[] expected, SObject[] actual) {
         Assert.areEqual(
             new Map<Id, SObject>(expected).keySet(),
@@ -564,15 +581,13 @@ public class QueryObjectTest {
             )
         );
 
-        if (value instanceof Id) {
-            assertQueryHasBinding(queryObject, 'var0', new Set<Id>{(Id) value});
-        } else if (value instanceof String) {
-            assertQueryHasBinding(queryObject, 'var0', new Set<String>{(String) value});
-        }
+        assertQueryHasBinding(queryObject, 'var0', value);
     }
 
     public static void assertQueryHasBinding(QueryObject queryObject, String binding, Object value) {
-        Assert.areEqual(value, queryObject.getBinding(binding), 'Invalid query binding.');
+        Object boundValue = queryObject.getBinding(binding);
+        Assert.isNotNull(boundValue);
+        Assert.areEqual(boundValue, value);
     }
 
     public static void assertSOQLContains(QueryObject queryObject, String substring) {

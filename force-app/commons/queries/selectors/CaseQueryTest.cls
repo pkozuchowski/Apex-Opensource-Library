@@ -37,20 +37,20 @@ private class CaseQueryTest {
     static void testSelectBySubject() {
         String value = 'Subject';
         QueryObject query = new CaseQuery().bySubject(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Case.Subject, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Case.Subject, new Set<String>{value});
     }
 
     @IsTest
     static void testSelectByAccountId() {
         Id value = '001000000000000';
         CaseQuery query = new CaseQuery().byAccountId(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Case.AccountId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Case.AccountId, new Set<Id>{value});
     }
 
     @IsTest
     static void testSelectByContactId() {
         Id value = '003000000000000';
         CaseQuery query = new CaseQuery().byContactId(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Case.ContactId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Case.ContactId, new Set<Id>{value});
     }
 }

@@ -29,20 +29,20 @@ public inherited sharing class TaskQueryTest {
     static void testSelectByAccountId() {
         Id value = '001000000000000';
         TaskQuery query = new TaskQuery().byAccountId(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Task.AccountId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Task.AccountId, new Set<Id>{value});
     }
 
     @IsTest
     static void testSelectByWhatId() {
         Id value = '001000000000000';
         TaskQuery query = new TaskQuery().byWhatId(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Task.WhatId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Task.WhatId, new Set<Id>{value});
     }
 
     @IsTest
     static void testSelectByWhoId() {
         Id value = UserInfo.getUserId();
         TaskQuery query = new TaskQuery().byWhoId(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, Task.WhoId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, Task.WhoId, new Set<Id>{value});
     }
 }

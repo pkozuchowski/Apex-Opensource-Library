@@ -29,13 +29,13 @@ private class PermissionSetAssignmentQueryTest {
     static void testSelectByCurrentUser() {
         Id value = UserInfo.getUserId();
         PermissionSetAssignmentQuery query = new PermissionSetAssignmentQuery().byCurrentUser();
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, PermissionSetAssignment.AssigneeId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, PermissionSetAssignment.AssigneeId, new Set<Id>{value});
     }
 
     @IsTest
     static void testSelectByPermissionSetId() {
         Id value = '0PS3O0000000000';
         PermissionSetAssignmentQuery query = new PermissionSetAssignmentQuery().byPermissionSetId(value);
-        QueryObjectTest.assertSOQLContainsFieldInClause(query, PermissionSetAssignment.PermissionSetId, value);
+        QueryObjectTest.assertSOQLContainsFieldInClause(query, PermissionSetAssignment.PermissionSetId, new Set<Id>{value});
     }
 }

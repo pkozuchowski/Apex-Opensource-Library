@@ -21,7 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-@IsTest(IsParallel=true)
+@IsTest(IsParallel=false)
 private class TestDataSuiteTest {
 
     @TestSetup

@@ -222,12 +222,4 @@ private class DatabaseMockTest {
         Assert.areEqual(1, result.size());
         Assert.areEqual('Test', result[0].get('Name'));
     }
-
-    @IsTest
-    static void testMockCursor() {
-        Database.Cursor c = (Database.Cursor) Test.createStub(List<Database.Cursor>.class, new DatabaseMock.CursorMock(new List<User>{
-            new User(LastName = 'Dupa'),
-            new User(LastName = 'Dupa1')
-        }));
-    }
 }

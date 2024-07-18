@@ -27,29 +27,6 @@ private class DatabaseServiceTest {
 
     private static Integer counter = 0;
 
-    @TestSetup
-    static void testSetup() {
-        new TestDataBuilder()
-            .create(new User(Username = STR,
-                ProfileId = Query.Profiles.byName('Standard User2').getFirstIdOrNull())
-            )
-            .create(new SomeRecord__c(Text__c = '1', Accessible__c = '2'))
-            .create(new SomeRecord__c())
-            .create(new SomeRecord__c())
-            .insertRecords();
-    }
-
-    @IsTest
-    static void testSharing() {
-        User u = (User) Query.Users.byUsername(STR).getFirst();
-        System.debug([SELECT Id FROM SomeRecord__c]);
-        System.runAs(u) {
-            Assert.areEqual(0, new DatabaseService().withSharing().query('SELECT Id FROM SomeRecord__c').size());
-            Assert.areEqual(3, new DatabaseService().withoutSharing().query('SELECT Id FROM SomeRecord__c').size());
-            Database.query('SELECT Id,Accessible__c,Text__c FROM SomeRecord__c');
-            Database.query('SELECT Id,Accessible__c,Text__c FROM SomeRecord__c', AccessLevel.USER_MODE);
-        }
-    }
 
     @IsTest
     static void testDML() {

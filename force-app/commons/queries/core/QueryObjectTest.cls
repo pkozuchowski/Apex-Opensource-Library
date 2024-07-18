@@ -62,6 +62,20 @@ public class QueryObjectTest {
         Assert.areEqual(1, results.size());
         Assert.areEqual('test', results.get(0).Username);
     }
+    
+    @IsTest
+    static void testMockingWithList(){
+        Query.mock('QueryObjectTest.TestServiceClass.doSomething', new List<User>{
+            new User(Username = 'test')
+        });
+
+        TestServiceClass service = new TestServiceClass();
+        service.doSomething();
+
+        List<User> results = service.users;
+        Assert.areEqual(1, results.size());
+        Assert.areEqual('test', results.get(0).Username);
+    }
 
     @IsTest
     static void testMockingQueryDirectly() {

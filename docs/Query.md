@@ -4,8 +4,8 @@
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
 [Dependency 1](/apex/database-service)
 [Dependency 2](/apex/runtime)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK7dAAG)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK7dAAG)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK7iAAG)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK7iAAG)
 
 ```bash
 sf project deploy start \
@@ -275,7 +275,7 @@ static void myTestMethod() {
 
     // or
 
-    Query.mock(Account.SObjectType, 'AccountQuotingService.generateQuotes', new List<Account>{
+    Query.mock('AccountQuotingService.generateQuotes', new List<Account>{
         // my mocked query result
     });
 }
@@ -292,11 +292,10 @@ static void myTestMethod() {
 
     // or
 
-    Query.mock(Account.SObjectType, 'myAccountQuery', new List<Account>{
+    Query.mock('myAccountQuery', new List<Account>{
         // my mocked query result
     });
 }
-
 ```
 
 ### Special cases:

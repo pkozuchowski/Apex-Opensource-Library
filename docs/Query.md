@@ -154,10 +154,10 @@ String contactEmail = (String) contactQuery.getFirstFieldOrNull(Contact.Email);
 ```
 
 ---
-# Direct Queries
+# Query Wrapper
 
 Sometimes, you don't want to introduce a new query class or use a generic query, but you'd still want to benefit from the Query capabilities.
-This is possible using direct queries.
+This is possible using query wrapper.
 
 Consider this example:
 ```apex
@@ -175,7 +175,7 @@ public with sharing class QuotingService {
 } 
 ```
 
-Direct Query wraps query results into Query object. Now, we can use that to mock the query outcome in tests:
+Query wraps query results into Query.Results class. Now, we can use that to mock the query outcome in tests:
 ```apex
 @IsTest
 static void testGenerateQuotes() {
@@ -189,8 +189,8 @@ since a majority of the test slowdowns come from data creation and this query wi
 
 Another benefit is that our pure apex tests will track query limit usage realistically.
 
-With Direct Queries, you can also benefit from reducer methods:
-![DirectQueryReduce.png](DirectQueryReduce.png)
+With wrapped queries, you can also benefit from reducer methods:
+![image](/img/query-wrapped.png)
 
 
 ---
@@ -1307,7 +1307,7 @@ return q.getList();
 ---
 # Change Log
 ### 2.0.0
-- Added Direct Queries
+- Added Query wrapper
 ### 1.1.0
 - Added new mocking method without using mock ids.
 - Added ORDER BY

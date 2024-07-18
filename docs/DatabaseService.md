@@ -209,6 +209,8 @@ class DatabaseService {
 	Database.QueryLocator getQueryLocator(String query);
 	Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars);
 
+    public Database.Cursor getCursor(String query, Map<String, Object> boundVars);
+
 	Database.SaveResult insertRecord(SObject record);
 	Database.SaveResult updateRecord(SObject record);
 	Database.UpsertResult upsertRecord(SObject record, SObjectField field);
@@ -237,3 +239,9 @@ public with sharing class DatabaseMock {
 	DatabaseMock mockDmlError(DmlType dmlType, SObject matcherRecord, String errorMsg);
 	List<DatabaseService.DmlError> getDMLErrors(DmlType issuedDML, SObject record);
 ```
+
+---
+# Change Log
+### 1.1.0
+- Simplified DML Issuers code
+- Added Database.Cursor

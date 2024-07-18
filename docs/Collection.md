@@ -408,7 +408,7 @@ interface Reducer {
 # Change Log
 
 ### 2.0.0
-- Changed custom Comparator interface to standard that was introduced in Winter '24
+- Changed custom Comparator interface to a standard that was introduced in Winter '24
 - getList/getSet reducers are more robust, but now require collect calls
 - Arithmetic reducers are more robust and work on collections of numeric values
 ```apex

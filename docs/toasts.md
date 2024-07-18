@@ -1,7 +1,7 @@
 # Toasts
 *Shorthands for showing toasts.*
 
-[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/blob/master/force-app/commons/lwc/commons/toastUtils.js)
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/blob/master/force-app/commons/lwc/commons/toasts.js)
 ```bash
 sf project deploy start -d force-app/commons/lwc/commons -o sfdxOrg
 ```

@@ -205,12 +205,12 @@ The cache is configured in Custom Metadata (QueryCache__mdt):
 Let's consider Profile Cache settings:
 
 | Field          | Value                                   | Description                                                                                          |
-|----------------|-----------------------------------------|------------------------------------------------------------------------------------------------------|
+| -------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | SObject__c     | Profile                                 | Qualified API Name (with namespace) for the SOObject.                                                |
 | Active__c      | true                                    | Is Cache Active. Can be turned off quickly if needed.                                                |
 | Storage__c     | Organization                            | Storage — where records should be stored.                                                            |
 | SOQL__c        | SELECT Id, Name FROM Profile            | If provided, empty cache will be first initialized with the results of this SOQL.                    |
-| CacheFields__c | SELECT Id, Name FROM Profile            | Profile records will be cached using Id and Name fields. <br/> Queries by Id or Name will use Cache. |
+| CacheFields__c | Id,Name                                 | Profile records will be cached using Id and Name fields. <br/> Queries by Id or Name will use Cache. |
 | TimeToLive__c  | 86400                                   | How many seconds records will be stored in Organization or Session cache.                            |
 | Description__c | Caches all Profile records in Org cache | Description of the cache purpose for other admins.                                                   |
 
@@ -232,12 +232,12 @@ When the cache is empty and first user issues a Profile query, it will initializ
 It can be left empty if you don't want to repopulate cache with any records, but want to cache once queried records.
 This is described further in the Progressive Caching section.
 
-Now when a user calls an action that requires Profile data, the framework will first check if we have profile in cache.
+Now when a user calls an action that requires Profile data, the framework will first check if we have profile in cache. Meaning, all futher transactions will get cached results until cache expires.
 
 ## Progressive Caching
 Let's assume that we're querying 50 queue records—we have 25 in cache, and 25 are not.  
 The Framework will take 25 records from the cache and query only the remaining 25 from the database and put them in the cache.   
-Consecutive call with the same query will get all 50 records from the cache and thus will not use any query.
+Consecutive call with the same query will get all 50 records from the cache and thus will not issue any query against database.
 
 ## When Cache is not used:
 - Any deployments clear Platform Cache out of the box. You don't need to worry that you will have invalid setup objects cached.

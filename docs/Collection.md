@@ -114,10 +114,10 @@ Map<Id, Opportunity[]> opportunitiesByAccountId = (Map<Id, Opportunity[]>)
 	Collection.of(opportunities).groupBy(Opportunity.AccountId);
 
 Map<Id, Opportunity[]> opportunitiesByOwner = (Map<Id, Opportunity[]>)
-	Collection.of(opportunities).mapBy(Opportunity.OwnerId);
+	Collection.of(opportunities).groupBy(Opportunity.OwnerId);
 
 Map<String, Opportunity[]> opportunitiesByStage = (Map<String, Opportunity[]>)
-	Collection.of(opportunities).mapBy(Opportunity.StageName);
+	Collection.of(opportunities).groupBy(Opportunity.StageName);
 ```
 #### Grouping between two fields
 Selected fields will be mapped as key to list of values map.

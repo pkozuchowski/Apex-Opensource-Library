@@ -35,8 +35,39 @@
  *      'getById', new Account(Name = 'Test Name')
  *     );
  */
-@IsTest
 public with sharing class Mock {
+
+    /**
+     * @return Mocked SObject record with overridden formula fields, relationships and readonly fields.
+     */
+    public static SObject sObject(SObjectType sobjType, Map<String, Object> values) {
+        return sObjects(sobjType, new List<Map<String, Object>>{values}).get(0);
+    }
+
+    /**
+     * @return Mocked SObject records with overridden formula fields, relationships and readonly fields.
+     */
+    public static List<SObject> sObjects(SObjectType sobjType, List<Map<String, Object>> records) {
+        for (Map<String, Object> record : records) {
+            for (String key : record.keySet()) {
+                Object value = record.get(key);
+
+                if (value instanceof List<Object>) {
+                    record.put(key, new Map<String, Object>{
+                        'done' => true,
+                        'size' => ((List<Object>) value).size(),
+                        'records' => value
+                    });
+                }
+
+            }
+        }
+
+        return (List<SObject>) JSON.deserialize(
+            JSON.serialize(records),
+            Type.forName('List<' + sobjType + '>')
+        );
+    }
 
     /**
      * @returns Mock that will return predefined response when any of it's methods is called.
@@ -69,7 +100,7 @@ public with sharing class Mock {
         private Map<String, Object> returnMap = new Map<String, Object>();
         private Map<String, Integer> calledMethods = new Map<String, Integer>();
 
-        private SimpleMock(Map<String, Object> returnMap){
+        private SimpleMock(Map<String, Object> returnMap) {
             this.returnMap = returnMap;
         }
 

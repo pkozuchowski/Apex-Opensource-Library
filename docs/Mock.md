@@ -24,17 +24,17 @@ In unit tests, we want to mock the response of the selector class.
 
 ```apex
 public class MyAccountCtrl {
-	@TestVisible AccountSelector accountSelector = new AccountSelector();
+    @TestVisible AccountSelector accountSelector = new AccountSelector();
 
-	public static Account getMyAccount() {
-		try {
-			Id myId = UserInfo.getUserId();
-			return accountSelector.getByOwnerId(myId);
+    public static Account getMyAccount() {
+        try {
+            Id myId = UserInfo.getUserId();
+            return accountSelector.getByOwnerId(myId);
 
-		} catch (Exception e) {
-			throw new AuraHandledException('Account unavailable');
-		}
-	}
+        } catch (Exception e) {
+            throw new AuraHandledException('Account unavailable');
+        }
+    }
 } 
 ```
 
@@ -43,19 +43,19 @@ If the code only calls one method from mocked class, we can skip the method name
 ```apex
 public class MyAccountCtrlTest {
 
-	@IsTest
-	static void testGetMyAccount() {
-		MyAccountCtrl.accountSelector = (AccountSelector) Mock.response(AccountSelector.class,
-			new Account(Name = 'My Account')
-		);
-	}
+    @IsTest
+    static void testGetMyAccount() {
+        MyAccountCtrl.accountSelector = (AccountSelector) Mock.response(AccountSelector.class,
+            new Account(Name = 'My Account')
+        );
+    }
 } 
 ```
 
 If response value is an exception, that exception will be thrown when mocked method is called.
 ```apex
 MyAccountCtrl.accountSelector = (AccountSelector) Mock.response(AccountSelector.class,
-	new QueryException('List has no rows for assignment to SObject')
+    new QueryException('List has no rows for assignment to SObject')
 );
 ```
 
@@ -65,12 +65,12 @@ Mock response just for given method. Other methods will return null.
 ```apex
 public class MyAccountCtrlTest {
 
-	@IsTest
-	static void testGetMyAccount() {
-		MyAccountCtrl.accountSelector = (AccountSelector) Mock.response(AccountSelector.class,
-			'getByOwnerId', new Account(Name = 'My Account')
-		);
-	}
+    @IsTest
+    static void testGetMyAccount() {
+        MyAccountCtrl.accountSelector = (AccountSelector) Mock.response(AccountSelector.class,
+            'getByOwnerId', new Account(Name = 'My Account')
+        );
+    }
 } 
 ```
 
@@ -80,16 +80,61 @@ In example bellow, calling `accountSelector.getById()` will yield a different re
 ```apex
 public class MyAccountCtrlTest {
 
-	@IsTest
-	static void testGetMyAccount() {
-		MyAccountCtrl.accountSelector = (AccountSelector) Mock.response(AccountSelector.class,
-			new Map<String, Object>{
-				'getByOwnerId' => new Account(Name = 'My Account'),
-				'getById#1' => new Account(Name = 'Test Account'),
-				'getById#2' => new Account(Name = 'Another Account'),
-				'getById#3' => new QueryException('List has no rows for assignment to SObject')
-			}
-		);
-	}
+    @IsTest
+    static void testGetMyAccount() {
+        MyAccountCtrl.accountSelector = (AccountSelector) Mock.response(AccountSelector.class,
+            new Map<String, Object>{
+                'getByOwnerId' => new Account(Name = 'My Account'),
+                'getById#1' => new Account(Name = 'Test Account'),
+                'getById#2' => new Account(Name = 'Another Account'),
+                'getById#3' => new QueryException('List has no rows for assignment to SObject')
+            }
+        );
+    }
 } 
+```
+
+# Mock SObjects
+Mock class can be also used to overwrite inaccessible fields on
+SObjects—Relationship fields, children, formulas and system fields:
+
+```apex
+Account account = (Account) Mock.sObject(Account.SObjectType, new Map<String, Object>{
+    'Name' => 'Test',
+    'CreatedBy' => new User(
+        LastName = 'Test User'
+    ),
+    'Contacts' => new List<Contact>{
+        new Contact(
+            LastName = 'Test Contact'
+        )
+    }
+});
+```
+
+The same example, but in bulk and SObjectFields
+```apex
+List<Account> accounts = Mock.sObjects(Account.SObjectType, new List<Map<String, Object>>{
+    new Map<String, Object>{
+        '' + Account.Name => 'Test',
+
+        'CreatedBy' => new User(
+            LastName = 'Test User'
+        ),
+        'Contacts' => new List<Contact>{
+            new Contact(
+                LastName = 'Test Contact'
+            )
+        }
+    }
+});
+```
+
+Relationship records can be also passed as generic lists or maps if you need to mock readonly field on child record:
+```apex
+        Account account = (Account) Mock.sObject(Account.SObjectType, new Map<String, Object>{
+    'CreatedBy' => new Map<String, Object>{
+        'CreatedDate' => Date.today()
+    }
+});
 ```

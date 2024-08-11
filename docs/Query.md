@@ -205,7 +205,7 @@ The cache is configured in Custom Metadata (QueryCache__mdt):
 Let's consider Profile Cache settings:
 
 | Field          | Value                                   | Description                                                                                          |
-| -------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+|----------------|-----------------------------------------|------------------------------------------------------------------------------------------------------|
 | SObject__c     | Profile                                 | Qualified API Name (with namespace) for the SOObject.                                                |
 | Active__c      | true                                    | Is Cache Active. Can be turned off quickly if needed.                                                |
 | Storage__c     | Organization                            | Storage — where records should be stored.                                                            |
@@ -232,7 +232,8 @@ When the cache is empty and first user issues a Profile query, it will initializ
 It can be left empty if you don't want to repopulate cache with any records, but want to cache once queried records.
 This is described further in the Progressive Caching section.
 
-Now when a user calls an action that requires Profile data, the framework will first check if we have profile in cache. Meaning, all futher transactions will get cached results until cache expires.
+Now when a user calls an action that requires Profile data, the framework will first check if we have profile in cache. Meaning, all futher transactions will
+get cached results until cache expires.
 
 ## Progressive Caching
 Let's assume that we're querying 50 queue records—we have 25 in cache, and 25 are not.  
@@ -1304,7 +1305,32 @@ return q.getList();
 ```
 
 ---
+# KDDs
+
+## String vs sObjectField parameters
+### Outcome:
+Framework should use String field parameters as opposed to SObjectField tokens as a baseline. Rationale:
+
+### Rationale:
+1. It's trivial to turn SObjectFields into string API Name, by using one of the bellow methods:
+   - `'' + Account.Name;`
+   - `Account.Name.toString();`
+   - `String.valueOf(Account.Name);`
+   
+  However, turning string into SObjectField requires costly sObject description calls and a lot of overhead code. 
+  This asymmetry not just favors, but simply dictates String as a baseline parameter type - if you have class that supports both, your field list will be `List<String>`.
+2. Queries involve a lot of cross-object relationship fields, which are not supported by SObjectField in any way and will not be protected from changing relationship name.
+3. Many parts of SOQL syntax are not fields at all - `COUNT(), FORMAT()`
+4. Supporting both strings and tokens increases method count and class complexity.
+5. Using tokens, make certain SOQL syntax combinations incredibly complicated, where the framework should be as easy to use on the client side as possible.
+
+---
 # Change Log
+### 2.1.0
+- `orderBy` can now be called multiple times to order by many fields
+- Added support to use SObjectFields parameters
+- Added KDD for String vs sObjectField params
+
 ### 2.0.0
 - Added Query wrapper
 ### 1.1.0

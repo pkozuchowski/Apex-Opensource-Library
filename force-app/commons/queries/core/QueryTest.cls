@@ -26,31 +26,31 @@ private class QueryTest {
 
     @IsTest
     static void coverage() {
-        System.assertNotEquals(null, Query.Accounts);
-        System.assertNotEquals(null, Query.Attachments);
-        System.assertNotEquals(null, Query.BusinessHours);
-        System.assertNotEquals(null, Query.Cases);
-        System.assertNotEquals(null, Query.Contacts);
-        System.assertNotEquals(null, Query.ContentDocuments);
-        System.assertNotEquals(null, Query.ContentDocuments);
-        System.assertNotEquals(null, Query.EmailMessages);
-        System.assertNotEquals(null, Query.EmailTemplates);
-        System.assertNotEquals(null, Query.Events);
-        System.assertNotEquals(null, Query.Leads);
-        System.assertNotEquals(null, Query.Opportunities);
-        System.assertNotEquals(null, Query.OrgWideEmailAddresses);
-        System.assertNotEquals(null, Query.PermissionSets);
-        System.assertNotEquals(null, Query.PermissionSetAssignments);
-        System.assertNotEquals(null, Query.PricebookEntries);
-        System.assertNotEquals(null, Query.Pricebooks);
-        System.assertNotEquals(null, Query.Products);
-        System.assertNotEquals(null, Query.Profiles);
-        System.assertNotEquals(null, Query.Queues);
-        System.assertNotEquals(null, Query.SObjectHistory(MacroShare.SObjectType));
-        System.assertNotEquals(null, Query.SObjectShares(MacroShare.SObjectType));
-        System.assertNotEquals(null, Query.StaticResources);
-        System.assertNotEquals(null, Query.Tasks);
-        System.assertNotEquals(null, Query.UserRoles);
-        System.assertNotEquals(null, Query.Users);
+        Assert.isNotNull(Query.Accounts);
+        Assert.isNotNull(Query.Attachments);
+        Assert.isNotNull(Query.BusinessHours);
+        Assert.isNotNull(Query.Cases);
+        Assert.isNotNull(Query.Contacts);
+        Assert.isNotNull(Query.ContentDocuments);
+        Assert.isNotNull(Query.ContentDocuments);
+        Assert.isNotNull(Query.EmailMessages);
+        Assert.isNotNull(Query.EmailTemplates);
+        Assert.isNotNull(Query.Events);
+        Assert.isNotNull(Query.Leads);
+        Assert.isNotNull(Query.Opportunities);
+        Assert.isNotNull(Query.OrgWideEmailAddresses);
+        Assert.isNotNull(Query.PermissionSets);
+        Assert.isNotNull(Query.PermissionSetAssignments);
+        Assert.isNotNull(Query.PricebookEntries);
+        Assert.isNotNull(Query.Pricebooks);
+        Assert.isNotNull(Query.Products);
+        Assert.isNotNull(Query.Profiles);
+        Assert.isNotNull(Query.Queues);
+        Assert.isNotNull(Query.SObjectHistory(MacroShare.SObjectType));
+        Assert.isNotNull(Query.SObjectShares(MacroShare.SObjectType));
+        Assert.isNotNull(Query.StaticResources);
+        Assert.isNotNull(Query.Tasks);
+        Assert.isNotNull(Query.UserRoles);
+        Assert.isNotNull(Query.Users);
     }
 }

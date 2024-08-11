@@ -62,9 +62,9 @@ public class QueryObjectTest {
         Assert.areEqual(1, results.size());
         Assert.areEqual('test', results.get(0).Username);
     }
-    
+
     @IsTest
-    static void testMockingWithList(){
+    static void testMockingWithList() {
         Query.mock('QueryObjectTest.TestServiceClass.doSomething', new List<User>{
             new User(Username = 'test')
         });
@@ -130,6 +130,28 @@ public class QueryObjectTest {
             .withChildren('Id, Preference', 'UserPreferences')
             .toSOQL();
         Assert.isTrue(soql.containsIgnoreCase('( SELECT Id, Preference FROM UserPreferences )'));
+    }
+
+    @IsTest
+    static void testSelectChildrenFields() {
+        String soql = new TestUserQuery()
+            .withChildren(new List<SObjectField>{
+                UserPreference.Id,
+                UserPreference.Preference
+            }, 'UserPreferences')
+            .toSOQL();
+        Assert.isTrue(soql.containsIgnoreCase('( SELECT Id, Preference FROM UserPreferences )'));
+    }
+
+    @IsTest
+    static void testSObjectFieldConstructor() {
+        String soql = new QueryObject(new List<SObjectField>{
+            User.Id,
+            User.Username
+        }, User.SObjectType)
+            .toSOQL();
+
+        Assert.isTrue(soql.containsIgnoreCase('Id, Username'));
     }
 
     @IsTest
@@ -386,7 +408,7 @@ public class QueryObjectTest {
             .setWhere('Name != NULL')
             .setGroupBy('Name')
             .setHaving('')
-            .setOrderBy('Name')
+            .orderBy('Name')
             .setOffset(0)
             .setLimit(100);
     }
@@ -533,6 +555,16 @@ public class QueryObjectTest {
     static void testOrderBy() {
         String soql = new TestUserQuery().orderBy(User.CreatedDate, true, true).toSOQL();
         Assert.isTrue(soql.contains('ORDER BY CreatedDate ASC NULLS FIRST'));
+    }
+
+    @IsTest
+    static void testOrderByManyFields() {
+        String soql = new TestUserQuery()
+            .orderBy(User.CreatedDate, true, true)
+            .orderBy(User.CreatedById, false, false)
+            .toSOQL();
+
+        Assert.isTrue(soql.contains('ORDER BY CreatedDate ASC NULLS FIRST, CreatedById DESC NULLS LAST'));
     }
 
     @IsTest

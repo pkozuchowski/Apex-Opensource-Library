@@ -62,13 +62,12 @@ public virtual inherited sharing class QueryObject extends Query.Results {
     }
 
     /**
-     * Constructs QueryObject from given query results.
+     * Constructs QueryObject for given sObjectType and given fields selected.
      */
-    public QueryObject(List<SObject> results) {
-        this(results.getSObjectType());
-        this.result = results;
+    public QueryObject(List<SObjectField> fields, SObjectType sObjectType) {
+        this(sObjectType);
+        this.withFields(fields);
     }
-
 
     /**
      * Selects All, Custom or Standard fields.
@@ -92,6 +91,14 @@ public virtual inherited sharing class QueryObject extends Query.Results {
      * Selects given fields
      */
     public QueryObject withFields(List<String> fields) {
+        this.queryBuilder.addFields(fields);
+        return this;
+    }
+
+    /**
+     * Selects given fields
+     */
+    public QueryObject withFields(List<SObjectField> fields) {
         this.queryBuilder.addFields(fields);
         return this;
     }
@@ -127,6 +134,16 @@ public virtual inherited sharing class QueryObject extends Query.Results {
      * Disables caching.
      */
     public QueryObject withChildren(List<String> fields, String relationshipName) {
+        this.useCache = false;
+        this.queryBuilder.addSubquery(fields, relationshipName);
+        return this;
+    }
+
+    /**
+     * Adds subquery with given fields and relationship name
+     * Disables caching.
+     */
+    public QueryObject withChildren(List<SObjectField> fields, String relationshipName) {
         this.useCache = false;
         this.queryBuilder.addSubquery(fields, relationshipName);
         return this;
@@ -457,8 +474,16 @@ public virtual inherited sharing class QueryObject extends Query.Results {
      * ex. .orderBy('CreatedDate DESC');`
      */
     public QueryObject orderBy(SObjectField field, Boolean ascending, Boolean nullFirst) {
+        return orderBy(field.toString(), ascending, nullFirst);
+    }
+
+    /**
+     * Adds ORDER By clause to the query
+     * ex. .orderBy('CreatedDate DESC');`
+     */
+    public QueryObject orderBy(String field, Boolean ascending, Boolean nullFirst) {
         return orderBy(String.format('{0} {1} NULLS {2}', new List<Object>{
-            '' + field,
+            field,
             ascending ? 'ASC' : 'DESC',
             nullFirst ? 'FIRST' : 'LAST'
         }));
@@ -469,7 +494,7 @@ public virtual inherited sharing class QueryObject extends Query.Results {
      * ex. .orderBy('CreatedDate DESC');`
      */
     public QueryObject orderBy(String orderByClause) {
-        this.queryBuilder.setOrderBy(orderByClause);
+        this.queryBuilder.orderBy(orderByClause);
         return this;
     }
 

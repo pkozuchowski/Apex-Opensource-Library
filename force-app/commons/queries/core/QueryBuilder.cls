@@ -29,7 +29,7 @@ public inherited sharing class QueryBuilder {
     private Set<String> fields = new Set<String>();
     private Set<String> subqueries = new Set<String>();
     private String fromObject = '';
-    private String orderBy = '';
+    private List<String> orderBy = new List<String>();
     private String groupBy = '';
     private String havingConditions = '';
     private String whereConditions = '';
@@ -52,7 +52,7 @@ public inherited sharing class QueryBuilder {
             whereConditions,
             groupBy,
             havingConditions,
-            orderBy,
+            orderBy.isEmpty() ? '' : 'ORDER BY ' + String.join(orderBy, ', '),
             limitQueryPart,
             offsetQueryPart
         };
@@ -130,6 +130,13 @@ public inherited sharing class QueryBuilder {
         );
     }
 
+    public QueryBuilder addSubquery(List<SObjectField> fields, String relationshipField) {
+        return addSubquery(new QueryBuilder()
+            .addFields(fields)
+            .fromObject(relationshipField)
+        );
+    }
+
     public QueryBuilder fromObject(SObjectType fromObject) {
         return fromObject('' + fromObject);
     }
@@ -159,8 +166,8 @@ public inherited sharing class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder setOrderBy(String orderBy) {
-        this.orderBy = 'ORDER BY ' + orderBy;
+    public QueryBuilder orderBy(String orderBy) {
+        this.orderBy.add(orderBy);
         return this;
     }
 

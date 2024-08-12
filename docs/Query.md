@@ -4,8 +4,8 @@
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
 [Dependency 1](/apex/database-service)
 [Dependency 2](/apex/runtime)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK7iAAG)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK7iAAG)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LOsQIAW)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LOsQIAW)
 
 ```bash
 sf project deploy start \
@@ -76,7 +76,6 @@ Query.Accounts
 class ContactQuery {
 
     public ContactQuery byMySuperSpecificCondition(String name, String recordTypeName, Id ownerId) {
-        appendMockName('byMySuperSpecificCondition');
         return (ContactQuery) wheres('Name =:name OR (RecordType.DeveloperName = :recordTypeName AND OwnerId = :ownerId)',
             new Map<String, Object>{
                 'name' => name,
@@ -179,7 +178,7 @@ Query wraps query results into Query.Results class. Now, we can use that to mock
 ```apex
 @IsTest
 static void testGenerateQuotes() {
-    Query.mock(Account.SObject, 'QuotingService.generateQuotes', new List<Account>{
+    Query.mock('QuotingService.generateQuotes', new List<Account>{
         new Account(Name = 'My Mock Account')
     });
 }
@@ -270,12 +269,6 @@ Then, the easiest way to mock it is as follows:
 ```apex
 @IsTest
 static void myTestMethod() {
-    Query.Accounts.mock('AccountQuotingService.generateQuotes', new List<Account>{
-        // my mocked query result
-    });
-
-    // or
-
     Query.mock('AccountQuotingService.generateQuotes', new List<Account>{
         // my mocked query result
     });
@@ -287,12 +280,6 @@ Alternatively, you can still use mock name:
 ```apex
 @IsTest
 static void myTestMethod() {
-    Query.Accounts.mock('myAccountQuery', new List<Account>{
-        // my mocked query result
-    });
-
-    // or
-
     Query.mock('myAccountQuery', new List<Account>{
         // my mocked query result
     });
@@ -309,14 +296,14 @@ public with sharing class AccountQuotingService {
 ```
 
 ```apex
-Query.Accounts.mock('AccountQuotingService', new List<Account>{
+Query.mock('AccountQuotingService', new List<Profile>{
     // my mocked query result
 });
 ```
 
 All constructors are mocked as follows:
 ```apex
-Query.Accounts.mock('AccountQuotingService.<init>', new List<Account>{
+Query.mock('AccountQuotingService.<init>', new List<Profile>{
 // my mocked query result
 });
 ```
@@ -356,7 +343,6 @@ public AccountQuery withContacts() {
 }
 
 public AccountQuery byName(Set<String> names) {
-    appendMockName('byName');
     return (AccountQuery) byField(Account.Name, 'IN', names);
 }
 ```
@@ -1257,7 +1243,6 @@ public with sharing class AccountQuery extends QueryObject {
     }
 
     public AccountQuery byName(Set<String> names) {
-        appendMockName('byName');
         return (AccountQuery) byField(Account.Name, 'IN', names);
     }
 }
@@ -1308,21 +1293,22 @@ return q.getList();
 # KDDs
 
 ## String vs sObjectField parameters
-### Outcome:
-Framework should use String field parameters as opposed to SObjectField tokens as a baseline. Rationale:
+The framework will use String field parameters as a baseline parameters and SObjectField tokens as secondary parameters.
 
 ### Rationale:
-1. It's trivial to turn SObjectFields into string API Name, by using one of the bellow methods:
-   - `'' + Account.Name;`
-   - `Account.Name.toString();`
-   - `String.valueOf(Account.Name);`
-   
-  However, turning string into SObjectField requires costly sObject description calls and a lot of overhead code. 
-  This asymmetry not just favors, but simply dictates String as a baseline parameter type - if you have class that supports both, your field list will be `List<String>`.
-2. Queries involve a lot of cross-object relationship fields, which are not supported by SObjectField in any way and will not be protected from changing relationship name.
-3. Many parts of SOQL syntax are not fields at all - `COUNT(), FORMAT()`
-4. Supporting both strings and tokens increases method count and class complexity.
-5. Using tokens, make certain SOQL syntax combinations incredibly complicated, where the framework should be as easy to use on the client side as possible.
+- It's trivial to turn SObjectFields into string API Name, by using one of the bellow methods:
+  ```apex
+  '' + Account.Name;
+  Account.Name.toString();
+  String.valueOf(Account.Name);
+  ```
+  However, turning string into SObjectField requires costly sObject description calls and a lot of overhead code.
+  This asymmetry dictates String as a baseline parameter type - if you have class that supports both, your field list will be `List<String>`.
+
+- Queries involve a lot of cross-object relationship fields, which are not supported by SObjectField in any way.
+- Many parts of SOQL syntax are not fields at all - `COUNT(), FORMAT()`
+- Supporting both strings and tokens increases method count and class complexity.
+- Using tokens, make certain SOQL syntax combinations too complicated, where the framework should be as easy to use on the client side as possible.
 
 ---
 # Change Log

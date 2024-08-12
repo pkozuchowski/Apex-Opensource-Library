@@ -53,9 +53,6 @@ public inherited sharing virtual class Query {
     public final static UserRoleQuery UserRoles { get {return new UserRoleQuery();} }
     public final static UserQuery Users { get {return new UserQuery();} }
 
-    private final static Map<String, Object> mockedQueries = new Map<String, Object>();
-    private final static Set<SObjectType> mockedSObjects = new Set<SObjectType>();
-
     public static ShareQuery SObjectShares(SObjectType shareSObjectType) {
         return new ShareQuery(shareSObjectType);
     }
@@ -72,6 +69,13 @@ public inherited sharing virtual class Query {
         return new QueryObject(sObjectType);
     }
 
+    /**
+     * This method takes the query directly, but returns mock if needed.
+     * It's more realistic than full mocking, since access can be validated and limits are more realistic.
+     */
+    public static Query.Results of(List<SObject> results) {
+        return new Query.Results(results);
+    }
 
     /**
      * Mocks query result using either mockId or client's class name and method.
@@ -118,14 +122,9 @@ public inherited sharing virtual class Query {
         mockedQueries.put('' + sobjType + '.' + mockIdOrClientName, result);
     }
 
+    private final static Map<String, Object> mockedQueries = new Map<String, Object>();
+    private final static Set<SObjectType> mockedSObjects = new Set<SObjectType>();
 
-    /**
-     * This method takes the query directly, but returns mock if needed.
-     * It's more realistic than full mocking, since access can be validated and limits are more realistic.
-     */
-    public static Query.Results of(List<SObject> results) {
-        return new Query.Results(results);
-    }
 
     /**
      * Represents SOQL FIELDS() token which can be used to select group of fields

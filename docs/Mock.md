@@ -121,6 +121,7 @@ List<Account> accounts = Mock.sObjects(Account.SObjectType, new List<Map<String,
         'CreatedBy' => new User(
             LastName = 'Test User'
         ),
+        
         'Contacts' => new List<Contact>{
             new Contact(
                 LastName = 'Test Contact'
@@ -138,3 +139,8 @@ Relationship records can be also passed as generic lists or maps if you need to 
     }
 });
 ```
+
+---
+# Change Log
+### 1.1.0
+- Added sObject mocking methods

@@ -37,6 +37,8 @@ private class DatabaseServiceTest {
         coverDatabaseServiceMethods(new DatabaseService(), acc);
         coverDatabaseServiceMethods(new DatabaseService().withSharing(), acc);
         coverDatabaseServiceMethods(new DatabaseService().withoutSharing(), acc);
+        coverDatabaseServiceMethods(new DatabaseService().asSystem(), acc);
+        coverDatabaseServiceMethods(new DatabaseService().asUser(), acc);
     }
 
     private static void coverDatabaseServiceMethods(DatabaseService databaseService, Account acc) {
@@ -73,6 +75,24 @@ private class DatabaseServiceTest {
 
 
         databaseService.withoutSharing();
+        actual = databaseService.query('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
+        queryLocator = databaseService.getQueryLocator('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
+
+        System.assertEquals(
+            new Map<Id, User>(expected).keySet(),
+            new Map<Id, User>(actual).keySet()
+        );
+
+        databaseService.asUser();
+        actual = databaseService.query('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
+        queryLocator = databaseService.getQueryLocator('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
+
+        System.assertEquals(
+            new Map<Id, User>(expected).keySet(),
+            new Map<Id, User>(actual).keySet()
+        );
+
+        databaseService.asSystem();
         actual = databaseService.query('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
         queryLocator = databaseService.getQueryLocator('SELECT ID FROM User WHERE ID IN :users', new Map<String, Object>{'users' => expected});
 

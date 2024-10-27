@@ -68,6 +68,23 @@ public class DatabaseService {
         return this;
     }
 
+    /**
+     * Executes DMLs and Quries in With Sharing context and user access level
+     */
+    public DatabaseService asUser() {
+        this.dmlIssuer = new WithSharingDMLIssuer();
+        this.setAccessLevel(AccessLevel.USER_MODE);
+        return this;
+    }
+
+    /**
+     * Executes DMLs and Quries in Without Sharing context and system access level
+     */
+    public DatabaseService asSystem() {
+        this.dmlIssuer = new WithoutSharingDMLIssuer();
+        this.setAccessLevel(AccessLevel.SYSTEM_MODE);
+        return this;
+    }
 
     /**
      * SYSTEM_MODE - Execution mode in which the the object and field-level permissions of the current user are ignored,

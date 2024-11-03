@@ -8,8 +8,6 @@ Simple utility to reduce the number of LWC getters, when they are used for lwc:i
 Features the following properties:
 - equals - value equals parameter
 - notEquals - value does not equal parameter
-- isTruthy - value is truthy
-- isFalsy - value is falsy
 - isOneOf - value is one of values in paramter (array or comma separated string)
 
 ```html
@@ -29,14 +27,6 @@ Features the following properties:
 </c-if>
 
 <c-if value={account.RecordType.DeveloperName} is-one-of="PersonAccount,Enterprise">
-    <!--...-->
-</c-if>
-
-<c-if value={account.Contacts} is-truthy>
-    <!--...-->
-</c-if>
-
-<c-if value={account.Contacts} is-falsy>
     <!--...-->
 </c-if>
 ```

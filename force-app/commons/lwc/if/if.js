@@ -31,7 +31,6 @@ const comparators = {
     equals   : (value, param) => value === param,
     notEquals: (value, param) => value !== param,
     isTruthy : (value) => !!value,
-    isFalsy  : (value) => !value,
     isOneOf  : (value, param) => {
         if (Array.isArray(param)) {
             return param.indexOf(value) > -1;
@@ -45,27 +44,20 @@ export default class If extends LightningElement {
     @api value;
     @api equals;
     @api notEquals;
-    @api isTruthy;
-    @api isFalsy;
     @api isOneOf;
     comparator = comparators.isTruthy;
-
 
     connectedCallback() {
         if (this.equals) {
             this.comparator = comparators.equals;
         } else if (this.notEquals) {
             this.comparator = comparators.notEquals;
-        } else if (this.isTruthy) {
-            this.comparator = comparators.isTruthy;
-        } else if (this.isFalsy) {
-            this.comparator = comparators.isFalsy;
         } else if (this.isOneOf) {
             this.comparator = comparators.isOneOf;
         }
     }
 
     get isTrue() {
-        return this.comparator(this.value, this.equals || this.notEquals || this.isTruthy || this.isFalsy || this.isOneOf);
+        return this.comparator(this.value, this.equals || this.notEquals || this.isOneOf);
     }
 }

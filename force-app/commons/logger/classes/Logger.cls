@@ -43,10 +43,17 @@ public with sharing class Logger {
     }
 
     /**
-     * Logs message with WARNING logging level
+     * Logs message with ERROR logging level
      */
     public static void error(Log log) {
         log(LoggingLevel.ERROR, log);
+    }
+
+    /**
+     * Logs exception with ERROR logging level
+     */
+    public static void error(Exception ex) {
+        log(LoggingLevel.ERROR, new Log(ex));
     }
 
     /**
@@ -55,10 +62,12 @@ public with sharing class Logger {
     public static void log(LoggingLevel loggingLevel, Log log) {
         if (LoggerSettings.shouldCreateLog(loggingLevel)) {
             LoggingEvent__e logRecord = log.getLogRecord();
-            if (String.isBlank(logRecord.ApexClass__c)) {
-                logRecord.ApexClass__c = Runtime.getCaller().apexClassMethod;
+            if (String.isBlank(logRecord.Source__c)) {
+                logRecord.Source__c = Runtime.getCaller().apexClassMethod;
             }
-            logRecord.LoggingLevel__c = loggingLevel.name();
+            logRecord.Severity__c = loggingLevel.name();
+            logRecord.Quiddity__c = Request.getCurrent().getQuiddity().name();
+            logRecord.RequestId__c = Request.getCurrent().getRequestId();
             System.debug(loggingLevel, JSON.serializePretty(logRecord));
 
             emitLogEvent(logRecord);

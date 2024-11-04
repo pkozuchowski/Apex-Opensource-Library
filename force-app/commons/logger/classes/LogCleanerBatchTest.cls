@@ -34,9 +34,9 @@ private class LogCleanerBatchTest {
             Decimal random = Math.random();
 
             logsToInsert.add(new Log__c(
-                    Message__c = 'Test',
-                    LoggingLevel__c = random < 0.33 ? 'INFO' : random < 0.66 ? 'WARN' : 'ERROR',
-                    ApexClass__c = 'LogCleanerBatchTest'
+                Response__c = 'Test',
+                Severity__c = random < 0.33 ? 'INFO' : random < 0.66 ? 'WARN' : 'ERROR',
+                Source__c = 'LogCleanerBatchTest'
             ));
         }
 
@@ -46,7 +46,6 @@ private class LogCleanerBatchTest {
         for (Log__c log : logsToInsert) {
             Integer randomUpTo100 = Math.round(Math.random() * 100);
             Test.setCreatedDate(log.Id, Date.today().addDays(-randomUpTo100));
-
         }
     }
 
@@ -58,9 +57,9 @@ private class LogCleanerBatchTest {
     @IsTest
     static void testLogsShouldBeDeletedAfterPassingRetentionDate() {
         LoggerSettings.settingByLoggingLevel = new Map<String, LoggerSetting__mdt>{
-                LoggingLevel.INFO.name() => new LoggerSetting__mdt(RetentionDays__c = 7),
-                LoggingLevel.WARN.name() => new LoggerSetting__mdt(RetentionDays__c = 21),
-                LoggingLevel.ERROR.name() => new LoggerSetting__mdt(RetentionDays__c = 60)
+            LoggingLevel.INFO.name() => new LoggerSetting__mdt(RetentionDays__c = 7),
+            LoggingLevel.WARN.name() => new LoggerSetting__mdt(RetentionDays__c = 21),
+            LoggingLevel.ERROR.name() => new LoggerSetting__mdt(RetentionDays__c = 60)
         };
 
 
@@ -69,9 +68,9 @@ private class LogCleanerBatchTest {
         Test.stopTest();
 
 
-        System.assertEquals(0, [SELECT COUNT() FROM Log__c WHERE CreatedDate < :Date.today().addDays(-7) AND LoggingLevel__c = 'INFO']);
-        System.assertEquals(0, [SELECT COUNT() FROM Log__c WHERE CreatedDate < :Date.today().addDays(-21) AND LoggingLevel__c = 'WARN']);
-        System.assertEquals(0, [SELECT COUNT() FROM Log__c WHERE CreatedDate < :Date.today().addDays(-60) AND LoggingLevel__c = 'ERROR']);
+        System.assertEquals(0, [SELECT COUNT() FROM Log__c WHERE CreatedDate < :Date.today().addDays(-7) AND Severity__c = 'INFO']);
+        System.assertEquals(0, [SELECT COUNT() FROM Log__c WHERE CreatedDate < :Date.today().addDays(-21) AND Severity__c = 'WARN']);
+        System.assertEquals(0, [SELECT COUNT() FROM Log__c WHERE CreatedDate < :Date.today().addDays(-60) AND Severity__c = 'ERROR']);
     }
 
 

@@ -26,7 +26,7 @@
 /**
  * Formats objects into org-uniform String representation
  */
-public with sharing class Stringifier {
+public with sharing class LogStringifier {
 
     /**
     * @return String representation of exception
@@ -239,5 +239,5 @@ public with sharing class Stringifier {
         return String.join(lines, '\n').trim();
     }
 
-    private Stringifier() {}
+    private LogStringifier() {}
 }

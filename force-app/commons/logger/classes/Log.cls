@@ -28,17 +28,8 @@
  * This class can be extended to provide context-specific logs.
  */
 public with sharing class Log {
-    private static RecordTypeInfo RT_APPLICATION, RT_CALLOUT;
-    static {
-        Map<String, RecordTypeInfo> recordTypeByDeveloperName =
-            Log__c.SObjectType.getDescribe().getRecordTypeInfosByDeveloperName();
-
-        RT_APPLICATION = recordTypeByDeveloperName.get('ApplicationLog');
-        RT_CALLOUT = recordTypeByDeveloperName.get('CalloutLog');
-    }
-
     private LoggingEvent__e log = new LoggingEvent__e();
-    private Map<String, Object> parameters = new Map<String, Object>();
+    private Map<String, Object> inputs = new Map<String, Object>();
 
     /**
      * Constructs log from simple string message.
@@ -46,8 +37,7 @@ public with sharing class Log {
      */
     public Log(String message) {
         this(new LoggingEvent__e(
-            RecordTypeId__c = RT_APPLICATION.recordTypeId,
-            Message__c = message
+            Response__c = message
         ));
     }
 
@@ -57,8 +47,7 @@ public with sharing class Log {
      */
     public Log(Exception ex) {
         this(new LoggingEvent__e(
-            RecordTypeId__c = RT_CALLOUT.recordTypeId,
-            Message__c = Stringifier.toString(ex)
+            Response__c = LogStringifier.toString(ex)
         ));
     }
 
@@ -69,10 +58,8 @@ public with sharing class Log {
      */
     public Log(HttpRequest request, HttpResponse response) {
         this(new LoggingEvent__e(
-            RecordTypeId__c = RT_CALLOUT.getRecordTypeId(),
-            Outbound__c = true,
-            Request__c = Stringifier.toString(request),
-            Response__c = Stringifier.toString(response),
+            Request__c = LogStringifier.toString(request),
+            Response__c = LogStringifier.toString(response),
             HttpStatus__c = '' + response.getStatusCode()
         ));
     }
@@ -84,10 +71,8 @@ public with sharing class Log {
      */
     public Log(RestRequest request, RestResponse response) {
         this(new LoggingEvent__e(
-            RecordTypeId__c = RT_CALLOUT.getRecordTypeId(),
-            Outbound__c = false,
-            Request__c = Stringifier.toString(request),
-            Response__c = Stringifier.toString(response),
+            Request__c = LogStringifier.toString(request),
+            Response__c = LogStringifier.toString(response),
             HttpStatus__c = '' + response.statusCode
         ));
     }
@@ -108,23 +93,46 @@ public with sharing class Log {
     /**
      * Saves called method parameter.
      */
-    public Log withParameter(String param, Object value) {
-        this.parameters.put(param, value);
+    public Log withInput(String param, Object value) {
+        this.inputs.put(param, value);
+        return this;
+    }
+
+    public Log withInputs(Object param1) {
+        return withInputs(new List<Object>{param1});
+    }
+
+    public Log withInputs(Object param1, Object param2) {
+        return withInputs(new List<Object>{param1, param2});
+    }
+
+    public Log withInputs(Object param1, Object param2, Object param3) {
+        return withInputs(new List<Object>{param1, param2, param3});
+    }
+
+    public Log withInputs(Object param1, Object param2, Object param3, Object param4) {
+        return withInputs(new List<Object>{param1, param2, param3, param4});
+    }
+
+    public Log withInputs(List<Object> params) {
+        for (Integer i = 0; i < params.size(); i++) {
+            withInput('' + i, params[i]);
+        }
         return this;
     }
 
     /**
      * Saves parameters of the logged method.
      */
-    public Log withParameters(Map<String, Object> parameters) {
-        this.parameters.putAll(parameters);
+    public Log withInputs(Map<String, Object> parameters) {
+        this.inputs.putAll(parameters);
         return this;
     }
 
     /**
      * Saves Execution time for performance metrics.
     */
-    public Log withTimeMetric(Long timeMs) {
+    public Log withExecutionTime(Long timeMs) {
         this.log.ExecutionTime__c = timeMs;
         return this;
     }
@@ -132,7 +140,7 @@ public with sharing class Log {
     /**
      * Saves Execution time since given start time.
      */
-    public Log withTimeMetric(Datetime startTime) {
+    public Log withExecutionTime(Datetime startTime) {
         this.log.ExecutionTime__c = System.currentTimeMillis() - startTime.getTime();
         return this;
     }
@@ -140,8 +148,8 @@ public with sharing class Log {
     /**
      * Sets log's source (ex. Apex Class which created the log or callout)
      */
-    public Log withApexClass(String apexClass) {
-        this.log.ApexClass__c = apexClass;
+    public Log withSource(String source) {
+        this.log.Source__c = source;
         return this;
     }
 
@@ -149,8 +157,8 @@ public with sharing class Log {
      * @return Log__c record constructed from the data.
      */
     public LoggingEvent__e getLogRecord() {
-        if (!parameters.isEmpty()) {
-            this.log.Parameters__c = JSON.serializePretty(parameters);
+        if (!inputs.isEmpty()) {
+            this.log.Request__c = JSON.serializePretty(inputs);
         }
         return this.log;
     }

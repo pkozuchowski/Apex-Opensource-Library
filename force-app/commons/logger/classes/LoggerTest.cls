@@ -35,12 +35,12 @@ private class LoggerTest {
         Test.stopTest();
 
 
-        Log__c[] logs = [SELECT ApexClass__c, ReferenceId__c, Message__c, LoggingLevel__c FROM Log__c];
+        Log__c[] logs = [SELECT Source__c, ReferenceId__c, Response__c, Severity__c FROM Log__c];
         System.assertEquals(3, logs.size(), '3 Logs should be created');
 
         for (Log__c log : logs) {
-            System.assertEquals('LoggerTest.testLogMessage', log.ApexClass__c);
-            System.assertEquals(log.Message__c, log.LoggingLevel__c);
+            System.assertEquals('LoggerTest.testLogMessage', log.Source__c);
+            System.assertEquals(log.Response__c, log.Severity__c);
         }
     }
 
@@ -57,25 +57,30 @@ private class LoggerTest {
             Date d = (Date) Datetime.now();
         } catch (Exception ex) {
             Logger.error(new Log(ex)
-                .withParameter('test', 'test')
-                .withParameters(new Map<String, Object>{
+                .withInput('test', 'test')
+                .withInputs(1)
+                .withInputs(1, 2)
+                .withInputs(1, 2, 3)
+                .withInputs(1, 2, 3, 4)
+                .withInputs(1, 2, 3, 4)
+                .withInputs(new Map<String, Object>{
                     'other' => 'param'
                 })
                 .withReferenceId('test')
-                .withTimeMetric(startTime));
+                .withExecutionTime(startTime));
         }
         Test.stopTest();
 
 
         Log__c log = [
-            SELECT ApexClass__c, ReferenceId__c, Message__c, LoggingLevel__c, ExecutionTime__c
+            SELECT Source__c, ReferenceId__c, Response__c, Severity__c, ExecutionTime__c
             FROM Log__c
             LIMIT 1
         ];
-        System.assert(log.Message__c.contains('Invalid conversion from runtime type Datetime to Date'), 'Message should contain exception message');
-        System.assert(log.Message__c.contains('LoggerTest.testLogException'), 'Message should contain stack trace');
+        System.assert(log.Response__c.contains('Invalid conversion from runtime type Datetime to Date'), 'Message should contain exception message');
+        System.assert(log.Response__c.contains('LoggerTest.testLogException'), 'Message should contain stack trace');
         System.assert(log.ExecutionTime__c > 0, 'Should measure how much time execution of the method took');
-        System.assertEquals('LoggerTest.testLogException', log.ApexClass__c);
+        System.assertEquals('LoggerTest.testLogException', log.Source__c);
     }
 
 
@@ -100,7 +105,7 @@ private class LoggerTest {
         Test.stopTest();
 
 
-        Log__c log = [SELECT Response__c, Request__c FROM Log__c WHERE LoggingLevel__c = 'INFO' LIMIT 1];
+        Log__c log = [SELECT Response__c, Request__c FROM Log__c WHERE Severity__c = 'INFO' LIMIT 1];
         System.assert(log.Response__c.contains('200 OK'));
         System.assert(log.Request__c.contains('{"value":"test"}'));
     }
@@ -123,16 +128,29 @@ private class LoggerTest {
 
 
         Test.startTest();
-        Logger.info(new Log(request, response).withApexClass('TestAPI'));
+        Logger.info(new Log(request, response).withSource('TestAPI'));
         Test.stopTest();
 
 
-        Log__c log = [SELECT Request__c, Response__c, ApexClass__c FROM Log__c WHERE LoggingLevel__c = 'INFO' LIMIT 1];
+        Log__c log = [SELECT Request__c, Response__c, Source__c FROM Log__c WHERE Severity__c = 'INFO' LIMIT 1];
         System.assert(log.Response__c.contains('200'));
         System.assert(log.Response__c.contains('success'));
         System.assert(log.Request__c.contains('request'));
         System.assert(log.Request__c.contains('?param=value'));
-        System.assertEquals('TestAPI', log.ApexClass__c);
+        System.assertEquals('TestAPI', log.Source__c);
     }
 
+    @IsTest
+    static void testDataMasking() {
+        Test.startTest();
+        Logger.info(new Log('My SSN is 078-05-1120, wifes is 123454891 ' +
+            'and my CC card number is 5500 0000 0000 0004'));
+        Test.stopTest();
+
+        Log__c log = [SELECT Response__c FROM Log__c LIMIT 1];
+        System.debug('log: ' + log);
+        Assert.isFalse(log.Response__c.contains('078-05-1120'));
+        Assert.isFalse(log.Response__c.contains('123454891'));
+        Assert.isFalse(log.Response__c.contains('5500 0000 0000 0004'));
+    }
 }

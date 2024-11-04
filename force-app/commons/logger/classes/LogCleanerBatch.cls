@@ -46,11 +46,11 @@ public without sharing class LogCleanerBatch implements Database.Batchable<SObje
         Date errorDate = LoggerSettings.getRetentionDate(LoggingLevel.ERROR);
 
 
-        return Database.getQueryLocator('SELECT ID' +
-                ' FROM Log__c' +
-                ' WHERE (LoggingLevel__c = \'INFO\' AND CreatedDate < :infoDate)' +
-                '    OR (LoggingLevel__c = \'WARN\' AND CreatedDate < :warnDate)' +
-                '    OR (LoggingLevel__c = \'ERROR\' AND CreatedDate < :errorDate)'
+        return Database.getQueryLocator('SELECT Id' +
+            ' FROM Log__c' +
+            ' WHERE (Severity__c = \'INFO\' AND CreatedDate < :infoDate)' +
+            '    OR (Severity__c = \'WARN\' AND CreatedDate < :warnDate)' +
+            '    OR (Severity__c = \'ERROR\' AND CreatedDate < :errorDate)'
         );
     }
 

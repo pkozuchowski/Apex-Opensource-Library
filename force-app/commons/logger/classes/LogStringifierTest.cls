@@ -23,7 +23,7 @@
  *  SOFTWARE.
 */
 @IsTest(IsParallel=true)
-private class StringifierTest {
+private class LogStringifierTest {
 
 
     @IsTest
@@ -36,15 +36,15 @@ private class StringifierTest {
                 throw new CalloutException(ex);
             }
         } catch (Exception ex) {
-            String[] str = Stringifier.toString(ex).split('\n');
+            String[] str = LogStringifier.toString(ex).split('\n');
             System.assertEquals(str[0], 'System.CalloutException: Script-thrown exception');
-            System.assert(str[1].startsWith('Class.StringifierTest.testStringifyException: line '));
+            System.assert(str[1].startsWith('Class.LogStringifierTest.testStringifyException: line '));
             System.assertEquals(str[3], 'Caused by');
             System.assertEquals(str[4], 'System.CalloutException: test');
-            System.assert(str[5].startsWith('Class.StringifierTest.testStringifyException:'));
+            System.assert(str[5].startsWith('Class.LogStringifierTest.testStringifyException:'));
         }
         Exception ex2 = null;
-        System.assertEquals(Stringifier.toString(ex2), '');
+        System.assertEquals(LogStringifier.toString(ex2), '');
     }
 
     @IsTest
@@ -62,10 +62,10 @@ private class StringifierTest {
                 + 'Content-Type: application/json\n'
                 + '\n'
                 + '{"Name":"Test Account}',
-            Stringifier.toString(request)
+            LogStringifier.toString(request)
         );
         request = null;
-        System.assertEquals(Stringifier.toString(request), '');
+        System.assertEquals(LogStringifier.toString(request), '');
     }
 
     @IsTest
@@ -78,10 +78,10 @@ private class StringifierTest {
         System.assertEquals(
             '200 OK\n\n' +
                 'success',
-            Stringifier.toString(response)
+            LogStringifier.toString(response)
         );
         response = null;
-        System.assertEquals(Stringifier.toString(response), '');
+        System.assertEquals(LogStringifier.toString(response), '');
     }
 
     @IsTest
@@ -102,10 +102,10 @@ private class StringifierTest {
             '\n' +
             'request body',
 
-            Stringifier.toString(request)
+            LogStringifier.toString(request)
         );
         request = null;
-        System.assertEquals(Stringifier.toString(request), '');
+        System.assertEquals(LogStringifier.toString(request), '');
     }
 
     @IsTest
@@ -119,18 +119,18 @@ private class StringifierTest {
             + 'Content-Type: application/json\n'
             + '\n'
             + 'success',
-            Stringifier.toString(response)
+            LogStringifier.toString(response)
         );
         response = null;
-        System.assertEquals(Stringifier.toString(response), '');
+        System.assertEquals(LogStringifier.toString(response), '');
     }
 
     @IsTest
     static void testStringifyBlob() {
         Blob b = Blob.valueOf('test');
 
-        System.assertEquals('test', Stringifier.toString(b));
+        System.assertEquals('test', LogStringifier.toString(b));
         b = null;
-        System.assertEquals(Stringifier.toString(b), '');
+        System.assertEquals(LogStringifier.toString(b), '');
     }
 }

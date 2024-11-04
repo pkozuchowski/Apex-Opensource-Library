@@ -30,8 +30,7 @@
 public with sharing class RecordTypes {
 
     //Add new record types bellow:
-    public static RecordTypeData LOG_APPLICATION { get {return resolve(Log__c.SObjectType, 'ApplicationLog');} }
-    public static RecordTypeData LOG_CALLOUT { get {return resolve(Log__c.SObjectType, 'CalloutLog');} }
+    public static RecordTypeData ACCOUNT_PERSON { get {return resolve(Account.SObjectType, 'PersonAccount');} }
 
 
     private static Map<SObjectType, Map<String, RecordTypeData>> recordTypeCache = new Map<SObjectType, Map<String, RecordTypeData>>();
@@ -46,7 +45,7 @@ public with sharing class RecordTypes {
 
             for (RecordTypeInfo recordTypeInfo : recordTypeInfosByDevName.values()) {
                 RecordTypeData rtData = new RecordTypeData(recordTypeInfo);
-                recordTypeDataByDevName.put(rtData.developerName, rtData);
+                recordTypeDataByDevName.put(rtData.DeveloperName, rtData);
             }
 
             recordTypeCache.put(sObjectType, recordTypeDataByDevName);

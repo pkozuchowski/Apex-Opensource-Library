@@ -173,8 +173,8 @@ public virtual inherited sharing class QueryObject extends Query.Results {
      *     Query.Accounts.byName('Test').getList(); // returns mock accounts
      * </pre>
      */
-    public void mock(String mockName, Object result) {
-        Query.mock(sObjType, mockName, result);
+    public void mock(String mockId, Object result) {
+        Query.mock(this.sObjType, mockId, result);
     }
 
     /**

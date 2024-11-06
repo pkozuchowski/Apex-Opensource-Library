@@ -66,7 +66,7 @@
       "path": "./force-app/commons/queries",
       "package": "Query Framework",
       "versionName": "ver 2.0",
-      "versionNumber": "2.1.0.NEXT",
+      "versionNumber": "2.2.0.NEXT",
       "default": false,
       "versionDescription": "",
       "dependencies": [
@@ -147,6 +147,7 @@
     "Query Framework@2.0.0-1": "04t08000000UK7dAAG",
     "Query Framework@2.0.1-1": "04t08000000UK7iAAG",
     "Query Framework@2.1.0-2": "04tJ6000000LOsQIAW",
+    "Query Framework@2.2.0-1": "04tJ6000000LV9wIAG",
     "HttpMockRouter": "0Ho08000000CaSZCA0",
     "HttpMockRouter@1.0.0-1": "04t08000000ga9YAAQ",
     "HttpMockRouter@1.0.1-1": "04t08000000cSySAAU",

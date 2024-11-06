@@ -118,12 +118,12 @@ public inherited sharing virtual class Query {
      * </pre>
     */
     public static void mock(SObjectType sobjType, String mockIdOrClientName, Object result) {
-        mockedSObjects.add(sobjType);
-        mockedQueries.put('' + sobjType + '.' + mockIdOrClientName, result);
+        Map<String, Object> sobjectMocks = mocks.get(sobjType) ?? new Map<String, Object>();
+        sobjectMocks.put(mockIdOrClientName, result);
+        mocks.put(sobjType, sobjectMocks);
     }
 
-    private final static Map<String, Object> mockedQueries = new Map<String, Object>();
-    private final static Set<SObjectType> mockedSObjects = new Set<SObjectType>();
+    private final static Map<SObjectType, Map<String, Object>> mocks = new Map<SObjectType, Map<String, Object>>();
 
 
     /**
@@ -179,7 +179,7 @@ public inherited sharing virtual class Query {
     public virtual class Results {
         protected List<SObject> result;
         protected SObjectType sObjType;
-        protected String mockName = '';
+        protected String mockId = '';
         protected AccessType accessType = null;
 
         protected Results() {}
@@ -210,8 +210,8 @@ public inherited sharing virtual class Query {
         /**
          * Give this query unique name, which can be referenced in Unit Tests to mock results for named query.
          */
-        public Query.Results withMockName(String mockName) {
-            this.mockName = mockName;
+        public Query.Results withMockId(String mockId) {
+            this.mockId = mockId;
             return this;
         }
 
@@ -309,22 +309,35 @@ public inherited sharing virtual class Query {
         * @return Mocked query results, if sObject was mocked and class that invoked query is mocked.
         */
         protected Object getMock() {
-            String mockKey = '' + this.sObjType + '.' + mockName;
+            if (Test.isRunningTest() && mocks.containsKey(this.sObjType)) {
+                Map<String, Object> sobjectMocks = mocks.get(this.sObjType);
 
-            if (Test.isRunningTest()
-                && mockedSObjects.contains(this.sObjType)) {
-
-                if (mockedQueries.containsKey(mockKey)) {
-                    return mockedQueries.get(mockKey);
+                if (String.isNotBlank(mockId) && sobjectMocks.containsKey(mockId)) {
+                    return sobjectMocks.get(mockId);
 
                 } else {
-                    for (Runtime.StackTraceLine line : Runtime.getStackTrace()) {
-                        String mockName = '' + this.sObjType + '.' + line.apexClassMethod;
+                    Runtime.StackTraceLine[] stackTraceLines = Runtime.getStackTrace();
 
-                        if (mockedQueries.containsKey(mockName)) {
-                            return mockedQueries.get(mockName);
+                    for (Integer i = stackTraceLines.size() - 1; i >= 0; i--) {
+                        Runtime.StackTraceLine line = stackTraceLines.get(i);
+
+                        Object mockResult = sobjectMocks.get(line.apexClassMethod) ??
+                            getMockByPattern(sobjectMocks, line.apexClassMethod);
+
+                        if (mockResult != null) {
+                            return mockResult;
                         }
                     }
+                }
+            }
+
+            return null;
+        }
+
+        private Object getMockByPattern(Map<String, Object> sobjectMocks, String classAndMethodName) {
+            for (String mockKey : sobjectMocks.keySet()) {
+                if (Pattern.matches(mockKey, classAndMethodName)) {
+                    return sobjectMocks.get(mockKey);
                 }
             }
 

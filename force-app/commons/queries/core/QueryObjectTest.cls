@@ -347,7 +347,7 @@ public class QueryObjectTest {
 
 
         Set<Id> ids = new TestUserQuery()
-            .withMockName('testGetIds')
+            .withMockId('testGetIds')
             .getIds();
 
         Assert.areEqual(new Set<Id>{
@@ -487,7 +487,7 @@ public class QueryObjectTest {
         new TestUserQuery().mock('getById', mockedResult);
 
         List<User> queryResult = new TestUserQuery()
-            .withMockName('getById')
+            .withMockId('getById')
             .getList();
 
         Assert.areEqual(mockedResult.size(), queryResult.size());
@@ -506,6 +506,28 @@ public class QueryObjectTest {
     }
 
     @IsTest
+    static void testMockingWithRegexp() {
+        Query.mock(User.SObjectType, '.*', new List<User>{
+            new User(Username = 'Test')
+        });
+
+        User[] users = new TestUserQuery().byUsername('Test').getList();
+        Assert.areEqual(1, users.size());
+        Assert.areEqual('Test', users.get(0).Username);
+    }
+
+    @IsTest
+    static void testMockingWithRegexp2() {
+        Query.mock(User.SObjectType, 'QueryObjectTest.*', new List<User>{
+            new User(Username = 'Test')
+        });
+
+        User[] users = new TestUserQuery().byUsername('Test').getList();
+        Assert.areEqual(1, users.size());
+        Assert.areEqual('Test', users.get(0).Username);
+    }
+
+    @IsTest
     static void testGetMapByString() {
         new TestUserQuery().mock('test', new List<SObject>{
             new User(Username = '1@example.com'),
@@ -514,7 +536,7 @@ public class QueryObjectTest {
         });
 
         Map<String, User> usersByUsername = (Map<String, User>) new TestUserQuery()
-            .withMockName('test')
+            .withMockId('test')
             .getMapByString(User.Username);
 
         Assert.isTrue(usersByUsername.containsKey('1@example.com'));

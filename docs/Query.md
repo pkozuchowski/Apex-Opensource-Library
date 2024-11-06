@@ -4,8 +4,8 @@
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
 [Dependency 1](/apex/database-service)
 [Dependency 2](/apex/runtime)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LOsQIAW)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LOsQIAW)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LV9wIAG)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LV9wIAG)
 
 ```bash
 sf project deploy start \
@@ -276,7 +276,33 @@ static void myTestMethod() {
 
 ```
 
-Alternatively, you can still use mock name:
+It is also possible to use regexp patterns for mocking. The following example will match all Account queries in AccountQuotingService:
+```apex
+Query.mock('AccountQuotingService.*', new List<Account>{/*...*/});
+```
+
+This will match all Account queries:
+```apex
+Query.mock('.*', new List<Account>{/*...*/});
+```
+
+### Mock Ids
+Alternatively, you can still use mockId:
+```apex
+public with sharing class AccountQuotingService {
+
+    public void generateQuotes(Set<Id> accountIds) {
+        List<Accounts> accounts = Query.Accounts
+            .byId(accountIds)
+            .withMockId('myAccountQuery')
+            .getList();
+
+        // ... 
+    }
+
+}
+```
+
 ```apex
 @IsTest
 static void myTestMethod() {
@@ -1312,6 +1338,9 @@ The framework will use String field parameters as a baseline parameters and SObj
 
 ---
 # Change Log
+### 2.2.0
+- Added regexp matching for Query mocking
+
 ### 2.1.0
 - `orderBy` can now be called multiple times to order by many fields
 - Added support to use SObjectFields parameters

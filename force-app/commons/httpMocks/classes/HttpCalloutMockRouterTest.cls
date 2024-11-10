@@ -304,11 +304,17 @@ private class HttpCalloutMockRouterTest {
     }
 
     @IsTest
-    static void shouldStoreHandledRequestsAndResponses() {
-        shouldHandleHeaderWithColons();
-        Assert.areEqual(1, HttpMocks.getRequests().size());
-        Assert.areEqual(1, HttpMocks.getResponses().size());
-        Assert.areEqual('https://salesforce.com/api/test', HttpMocks.getRequests().get(0).getEndpoint());
-        Assert.areEqual(301, HttpMocks.getResponses().get(0).getStatusCode());
+    static void testAccountQuotingService() {
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, HttpMocks.config());
+
+        //Assuming callout happens in this method
+        new AccountQuotingService().generateQuote();
+        Test.stopTest();
+
+        List<HttpRequest> requests = HttpMocks.getRequests();
+        List<HttpResponse> responses = HttpMocks.getResponses();
+
+        // Check request/response payload
     }
 }

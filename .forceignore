@@ -11,4 +11,3 @@ package.xml
 # LWC Jes
 **/__tests__/**
 triggerHandler.md
-force-app/main/**

@@ -28,6 +28,20 @@
 public virtual with sharing class HttpMocks {
 
     /**
+     * @return List of handled HttpRequests in the order they were issued.
+     */
+    public static List<HttpRequest> getRequests() {
+        return HttpCalloutMockRouter.REQUESTS;
+    }
+
+    /**
+     * @return List of returned HttpResponses in order they were returned.
+     */
+    public static List<HttpResponse> getResponses() {
+        return HttpCalloutMockRouter.RESPONSES;
+    }
+
+    /**
      * Creates JSON response mock
      */
     public static HttpCalloutMock json(Integer statusCode, String status, Object jsonObject) {

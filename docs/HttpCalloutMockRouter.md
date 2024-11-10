@@ -2,8 +2,8 @@
 *Configuration-driven, endpoint pattern-based router for Http Mocks.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/httpMocks)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK7EAAW)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK7EAAW)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LVAGIA4)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LVAGIA4)
 
 ```bash
 sf project deploy start -d force-app/commons/httpMocks -o sfdxOrg
@@ -11,26 +11,19 @@ sf project deploy start -d force-app/commons/httpMocks -o sfdxOrg
 
 ---
 # Documentation
-HTTP Callout Router is a configuration-driven framework for mocking Http Callouts that matches mocks by endpoint pattern and HTTP method.  
+Http Callout Mock Router is a configuration-driven framework for mocking Http Callouts, that matches mocks by endpoint pattern and HTTP method.  
 Let's consider the following configuration for Salesforce REST API:
 
-#### Variables
-
-| DeveloperName | Pattern              |
-|---------------|----------------------|
-| sfId          | ([0-9a-zA-Z]{15,18}) |
-| sObjectType   | \w+                  |
-
 #### Mocks
-| Developer Name                    | Default | Methods    | Endpoint                                             | Status Code | Status       | Response                                                               | Static Resource  | Apex Class                          |
-|-----------------------------------|---------|------------|------------------------------------------------------|-------------|--------------|------------------------------------------------------------------------|------------------|-------------------------------------|
-| SampleAPI_Get_Beers_Ale_OK        | ☑       | GET        | callout:SampleAPI/beers/ale                          | 200         | OK           | [{"price":"$16.99","name":"Founders All Day IPA","rating":4,"id":1}]   |                  |                                     |
-| SampleAPI_Update_Beers_Ale_OK     | ☑       | POST,Patch | callout:SampleAPI/beers/ale                          | 200         | OK           |                                                                        |                  |                                     |
-| SampleAPI_Common_401_Unauthorized | ☐       | GET        | callout:SampleAPI/.*                                 | 401         | Unauthorized | [{"message":"Invalid access token. Please pass a valid access token"}] |                  |                                     |
-| SF_REST_Query                     | ☑       | GET        | callout:SfRestAPI/query/.*                           | 200         | OK           | {"records":[{"Name":"Test Account"}]}                                  |                  |                                     |
-| SF_REST_Query_Empty               | ☐       | GET        | callout:SfRestAPI/query/.*                           | 200         | OK           | {"records":[]}                                                         |                  |                                     |
-| SF_REST_SObject_Describe          | ☑       | GET        | callout:SfRestAPI/sobjects/{{sObjectType}}/describe/ | 200         | OK           |                                                                        |                  | SalesforceMocks.SObjectDescribeMock |
-| SF_REST_SObject_Row_Get_Account   | ☑       | GET        | callout:SfRestAPI/sobjects/Account/{{sfId}}          | 200         | OK           |                                                                        | Mocks_SF_Account |                                     |
+![http-router-example.png](/img/http-router-example.png)
+
+Reusable patterns visible in curly braces are defined in **Http Callout Mock Variables** as follows:
+
+| DeveloperName | Pattern                                |
+|---------------|----------------------------------------|
+| recordId      | ^[a-zA-Z0-9]{15}([a-zA-Z0-9]{3})?$     |
+| datetime      | ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$ |
+|               |                                        |
 
 Router loads default (*Default__c=true*) configuration and substitutes all endpoint variables (*{{variable}}*) with their values defined in
 HttpCalloutMockVariable__mdt custom metadata.  
@@ -60,9 +53,9 @@ tests uses OrgMocks class.
 1. Router respond method checks mocks from custom metadata and any other mocks defined in code.
 1. Each mock is checked for handled HTTP Methods, and if the endpoint matches with the request.
 1. The first mock that matches response will have its response returned according to the settings.
-    - If StaticResource__c field is provided, mock will respond with it's content
-    - If ApexClass__c is provided, mock creates instance of this class and returns it. The class should implement HttpCalloutMock interface.
     - If Response__c field is provided, it's returned as callout response body.
+    - If StaticResource__c field is provided, mock will respond with its content
+    - If ApexClass__c is provided, mock creates an instance of this class and returns it. The class should implement HttpCalloutMock interface.
     - If Headers__c field is provided - it's split by new lines and colons and added to response body headers.
 1. The response is handled.
 
@@ -86,11 +79,57 @@ Each mock is registered under a unique developer name. We can utilize this name 
 Consider this example:
 
 ```apex
-Test.setMock(HttpCalloutMock.class, new OrgMocks()
-    .overrideMock('SF_REST_Query', HttpMocks.config('SF_REST_Query_Empty')));
+Test.setMock(HttpCalloutMock.class, HttpMocks.config()
+    .overrideMock('SF_Query_Account', 'SF_Query_Account_Empty')
+    .overrideMock('SF_Account_Get', new MyMockClass())
+);
 ```
 `SF_REST_Query` mock was replaced, and now it will respond with mock registered under name `SF_REST_Query_Empty`.
+`SF_Account_Get` mock will be replaced by MyMockClass—an implementation of HttpCalloutMock.
 
+
+## Requests and Responses
+You can check issued Http Requests and returned responses using the following methods:
+```apex
+List<HttpRequest> requests = HttpMocks.getRequests();
+List<HttpResponse> responses = HttpMocks.getResponses();
+```
+This is helpful when request and response are not directly exposed in unit tests, but we want to check if the payload is correct.
+
+---
+# Interfaces
+
+## HttpMocks
+
+| Modifier and Type         | Method and Description                                                                                                       |
+|---------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| static List<HttpRequest>  | **getRequests()**<br/> Returns list of handled HttpRequests in the order they were issued.                                   |
+| static List<HttpResponse> | **getResponses()**<br/> Returns list of returned HttpResponses in order they were returned.*                                 |
+| static HttpCalloutMock    | **json(Integer statusCode, String status, Object jsonObject)**<br/> Returns mock with serialized JSON object as response.    |
+| static HttpCalloutMock    | **staticResource(Integer statusCode, String status, String staticResource)**<br/> Returns mock with Static Resource as body. |
+| static HttpCalloutMock    | **text(Integer statusCode, String status, String body)**<br/> Returns mock with plain text body.                             |
+| static HttpCalloutMock    | **config()**<br/> Returns router with all custom metadata mocks loaded.                                                      |
+| static HttpCalloutMock    | **config(String customMetadataName)**<br/> Returns mock loaded from custom metadata by given developer name.                 |
+| static HttpCalloutMock    | **config(HttpCalloutMock__mdt customMetadata)**<br/> Returns mock loaded from custom metadata record.                        |
+
+## HttpCalloutChainMock Interface
+Extension of HttpCalloutMock, which adds `handles` method - This method checks if this mock class should handle incoming request.
+```apex
+public interface HttpCalloutChainMock extends HttpCalloutMock {
+    Boolean handles(HttpRequest request);
+}
+```
+
+## HttpCalloutMockRouter
+
+| Modifier and Type     | Method and Description                                                                                                                                        |
+|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| HttpCalloutMockRouter | **mock(String name, String methods, String endpointPattern, HttpCalloutMock mock)**<br/> Register HttpCalloutMock for given Http method and endpoint pattern. |
+| HttpCalloutMockRouter | **mock(String name, HttpCalloutChainMock handler)**<br/> Register HttpCalloutChainMock implementation.                                                        |
+| HttpCalloutMockRouter | **overrideMock(String name, String overrideMetadataName)**<br/> Replaces mock registered under given name with different mock loaded from custom metadata     |
+| HttpCalloutMockRouter | **overrideMock(String name, HttpCalloutMock mock)**<br/> Replaces mock registered under given name with different mock                                        |
+| HttpCalloutMockRouter | **variable(String name, String regexp)**<br/> Registers regexp variable which will can be referenced in endpoint.                                             |
+| HttpCalloutMockRouter | **variables(Map<String, String> vars)**<br/> Registers regexp variables which will can be referenced in endpoint.                                             |
 
 ---
 # Custom Metadata
@@ -215,6 +254,14 @@ public class MyCustomMock implements HttpCalloutMock {
 
 ---
 # Change Log
+### 1.1.0
+- Added shorthand override method Http
+    ```apex
+    public HttpCalloutMockRouter overrideMock(String name, String overrideMetadataName)
+    ```
+- Added HttpMocks methods to return issued requests and responses.
+
 ### 1.0.2
-- Fixed bug in HTTP Headers specified in metadata, where header value would not be parsed correctly if it contained colon, which would cause issues for Location headers.
+- Fixed bug in HTTP Headers specified in metadata, where header value would not be parsed correctly if it contained colon, which would cause issues for Location
+  headers.
 - Added help text to custom metadata fields.

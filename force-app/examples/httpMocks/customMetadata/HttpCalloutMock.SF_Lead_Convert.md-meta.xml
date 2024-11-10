@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>SF_Lead_Convert</label>
+    <protected>false</protected>
+    <values>
+        <field>ApexClass__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Default__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Endpoint__c</field>
+        <value xsi:type="xsd:string">.*/sobjects/Lead/{{recordId}}/LeadConvert</value>
+    </values>
+    <values>
+        <field>Headers__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Methods__c</field>
+        <value xsi:type="xsd:string">POST</value>
+    </values>
+    <values>
+        <field>Response__c</field>
+        <value xsi:type="xsd:string">{ &quot;accountId&quot;: &quot;0015g00000h1abcAAA&quot;, &quot;contactId&quot;: &quot;0035g00000h1xyzAAA&quot;, &quot;opportunityId&quot;: &quot;0065g00000h1defAAA&quot; }</value>
+    </values>
+    <values>
+        <field>StaticResource__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>StatusCode__c</field>
+        <value xsi:type="xsd:double">200.0</value>
+    </values>
+    <values>
+        <field>Status__c</field>
+        <value xsi:type="xsd:string">OK</value>
+    </values>
+</CustomMetadata>

@@ -28,6 +28,9 @@
  * There is also an option to override default API responses in particular unit tests with different response.
  */
 public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
+    public final static List<HttpRequest> REQUESTS = new List<HttpRequest>();
+    public final static List<HttpResponse> RESPONSES = new List<HttpResponse>();
+
     private Map<String, String> variables = new Map<String, String>();
     private Map<String, HttpCalloutChainMock> registeredMocks = new Map<String, HttpCalloutChainMock>();
     private Map<String, HttpCalloutMock> mocksOverrides = new Map<String, HttpCalloutMock>();
@@ -70,8 +73,17 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
         return this;
     }
 
+    /**
+     * Replaces mock registered under given name with different mock loaded from custom metadata
+     * @param name Unique name of the mock, used to override the default mock in tests.
+     * @param overrideMetadataName DeveloperName of custom metadata to override with.
+     */
+    public HttpCalloutMockRouter overrideMock(String name, String overrideMetadataName) {
+        return overrideMock(name, HttpMocks.config(overrideMetadataName));
+    }
 
     /**
+     * Replaces mock registered under given name with different mock
      * @param name Unique name of the mock, used to override the default mock in tests
      * @param mock Mock to respond with
      */
@@ -117,10 +129,14 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
 
         for (String name : registeredMocks.keySet()) {
             HttpCalloutChainMock mock = registeredMocks.get(name);
-            HttpCalloutMock mockOverride = mocksOverrides.get(name);
 
             if (mock.handles(request)) {
-                return (mockOverride != null ? mockOverride : mock).respond(request);
+                HttpCalloutMock respondent = mocksOverrides.get(name) ?? mock;
+                HttpResponse response = respondent.respond(request);
+                REQUESTS.add(request);
+                RESPONSES.add(response);
+
+                return response;
             }
         }
 

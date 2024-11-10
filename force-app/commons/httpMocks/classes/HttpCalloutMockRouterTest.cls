@@ -78,6 +78,44 @@ private class HttpCalloutMockRouterTest {
         }
     }
 
+    static {
+        HttpMocksConfig.mockVariables(new Map<String, String>{
+            'sfRestEndpoint' => 'https://' + DomainCreator.getOrgMyDomainHostname() + '/services'
+        });
+        HttpMocksConfig.mock(new List<HttpCalloutMock__mdt>{
+            new HttpCalloutMock__mdt(
+                DeveloperName = 'SF_REST_Query',
+                Default__c = true,
+                Methods__c = 'GET',
+                Endpoint__c = '{{sfRestEndpoint}}/data/v\\d+.0/query/.*',
+                Response__c = '{"records":["Name":"Test 1"},{"Name":"Test 2"}]}',
+                StatusCode__c = 200,
+                Status__c = 'OK',
+                Headers__c = 'Header1:Value1\n' +
+                    'Header2:Value2'
+            ),
+            new HttpCalloutMock__mdt(
+                DeveloperName = 'SF_REST_Query_Empty',
+                Default__c = false,
+                Methods__c = 'GET',
+                Endpoint__c = '{{sfRestEndpoint}}/data/v\\d+.0/query/.*',
+                Response__c = '{"records":[]}',
+                StatusCode__c = 200,
+                Status__c = 'OK'
+            ),
+            new HttpCalloutMock__mdt(
+                DeveloperName = 'SF_REST_Query_Redirect',
+                Default__c = true,
+                Methods__c = 'GET',
+                Endpoint__c = 'https://salesforce.com/api/test',
+                Response__c = '',
+                StatusCode__c = 301,
+                Status__c = 'OK',
+                Headers__c = 'Location: https://salesforce.com/goaway'
+            )
+        });
+    }
+
 
     @IsTest
     static void testAWSCallout() {
@@ -231,24 +269,6 @@ private class HttpCalloutMockRouterTest {
 
     @IsTest
     static void testConfigurationBasedRouter() {
-        HttpMocksConfig.mockVariables(new Map<String, String>{
-            'sfRestEndpoint' => 'https://' + DomainCreator.getOrgMyDomainHostname() + '/services'
-        });
-        HttpMocksConfig.mock(new List<HttpCalloutMock__mdt>{
-            new HttpCalloutMock__mdt(
-                DeveloperName = 'SF_REST_Query',
-                Default__c = true,
-                Methods__c = 'GET',
-                Endpoint__c = '{{sfRestEndpoint}}/data/v\\d+.0/query/.*',
-                Response__c = '{"records":["Name":"Test 1"},{"Name":"Test 2"}]}',
-                StatusCode__c = 200,
-                Status__c = 'OK',
-                Headers__c = 'Header1:Value1\n' +
-                    'Header2:Value2'
-            )
-        });
-
-
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, HttpMocks.config());
 
@@ -268,21 +288,9 @@ private class HttpCalloutMockRouterTest {
 
     @IsTest
     static void shouldHandleHeaderWithColons() {
-        HttpMocksConfig.mock(new List<HttpCalloutMock__mdt>{
-            new HttpCalloutMock__mdt(
-                DeveloperName = 'SF_REST_Query',
-                Default__c = true,
-                Methods__c = 'GET',
-                Endpoint__c = 'https://salesforce.com/api/test',
-                Response__c = '',
-                StatusCode__c = 200,
-                Status__c = 'OK',
-                Headers__c = 'Location: https://salesforce.com/goaway'
-            )
-        });
-
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class, HttpMocks.config());
+        Test.setMock(HttpCalloutMock.class, HttpMocks.config()
+            .overrideMock('SF_REST_Query', 'SF_REST_Query_Empty'));
 
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
@@ -293,5 +301,14 @@ private class HttpCalloutMockRouterTest {
 
 
         Assert.areEqual('https://salesforce.com/goaway', response.getHeader('Location'));
+    }
+
+    @IsTest
+    static void shouldStoreHandledRequestsAndResponses() {
+        shouldHandleHeaderWithColons();
+        Assert.areEqual(1, HttpMocks.getRequests().size());
+        Assert.areEqual(1, HttpMocks.getResponses().size());
+        Assert.areEqual('https://salesforce.com/api/test', HttpMocks.getRequests().get(0).getEndpoint());
+        Assert.areEqual(301, HttpMocks.getResponses().get(0).getStatusCode());
     }
 }

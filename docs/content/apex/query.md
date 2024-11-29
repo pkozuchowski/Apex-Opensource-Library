@@ -1338,17 +1338,17 @@ The framework will use String field parameters as a baseline parameters and SObj
 
 ---
 # Change Log
-### 2.2.0
+### v2.2.0
 - Added regexp matching for Query mocking
 
-### 2.1.0
+### v2.1.0
 - `orderBy` can now be called multiple times to order by many fields
 - Added support to use SObjectFields parameters
 - Added KDD for String vs sObjectField params
 
-### 2.0.0
+### v2.0.0
 - Added Query wrapper
-### 1.1.0
+### v1.1.0
 - Added new mocking method without using mock ids.
 - Added ORDER BY
 - Renamed `withFieldAccess` to `stripInaccessible` to avoid confusion of AccessType with AccessLevel

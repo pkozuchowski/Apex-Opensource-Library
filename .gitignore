@@ -6,3 +6,12 @@ IlluminatedCloud/
 force-app/main
 TODO
 scripts
+
+# Added by Illuminated Cloud
+.localdev/
+/out/
+target/
+node_modules/
+/.illuminatedCloud/
+**/tsconfig*.json
+**/*.tsbuildinfo

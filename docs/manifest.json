@@ -3,7 +3,13 @@
     "name": "Salesforce Library of Accelerators, Frameworks and Utilities",
     "icons": [
         {
-            "src": "cloud.svg",
+            "src": "fav_black.svg",
+            "type": "image/svg+xml",
+            "sizes": "any"
+        },
+        {
+            "src": "fav_white.svg",
+            "type": "image/svg+xml",
             "sizes": "any"
         }
     ],

@@ -17,8 +17,6 @@ It features the following methods:
 - Mocking return value for n-th invocation of given method
 - Mocking exception thrown by the mocked method
 
-<br/>
-
 Consider, we have the following controller class for My Account page and associated selector.  
 In unit tests, we want to mock the response of the selector class.
 
@@ -94,7 +92,7 @@ public class MyAccountCtrlTest {
 } 
 ```
 
-# Mock SObjects
+## Mock SObjects
 Mock class can be also used to overwrite inaccessible fields on
 SObjects—Relationship fields, children, formulas and system fields:
 
@@ -142,5 +140,5 @@ Relationship records can be also passed as generic lists or maps if you need to 
 
 ---
 # Change Log
-### 1.1.0
+### v1.1.0
 - Added sObject mocking methods

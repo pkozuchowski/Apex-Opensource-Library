@@ -1,5 +1,5 @@
 # Callout Framework
-*Define common behaviour for outgoing callouts.*
+*Define common behavior for outgoing callouts.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/callout)
 [Dependency](/apex/runtime)
@@ -22,8 +22,8 @@ of authorization, error handling and response handling.
 
 Consider an example of integration with external webservices where a few different endpoints are used:
 - searching orders
-- fetching order details
-- creating new order
+  - fetching order details
+  - creating new order
 
 All calls to the API should have streamlined workflow - callouts should be authorized, logged with appropriate logging level, retried on timeout.    
 To implement this configuration, we could derive a new class from Callout class and configure it as follows:
@@ -161,7 +161,7 @@ public class AcmeApiCallout extends Callout {
 
 Add handler to the slot which does following:
 - IF Webservice returned `404 NOT FOUND`
-- THEN return an empty list and stop execution
+  - THEN return an empty list and stop execution
 ```apex
  public class AcmeCustomerAPI {
 
@@ -197,11 +197,11 @@ public interface Handler {
 
 The Framework works as follows - when callout is executed():
 1. Iterate through pairs of Condition-Handler
-1. If the Condition returns true:
-    1. Execute Handler and check return value:
-        1. If `null` - continue iteration over actions.
-        1. If not null - return this immediately as response from callout `execute` method.
-        1. If throws exception, breaks the code execution - this exception has to be handled in client code.
+   1. If the Condition returns true:
+       1. Execute Handler and check return value:
+           1. If `null` - continue iteration over actions.
+           1. If not null - return this immediately as response from callout `execute` method.
+           1. If throws exception, breaks the code execution - this exception has to be handled in client code.
 
 Callout has two lists of handlers - one executed before and one after the callout.
 
@@ -343,5 +343,5 @@ onAfterCallout()
 ---
 # Change Log
 
-### 1.0.1
+### Ver. 1.0.1
 * Fixed bug where CalloutException was not handled properly and resulted in framework returning null.

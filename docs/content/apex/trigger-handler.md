@@ -167,8 +167,6 @@ If record satisfies condition for being processed in trigger, `ctx.setExecuted()
 ## Trigger Settings
 Settings class for manipulating trigger execution.
 
-<br/>
-
 1. Toggling trigger execution for SObject type:
    ```apex
    TriggerSettings.disableTrigger(Account.SObject);
@@ -221,5 +219,5 @@ You won't have to insert them in every test class or remember about manual steps
 ---
 # Change Log
 
-### 1.0.2
+### v1.0.2
 * Fixed a bug where isDelete could report incorrect value during UNDELETE trigger operation in mocked tests.

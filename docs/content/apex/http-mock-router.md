@@ -103,7 +103,7 @@ This is helpful when request and response are not directly exposed in unit tests
 
 | Modifier and Type         | Method and Description                                                                                                       |
 |---------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| static List<HttpRequest>  | **getRequests()**<br/> Returns list of handled HttpRequests in the order they were issued.                                   |
+| static List<HttpRequest>  | **getRequests()** <br/> Returns list of handled HttpRequests in the order they were issued.                                  |
 | static List<HttpResponse> | **getResponses()**<br/> Returns list of returned HttpResponses in order they were returned.*                                 |
 | static HttpCalloutMock    | **json(Integer statusCode, String status, Object jsonObject)**<br/> Returns mock with serialized JSON object as response.    |
 | static HttpCalloutMock    | **staticResource(Integer statusCode, String status, String staticResource)**<br/> Returns mock with Static Resource as body. |
@@ -254,14 +254,14 @@ public class MyCustomMock implements HttpCalloutMock {
 
 ---
 # Change Log
-### 1.1.0
+### v1.1.0
 - Added shorthand override method Http
     ```apex
     public HttpCalloutMockRouter overrideMock(String name, String overrideMetadataName)
     ```
 - Added HttpMocks methods to return issued requests and responses.
 
-### 1.0.2
+### v1.0.2
 - Fixed bug in HTTP Headers specified in metadata, where header value would not be parsed correctly if it contained colon, which would cause issues for Location
   headers.
 - Added help text to custom metadata fields.

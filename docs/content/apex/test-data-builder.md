@@ -50,7 +50,7 @@ Account[] accounts = builder.create(new Account(Name = 'Test Account')).getRecor
 Account[] accounts = builder.insertRecords(new Account(Name = 'Test Account'));
 ```
 
-## Creating many records at once:
+## Creating many records at once
 
 It's possible to create a list of records with one call by using `count` parameter of the builder methods:
 

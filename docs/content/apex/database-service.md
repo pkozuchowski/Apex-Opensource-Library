@@ -64,6 +64,10 @@ DatabaseService databaseService = new DatabaseService()
 
 
 ---
+# Unit of Work
+
+
+---
 # Mocking DMLs
 
 Pure Apex Tests are tests that do not commit anything to the database and mock all queries.  
@@ -183,11 +187,6 @@ dbMock.mockDmlError(new Contact(LastName = 'Doe'));
 dbMock.mockDmlError(DmlType.INSERT_DML, new Contact(AccountId = null, LastName = 'Doe'));
 ```
 
-## Notes
-
-Query mocks are not supported via DatabaseMock right now, but they are supported via selector layer - Query package.
-I will cover them there.
-
 ---
 # Interface
 
@@ -242,6 +241,13 @@ public with sharing class DatabaseMock {
 
 ---
 # Change Log
-### 1.1.0
+### v2.0
+- Added asX methods:
+    - `asUser`
+    - `asSystemInheritedSharing`
+    - `asSystemWithSharing`
+    - `asSystemWithoutSharing`
+
+### v1.1.0
 - Simplified DML Issuers code
 - Added Database.Cursor

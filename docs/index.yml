@@ -1,0 +1,286 @@
+---
+news:
+  - path: 24_07_18
+    label: 2024.07.18
+
+nav:
+  - label: News
+    defaults:
+      iconName: standard:news
+      language: apex
+    path: news
+    groups:
+      - label: News
+        items:
+          - path: 24_11_10
+            label: 2024.11.10 - Http Mock Router 1.1
+          - path: 24_08_12
+            label: 2024.08.12 - Query 2.1.0
+          - path: 24_07_18
+            label: 2024.07.18 - Query 2.0.1
+
+  - label: Apex
+    path: apex
+    defaults:
+      iconName: standard:apex
+      language: apex
+    groups:
+      - label: Patterns
+        items:
+          - path: constants
+            label: Constants
+            description: How to store and reference constants.
+            iconName: standard:constant
+            snippet: |
+              public final static String
+                ACCOUNT_TYPE_CUSTOMER = 'Customer',
+                ACCOUNT_TYPE_SMB = 'SMB',
+              
+                ACCOUNT.TYPE.CUSTOMER = 'Customer',
+                ACCOUNT_TYPE_ENTERPRISE = 'Enterprise',
+                ACCOUNT_TYPE_PERSON = 'Person';
+
+          - path: setup-object-constants
+            label: Setup Object Constants
+            description: How to store and reference Setup Objects Constants.
+            iconName: standard:constant
+            snippet: |
+              Profiles.ADMIN.Id
+              PermissionSets.COMMERCE_USER.Name
+
+          - path: scale-to-extreme
+            label: Scale to Extreme
+            description: Design scalable solutions
+            iconName: standard:high_velocity_sales
+
+          - path: native-feature-management
+            label: Native Feature Management
+            description: Model for handling Feature Flags only with native Salesforce.
+
+          - path: secure-auth-provider-secrets
+            label: Secure Auth. Provider Secrets
+            description: How to store secrets securely in custom Auth. Providers.
+            badge: New
+
+      - label: Frameworks
+        items:
+          - path: callout
+            label: Callout Framework
+            description: Define common behaviour for outgoing callouts.
+            iconName: standard:maintenance_work_rule
+            snippet: |
+              onAfterCallout()
+              .add(match.onUnauthorized(), action.retry(1))
+              .add(match.onTimeout(),      action.retry(1))
+              .add(match.onAnyErrorCode(), action.throwEx())
+              .add(match.onSuccess(), action.returnJSON(responseType));
+
+          - path: collection
+            label: Collection / Lambda
+            description: Simplify list operations and data mapping.
+            iconName: standard:return_order
+            snippet: |
+              Collection.of(opportunities)
+                .filter(Opportunity.StageName).equals('Won')
+                .orderByDesc(Opportunity.ExpectedRevenue)
+                .slice(0, 10)
+                .mapBy(Opportunity.Name);
+
+          - path: logger
+            label: Logging Framework
+            description: Logging Framework with settings, reports, permission set and batch for clearing old logs.
+            snippet: |
+              } catch (Exception ex) {
+                Logger.error(ex);
+                throw new AuraHandledException(ex.getMessage());
+              }
+
+          - path: database-service
+            label: Database Service
+            description: Issue and mock DMLs with configurable sharing and user mode.
+            snippet: |
+              new DatabaseService()
+                .withoutSharing()
+                .updateRecords(accounts);
+
+          - path: query
+            label: Query Framework
+            description: Flexible Selector Layer with Record Caching mechanism.
+            badge: Updated
+            snippet: |
+              List<Contact> contact = Query.Contacts
+                .byAccountId(accountIds)
+                .getList();
+
+          - path: trigger-handler
+            label: Trigger Handler
+            description: Orchestrator for Apex Trigger Logic.
+            snippet: |
+              beforeInsert(List<SObject> triggerNew, TriggerContext tc);
+              afterInsert(List<SObject> triggerNew, TriggerContext tc);
+              
+              beforeUpdate(List<SObject> triggerNew, TriggerContext tc);
+              afterUpdate(List<SObject> triggerNew, TriggerContext tc);
+
+          - path: trigger-handler-mdt
+            label: Metadata Trigger Handler
+            description: Custom Metadata-driven orchestrator for Apex Trigger Logic
+            image: "/img/th-mdt.jpg"
+
+
+      - label: Unit Testing
+        items:
+          - path: http-mock-router
+            label: Http Mock Router
+            description: Configuration-driven, endpoint pattern-based router for Http Mocks.
+            image: "/img/http-router.jpg"
+            snippet: |
+              Test.setMock(HttpCalloutMock.class, HttpMocks.config());
+
+          - path: mock
+            label: Mock Utility
+            description: Mock response of the class.
+            snippet: |
+              Mock.response(AccountSelector.class, new Account());
+              
+              Mock.response(AccountSelector.class, new Map<String, Object>{
+                'getByOwnerId' => new Account(Name = 'My Account'),
+                'getById#1' => new Account(Name = 'Test Account'),
+                'getById#2' => new Account(Name = 'Another Account'),
+                'getById#3' => new QueryException('List has no rows...')
+              });
+
+          - path: test-data-builder
+            label: Test Data Builder
+            description: Setup test records for unit tests.
+            snippet: |
+              new TestDataBuilder()
+                .create(5, 'SMB', new Account(Name = 'Business Account'))
+                .create(new Account(Name = 'Test', BillingCountry = 'US'))
+                .similarly(new Account(BillingCity = 'Austin'))
+                .insertRecords();
+
+          - path: test-data-suite
+            label: Test Data Suite
+            description: Access records created in @TestSetup
+            snippet: |
+              @IsTest
+              static void myTest(){
+                  TestDataSuite suite;
+                  List<Account> accounts = suite.get(Account.SObjectType);
+                  User testUser = (User) suite.get('testUser');
+              }
+
+      - label: Utilities
+        items:
+          - path: batch-schedulable
+            label: Batch Schedulable
+            description: Schedule batches without implementing dedicated Schedulable.
+            snippet: |
+              System.schedule('SObject Cleaner', cronExpr,
+                new BatchSchedulable(SObjectCleanerBatch.class)
+              );
+
+          - path: scheduler
+            label: Scheduler
+            description: Shorthand methods for easy scheduling.
+            iconName: standard:date_time
+            snippet: |
+              Scheduler.scheduleDaily(
+                'Data Cleaner', 12, 00,
+                new DataCleaningSchedulable()
+              );
+
+          - path: custom-metadata-service
+            label: Custom Metadata Service
+            description: Deploy Custom Metadata from Apex.
+            snippet: |
+              CustomMetadataService.deploy(new List<Country__mdt>{
+              	new Country__mdt(DeveloperName = 'USA'),
+              	new Country__mdt(DeveloperName = 'France'),
+              	new Country__mdt(DeveloperName = 'Poland')
+              });
+
+          - path: localization
+            label: Localization
+            description: Dynamically retrieve Custom Labels, Field and Picklist labels for given locale.
+            snippet: |
+              Localization.getCustomLabelsWithLocale(new List<String>{
+              	'COM_Toast_Success',
+              	'COM_Toast_Info'
+              }, 'pl')`
+
+          - path: picklist
+            label: Picklist
+            description: Access Picklist metadata.
+            snippet: |
+              Picklist p = new Picklist(Account.Type);
+              p.getDefaultValue();
+              p.getValues();
+              p.getEntriesByControllingValue();
+
+          - path: runtime
+            label: Runtime
+            description: Reflective Apex Utility.
+            snippet: |
+              Object o = new Account();
+              
+              Runtime.getType(o);     // -> Account.class
+              Runtime.getTypeName(o); // -> 'Account'
+
+          - path: xml-parser
+            label: XML Parser
+            description: Translate XML document into JSON or Apex class.
+            snippet: |
+              XmlParser parser = new XmlParser(xmlString);
+              
+              Map<String, Object> untypedMap = parser.getUntyped();
+              Profile p = (Profile) parser.getAs(Profile.class, false);
+
+
+  - label: LWC
+    path: lwc
+    defaults:
+      iconName: standard:code_playground
+      language: js
+    groups:
+      - label: Patterns
+        items:
+          - path: commons
+            label: Commons Module
+            description: Organize common utilities and methods.
+            snippet: |
+              //commons.js
+              export * from "./toastUtils"
+              export * from "./dateUtils"
+              export * from "./sObjectUtils"
+
+          - path: labels
+            label: Custom Labels
+            description: Custom Labels
+      - label: Utilities
+        items:
+          - path: toasts
+            label: Toasts
+            description: Toasts one-liners.
+            snippet: |
+              Toasts.showErrorToast(this, 'Something went wrong');
+
+          - path: if
+            label: lwc:if shorthand
+            description: Reduce the number of LWC getters.
+            lang: html
+            snippet: |
+              <c-if value={account.RecordType.DeveloperName}
+              equals="PersonAccount">
+              <!--...-->
+              </c-if>
+
+  - label: GitHub
+    url: https://github.com/pkozuchowski/Apex-Opensource-Library
+
+  - label: Issues
+    url: https://github.com/pkozuchowski/Apex-Opensource-Library/issues
+
+  - label: LinkedIn
+    url: https://www.linkedin.com/in/piotr-ko%C5%BCuchowski-ba8931a2

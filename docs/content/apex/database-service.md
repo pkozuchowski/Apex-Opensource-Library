@@ -241,12 +241,6 @@ public with sharing class DatabaseMock {
 
 ---
 # Change Log
-### v2.0
-- Added asX methods:
-    - `asUser`
-    - `asSystemInheritedSharing`
-    - `asSystemWithSharing`
-    - `asSystemWithoutSharing`
 
 ### v1.1.0
 - Simplified DML Issuers code

@@ -11,3 +11,10 @@ package.xml
 # LWC Jes
 **/__tests__/**
 triggerHandler.md
+
+# Added by Illuminated Cloud
+/.illuminatedCloud/
+**/*.ts
+**/tsconfig*.json
+**/*.tsbuildinfo
+**/eslint.config.mjs

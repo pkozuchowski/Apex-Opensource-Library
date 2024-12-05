@@ -60,7 +60,7 @@ public with sharing class HttpMocksConfig {
         } else {
             //Salesforce trims long texts to 255
             return [
-                SELECT Status__c, StatusCode__c, Response__c, StaticResource__c, Headers__c
+                SELECT DeveloperName, ApexClass__c, Status__c, StatusCode__c, Response__c, StaticResource__c, Headers__c
                 FROM HttpCalloutMock__mdt
                 WHERE DeveloperName = :developerName
             ];

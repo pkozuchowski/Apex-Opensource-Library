@@ -39,8 +39,8 @@ All documentation is available on [Apex Libra site](https://apexlibra.org/?/apex
 ## [LWC](https://apexlibra.org/?/lwc)
 
 ### Patterns
-- [Commons Module](https://apexlibra.org/?/apex/commons)
-- [Custom Labels](https://apexlibra.org/?/apex/labels)
+- [Commons Module](https://apexlibra.org/?/lwc/commons)
+- [Custom Labels](https://apexlibra.org/?/lwc/labels)
 
 ### Utilities
-- [Toasts](https://apexlibra.org/?/apex/toasts)
+- [Toasts](https://apexlibra.org/?/lwc/toasts)

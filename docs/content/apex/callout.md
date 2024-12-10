@@ -50,6 +50,13 @@ public class AcmeApiCallout extends Callout {
             .add(match.onSuccess(), action.logCallout(LoggingLevel.INFO))
             .add(match.onSuccess(), action.returnJSON(responseType));
     }
+
+    private class AcmeAPIAuthHandler implements Callout.Handler {
+        public Object handle(Callout c) {
+            c.setHeader('Authorization', 'Bearer XXX');
+            return null;
+        }
+    }
 }
 ```
 

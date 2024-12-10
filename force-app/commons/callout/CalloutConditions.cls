@@ -48,6 +48,13 @@ public with sharing class CalloutConditions extends Conditions {
     }
 
     /**
+     * Executes when webservice returned 429 Rate Limit
+     */
+    public Condition onRateLimit() {
+      return onStatusCode(429);
+    }
+
+    /**
      * Executes when webservice timed out
      */
     public Condition onTimeout() {

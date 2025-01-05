@@ -32,7 +32,7 @@ private class TestDataBuilderTest {
     @IsTest
     static void testRelationshipBuilding() {
         TestDataBuilder builder = new TestDataBuilder();
-        builder.databaseService.useMock();
+        builder.databaseService.mockDmls();
 
         Test.startTest();
         List<Account> accounts = builder
@@ -251,7 +251,7 @@ private class TestDataBuilderTest {
     @IsTest
     static void testInsertRecordsMockDML() {
         TestDataBuilder builder = new TestDataBuilder();
-        builder.databaseService.useMock();
+        builder.databaseService.mockDmls();
 
 
         Account account = (Account) builder.insertRecord(new Account());

@@ -38,7 +38,7 @@ public inherited sharing class TestDataBuilder {
      * Any DMLs performed by this builder will be mocked and Fake Ids will be generated on insert.
      */
     public TestDataBuilder mockDMLs() {
-        this.databaseService.useMock();
+        this.databaseService.mockDmls();
         return this;
     }
 

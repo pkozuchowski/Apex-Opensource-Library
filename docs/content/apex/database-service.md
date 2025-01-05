@@ -13,234 +13,456 @@ sf project deploy start -d "force-app/commons/database" -o sfdxOrg
 ---
 # Documentation
 
-DatabaseService encapsulates `System.Database` methods and allow for altering behaviour of the DMLs:
-- `with sharing` and `without sharing` context can be set on the DatabaseService class
-- DML options can be set once and reused in all DMLs done by the DatabaseService
-- DMLs can be mocked in unit tests
+## Description
+The DatabaseService class is a framework designed to facilitate database operations. It provides methods for creating, updating, and deleting records, as
+well as for executing queries and managing database transactions. The class is designed to be flexible and supports different execution modes, such
+as user mode and system mode, to control the level of access and permissions applied during database operations.
+The features include:
+- Setting Access Level for all issued operations
+- Setting `with sharing` and `without sharing` context
+- Setting DML options
+- Tracking issued database operations, touched records and results in unit tests
+- Mocking all or selected DML operation results
+- Providing streamlined Result and Error class
 
+## Key Features
+
+### Execution Modes
+The class supports various execution modes to control how database operations are executed:
+- `asUser()`: Enforces the object permissions, field-level security, and sharing rules of the current user. Always runs in "with sharing" context.
+- `asSystem()`: Ignores object and field-level permissions, inherits sharing rules from the calling class.
+- `asSystemWithSharing()`: Ignores object and field-level permissions but enforces record sharing rules.
+- `asSystemWithoutSharing()`: Ignores both object and field-level permissions and record sharing rules.
+
+Mode can be switched at any point of time.
 ```apex | Usage | MyService performs update "without sharing" even though the class itself is "with sharing"
 public with sharing class MyService {
-	private DatabaseService databaseService = new DatabaseService()
-		.withoutSharing();
+    private DatabaseService databaseService = new DatabaseService()
+        .allOrNone(true)
+        .asSystemWithoutSharing();
 
-	public void updateContacts(List<Contact> contacts) {
-		databaseService.updateRecords(contacts);
-	}
+    public void updateContacts(List<Contact> contacts) {
+        databaseService.updateRecords(contacts);
+    }
 }
-
 ```
-
-## Setting DML options
-Provided DML options are applied to all DMLs. Developer can set them through setDmlOptions() method and there's short-hand
-method for allOrNone() parameter. DML Options can be constructed with builder class:
 
 ```apex
 DatabaseService databaseService = new DatabaseService()
-	.setDMLOptions(new DMLOptionsBuilder()
-		.allowDuplicates(false)
-		.allowFieldTruncation(false)
-		.allOrNone(false)
-		.build()
-	);
+    .asUser()
+    .insertRecords(accounts);
+
+DatabaseService databaseService = new DatabaseService()
+    .asSystemWithoutSharing()
+    .asSystemWithSharing();
+```
+
+### DML Operations and query execution:
+The class provides the same methods as System.Database class:
+- Methods for performing DML operations such as `insert`, `update`, `upsert`, `delete`, `undelete`, `merge` and `convertLead`.  
+  Each operation has corresponding methods to handle single record and list of records.
+- Query operations such as `query`, `getQueryLocator` and `getCursor`.
+
+[See list of all methods.](/apex/database-service/interface)
+
+
+### Streamlined DML Results
+Database Service maps Database.*Result results into custom DML.Result and DML.Error classes with the same properties.
+
+Standard Database.*Result classes are troublesome because:
+- Despite having the same properties, there's no common abstract result class.
+  It's challenging to implement methods that will work against Database.Result classes, without duplicating methods for each result class.
+- Standard classes are not constructible in unit tests.
+- Standard classes cause problems with serialization - can't be returned in @AuraEnabled methods or stored in stateful batch classes.
+
+### Tracking DMLs in Unit Tests
+When run in Unit Test context, DatabaseService will register all issued DML operations.
+Developers can reference to check issued Database operations, DML rows and results.
+
+```apex | Operations Registry
+class DatabaseService {
+    @TestVisible DML.Register register;
+}
+
+class DML.Register {
+    public DML.InsertDML[] inserts;
+    public DML.UpdateDML[] updates;
+    public DML.UpsertDML[] upserts;
+    public DML.DeleteDML[] deletes;
+    public DML.UndeleteDML[] undeletes;
+    public DML.MergeDML[] merges;
+    public DML.QueryOperation[] queries;
+}
+```
+
+Each operation is tracked as independent entry in a list and consists of records and results. Developers can access issued operations through "register"
+property.
+```apex
+databaseService.register.inserts.size(); // Returns how many times insert operation were called.
+Account parentAccount = (Account) databaseService.register.inserts[0].records[0]; // returns first record from first Insert
+DatabaseService.register.inserts[0].results[0]; // returns result for first record
+```
+
+### Mocking Queries and DMLs
+DatabaseService provides a variety of ways to mock DMLs:
+- Queries can be mocked by passing `mockId` parameter to `query()` method, or through SObjectType if it doesn't make difference for unit test for mock all
+  queries against the sObjectType.
+- All operations can be mocked using `.mockDmls()` method. In this mode, no DMLs will actually hit Database. Results are faked as success and fake Ids are
+  assigned to inserted and upserted records.
+- Particular DML Operation can be mocked to have predetermined success or error response.
+- DML Operations against particular SObject or subset of records can be mocked
+- Combination of above
+
+[See more in Mocking DMLs Tab](/apex/database-service/mocking-dmls)
+
+
+### Setting DML options
+Provided DML options are applied to all DMLs.
+Developers can set them through setDmlOptions() method and there's shorthand method for allOrNone() parameter.
+DML Options can be constructed with builder class:
+
+```apex
+DatabaseService databaseService = new DatabaseService()
+    .setDMLOptions(new DMLOptionsBuilder()
+        .allOrNone(false)
+        .allowDuplicates(false)
+        .allowFieldTruncation(false)
+        .build()
+    );
 
 //Shortcut for All or None option
 DatabaseService databaseService = new DatabaseService().allOrNone(false);
 ```
 
+---
+# Architecture
 
-## Changing sharing context
-Database Service can switch between inherited, with sharing and without sharing context:
-
-```apex
-DatabaseService databaseService = new DatabaseService()
-	.withSharing()
-	.insertRecords(accounts);
-
-DatabaseService databaseService = new DatabaseService()
-	.withoutSharing()
-	.updateRecords(accounts);
-```
-
+![UML](/img/database-service-uml.svg)
+![UML](/img/database-service-uml-2.svg)
 
 
 ---
 # Unit of Work
 
+## Description
+The Unit of Work is an enterprise architectural pattern that ensures a series of DML operations on different sObjects are treated as a single, cohesive
+transaction.
+It acts as a boundary that tracks DMLs (inserts, updates, deletes) of records within a single transaction, so developers do not have to care about bulkification
+and relationship tracking.
+
+`DatabaseUnitOfWork` class extends `DatabaseService` class and can use all of its capabilities to modify DML behavior:
+- Execution Modes
+- DML Options
+- All Or None with a rollback mechanism for all DML operations
+- Mocking DMLs
+
+## Resolving relationships
+Unit of Work provides methods to relate SObjects with each other in a Parent-Child relationship.
+When a Parent record is inserted, all child records related to that parent will have their lookup fields populated.
+This is especially helpful when creating multi-level relationships, because client class does not have to keep track of lookups and ids.
+
+```apex | Methods
+DatabaseUnitOfWork relate(SObject record, SObjectField lookupField, SObject parent);
+void insertRecord(SObject record, SObjectField lookupField, SObject parent);
+void updateRecord(SObject record, SObjectField lookupField, SObject parent);
+void upsertRecord(SObject record, SObjectField extId, SObjectField lookupField, SObject parent);
+```
+
+```apex | Example of usage
+DatabaseUnitOfWork uow = new DatabaseUnitOfWork();
+
+for (Integer i = 0; i < 10; i++) {
+    Account account = new Account(Name = 'Test');
+    uow.insertRecord(account);
+
+    Contact childContact = new Contact(LastName = 'Doe');
+    uow.insertRecord(childContact, Contact.AccountId, account);
+}
+
+uow.commitWork();
+```
+
+In this example, UoW will execute 2 DMLs – one insert on Accounts and one insert on Contacts, each operation with 10 records inserted.
+AccountId on Contacts will be populated.
+
+## Order of DMLs
+By default, Unit of Work will track the order of issued DML Operations and will execute them in the same order.
+
+For example, call the following:
+- insertRecord(**account**)
+- insertRecord(_contact_)
+- insertRecord(**account**)
+- insertRecord(_contact_)
+- insertRecord(opportunity)
+- updateRecord(_contact_);
+- commitWork();
+
+It will result in the following operation order:
+- insert Accounts
+- insert Contacts
+- insert Opportunities
+- update Contacts
+
+It is possible to customize the order of the operations using constructors:
+- `public DatabaseUnitOfWork()`  
+  DMLs are ordered in order they are issued.
+- `public DatabaseUnitOfWork(List<SObjectType> sObjectTypes)`  
+  DMLs are ordered by specified SObjectType order and the following operation order:
+    1. INSERT
+    2. UPSERT
+    3. UPDATE
+    4. MERGE
+    5. CONVERT LEAD
+    6. DELETE
+    7. UNDELETE
+
+- `public DatabaseUnitOfWork(List<DML.Order> order)`
+  DMLs will follow specified SObject, Operation and Upsert Field order:
+```apex
+DatabaseUnitOfWork uow = (DatabaseUnitOfWork) new DatabaseUnitOfWork(new List<DML.Order>{
+    new DML.Order(User.SObjectType, DML.UPSERT_DML, Schema.User.Username),
+    new DML.Order(User.SObjectType, DML.UPSERT_DML, Schema.User.FederationIdentifier),
+    new DML.Order(Contact.SObjectType, DML.INSERT_DML),
+    new DML.Order(Opportunity.SObjectType, DML.DELETE_DML),
+    new DML.Order(Opportunity.SObjectType, DML.INSERT_DML)
+});
+```
+
+## Failure Handling
+When Unit of Work operates in `"All or None"` mode, this mode applies to entire Unit of Work. When any of the operations fails,
+all operations are rolled back.
+
 
 ---
-# Mocking DMLs
+# Mocking
 
-Pure Apex Tests are tests that do not commit anything to the database and mock all queries.  
-These tests are much more efficient than standard tests and allow us to test more exotic scenarios, but comes at cost of harder setup (require DML and SOQL
-mocking)
-and doesn't test interaction between classes in a trigger.
-
-To mock DMLs, our business class should have instance of DatabaseService, through which it performs DMLs.  
-Database Service instance should be visible to the tests.
-
+## Prerequisites
+To mock DMLs, our business class should have a `@TestVisible` instance of DatabaseService, through which it performs DMLs.  
 For example purposes, let's assume this class does some inserts and updates;
 
-```apex
+```apex | Example Class with Database Service
 public class AccountService {
-	@TestVisible private DatabaseService databaseService = new DatabaseService();
+    @TestVisible static DatabaseService databaseService = new DatabaseService().asUser();
 
-	public void doBusinessLogic() {
-		// Create Account
-		Account account = new Account(Name = 'Test Account');
-		account.BillingCountry = 'USA';
-		databaseService.insertRecord(account);
+    public void doBusinessLogic() {
+        // Query Account
+        Account account = (Account) databaseService.query('SELECT Id FROM Account Limit 1');
 
-		// Create Contact
-		Contact contact = new Contact(LastName = 'Doe', AccountId = account.Id);
-		databaseService.insertRecord(contact);
+        // Create Contact
+        Contact contact = new Contact(
+            AccountId = account.Id,
+            LastName = 'Doe'
+        );
+        databaseService.insertRecord(contact);
 
-		// Create Opportunities
-		DatabaseService.insertRecords(new List<Opportunity>{
-			new Opportunity(AccountId = account.Id, Name = 'Opportunity 1'),
-			new Opportunity(AccountId = account.Id, Name = 'Opportunity 2'),
-			new Opportunity(AccountId = account.Id, Name = 'Opportunity 3')
-		});
+        // Create Opportunities
+        DatabaseService.insertRecords(new List<Opportunity>{
+            new Opportunity(AccountId = account.Id, Name = 'Opportunity 1'),
+            new Opportunity(AccountId = account.Id, Name = 'Opportunity 2'),
+            new Opportunity(AccountId = account.Id, Name = 'Opportunity 3')
+        });
 
-		// Update Contact field on Account
-		account.Contact__c = contact.Id;
-		databaseService.updateRecord(account);
-	}
+        // Update Contact field on Account
+        account.Contact__c = contact.Id;
+        databaseService.updateRecord(account);
+    }
 }
 ```
 
-Now, to mock DMLs we need to call `databaseService.useMock()` in our unit test. It will return `DatabaseMock` class which be used
-to check inserted/updated/deleted/undeleted records or simulate DML error on a record.
+## Mocking all DMLs
+Calling `.mockDmls()` will ensure that no operation will actually hit a database. For each record in the DML, a success result with no error will be returned.
 
-This is how it should look like in unit test:
-
-```apex
-@IsTest
-static void testX() {
-	AccountService accountService = new AccountService();
-	DatabaseMock dbMock = accountService.databaseService.useMock();
-
-
-	Test.startTest();
-	accountService.doBusinessLogic();
-	Test.stopTest();
-
-
-	// Now we can check inserted and updated records:
-	Assert.areEqual(4, dbMock.insertedRecords.size());
-	Assert.areEqual(1, dbMock.updatedRecords.size());
-}
-```
-
-We can reach to dbMock lists to check all records on which DML were performed.
-
-Mock behaves similarly to the database - it will generate and assign fake Id, so relationships are preserved.
-
-```apex
-Contact c = (Contact) db.insertedRecords.get(1);
-
-Assert.areEqual('Doe', c.LastName);
-Assert.areEqual(childAccount.Id, c1.AccountId);
-Assert.isNotNull(c1.Id);
-Assert.areEqual(Contact.SObjectType, c.Id.getSobjectType());
-```
-
-Fake ids will look, depending on sObject, like this:
+Additionally, insert and upsert operations will generate fake ID for each record. Fake ids will look, depending on sObject, like this:
 `001000000000001, 001000000000002, 003000000000003`
 
-## Mocking DML Exceptions
+```apex | Unit Test
+DatabaseService db = AccountService.databaseService.mockDmls();
 
-To test all possible scenarios for our code, we need possibility to check how the code behaves on DML exception.  
-This can be mocked using DatabaseMock class using following methods.
-
-```apex
-public DatabaseMock mockDmlError(DmlType dmlType);
-
-/*****************/
-
-DatabaseMock dbMock = accountService.databaseService.useMock();
-dbMock.mockDmlError(DmlType.INSERT_DML);
-dbMock.mockDmlError(DmlType.UPDATE_DML);
+service.doBusinessLogic();
 ```
 
-This will cause all inserts and updates to fail. If we want ALL dmls to fail, we should call this method with `ANY_DML` parameter.  
-`dbMock.mockDmlError(DmlType.ANY_DML);`
-
-If we need more precision, we can also provide matching record to specify which records should fail.     
-The interface and usage looks as follows:
-
+## Partial mocking
+Framework can apply mock only to selected records and perform actual (or mocked) operations against the rest. This can be done using the following methods:
 ```apex
-public DatabaseMock mockDmlError(SObject matcherRecord);
-public DatabaseMock mockDmlError(DmlType dmlType, SObject matcherRecord);
+mockDmlError(SObject);
+mockDmlError(DML.Type);
+mockDmlError(DML.Type, SObject);
+mockDmlResult(DML.Type, SObject, Boolean);
+mockDmlResult(DML.Type, SObject, DML.Result);
+mockDmlResult(DML.DmlResultMock);
+```
 
-/*****************/
+## Mock Parameters
+1. **DML.Type** refers to DML Type available in DML class:
+    - DML.Type.INSERT_DML - will match inserts
+    - DML.Type.UPDATE_DML - will match updates
+    - etc.
+    - null matches all operations.
+2. **SObject** - is for matching sObject:
+    - `new Account()` will match all accounts
+    - `new Account(Name='Test')` will match all accounts with specified fields – in this case, accounts with Name equals "Test".
+    - null matches all records
+3. **Boolean success** - True, if result should be mocked as a success result or false for error result. If false, DML.GENERIC_ERROR will be used as error
+   message.
+4. **DML.Result** - Provided result will be returned for DMLs. This result is cloned and customized with record ID for each row.
 
-DatabaseMock dbMock = accountService.databaseService.useMock();
+## Query Mocking
+Query can be mocked using mockId or by sObjectType:
 
-// All Contact DMLs will fail on ANY dml. Empty record matches all with the same sobject type.
-dbMock.mockDmlError(new Contact());
+```apex | All Account Queries will return following list of Accounts
+DatabaseService db = AccountService.databaseService
+    .mockQuery(new List<Account>{
+        new Account()
+    });
+```
 
-// Contacts with LastName = 'DOE' will fail on ANY dml. 
-dbMock.mockDmlError(new Contact(LastName = 'Doe'));
+```apex | All Account Queries will return following list of Accounts
+// Service:
+Integer cnt = databaseService.countQuery('SELECT Id FROM Account');
 
+// Test
+DatabaseService db = AccountService.databaseService
+    .mockQuery(Account.SObjectType, 5);
+```
 
-// Contacts with LastName = 'DOE' AND blank AccountId will fail on INSERT dml.
-dbMock.mockDmlError(DmlType.INSERT_DML, new Contact(AccountId = null, LastName = 'Doe'));
+```apex | Mock query using mockId
+// Service:
+Integer cnt = databaseService.countQuery('getCount', 'SELECT Id FROM Account');
+
+// Test
+DatabaseService db = AccountService.databaseService
+    .mockQuery('getCount', 5);
+```
+
+## Examples
+```apex | Example 1 | DMLs will be executed against Database, but DML on Opportunities will fail with error on 2nd opportunity.
+DatabaseService db = AccountService.databaseService
+    .mockDmls()
+    .mockDmlError(new Opportunity(Name = 'Opportunity 2'));
+```
+
+```apex | Example 2 | DMLs will be executed against Database, 2 opportunities will be inserted, one will have mocked error.
+DatabaseService db = AccountService.databaseService
+    .allOrNone(false)
+    .mockDmlError(new Opportunity(Name = 'Opportunity 2'));
+```
+
+```apex | Example 3 | DMLs will be executed against Database, no opportunities will be inserted, becaues one will have a mocked error.
+DatabaseService db = AccountService.databaseService
+    .allOrNone(true)
+    .mockDmlError(new Opportunity(Name = 'Opportunity 2'));
+```
+
+```apex | Example 4 | Database.Result instance will have the same properties as provided + record Id will be filled in.
+DatabaseService db = AccountService.databaseService
+    .mockDmlResult(DML.Type.INSERT_DML, new Opportunity(Name = 'Opportunity 2'),
+        new DML.Result(null, false, new List<Error>{
+            new Error('Some Error Message')
+        }));
+```
+
+```apex | Example 5 - Mock by DML Type | All Inserts will fail.
+DatabaseService db = AccountService.databaseService
+    .mockDmlError(DML.INSERT_DML);
 ```
 
 ---
 # Interface
 
-```apex
+```apex | DatabaseService
+public class DatabaseService {
+    @TestVisible DML.Register register;
 
-class DatabaseService {
-	static Id getFakeId(SObjectType sObjectType);
+    public static Id getFakeId(SObjectType sObjectType);
 
-	DatabaseService withSharing();
-	DatabaseService withoutSharing();
-	DatabaseService setDMLOptions(Database.DMLOptions options);
-	DatabaseService allOrNone(Boolean allOrNone);
+    public DatabaseService() {}
 
-	DatabaseMock useMock();
+    public DatabaseService asUser();
+    public DatabaseService asUserWithPermissionSetId(Id permissionSetId);
+    public DatabaseService asSystem();
+    public DatabaseService asSystemWithSharing();
+    public DatabaseService asSystemWithoutSharing();
+    public DatabaseService withAccessLevel(AccessLevel level);
 
-	List<SObject> query(String query);
-	List<SObject> query(String query, Map<String, Object> boundVars);
+    public DatabaseService withDMLOptions(Database.DMLOptions options);
+    public DatabaseService allOrNone(Boolean allOrNone);
 
-	Database.QueryLocator getQueryLocator(String query);
-	Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars);
+    public List<SObject> query(String query);
+    public List<SObject> query(String query, Map<String, Object> boundVars);
+    public List<SObject> query(String mockId, String query, Map<String, Object> boundVars);
+
+    public Integer countQuery(String query);
+    public Integer countQuery(String query, Map<String, Object> boundVars);
+    public Integer countQuery(String mockId, String query, Map<String, Object> boundVars);
 
     public Database.Cursor getCursor(String query, Map<String, Object> boundVars);
 
-	Database.SaveResult insertRecord(SObject record);
-	Database.SaveResult updateRecord(SObject record);
-	Database.UpsertResult upsertRecord(SObject record, SObjectField field);
-	Database.DeleteResult deleteRecord(SObject record);
-	Database.UndeleteResult undeleteRecord(SObject record);
+    public Database.QueryLocator getQueryLocator(String query);
+    public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars);
 
-	List<Database.SaveResult> insertRecords(List<SObject> records);
-	List<Database.SaveResult> updateRecords(List<SObject> records);
-	List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field);
-	List<Database.DeleteResult> deleteRecords(List<SObject> records);
-	List<Database.UndeleteResult> undeleteRecords(List<SObject> records);
+
+    public DML.Result insertRecord(SObject record);
+    public List<DML.Result> insertRecords(List<SObject> records);
+
+    public DML.Result updateRecord(SObject record);
+    public List<DML.Result> updateRecords(List<SObject> records);
+
+    public DML.Result upsertRecord(SObject record, SObjectField field);
+    public List<DML.Result> upsertRecords(List<SObject> records, SObjectField field);
+
+
+    public DML.Result deleteRecord(SObject record);
+    public List<DML.Result> deleteRecords(List<SObject> records);
+
+    public DML.Result undeleteRecord(SObject record);
+    public List<DML.Result> undeleteRecords(List<SObject> records);
+
+    public DML.MergeResult mergeRecords(SObject primary, List<Id> duplicates);
+    public DML.LeadConvertResult convertLead(Database.LeadConvert convert);
+    public List<DML.LeadConvertResult> convertLeads(List<Database.LeadConvert> converts);
+
+    @TestVisible DatabaseService mockQuery(List<SObject> records);
+    @TestVisible DatabaseService mockQuery(SObjectType sObjectType, Object result);
+    @TestVisible DatabaseService mockQuery(String mockId, Object result);
+
+    @TestVisible DatabaseService mockDmls();
+    @TestVisible DatabaseService mockDmlError(SObject matcherRecord);
+    @TestVisible DatabaseService mockDmlError(DML.Type dmlType);
+    @TestVisible DatabaseService mockDmlError(DML.Type dmlType, SObject matcherRecord);
+    @TestVisible DatabaseService mockDmlResult(DML.Type dmlType, SObject matcherRecord, Boolean success);
+    @TestVisible DatabaseService mockDmlResult(DML.Type dmlType, SObject matcherRecord, DML.Result result);
+    @TestVisible DatabaseService mockDmlResult(DML.DmlResultMock mock);
 }
 ```
 
-```apex | DatabaseMock
-public with sharing class DatabaseMock {
-	List<SObject> insertedRecords;
-	List<SObject> updatedRecords;
-	List<SObject> upsertedRecords;
-	List<SObject> deletedRecords;
-	List<SObject> undeletedRecords;
+```apex | DatabaseUnitOfWork
+public class DatabaseUnitOfWork extends DatabaseService {
+    public DatabaseUnitOfWork() {}
+    public DatabaseUnitOfWork(List<SObjectType> sObjectTypes) {}
+    public DatabaseUnitOfWork(List<DML.Order> order) {}
 
-	DatabaseMock mockDmlError(SObject matcherRecord);
-	DatabaseMock mockDmlError(DmlType dmlType);
-	DatabaseMock mockDmlError(DmlType dmlType, SObject matcherRecord);
-	DatabaseMock mockDmlError(DmlType dmlType, SObject matcherRecord, String errorMsg);
-	List<DatabaseService.DmlError> getDMLErrors(DmlType issuedDML, SObject record);
+    public DatabaseUnitOfWork relate(SObject record, SObjectField lookupField, SObject parent);
+    public void insertRecord(SObject record, SObjectField lookupField, SObject parent);
+    public void updateRecord(SObject record, SObjectField lookupField, SObject parent);
+    public void upsertRecord(SObject record, SObjectField extId, SObjectField lookupField, SObject parent);
+    public List<DML.DMLOperation> commitWork();
+}
 ```
 
 ---
 # Change Log
+### v2.0
+- Entire framework has been redesigned.
+- Added Unit of Work class, extending DatabaseService.
+- Issued DML Operations can be tracked in unit tests at all times
+- DML Mocks and Query mocks can be mixed in with real DMLs
+
+##### DatabaseService:
+- Added asX methods:
+    - `asUser`
+    - `asSystem`
+    - `asSystemWithSharing`
+    - `asSystemWithoutSharing`
 
 ### v1.1.0
 - Simplified DML Issuers code

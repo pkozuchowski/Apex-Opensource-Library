@@ -27,11 +27,14 @@
  * client class.
  * @see DatabaseServiceTest
  */
-public class DatabaseService {
+public inherited sharing virtual class DatabaseService {
     private static Map<SObjectType, String> prefixBySObject = new Map<SObjectType, String>();
     private static Integer cnt = 0;
-    private Database.DMLOptions dmlOptions = new Database.DMLOptions();
-    private DMLIssuer dmlIssuer = new DMLIssuer();
+
+    protected DML.Issuer dmlIssuer;
+    protected DML.Options options = new DML.Options();
+    @TestVisible DML.Register register;
+
 
     /**
      * @return Unique fake id for given SObject.
@@ -48,24 +51,62 @@ public class DatabaseService {
     }
 
 
+    /**
+     * Constructs DatabaseService with System Inherited Sharing setup and All or None option.
+     */
     public DatabaseService() {
-        this.dmlOptions.optAllOrNone = true;
+        asSystemWithSharing();
+        allOrNone(true);
+
+        if (Test.isRunningTest()) {
+            this.register = new DML.Register();
+        }
     }
 
     /**
-     * Executes DMLs and Quries in With Sharing context
+     * Execution mode in which the object permissions, field-level security, and sharing rules of the current user are enforced.
      */
-    public DatabaseService withSharing() {
-        this.dmlIssuer = new WithSharingDMLIssuer();
-        return this;
+    public DatabaseService asUser() {
+        this.dmlIssuer = new DML.IssuerWithSharing();
+        return withAccessLevel(AccessLevel.USER_MODE);
     }
 
     /**
-     * Executes DMLs and Quries in Without Sharing context
+     * DEVELOPER PREVIEW
+     * Execution mode in which the object permissions, field-level security, and sharing rules of the current user are enforced.
+     * Permission Set permissions are added on top of user permissions.
      */
-    public DatabaseService withoutSharing() {
-        this.dmlIssuer = new WithoutSharingDMLIssuer();
-        return this;
+    public DatabaseService asUserWithPermissionSetId(Id permissionSetId) {
+        this.dmlIssuer = new DML.IssuerWithSharing();
+        return withAccessLevel(AccessLevel.USER_MODE.withPermissionSetId(permissionSetId));
+    }
+
+    /**
+     * Execution mode in which the object permissions, field-level security, and sharing rules are inherited
+     * from calling class.
+     * Default execution mode.
+     */
+    public DatabaseService asSystem() {
+        this.dmlIssuer = new DML.IssuerInheritedSharing();
+        return withAccessLevel(AccessLevel.SYSTEM_MODE);
+    }
+
+    /**
+     * Execution mode in which the the object and field-level permissions of the current user are ignored,
+     * and the record sharing rules are enforced.
+     */
+    public DatabaseService asSystemWithSharing() {
+        this.dmlIssuer = new DML.IssuerWithSharing();
+        return withAccessLevel(AccessLevel.SYSTEM_MODE);
+    }
+
+    /**
+     * Execution mode in which the the object and field-level permissions of the current user are ignored,
+     * and access to all records is permitted.
+     */
+    public DatabaseService asSystemWithoutSharing() {
+        this.dmlIssuer = new DML.IssuerWithoutSharing();
+        return withAccessLevel(AccessLevel.SYSTEM_MODE);
     }
 
 
@@ -74,22 +115,16 @@ public class DatabaseService {
      * and the record sharing rules are controlled by the class sharing keywords.<br/>
      * USER_MODE - Execution mode in which the object permissions, field-level security, and sharing rules of the current user are enforced.
      */
-    public DatabaseService setAccessLevel(AccessLevel level) {
-        this.dmlIssuer.level = level;
+    public DatabaseService withAccessLevel(AccessLevel level) {
+        this.options.accessLevel = level;
         return this;
-    }
-
-    public DatabaseMock useMock() {
-        DatabaseMock mock = new DatabaseMock();
-        this.dmlIssuer = new MockedDmlIssuer(mock);
-        return mock;
     }
 
     /**
      * Sets DML Options to use for DMLs issued with this service.
      */
-    public DatabaseService setDMLOptions(Database.DMLOptions options) {
-        this.dmlOptions = options;
+    public DatabaseService withDMLOptions(Database.DMLOptions options) {
+        this.options.dmlOptions = options;
         return this;
     }
 
@@ -97,7 +132,7 @@ public class DatabaseService {
      * Sets All Or None in DML Options
      */
     public DatabaseService allOrNone(Boolean allOrNone) {
-        this.dmlOptions.optAllOrNone = allOrNone;
+        this.options.dmlOptions.optAllOrNone = allOrNone;
         return this;
     }
 
@@ -123,20 +158,32 @@ public class DatabaseService {
      * Executes database query with given bound variables
      * @param mockId Name used for mocking purposes
      * @param query Query string (ex. 'SELECT Id FROM Account WHERE Name IN: names')
-     * @param boundVars Variables to bind to query ex. {'names' => ['Name 1', 'Name 2']}
+     * @param boundVars Variables to bind to query ex. {'names' => ['Name 1', 'Name 2']}. Can be null.
      */
     public List<SObject> query(String mockId, String query, Map<String, Object> boundVars) {
-        return dmlIssuer.query(mockId, query, boundVars == null ? new Map<String, Object>() : boundVars);
+        return (List<SObject>) execute(new DML.QueryOperation(mockId, query, boundVars));
+    }
+
+    public Integer countQuery(String query) {
+        return countQuery(query, null);
+    }
+
+    public Integer countQuery(String query, Map<String, Object> boundVars) {
+        return countQuery(null, query, boundVars);
+    }
+
+    public Integer countQuery(String mockId, String query, Map<String, Object> boundVars) {
+        return (Integer) execute(new DML.QueryCountOperation(mockId, query, boundVars));
     }
 
     /**
      * Creates a cursor when the specified SOQL query is executed.
      * @param query Query string (ex. 'SELECT Id FROM Account WHERE Name IN: names')
-     * @param boundVars Variables to bind to query ex. {'names' => ['Name 1', 'Name 2']}
+     * @param boundVars Variables to bind to query ex. {'names' => ['Name 1', 'Name 2']}. Can be null.
      * @return Database.Cursor for given query
      */
     public Database.Cursor getCursor(String query, Map<String, Object> boundVars) {
-        return dmlIssuer.getCursor(query, boundVars);
+        return (Database.Cursor) execute(new DML.QueryCursorOperation(query, boundVars));
     }
 
     /**
@@ -153,263 +200,175 @@ public class DatabaseService {
      * @return QueryLocator for given query and bound variables
      */
     public Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
-        return dmlIssuer.getQueryLocator(query, boundVars == null ? new Map<String, Object>() : boundVars);
-    }
-
-    public Database.SaveResult insertRecord(SObject record) {
-        return insertRecords(new List<SObject>{record})[0];
-    }
-    public List<Database.SaveResult> insertRecords(List<SObject> records) {
-        return dmlIssuer.insertRecords(records, dmlOptions);
+        return (Database.QueryLocator) execute(new DML.QueryLocatorOperation(query, boundVars));
     }
 
 
-    public Database.SaveResult updateRecord(SObject record) {
-        return updateRecords(new List<SObject>{record})[0];
+    public DML.Result insertRecord(SObject record) {
+        List<SObject> records = newConcreteSObjectList(record);
+        return getFirstResult(insertRecords(records));
     }
-    public List<Database.SaveResult> updateRecords(List<SObject> records) {
-        return dmlIssuer.updateRecords(records, dmlOptions);
-    }
-
-
-    public Database.UpsertResult upsertRecord(SObject record, SObjectField field) {
-        return upsertRecords(nonGenericSObjectList(record), field)[0];
-    }
-    public List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field) {
-        return dmlIssuer.upsertRecords(records, field, dmlOptions?.optAllOrNone == true);
+    public List<DML.Result> insertRecords(List<SObject> records) {
+        return (List<DML.Result>) execute(new DML.InsertDML(records));
     }
 
 
-    public Database.DeleteResult deleteRecord(SObject record) {
-        return deleteRecords(new List<SObject>{record})[0];
+    public DML.Result updateRecord(SObject record) {
+        List<SObject> records = newConcreteSObjectList(record);
+        return getFirstResult(updateRecords(records));
+    }
+    public List<DML.Result> updateRecords(List<SObject> records) {
+        return (List<DML.Result>) execute(new DML.UpdateDML(records));
     }
 
-    public List<Database.DeleteResult> deleteRecords(List<SObject> records) {
-        return dmlIssuer.deleteRecords(records, isAllOrNone());
+
+    public DML.Result upsertRecord(SObject record, SObjectField field) {
+        List<SObject> records = newConcreteSObjectList(record);
+        return getFirstResult(upsertRecords(records, field));
+    }
+    public List<DML.Result> upsertRecords(List<SObject> records, SObjectField field) {
+        return (List<DML.Result>) execute(new DML.UpsertDML(records, field));
     }
 
 
-    public Database.UndeleteResult undeleteRecord(SObject record) {
-        return undeleteRecords(new List<SObject>{record})[0];
+    public DML.Result deleteRecord(SObject record) {
+        List<SObject> records = newConcreteSObjectList(record);
+        return getFirstResult(deleteRecords(records));
+    }
+    public List<DML.Result> deleteRecords(List<SObject> records) {
+        return (List<DML.Result>) execute(new DML.DeleteDML(records));
     }
 
-    public List<Database.UndeleteResult> undeleteRecords(List<SObject> records) {
-        return dmlIssuer.undeleteRecords(records, isAllOrNone());
+
+    public DML.Result undeleteRecord(SObject record) {
+        List<SObject> records = newConcreteSObjectList(record);
+        return getFirstResult(undeleteRecords(records));
+    }
+    public List<DML.Result> undeleteRecords(List<SObject> records) {
+        return (List<DML.Result>) execute(new DML.UndeleteDML(records));
+    }
+
+
+    public DML.MergeResult mergeRecords(SObject primary, List<Id> duplicates) {
+        List<DML.MergeResult> results = (List<DML.MergeResult>) execute(new DML.MergeDML(primary, duplicates));
+        return (DML.MergeResult) getFirstResult(results);
+    }
+
+
+    public DML.LeadConvertResult convertLead(Database.LeadConvert convert) {
+        List<DML.Result> results = convertLeads(new List<Database.LeadConvert>{convert});
+        return (DML.LeadConvertResult) getFirstResult(results);
+    }
+    public List<DML.LeadConvertResult> convertLeads(List<Database.LeadConvert> converts) {
+        return (List<DML.LeadConvertResult>) execute(new DML.ConvertLeadDML(converts));
+    }
+
+
+    /**
+     * Executes Database Operation using Issuer and current DML Options and Access Level.
+    */
+    protected virtual Object execute(DML.Operation operation) {
+        Object results = this.dmlIssuer.execute(operation, options);
+        register?.add(operation);
+        return results;
     }
 
 
     /**
      * Upsert will not work on generic List<SObject>, it requires concrete type.
      */
-    private List<SObject> nonGenericSObjectList(SObject record) {
+    protected List<SObject> newConcreteSObjectList(SObject record) {
         List<SObject> records = (List<SObject>) Type.forName('List<' + record.getSObjectType() + '>')
             .newInstance();
         records.add(record);
         return records;
     }
 
-    private Boolean isAllOrNone() {
-        return dmlOptions.optAllOrNone == null ? true : dmlOptions.optAllOrNone;
-    }
-
-
-    /**
-    * Issues DMLs with inherited sharing
-    * */
-    private virtual inherited sharing class DMLIssuer {
-        private AccessLevel level = AccessLevel.SYSTEM_MODE;
-
-        public virtual List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options) {
-            return Database.insert(records, options, level);
-        }
-        public virtual List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options) {
-            return Database.update(records, options, level);
-        }
-        public virtual List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone) {
-            return Database.upsert(records, field, allOrNone, level);
-        }
-        public virtual List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone) {
-            return Database.delete(records, allOrNone, level);
-        }
-        public virtual List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone) {
-            return Database.undelete(records, allOrNone, level);
-        }
-        public virtual List<SObject> query(String mockId, String query, Map<String, Object> boundVars) {
-            return Database.queryWithBinds(query, boundVars, level);
-        }
-        public virtual Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
-            return Database.getQueryLocatorWithBinds(query, boundVars, level);
-        }
-        public virtual Database.Cursor getCursor(String query, Map<String, Object> boundVars) {
-            return Database.getCursorWithBinds(query, boundVars ?? new Map<String, Object>(), level);
-        }
+    protected DML.Result getFirstResult(List<DML.Result> results) {
+        return results?.isEmpty() == false ? results.get(0) : null;
     }
 
     /**
-    * Issues DMLs with sharing
-    * */
-    @SuppressWarnings('PMD')
-    private with sharing class WithSharingDMLIssuer extends DMLIssuer {
-        public override List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options) {
-            return super.insertRecords(records, options);
-        }
-        public override List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options) {
-            return super.updateRecords(records, options);
-        }
-        public override List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone) {
-            return super.upsertRecords(records, field, allOrNone);
-        }
-        public override List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone) {
-            return super.deleteRecords(records, allOrNone);
-        }
-        public override List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone) {
-            return super.undeleteRecords(records, allOrNone);
-        }
-        public override List<SObject> query(String mockId, String query, Map<String, Object> boundVars) {
-            return super.query(mockId, query, boundVars);
-        }
-        public override Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
-            return super.getQueryLocator(query, boundVars);
-        }
-        public override Database.Cursor getCursor(String query, Map<String, Object> boundVars) {
-            return super.getCursor(query, boundVars);
-        }
-    }
-
-
-    /**
-    * Issues DMLs without sharing
-    * */
-    @SuppressWarnings('PMD')
-    private without sharing class WithoutSharingDMLIssuer extends DMLIssuer {
-        public override List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options) {
-            return super.insertRecords(records, options);
-        }
-        public override List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options) {
-            return super.updateRecords(records, options);
-        }
-        public override List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone) {
-            return super.upsertRecords(records, field, allOrNone);
-        }
-        public override List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone) {
-            return super.deleteRecords(records, allOrNone);
-        }
-        public override List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone) {
-            return super.undeleteRecords(records, allOrNone);
-        }
-        public override List<SObject> query(String mockId, String query, Map<String, Object> boundVars) {
-            return super.query(mockId, query, boundVars);
-        }
-        public override Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
-            return super.getQueryLocator(query, boundVars);
-        }
-        public override Database.Cursor getCursor(String query, Map<String, Object> boundVars) {
-            return super.getCursor(query, boundVars);
-        }
-    }
-
-
-    /**
-     * Mocks all DML operations and saves them in DatabaseMock instance.
-     * Queries are not mocked.
+     * Mocks response from .query() call, for queries for specified SObject Type.
+     * Records list must have concrete sobject type (ex. List<Account>)
      */
-    private class MockedDmlIssuer extends DMLIssuer {
-        private final DatabaseMock mock;
-
-        private MockedDmlIssuer(DatabaseMock mock) {
-            this.mock = mock;
+    @TestVisible DatabaseService mockQuery(List<SObject> records) {
+        if (records.getSObjectType() == null) {
+            throw new QueryException('Unexpected generic sobject list.');
         }
-
-        public override List<Database.SaveResult> insertRecords(List<SObject> records, Database.DMLOptions options) {
-            return (List<Database.SaveResult>) doMockedDML(
-                DmlType.INSERT_DML, records, options.optAllOrNone, mock.insertedRecords, List<Database.SaveResult>.class
-            );
-        }
-
-        public override List<Database.SaveResult> updateRecords(List<SObject> records, Database.DMLOptions options) {
-            return (List<Database.SaveResult>) doMockedDML(
-                DmlType.UPDATE_DML, records, options.optAllOrNone, mock.updatedRecords, List<Database.SaveResult>.class
-            );
-        }
-
-        public override List<Database.UpsertResult> upsertRecords(List<SObject> records, SObjectField field, Boolean allOrNone) {
-            return (List<Database.UpsertResult>) doMockedDML(
-                DmlType.UPSERT_DML, records, allOrNone, mock.upsertedRecords, List<Database.UpsertResult>.class
-            );
-        }
-
-        public override List<Database.DeleteResult> deleteRecords(List<SObject> records, Boolean allOrNone) {
-            return (List<Database.DeleteResult>) doMockedDML(
-                DmlType.DELETE_DML, records, allOrNone, mock.deletedRecords, List<Database.DeleteResult>.class
-            );
-        }
-
-        public override List<Database.UndeleteResult> undeleteRecords(List<SObject> records, Boolean allOrNone) {
-            return (List<Database.UndeleteResult>) doMockedDML(
-                DmlType.UNDELETE_DML, records, allOrNone, mock.undeletedRecords, List<Database.UndeleteResult>.class
-            );
-        }
-
-        public override List<SObject> query(String mockId, String query, Map<String, Object> boundVars) {
-            return (List<SObject>) mock.queryMocks.get(mockId);
-        }
-
-        public override Database.QueryLocator getQueryLocator(String query, Map<String, Object> boundVars) {
-            return Database.getQueryLocatorWithBinds(query, boundVars, level);
-        }
-
-        private Object doMockedDML(DmlType dmlType, List<SObject> records, Boolean allOrNone, List<SObject> targetList, Type resultType) {
-            List<DmlResult> results = new List<DmlResult>();
-
-            for (SObject record : records) {
-                if (String.isBlank(record.Id)) {
-                    record.Id = DatabaseService.getFakeId(record.getSObjectType());
-                }
-
-                List<DatabaseService.DmlError> dmlErrors = mock.getDMLErrors(dmlType, record);
-                DmlResult dmlResult = new DmlResult(record.Id, dmlErrors);
-
-                if (!dmlResult.success && allOrNone == true) {
-                    throw new DmlException(dmlResult.errors?.get(0)?.message);
-                }
-
-                results.add(dmlResult);
-                targetList.add(record);
-            }
-
-            return getResult(results, resultType);
-        }
-
-        /**
-         * Changes run-type of DmlResult into one of standard Database.*Result classes.
-         */
-        private Object getResult(List<DmlResult> results, Type resultType) {
-            return JSON.deserialize(JSON.serialize(results), resultType);
-        }
+        return mockQuery(records.getSObjectType(), records);
     }
 
-    private class DmlResult {
-        public Boolean success;
-        public Id id;
-        public List<DmlError> errors = new List<DmlError>();
-
-        public DmlResult(Id id, List<DmlError> errors) {
-            this.id = id;
-            this.errors = errors;
-            this.success = errors == null || errors.isEmpty();
-            // For undelete, this list needs to be null.
-        }
+    /**
+     * Mocks response from .query() call, for queries for specified SObject Type.
+     */
+    @TestVisible DatabaseService mockQuery(SObjectType sObjectType, Object result) {
+        return mockQuery(sObjectType.toString().toLowerCase(), result);
     }
 
-    public class DmlError {
-        public List<String> fields;
-        public String message;
-        public StatusCode statusCode;
+    /**
+     * Mocks response from .query() call, for queries with specified mockId.
+     */
+    @TestVisible DatabaseService mockQuery(String mockId, Object result) {
+        this.options.queryMocks.put(mockId, result);
+        return this;
+    }
 
-        public DmlError(String message) {
-            this.message = message;
-            this.fields = fields;
-            this.statusCode = System.StatusCode.FIELD_CUSTOM_VALIDATION_EXCEPTION;
-        }
+    /**
+     * All DMLs will be mocked with success response. Records will have fake Ids assigned.
+     */
+    @TestVisible DatabaseService mockDmls() {
+        mockDmlResult(new DML.FakeDmlMock());
+        mockDmlResult(DML.Type.CONVERT_LEAD_DML, null, new DML.LeadConvertResult(true));
+        mockDmlResult(DML.Type.MERGE_DML, null, new DML.MergeResult(true));
+        return this;
+    }
+
+    /**
+     * Any DML against records that has the same field as provided in param, will have DML Error.
+     */
+    @TestVisible DatabaseService mockDmlError(SObject matcherRecord) {
+        return mockDmlError(null, matcherRecord);
+    }
+
+    /**
+     * Any DML of given type should fail.
+     */
+    @TestVisible DatabaseService mockDmlError(DML.Type dmlType) {
+        return mockDmlError(dmlType, null);
+    }
+
+    /**
+     * Specified DML against records that has the same field as provided in param, will have DML Error
+     */
+    @TestVisible DatabaseService mockDmlError(DML.Type dmlType, SObject matcherRecord) {
+        return mockDmlResult(dmlType, matcherRecord, false);
+    }
+
+    /**
+     * Mocks DML Result with specified result.
+     */
+    @TestVisible DatabaseService mockDmlResult(DML.Type dmlType, SObject matcherRecord, Boolean success) {
+        DML.Result result =
+            dmlType == DML.Type.CONVERT_LEAD_DML ? new DML.LeadConvertResult(success)
+                : dmlType == DML.Type.MERGE_DML ? new DML.MergeResult(success)
+                : new DML.Result(success);
+
+        return mockDmlResult(dmlType, matcherRecord, result);
+    }
+
+    /**
+     * Specified DML against records that has the same field as provided in param, will have DML Error
+     * @param dmlType INSERT/UPDATE/DELETE etc. null to match any.
+     * @param matcherRecord If not null, this record is used to match which records should have error.
+     * @param result JSON map that will be typed to Database.*Result class.
+     */
+    @TestVisible DatabaseService mockDmlResult(DML.Type dmlType, SObject matcherRecord, DML.Result result) {
+        return mockDmlResult(new DML.DmlResultMock(dmlType, matcherRecord, result));
+    }
+
+    @TestVisible DatabaseService mockDmlResult(DML.DmlResultMock mock) {
+        this.options.dmlMocks.add(mock);
+        return this;
     }
 }

@@ -68,6 +68,7 @@ nav:
             label: Callout Framework
             description: Define common behaviour for outgoing callouts.
             iconName: standard:maintenance_work_rule
+            badge: Updated
             snippet: |
               onAfterCallout()
               .add(match.onUnauthorized(), action.retry(1))
@@ -98,6 +99,7 @@ nav:
           - path: database-service
             label: Database Service
             description: Issue and mock DMLs with configurable sharing and user mode.
+            badge: Updated v2.0
             snippet: |
               new DatabaseService()
                 .withoutSharing()

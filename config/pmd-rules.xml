@@ -1,0 +1,110 @@
+<ruleset
+        name="Employ PMD Rules"
+        xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    <description>PMD Rules for the Employ Salesforce One Org Project</description>
+    <exclude-pattern>docs/.*</exclude-pattern>
+
+    <!-- Apex Best Practices -->
+    <!-- <rule ref="category/apex/bestpractices.xml/ApexAssertionsShouldIncludeMessage" /> -->
+    <rule ref="category/apex/bestpractices.xml/ApexUnitTestClassShouldHaveAsserts"/>
+    <rule ref="category/apex/bestpractices.xml/ApexUnitTestMethodShouldHaveIsTestAnnotation"/>
+    <rule ref="category/apex/bestpractices.xml/ApexUnitTestShouldNotUseSeeAllDataTrue"/>
+    <rule ref="category/apex/bestpractices.xml/AvoidGlobalModifier"/>
+    <rule ref="category/apex/bestpractices.xml/AvoidLogicInTrigger"/>
+    <rule ref="category/apex/bestpractices.xml/DebugsShouldUseLoggingLevel"/>
+    <rule ref="category/apex/bestpractices.xml/UnusedLocalVariable"/>
+
+    <!-- Apex Code Style -->
+    <rule ref="category/apex/codestyle.xml/ClassNamingConventions">
+        <properties>
+            <property name="testClassPattern" value="[A-Z][a-zA-Z0-9_]*(T|Te|Tes|Test)$"/>
+        </properties>
+    </rule>
+    <rule ref="category/apex/codestyle.xml/FieldDeclarationsShouldBeAtStart"/>
+    <rule ref="category/apex/codestyle.xml/FieldNamingConventions"/>
+    <rule ref="category/apex/codestyle.xml/ForLoopsMustUseBraces"/>
+    <rule ref="category/apex/codestyle.xml/FormalParameterNamingConventions"/>
+    <rule ref="category/apex/codestyle.xml/IfElseStmtsMustUseBraces">
+        <properties>
+            <property
+                    name="violationSuppressXPath"
+                    value="//IfBlockStatement/StandardCondition//MethodCallExpression[@FullMethodName = 'Test.isRunningTest']//ancestor::IfBlockStatement/BlockStatement"/>
+        </properties>
+    </rule>
+    <rule ref="category/apex/codestyle.xml/IfStmtsMustUseBraces">
+        <properties>
+            <property
+                    name="violationSuppressXPath"
+                    value="//IfBlockStatement/StandardCondition//MethodCallExpression[@FullMethodName = 'Test.isRunningTest']//ancestor::IfBlockStatement/BlockStatement"/>
+        </properties>
+    </rule>
+    <rule ref="category/apex/codestyle.xml/LocalVariableNamingConventions"/>
+    <rule ref="category/apex/codestyle.xml/MethodNamingConventions">
+        <properties>
+            <property name="testPattern" value="(should\w*(When\w*)?)|(test\w*)"/>
+        </properties>
+    </rule>
+    <rule ref="category/apex/codestyle.xml/FieldNamingConventions">
+        <properties>
+            <property name="enumConstantPattern" value="[A-Z][A-Z0-9_]*"/>
+            <property name="finalPattern" value="[A-Z][A-Z0-9_]*"/>
+        </properties>
+    </rule>
+    <rule ref="category/apex/codestyle.xml/WhileLoopsMustUseBraces"/>
+
+    <!-- Apex Design -->
+    <rule ref="category/apex/design.xml/AvoidDeeplyNestedIfStmts"/>
+    <rule ref="category/apex/design.xml/CognitiveComplexity"/>
+    <rule ref="category/apex/design.xml/CyclomaticComplexity"/>
+    <rule ref="category/apex/design.xml/ExcessiveClassLength"/>
+    <rule ref="category/apex/design.xml/ExcessiveParameterList"/>
+    <rule ref="category/apex/design.xml/ExcessivePublicCount"/>
+    <rule ref="category/apex/design.xml/NcssConstructorCount"/>
+    <rule ref="category/apex/design.xml/NcssMethodCount"/>
+    <rule ref="category/apex/design.xml/NcssTypeCount"/>
+    <rule ref="category/apex/design.xml/StdCyclomaticComplexity"/>
+    <rule ref="category/apex/design.xml/TooManyFields"/>
+
+    <!-- Apex Error Prone -->
+    <rule ref="category/apex/errorprone.xml/ApexCSRF"/>
+    <rule ref="category/apex/errorprone.xml/AvoidDirectAccessTriggerMap"/>
+    <rule ref="category/apex/errorprone.xml/AvoidHardcodingId"/>
+    <rule ref="category/apex/errorprone.xml/AvoidNonExistentAnnotations"/>
+    <rule ref="category/apex/errorprone.xml/EmptyCatchBlock">
+        <properties>
+            <property name="allowCommentedBlocks" value="true"/>
+        </properties>
+    </rule>
+    <rule ref="category/apex/errorprone.xml/EmptyIfStmt"/>
+    <rule ref="category/apex/errorprone.xml/EmptyStatementBlock">
+        <properties>
+            <property name="reportEmptyPrivateNoArgConstructor" value="false"/>
+            <property name="reportEmptyVirtualMethod" value="false"/>
+        </properties>
+    </rule>
+    <rule ref="category/apex/errorprone.xml/EmptyTryOrFinallyBlock"/>
+    <rule ref="category/apex/errorprone.xml/EmptyWhileStmt"/>
+    <rule ref="category/apex/errorprone.xml/InaccessibleAuraEnabledGetter"/>
+    <rule ref="category/apex/errorprone.xml/MethodWithSameNameAsEnclosingClass"/>
+    <rule ref="category/apex/errorprone.xml/OverrideBothEqualsAndHashcode"/>
+    <rule ref="category/apex/errorprone.xml/TestMethodsMustBeInTestClasses"/>
+
+    <!-- Apex Performance -->
+    <rule ref="category/apex/performance.xml/AvoidDebugStatements"/>
+    <rule ref="category/apex/performance.xml/EagerlyLoadedDescribeSObjectResult"/>
+    <rule ref="category/apex/performance.xml/OperationWithLimitsInLoop"/>
+
+    <!-- Apex Security -->
+    <rule ref="category/apex/security.xml/ApexBadCrypto"/>
+    <rule ref="category/apex/security.xml/ApexCRUDViolation"/>
+    <rule ref="category/apex/security.xml/ApexDangerousMethods"/>
+    <rule ref="category/apex/security.xml/ApexInsecureEndpoint"/>
+    <rule ref="category/apex/security.xml/ApexOpenRedirect"/>
+    <rule ref="category/apex/security.xml/ApexSharingViolations"/>
+    <rule ref="category/apex/security.xml/ApexSOQLInjection"/>
+    <rule ref="category/apex/security.xml/ApexSuggestUsingNamedCred"/>
+    <rule ref="category/apex/security.xml/ApexXSSFromEscapeFalse"/>
+    <rule ref="category/apex/security.xml/ApexXSSFromURLParam"/>
+</ruleset>

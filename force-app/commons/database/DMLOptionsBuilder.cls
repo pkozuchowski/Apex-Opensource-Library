@@ -113,6 +113,14 @@ public class DMLOptionsBuilder {
         return this;
     }
 
+    /**
+     * Specifies the language of any labels that are returned by Apex.
+     */
+    public DMLOptionsBuilder localeOptions(String locale) {
+        this.dmlOptions.localeOptions = locale;
+        return this;
+    }
+
 
     public Database.DMLOptions build() {
         return this.dmlOptions;

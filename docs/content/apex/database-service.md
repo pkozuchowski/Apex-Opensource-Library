@@ -3,8 +3,8 @@
 sharing context in runtime.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/database)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK7YAAW)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK7YAAW)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXDWIA4)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXDWIA4)
 
 ```bash
 sf project deploy start -d "force-app/commons/database" -o sfdxOrg

@@ -377,8 +377,12 @@ public class QueryObjectTest {
             .withFields('Name')
             .withFields(new List<String>{'Name'})
             .withAllFields()
-            .withoutSharing()
-            .withSharing()
+            .forView()
+            .forUpdate()
+            .forReference()
+            .asUser()
+            .asSystemWithSharing()
+            .asSystemWithoutSharing()
             .usingCache(true)
             .byId(UserInfo.getUserId())
             .withLimit(100)
@@ -592,7 +596,8 @@ public class QueryObjectTest {
     @IsTest
     static void testWithAccessLevel() {
         SObject[] sObjects = new TestUserQuery()
-            .with(AccessLevel.SYSTEM_MODE)
+            .asSystemWithoutSharing()
+            .asSystemWithSharing()
             .withLimit(1)
             .getList();
 

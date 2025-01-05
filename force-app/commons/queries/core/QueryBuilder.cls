@@ -35,6 +35,7 @@ public inherited sharing class QueryBuilder {
     private String whereConditions = '';
     private String limitQueryPart = '';
     private String offsetQueryPart = '';
+    private String forPart = '';
 
 
     /**
@@ -54,7 +55,8 @@ public inherited sharing class QueryBuilder {
             havingConditions,
             orderBy.isEmpty() ? '' : 'ORDER BY ' + String.join(orderBy, ', '),
             limitQueryPart,
-            offsetQueryPart
+            offsetQueryPart,
+            forPart
         };
 
         return String.join(query, ' ')
@@ -178,6 +180,11 @@ public inherited sharing class QueryBuilder {
 
     public QueryBuilder setOffset(Integer offsetOf) {
         this.offsetQueryPart = 'OFFSET ' + offsetOf;
+        return this;
+    }
+
+    public QueryBuilder setFor(String forPart) {
+        this.forPart = forPart;
         return this;
     }
 }

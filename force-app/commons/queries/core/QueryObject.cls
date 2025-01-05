@@ -29,7 +29,7 @@
 public virtual inherited sharing class QueryObject extends Query.Results {
     protected final QueryConditions conditionFactory = new QueryConditions();
     protected final QueryBuilder queryBuilder = new QueryBuilder();
-    protected final DatabaseService databaseService = new DatabaseService();
+    protected final DatabaseService databaseService = new DatabaseService().asSystem();
     protected final List<Query.Condition> whereConditions = new List<Query.Condition>();
     protected final List<Query.Condition> havingConditions = new List<Query.Condition>();
     protected final QueryBindings bindings = new QueryBindings();
@@ -68,6 +68,7 @@ public virtual inherited sharing class QueryObject extends Query.Results {
         this(sObjectType);
         this.withFields(fields);
     }
+
 
     /**
      * Selects All, Custom or Standard fields.
@@ -251,29 +252,79 @@ public virtual inherited sharing class QueryObject extends Query.Results {
         return this;
     }
 
+    /**
+    * Update records with information about when they were last viewed.
+    */
+    public QueryObject forView() {
+        this.queryBuilder.setFor('FOR VIEW');
+        return this;
+    }
+
+    /**
+    * Update records with information about when they were last referenced on related list view.
+    */
+    public QueryObject forReference() {
+        this.queryBuilder.setFor('FOR REFERENCE');
+        return this;
+    }
+
+    /**
+    * Locks records while they’re being updated in order to prevent race conditions and other thread safety problems.
+    */
+    public QueryObject forUpdate() {
+        this.queryBuilder.setFor('FOR UPDATE');
+        return this;
+    }
+
 
     /**
     * Extenders
     * */
 
     /**
-     * Query will be executed in "with sharing" context,
-     * returning only those records user has access to.
+     * Enforces Object and Field level security on records and enforced sharing rules.
+     * @throws System.NoAccessException No access to entity when user does not have READ permission to sOObject
+     * or any of the fields
      */
-    public QueryObject withSharing() {
-        databaseService.withSharing();
+    public QueryObject asUser() {
+        this.databaseService.asUser();
         return this;
     }
-
 
     /**
-     * Query will be executed in "without sharing" context,
-     * returning even records not shared with user.
+     * DEVELOPER PREVIEW
+     * Enforces Object and Field level security on records and enforced sharing rules.
+     * Permission Set permissions are added on top of user permissions.
      */
-    public QueryObject withoutSharing() {
-        databaseService.withoutSharing();
+    public QueryObject asUserWithPermissionSetId(Id permissionSetId) {
+        this.databaseService.asUserWithPermissionSetId(permissionSetId);
         return this;
     }
+
+    /**
+     * Query will ignore Object and Field Level security and inherit sharing from calling class.
+     */
+    public QueryObject asSystem() {
+        this.databaseService.asSystem();
+        return this;
+    }
+
+    /**
+     * Query will ignore Object and Field Level security, but will enforce record access.
+     */
+    public QueryObject asSystemWithSharing() {
+        this.databaseService.asSystemWithSharing();
+        return this;
+    }
+
+    /**
+     * Query will ignore Object, Field Level security and sharing rules, giving access to all records.
+     */
+    public QueryObject asSystemWithoutSharing() {
+        this.databaseService.asSystemWithoutSharing();
+        return this;
+    }
+
 
     /**
     * Selector will not use cached records to limit SOQLs query limit.
@@ -293,8 +344,8 @@ public virtual inherited sharing class QueryObject extends Query.Results {
      * @throws System.NoAccessException No access to entity when user does not have READ permission to sOObject
      * or any of the fields
      */
-    public QueryObject with(AccessLevel accessLevel) {
-        this.databaseService.setAccessLevel(accessLevel);
+    public QueryObject withAccessLevel(AccessLevel accessLevel) {
+        this.databaseService.withAccessLevel(accessLevel);
         return this;
     }
 

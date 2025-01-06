@@ -3,8 +3,8 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/callout)
 [Dependency](/apex/runtime)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK6VAAW)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000UK6VAAW)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXUMIA4)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXUMIA4)
 
 ```bash
 sf project deploy start \
@@ -349,6 +349,10 @@ onAfterCallout()
 
 ---
 # Change Log
+### Ver. 1.1.1
+* Added sleep(Integer ms) handler
+* Added onRateLimit() matcher
+* Bumped API Version to 62.0
 
 ### Ver. 1.0.1
 * Fixed bug where CalloutException was not handled properly and resulted in framework returning null.

@@ -393,6 +393,29 @@ private class CalloutTest {
         }
     }
 
+    @IsTest
+    static void shouldWaitOnSleep() {
+        Integer sleepMs = 250;
+        Test.setMock(HttpCalloutMock.class, new Mock(429, 'Too Many Requests', ''));
+
+
+        Callout c = new AcmeApiCallout();
+        c.setMethod('GET');
+        c.setEndpoint('callout:MyCredential/api/Account');
+        c.onAfterCallout()
+            .clear()
+            .add(c.match.onRateLimit(), c.action.sleep(sleepMs));
+
+        Test.startTest();
+        Long startTime = System.currentTimeMillis();
+        c.execute();
+        Test.stopTest();
+
+
+        Long elapsedTime = System.currentTimeMillis() - startTime;
+        Assert.isTrue(elapsedTime > sleepMs);
+    }
+
     private class CalloutExceptionMock implements HttpCalloutMock {
         public HttpResponse respond(HttpRequest request) {
             throw new CalloutException('Time out');

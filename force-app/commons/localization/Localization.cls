@@ -150,8 +150,6 @@ public with sharing class Localization {
     private static Object getContent(Map<String, String> parameters, Type resultType) {
         try {
             String content = LocalizationCtrl.getJsonPageContent(parameters);
-            System.debug('content: ' + content);
-            System.debug('parameters: ' + parameters);
 
             /*Check if VF Page had exception while getting it's content*/
             if (content.contains('"LocalizationCtrlException"')) {

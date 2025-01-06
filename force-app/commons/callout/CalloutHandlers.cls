@@ -41,6 +41,13 @@ public virtual with sharing class CalloutHandlers {
     }
 
     /**
+     * Sleep callout again for specified number of milliseconds, as long as Matcher's condition is fulfilled.
+     */
+    public Callout.Handler sleep(Integer milliseconds) {
+      return new SleepHandler(milliseconds);
+    }
+
+    /**
      * Throws default Callout Exception with Http Response
      */
     public Callout.Handler throwEx(String message) {
@@ -215,4 +222,19 @@ public virtual with sharing class CalloutHandlers {
         }
     }
 
+    /**
+     * Sleep handler
+     */
+    private class SleepHandler implements Callout.Handler {
+        private Integer milliseconds;
+    
+        public SleepHandler(Integer milliseconds) {
+            this.milliseconds = milliseconds;
+        }
+    
+        public Object handle(Callout c) {
+            Runtime.sleep(milliSeconds);
+            return null;
+        }
+      }
 }

@@ -12,6 +12,8 @@ nav:
     groups:
       - label: News
         items:
+          - path: 25_01_06
+            label: 2025.01.06 - Database Service 2.0
           - path: 24_11_10
             label: 2024.11.10 - Http Mock Router 1.1
           - path: 24_08_12

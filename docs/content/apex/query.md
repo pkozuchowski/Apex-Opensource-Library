@@ -1,11 +1,12 @@
 # Query Framework
 *Flexible Selector Layer with Record Caching mechanism.*
 
-[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
-[Dependency 1](/apex/database-service)
-[Dependency 2](/apex/runtime)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXDbIAO)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXDbIAO)
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/query)
+[Selectors](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
+[Dependency 1](/apex/runtime)
+[Dependency 2](/apex/database-service)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXpUIAW)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXpUIAW)
 
 ```bash
 sf project deploy start \
@@ -22,7 +23,7 @@ This stands in opposition to more traditional approaches where Selector is a ser
 The common problem with service-type selectors is the code bloat that shows up for any deviations from the base query.  
 Selector's method is not able to make up for small differences in the queries.
 
-With Query Object approach, it's very easy to tailor the queries for each client code.  
+With Query Object approach, it's straightforward to tailor the queries in client-side code.  
 Notice how simple and verbose this is:
 ```apex
 //Given:
@@ -31,8 +32,30 @@ Set<String> externalIDs;
 List<Account> accounts = Query.Accounts.byExternalId(externalIDs).getList();
 ```
 
+## Syntactic sugar
+**Note!**  
+In the following documentation, I'm sometimes using synthetic sugar `Query.Accounts` or similar for clarity.
+This is not part of the framework due to dependencies.
+
+The simplest and safest way to use a query object is by creating a new instance of a query class:
+```apex
+Account[] accounts = new AccountQuery()
+    .byId('')
+    .getList();
+```
+
+Synthetic sugar can be set up in multiple ways by adding `public AccountQuery Accounts { get {return new AccountQuery();} }` to the class of choice.
+Depending on where you put it, it may be query oriented or sObject oriented:
+```apex
+Query.Accounts.byId();
+
+Accounts.query.byId();
+```
+Important consideration is that this shorthand creates a dependency between a container and a query class.
+
+
 ## Extend, Filter, Reduce
-Query Framework assumes that each query may need to be tailored to the specific requirement:
+Query Framework assumes that each query may need to be tailored to the specific requirement in a place where it is used:
 * Extend with additional fields, relationships
 * Filtered with additional WHERE clauses
 * Grouped or Limited
@@ -43,7 +66,7 @@ Query Framework assumes that each query may need to be tailored to the specific 
 
 Consider this example, where we can add additional fields to the selector's base field set.
 ```apex
-List<Contact> contact = Query.Contacts
+List<Contact> contact = new ContactQuery()
     .byAccountId(/*...ids*/)
     .withParentAccount()
     .withFields('FirstName, LastName, CreatedBy.Name')
@@ -54,7 +77,7 @@ List<Contact> contact = Query.Contacts
 
 Where clause can be combined from methods implemented in ContactQuery and generic methods implemented in QueryObject class.
 ```apex
-List<Contact> contact = Query.Contacts
+List<Contact> contact = new ContactQuery()
     .byAccountId(/*...ids*/)
     .byRecordTypeId(/*Record Type Id*/)
     .getList();
@@ -64,7 +87,7 @@ For very specialized and complex queries, there are multiple ways to define the 
 - Combining field filters and declaring filter logic.
   Each identifier in the logic string (`{0}`) corresponds to the `byCondition()` method above in the order they were declared.
 ```apex
-Query.Accounts
+new AccountQuery()
     .byName('TestName')
     .byRecordTypeDeveloperName('SMB')
     .byOwnerId(UserInfo.getUserId())
@@ -133,7 +156,7 @@ Query.Accounts
 Query result can be reduced to different things:
 ```apex
 //given
-ContactQuery contactQuery = Query.Contacts.byEmail('test@email.com');
+ContactQuery contactQuery = new ContactQuery().byEmail('test@email.com');
 
 List<Contact> contacts = contactQuery.getList();
 Contact c = ContactQuery.getFirst();
@@ -146,7 +169,7 @@ Set<Id> contactIds = contactQuery.getIds();
 Map<Id, Contact> contactById = contactQuery.getMapById();
 
 // Map by given field
-Map<String, Contact> contactByEmail = ContactQuery.getMapByString(Contact.Email);
+Map<String, Contact> contactByEmail = contactQuery.getMapByString(Contact.Email);
 
 Id contactId = contactQuery.getFirstIdOrNull();
 String contactEmail = (String) contactQuery.getFirstFieldOrNull(Contact.Email);
@@ -1338,6 +1361,23 @@ The framework will use String field parameters as a baseline parameters and SObj
 
 ---
 # Change Log
+### v2.4
+- Removed dependency between Query class and other classes.
+- Removed selectors from framework.
+- Added `withLookup(String relationship, List<SObjectField> fields)` method
+```apex
+withLookup('Account', new List<SObjectField>{
+    Account.Name
+});
+```
+
+### v2.3
+- Changed execution mode interfaces to follow DatabaseService v2.0 changes:
+    - `asUser`
+    - `asSystem`
+    - `asSystemWithSharing`
+    - `asSystemWithoutSharing`
+
 ### v2.2.0
 - Added regexp matching for Query mocking
 

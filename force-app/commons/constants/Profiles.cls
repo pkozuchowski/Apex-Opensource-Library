@@ -28,12 +28,12 @@
  * Profiles are lazily evaluated on request.
  */
 public with sharing class Profiles {
-    public static Profile SYSTEM_ADMINISTRATOR  { get {return resolve('System Administrator');} }
-    public static Profile STANDARD_USER         { get {return resolve('Standard User');} }
+    public static Profile SYSTEM_ADMINISTRATOR { get {return resolve('System Administrator');} }
+    public static Profile STANDARD_USER { get {return resolve('Standard User');} }
 
 
     private static Profile resolve(String name) {
-        return (Profile) Query.Profiles
+        return (Profile) new ProfileQuery()
             .byName(name)
             .usingCache(true)
             .getFirstOrNull();

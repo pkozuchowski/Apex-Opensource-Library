@@ -31,7 +31,7 @@ public with sharing class PermissionSets {
     public static PermissionSet COMMERCE_USER  { get {return resolve('CommerceUser');} }
 
     private static PermissionSet resolve(String name) {
-        return (PermissionSet) Query.PermissionSets
+        return (PermissionSet) new PermissionSetQuery()
             .byName(name)
             .usingCache(true)
             .getFirstOrNull();

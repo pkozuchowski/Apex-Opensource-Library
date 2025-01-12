@@ -63,10 +63,10 @@
       ]
     },
     {
-      "path": "./force-app/commons/queries",
+      "path": "./force-app/commons/query",
       "package": "Query Framework",
-      "versionName": "ver 2.3",
-      "versionNumber": "2.3.0.NEXT",
+      "versionName": "ver 2.4",
+      "versionNumber": "2.4.0.NEXT",
       "default": false,
       "versionDescription": "",
       "dependencies": [
@@ -151,6 +151,7 @@
     "Query Framework@2.1.0-2": "04tJ6000000LOsQIAW",
     "Query Framework@2.2.0-1": "04tJ6000000LV9wIAG",
     "Query Framework@2.3.0-1": "04tJ6000000LXDbIAO",
+    "Query Framework@2.4.0-1": "04tJ6000000LXpUIAW",
     "HttpMockRouter": "0Ho08000000CaSZCA0",
     "HttpMockRouter@1.0.0-1": "04t08000000ga9YAAQ",
     "HttpMockRouter@1.0.1-1": "04t08000000cSySAAU",

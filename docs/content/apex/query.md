@@ -5,8 +5,8 @@
 [Selectors](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
 [Dependency 1](/apex/runtime)
 [Dependency 2](/apex/database-service)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXpUIAW)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXpUIAW)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXpZIAW)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXpZIAW)
 
 ```bash
 sf project deploy start \
@@ -1361,6 +1361,9 @@ The framework will use String field parameters as a baseline parameters and SObj
 
 ---
 # Change Log
+### v2.4.1
+- Added `withFieldSet()` method
+
 ### v2.4
 - Removed dependency between Query class and other classes.
 - Removed selectors from framework.

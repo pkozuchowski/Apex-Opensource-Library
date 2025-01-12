@@ -625,6 +625,18 @@ public class QueryObjectTest {
         );
     }
 
+    @IsTest
+    static void testFieldsetException() {
+        try {
+            new TestUserQuery()
+                .withFieldSet('TEST_USER_FIELDSET');
+            Assert.fail();
+        } catch (QueryException e) {
+            Assert.isTrue(e.getMessage().contains('Invalid FieldSet'));
+            Assert.isTrue(e.getMessage().contains('TEST_USER_FIELDSET'));
+        }
+    }
+
     public static void assertEquals(SObject[] expected, SObject[] actual) {
         Assert.areEqual(
             new Map<Id, SObject>(expected).keySet(),

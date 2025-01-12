@@ -103,6 +103,22 @@ public virtual inherited sharing class QueryObject extends QueryResults {
         return this;
     }
 
+    /**
+     * Adds all fields from given fieldset.
+     */
+    public QueryObject withFieldSet(String fieldsetDevName) {
+        FieldSet fieldSet = sObjType.getDescribe().fieldSets.getMap().get(fieldsetDevName);
+        if (fieldSet == null) {
+            throw new QueryException('Invalid FieldSet: ' + fieldsetDevName);
+
+        } else {
+            for (FieldSetMember field : fieldSet.getFields()) {
+                queryBuilder.addField(field.getFieldPath());
+            }
+        }
+        return this;
+    }
+
 
     /**
      * Select all fields. Fields are retrieved from sObjectType describe and is different from selecting FIELDS(ALL)

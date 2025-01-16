@@ -21,7 +21,7 @@
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
-*/
+ */
 
 @IsTest(IsParallel=true)
 private class CalloutTest {
@@ -114,26 +114,34 @@ private class CalloutTest {
     private class UpdateErrorException extends CalloutResponseException {
         public String errorCode;
         public String errorMessage;
-    }
 
+        public override String getMessage(HttpResponse response) {
+            UpdateErrorException ex = (UpdateErrorException) JSON.deserialize(
+                response.getBody(),
+                UpdateErrorException.class
+            );
+            this.errorCode = ex.errorCode;
+            this.errorMessage = ex.errorMessage;
+            return errorMessage;
+        }
+    }
 
     /**
      * Tests
      */
-
 
     @IsTest
     static void shouldReturnAccountOnSuccess() {
         AcmeAccountAPI accountAPI = new AcmeAccountAPI();
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class, new Mock(200, 'OK', new List<Account>{
-            new Account(Name = 'Test Account')
-        }));
+        Test.setMock(
+            HttpCalloutMock.class,
+            new Mock(200, 'OK', new List<Account>{new Account(Name = 'Test Account')})
+        );
 
         List<Account> callResults = accountAPI.getAccounts(new List<Id>{'001000000000000'});
         Test.stopTest();
-
 
         Assert.areEqual(1, callResults.size());
         Assert.areEqual('Test Account', callResults.get(0).Name);
@@ -147,9 +155,10 @@ private class CalloutTest {
         AcmeAccountAPI accountAPI = new AcmeAccountAPI();
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class, new Mock(404, 'NOT FOUND', new Map<String, String>{
-            'error' => 'No results'
-        }));
+        Test.setMock(
+            HttpCalloutMock.class,
+            new Mock(404, 'NOT FOUND', new Map<String, String>{'error' => 'No results'})
+        );
 
         List<Account> callResults = accountAPI.getAccounts(new List<Id>{'001000000000000'});
         Test.stopTest();
@@ -162,9 +171,10 @@ private class CalloutTest {
         AcmeAccountAPI accountAPI = new AcmeAccountAPI();
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class, new Mock(200, 'OK', new List<Account>{
-            new Account(Name = 'Test Account')
-        }));
+        Test.setMock(
+            HttpCalloutMock.class,
+            new Mock(200, 'OK', new List<Account>{new Account(Name = 'Test Account')})
+        );
 
         accountAPI.getAccounts(new List<Id>{'001000000000000'});
         Test.stopTest();
@@ -177,15 +187,14 @@ private class CalloutTest {
         AcmeAccountAPI accountAPI = new AcmeAccountAPI();
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class, new Mock(500, 'Internal Server Error',
-            new Map<String, String>{
-                'error' => 'Internal Server Error'
-            }));
+        Test.setMock(
+            HttpCalloutMock.class,
+            new Mock(500, 'Internal Server Error', new Map<String, String>{'error' => 'Internal Server Error'})
+        );
 
         try {
             accountAPI.getAccounts(new List<Id>{'001000000000000'});
             Assert.fail('Exception should be thrown');
-
         } catch (CalloutResponseException e) {
             Assert.isNotNull(e.getHttpResponse());
             Assert.areEqual(500, e.getStatusCode());
@@ -199,10 +208,10 @@ private class CalloutTest {
         AcmeAccountAPI accountAPI = new AcmeAccountAPI();
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class, new Mock(401, 'Unauthorized',
-            new Map<String, String>{
-                'error' => 'Unauthorized'
-            }));
+        Test.setMock(
+            HttpCalloutMock.class,
+            new Mock(401, 'Unauthorized', new Map<String, String>{'error' => 'Unauthorized'})
+        );
 
         try {
             accountAPI.updateAccount(new Account());
@@ -220,10 +229,10 @@ private class CalloutTest {
         AcmeAccountAPI accountAPI = new AcmeAccountAPI();
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class, new Mock(408, 'Request Timeout',
-            new Map<String, String>{
-                'error' => 'Timeout'
-            }));
+        Test.setMock(
+            HttpCalloutMock.class,
+            new Mock(408, 'Request Timeout', new Map<String, String>{'error' => 'Timeout'})
+        );
 
         try {
             accountAPI.updateAccount(new Account());
@@ -241,16 +250,18 @@ private class CalloutTest {
         AcmeAccountAPI accountAPI = new AcmeAccountAPI();
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class, new Mock(400, 'Bad Request',
-            new Map<String, String>{
-                'errorCode' => 'DML_ISSUE',
-                'errorMessage' => 'Duplicate External Id'
-            }));
+        Test.setMock(
+            HttpCalloutMock.class,
+            new Mock(
+                400,
+                'Bad Request',
+                new Map<String, String>{'errorCode' => 'DML_ISSUE', 'errorMessage' => 'Duplicate External Id'}
+            )
+        );
 
         try {
             accountAPI.updateAccount(new Account());
             Assert.fail('Exception should be thrown');
-
         } catch (UpdateErrorException e) {
             Assert.areEqual('DML_ISSUE', e.errorCode);
             Assert.areEqual('Duplicate External Id', e.errorMessage);
@@ -326,13 +337,14 @@ private class CalloutTest {
         AcmeApiCallout c = new AcmeApiCallout();
         c.setMethod('GET');
         c.setEndpoint('callout:MyCredential/api/Account');
-        c.onAfterCallout()
-            .clear()
-            .add(match.onRegexMatch('.*"errorCode".*'), action.returns('my return value'));
+        c.onAfterCallout().clear().add(match.onRegexMatch('.*"errorCode".*'), action.returns('my return value'));
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class,
-            new Mock(400, 'Bad Request',
+        Test.setMock(
+            HttpCalloutMock.class,
+            new Mock(
+                400,
+                'Bad Request',
                 new Map<String, String>{
                     'message' => 'Account ID: id value of incorrect type: 001900K0001pPuOAAU',
                     'errorCode' => 'MALFORMED_ID'
@@ -342,9 +354,11 @@ private class CalloutTest {
         Object response = c.execute();
         Test.stopTest();
 
-
-        Assert.areEqual('my return value', response,
-            'Regexp handler should trigger when response body matches given regexp');
+        Assert.areEqual(
+            'my return value',
+            response,
+            'Regexp handler should trigger when response body matches given regexp'
+        );
     }
 
     @IsTest
@@ -354,14 +368,20 @@ private class CalloutTest {
         c.setEndpoint('callout:MyCredential/api/Account');
         c.onAfterCallout()
             .clear()
-            .add(c.match.onContains('"odata.error"'),
-                c.action.replaceAll('"odata\\.error"', '"odata_error"'))
-            .add(c.match.onDeserializableTo(ErrorResponseException.class), c.action.throwResponseEx(ErrorResponseException.class));
-
+            .add(c.match.onContains('"odata.error"'), c.action.replaceAll('"odata\\.error"', '"odata_error"'))
+            .add(
+                c.match.onDeserializableTo(ErrorResponseException.class),
+                c.action.throwResponseEx(ErrorResponseException.class)
+            );
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class,
-            new Mock(404, 'Not Found', '{"odata.error":{"code":"ResourceNotFound","message":{"lang":"en-US","value":"The specified resource does not exist"}}}')
+        Test.setMock(
+            HttpCalloutMock.class,
+            new Mock(
+                404,
+                'Not Found',
+                '{"odata.error":{"code":"ResourceNotFound","message":{"lang":"en-US","value":"The specified resource does not exist"}}}'
+            )
         );
 
         try {
@@ -424,6 +444,15 @@ private class CalloutTest {
 
     private class ErrorResponseException extends CalloutResponseException {
         public OdataError odata_error;
+
+        public override String getMessage(HttpResponse response) {
+            ErrorResponseException ex = (ErrorResponseException) JSON.deserialize(
+                response.getBody(),
+                ErrorResponseException.class
+            );
+            this.odata_error = ex.odata_error;
+            return odata_error.message.get('value');
+        }
     }
 
     private class OdataError {

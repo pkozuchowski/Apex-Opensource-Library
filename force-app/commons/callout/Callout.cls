@@ -27,6 +27,7 @@ public virtual class Callout {
 
     public CalloutConditions match = new CalloutConditions();
     public CalloutHandlers action = new CalloutHandlers();
+    public Long duration { get; private set; }
 
     protected HttpRequest request = new HttpRequest();
     protected HttpResponse response;
@@ -37,7 +38,6 @@ public virtual class Callout {
     private CalloutHandlersList onAfterCalloutHandlers;
     private Boolean paramsSet = false;
     private List<String> queryParams = new List<String>();
-    private Long duration { get; private set; }
     private CalloutException ex;
 
     /**
@@ -86,9 +86,9 @@ public virtual class Callout {
             .slot('beforeValidation')
             .add(match.onException(), action.logCallout(LoggingLevel.ERROR))
             .add(match.onException(), action.throwEx())
-            .add(match.onAnyErrorCode(), action.logCallout(LoggingLevel.ERROR))
+            .add('logError', match.onAnyErrorCode(), action.logCallout(LoggingLevel.ERROR))
             .add(match.onAnyErrorCode(), action.throwEx())
-            .add(match.onSuccess(), action.logCallout(LoggingLevel.INFO))
+            .add('log', match.onSuccess(), action.logCallout(LoggingLevel.INFO))
             .add(match.onSuccess(), action.returnJSON(responseType));
     }
 

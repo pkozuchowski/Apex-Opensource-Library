@@ -37,10 +37,10 @@
     {
       "path": "force-app/commons/callout",
       "package": "Callout",
-      "versionName": "ver 1.1",
-      "versionNumber": "1.1.1.NEXT",
+      "versionName": "ver 1.2",
+      "versionNumber": "1.2.0.NEXT",
       "default": false,
-      "versionDescription": "",
+      "versionDescription": "Minor QoL changes around callout exception handling",
       "dependencies": [
         {
           "package": "Libra Shared",
@@ -136,6 +136,7 @@
     "Callout@1.0.0-1": "04t08000000ga94AAA",
     "Callout@1.0.1-2": "04t08000000UK6VAAW",
     "Callout@1.1.1-1": "04tJ6000000LXUMIA4",
+    "Callout@1.2.0-1": "04tJ6000000LYEkIAO",
     "Collection": "0Ho08000000CaSKCA0",
     "Collection@1.0.0-1": "04t08000000ga99AAA",
     "Collection@1.0.1-1": "04t08000000UK6pAAG",

@@ -3,8 +3,8 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/callout)
 [Dependency](/apex/runtime)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXUMIA4)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXUMIA4)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYEkIAO)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYEkIAO)
 
 ```bash
 sf project deploy start \
@@ -349,6 +349,26 @@ onAfterCallout()
 
 ---
 # Change Log
+### Ver. 1.2
+* QoL for throwing exceptions based on Http response:
+```apex
+    private class UpdateErrorException extends CalloutResponseException {
+        public String errorCode;
+        public String errorMessage;
+
+        public override String getMessage(HttpResponse response) {
+            UpdateErrorException ex = (UpdateErrorException) JSON.deserialize(
+                response.getBody(),
+                UpdateErrorException.class
+            );
+            this.errorCode = ex.errorCode;
+            this.errorMessage = ex.errorMessage;
+            return errorMessage;
+        }
+    }
+```
+
+
 ### Ver. 1.1.1
 * Added sleep(Integer ms) handler
 * Added onRateLimit() matcher

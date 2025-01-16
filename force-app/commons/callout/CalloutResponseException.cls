@@ -27,10 +27,11 @@
  * Exception thrown when action done by http callout does not succeed.
  */
 public virtual with sharing class CalloutResponseException extends Exception {
-    private HttpResponse httpResponse;
+    protected HttpResponse httpResponse;
 
-    public void setHttpResponse(HttpResponse response) {
+    public virtual void setHttpResponse(HttpResponse response) {
         this.httpResponse = response;
+        setMessage(getMessage(response));
     }
 
     /**
@@ -52,5 +53,9 @@ public virtual with sharing class CalloutResponseException extends Exception {
      */
     public String getStatus() {
         return httpResponse?.getStatus();
+    }
+
+    public virtual String getMessage(HttpResponse response) {
+        return response?.getStatusCode() + ' ' + response?.getStatus();
     }
 }

@@ -34,17 +34,17 @@ public virtual with sharing class CalloutHandlers {
     }
 
     /**
+     * Sleep callout again for specified number of milliseconds, as long as Matcher's condition is fulfilled.
+     */
+    public Callout.Handler sleep(Integer milliseconds) {
+        return new SleepHandler(milliseconds);
+    }
+
+    /**
      * Throws default Callout Exception with Http Response
      */
     public Callout.Handler throwEx() {
         return throwEx(null);
-    }
-
-    /**
-     * Sleep callout again for specified number of milliseconds, as long as Matcher's condition is fulfilled.
-     */
-    public Callout.Handler sleep(Integer milliseconds) {
-      return new SleepHandler(milliseconds);
     }
 
     /**
@@ -60,7 +60,6 @@ public virtual with sharing class CalloutHandlers {
     public Callout.Handler throwResponseEx(Type errorType) {
         return new ExceptionHandler(errorType);
     }
-
 
     /**
      * Callout execute will return given value
@@ -138,11 +137,7 @@ public virtual with sharing class CalloutHandlers {
                     ex = (CalloutResponseException) JSON.deserialize(body, errorResponseType);
                 }
 
-                if (String.isEmpty(ex.getMessage())) {
-                    ex.setMessage(httpResponse?.getStatusCode() + ' ' + httpResponse?.getStatus());
-                }
                 ex.setHttpResponse(httpResponse);
-
             }
 
             throw ex;
@@ -227,14 +222,14 @@ public virtual with sharing class CalloutHandlers {
      */
     private class SleepHandler implements Callout.Handler {
         private Integer milliseconds;
-    
+
         public SleepHandler(Integer milliseconds) {
             this.milliseconds = milliseconds;
         }
-    
+
         public Object handle(Callout c) {
-            Runtime.sleep(milliSeconds);
+            Runtime.sleep(milliseconds);
             return null;
         }
-      }
+    }
 }

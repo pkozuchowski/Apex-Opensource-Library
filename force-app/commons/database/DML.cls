@@ -80,12 +80,30 @@ public with sharing class DML {
         public DML.MergeDML[] merges = (MergeDML[]) get(DML.Type.MERGE_DML);
         public DML.QueryOperation[] queries = (QueryOperation[]) get(DML.Type.QUERY);
 
+        public SObject[] inserted { get {return getRecords(inserts);} }
+        public SObject[] updated { get {return getRecords(updates);} }
+        public SObject[] upserted { get {return getRecords(upserts);} }
+        public SObject[] deleted { get {return getRecords(deletes);} }
+        public SObject[] undeleted { get {return getRecords(undeletes);} }
+
         public void add(Operation operation) {
             operationsByType.get(operation.dmlType).add(operation);
         }
 
         public Operation[] get(Type dmlType) {
             return operationsByType.get(dmlType);
+        }
+
+        private List<SObject> getRecords(DMLOperation[] operations) {
+            List<SObject> records = new List<SObject>();
+
+            for (DMLOperation operation : operations) {
+                for (Integer i = 0; i < operation.successRows.size(); i++) {
+                    records.add((SObject) operation.successRows[i]);
+                }
+            }
+
+            return records;
         }
     }
 
@@ -282,6 +300,8 @@ public with sharing class DML {
         public String operationId { get; protected set; }
         public transient SObjectType sObjectType { get; protected set; }
         public List<Object> dmlRows { get; protected set; }
+        public List<Object> successRows { get; protected set; }
+        public List<Object> errorRows { get; protected set; }
         public List<Result> results { get; protected set; }
         public Boolean success { get; protected set; }
 
@@ -302,6 +322,8 @@ public with sharing class DML {
         protected void init(DML.Type dmlType, List<Object> inputs, SObjectType sObjectType) {
             this.dmlType = dmlType;
             this.dmlRows = inputs;
+            this.successRows = new List<Object>();
+            this.errorRows = new List<Object>();
             this.sObjectType = sObjectType;
             this.operationId = '' + (sObjectType?.toString() ?? 'MIXED_DML') + '.' + dmlType.name();
             this.results = new List<DML.Result>();
@@ -376,6 +398,7 @@ public with sharing class DML {
                 result.dmlType = dmlType;
                 this.success = this.success && result.success;
                 results.add(result);
+                (this.success ? successRows : errorRows).add(dmlRows[i]);
             }
         }
 

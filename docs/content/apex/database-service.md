@@ -3,8 +3,8 @@
 sharing context in runtime.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/database)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXDWIA4)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LXDWIA4)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYEfIAO)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYEfIAO)
 
 ```bash
 sf project deploy start -d "force-app/commons/database" -o sfdxOrg
@@ -92,6 +92,12 @@ class DML.Register {
     public DML.UndeleteDML[] undeletes;
     public DML.MergeDML[] merges;
     public DML.QueryOperation[] queries;
+
+    public SObject[] inserted;
+    public SObject[] updated;
+    public SObject[] upserted;
+    public SObject[] deleted;
+    public SObject[] undeleted;
 }
 ```
 
@@ -100,7 +106,8 @@ property.
 ```apex
 databaseService.register.inserts.size(); // Returns how many times insert operation were called.
 Account parentAccount = (Account) databaseService.register.inserts[0].records[0]; // returns first record from first Insert
-DatabaseService.register.inserts[0].results[0]; // returns result for first record
+databaseService.register.inserts[0].results[0]; // returns result for first record
+databaseService.register.inserted[0]; //returns first successfully inserted record, regardless in which operation
 ```
 
 ### Mocking Queries and DMLs
@@ -451,6 +458,9 @@ public class DatabaseUnitOfWork extends DatabaseService {
 
 ---
 # Change Log
+### v2.1
+- Added inserted/updated/deleted etc. record lists to register
+
 ### v2.0
 - Entire framework has been redesigned.
 - Added Unit of Work class, extending DatabaseService.

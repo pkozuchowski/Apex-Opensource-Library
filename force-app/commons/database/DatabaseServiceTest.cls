@@ -126,6 +126,7 @@ private class DatabaseServiceTest {
 
 
         Assert.areEqual(3, db.register.inserts.size());
+        Assert.areEqual(5, db.register.inserted.size());
         Account parentAccount = (Account) db.register.inserts[0].dmlRows[0];
         Account childAccount = (Account) db.register.inserts[1].dmlRows[0];
         Contact contact1 = (Contact) db.register.inserts[2].dmlRows[0];

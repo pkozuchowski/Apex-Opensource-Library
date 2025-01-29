@@ -282,7 +282,13 @@ public with sharing class AccountQuotingService {
     public void generateQuotes(Set<Id> accountIds) {
         List<Accounts> accounts = Query.Accounts.byId(accountIds).getList();
 
-        // ... 
+        // Or using Query Wrapper
+
+        List<Account> accounts = Query.of([
+            SELECT Id, Name
+            FROM Account
+            WHERE Id IN :accountIds
+        ]).getList();
     }
 
 }

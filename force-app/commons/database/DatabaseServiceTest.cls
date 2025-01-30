@@ -47,9 +47,9 @@ private class DatabaseServiceTest {
         databaseService.upsertRecord(acc, Account.Id);
         databaseService.deleteRecord(acc);
         databaseService.undeleteRecord(acc);
-        databaseService.query('SELECT Id FROM User');
-        databaseService.getCursor('SELECT Id FROM User', null);
-        databaseService.getQueryLocator('SELECT Id FROM User');
+        databaseService.query('SELECT Id FROM User LIMIT 10');
+        databaseService.getCursor('SELECT Id FROM User LIMIT 10', null);
+        databaseService.getQueryLocator('SELECT Id FROM User LIMIT 10');
     }
 
     @IsTest

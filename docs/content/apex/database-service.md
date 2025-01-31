@@ -75,6 +75,24 @@ Standard Database.*Result classes are troublesome because:
 - Standard classes are not constructible in unit tests.
 - Standard classes cause problems with serialization - can't be returned in @AuraEnabled methods or stored in stateful batch classes.
 
+```apex
+public class DML {
+
+    public virtual class Result {
+        @AuraEnabled public Boolean success;
+        @AuraEnabled public Id id;
+        @AuraEnabled public List<Error> errors;
+        @AuraEnabled public DML.Type dmlType;
+    }
+
+    public virtual class Error {
+        @AuraEnabled public List<String> fields;
+        @AuraEnabled public String message;
+        @AuraEnabled public StatusCode statusCode;
+    }
+}
+```
+
 ### Tracking DMLs in Unit Tests
 When run in Unit Test context, DatabaseService will register all issued DML operations.
 Developers can reference to check issued Database operations, DML rows and results.

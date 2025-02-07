@@ -33,6 +33,7 @@ public virtual class Callout {
     protected HttpResponse response;
     protected String loggedName;
     protected Type responseType;
+    protected Id recordId;
 
     private CalloutHandlersList onBeforeCalloutHandlers;
     private CalloutHandlersList onAfterCalloutHandlers;
@@ -112,6 +113,13 @@ public virtual class Callout {
      */
     public void setTimeout(Integer timeout) {
         this.request.setTimeout(timeout);
+    }
+
+    /**
+     * Sets record id related to callout
+     */
+    public void setTimeout(Id recordId) {
+        this.recordId = recordId;
     }
 
     /**
@@ -213,6 +221,13 @@ public virtual class Callout {
      */
     public HttpResponse getResponse() {
         return response;
+    }
+
+    /**
+     * @return Record Id of the callout
+     */
+    public Id getRecordId() {
+        return this.recordId;
     }
 
     /**

@@ -246,6 +246,17 @@ private class CalloutTest {
     }
 
     @IsTest
+    static void shouldAddRecordId() {
+        AcmeAccountAPI accountAPI = new AcmeAccountAPI();
+        Account acc = new Account(name='Test Account');
+        insert acc;
+        Test.startTest();
+        accountAPI.setRecordId(acc.Id);
+        Test.stopTest();
+        Assert.areEqual(acc.Id, accountAPI.getRecordId(), 'Id should match the id set from callout class.');
+    }
+
+    @IsTest
     static void shouldHaveErrorResponseOnBadRequest() {
         AcmeAccountAPI accountAPI = new AcmeAccountAPI();
 

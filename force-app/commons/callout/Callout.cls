@@ -27,19 +27,19 @@ public virtual class Callout {
 
     public CalloutConditions match = new CalloutConditions();
     public CalloutHandlers action = new CalloutHandlers();
-    public Long duration { get; private set; }
 
     protected HttpRequest request = new HttpRequest();
     protected HttpResponse response;
-    protected String loggedName;
     protected Type responseType;
-    protected Id recordId;
 
     private CalloutHandlersList onBeforeCalloutHandlers;
     private CalloutHandlersList onAfterCalloutHandlers;
     private Boolean paramsSet = false;
     private List<String> queryParams = new List<String>();
     private CalloutException ex;
+
+    /*Additional Information about Callout*/
+    private Map<String, Object> metadata = new Map<String, Object>();
 
     /**
      * Represents an action performed on callout
@@ -82,15 +82,15 @@ public virtual class Callout {
 
     protected virtual void setupHandlers() {
         onAfterCallout()
-            .add(match.onUnauthorized(), action.retry(1))
-            .add(match.onTimeout(), action.retry(1))
+            .add('retryUnauthorized', match.onUnauthorized(), action.retry(1))
+            .add('retryTimeout', match.onTimeout(), action.retry(1))
             .slot('beforeValidation')
-            .add(match.onException(), action.logCallout(LoggingLevel.ERROR))
-            .add(match.onException(), action.throwEx())
+            .add('logException', match.onException(), action.logCallout(LoggingLevel.ERROR))
+            .add('throwExOnException', match.onException(), action.throwEx())
             .add('logError', match.onAnyErrorCode(), action.logCallout(LoggingLevel.ERROR))
-            .add(match.onAnyErrorCode(), action.throwEx())
+            .add('throwExOnErrorCode', match.onAnyErrorCode(), action.throwEx())
             .add('log', match.onSuccess(), action.logCallout(LoggingLevel.INFO))
-            .add(match.onSuccess(), action.returnJSON(responseType));
+            .add('returnJSON', match.onSuccess(), action.returnJSON(responseType));
     }
 
     /**
@@ -118,8 +118,8 @@ public virtual class Callout {
     /**
      * Sets record id related to callout
      */
-    public void setTimeout(Id recordId) {
-        this.recordId = recordId;
+    public void setRelatedId(Id recordId) {
+        setMetadata('relatedId', recordId);
     }
 
     /**
@@ -156,22 +156,10 @@ public virtual class Callout {
     }
 
     /**
-     * @return Identifier of class/source that created log.
-     */
-    public String getLogName() {
-        return String.isBlank(loggedName)
-            ? String.format('{0} {1}', new List<Object>{
-                request.getMethod(),
-                request.getEndpoint()?.substringBefore('?')
-            })
-            : loggedName;
-    }
-
-    /**
      * Sets ApexClass field on log. If not specified, it will default to endpoint before query parameters.
      */
     public void setLogName(String logName) {
-        this.loggedName = logName;
+        setMetadata('logName', logName);
     }
 
     /**
@@ -208,6 +196,12 @@ public virtual class Callout {
         }
     }
 
+    /**
+     * Set additional information about callout
+     */
+    public void setMetadata(String key, Object value) {
+        metadata.put(key, value);
+    }
 
     /**
      * Success response will deserialize body to this type and return it from execute
@@ -217,17 +211,42 @@ public virtual class Callout {
     }
 
     /**
-     * @return Latest HttpResponse of the callout
+     * @return Identifier of class/source that created log.
      */
-    public HttpResponse getResponse() {
-        return response;
+    public String getLogName() {
+        String logName = (String) getMetadata('logName');
+        return logName ?? String.format('{0} {1}', new List<Object>{
+            request.getMethod(),
+            request.getEndpoint()?.substringBefore('?')
+        });
+    }
+
+    /**
+     * @return Duration of the callout in milliseconds
+     */
+    public Long getDuration() {
+        return (Long) getMetadata('duration');
     }
 
     /**
      * @return Record Id of the callout
      */
-    public Id getRecordId() {
-        return this.recordId;
+    public Id getRelatedId() {
+        return (Id) getMetadata('relatedId');
+    }
+
+    /**
+     * @return Additional Information about callout
+     */
+    public Object getMetadata(String key) {
+        return metadata.get(key);
+    }
+
+    /**
+     * @return Latest HttpResponse of the callout
+     */
+    public HttpResponse getResponse() {
+        return response;
     }
 
     /**
@@ -280,7 +299,7 @@ public virtual class Callout {
             return null;
 
         } finally {
-            this.duration = System.currentTimeMillis() - startTime;
+            setMetadata('duration', System.currentTimeMillis() - startTime);
         }
     }
 

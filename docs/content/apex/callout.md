@@ -3,8 +3,8 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/callout)
 [Dependency](/apex/runtime)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYEkIAO)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYEkIAO)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYsyIAG)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYsyIAG)
 
 ```bash
 sf project deploy start \
@@ -22,8 +22,8 @@ of authorization, error handling and response handling.
 
 Consider an example of integration with external webservices where a few different endpoints are used:
 - searching orders
-  - fetching order details
-  - creating new order
+    - fetching order details
+    - creating new order
 
 All calls to the API should have streamlined workflow - callouts should be authorized, logged with appropriate logging level, retried on timeout.    
 To implement this configuration, we could derive a new class from Callout class and configure it as follows:
@@ -168,7 +168,7 @@ public class AcmeApiCallout extends Callout {
 
 Add handler to the slot which does following:
 - IF Webservice returned `404 NOT FOUND`
-  - THEN return an empty list and stop execution
+    - THEN return an empty list and stop execution
 ```apex
  public class AcmeCustomerAPI {
 
@@ -181,6 +181,20 @@ Add handler to the slot which does following:
 
         return (List<Customer>) c.execute();
     }
+}
+```
+
+## Metadata
+If you need to save additional information about the callout, you can use `setMetadata` and `getMetadta` methods -
+this can be useful for logging purposes.
+
+```apex
+    public List<Customer> getCustomers(List<String> accountIds) {
+    Callout c = new AcmeApiCallout();
+    c.setMetadata('context', 'getCustomers');
+    c.setMetadata('accountIds', accountIds);
+
+    return (List<Customer>) c.execute();
 }
 ```
 
@@ -202,15 +216,15 @@ public interface Handler {
 }
 ```
 
-The Framework works as follows - when callout is executed():
+The Framework works as follows – when callout is executed():
 1. Iterate through pairs of Condition-Handler
-   1. If the Condition returns true:
-       1. Execute Handler and check return value:
-           1. If `null` - continue iteration over actions.
-           1. If not null - return this immediately as response from callout `execute` method.
-           1. If throws exception, breaks the code execution - this exception has to be handled in client code.
+    1. If the Condition returns true:
+        1. Execute Handler and check return value:
+            1. If `null` - continue iteration over actions.
+            1. If not null - return this immediately as response from callout `execute` method.
+            1. If throws exception, breaks the code execution - this exception has to be handled in client code.
 
-Callout has two lists of handlers - one executed before and one after the callout.
+Callout has two lists of handlers – one executed before and one after the callout.
 
 ## Examples
 
@@ -335,15 +349,15 @@ public Callout getAcmeCallout() {
 - Callout has some handlers implemented by default:
 ```apex | Default Handlers
 onAfterCallout()
-	.add(match.onUnauthorized(), action.retry(1))
-	.add(match.onTimeout(), action.retry(1))
-	.slot('beforeValidation')
-	.add(match.onException(), action.logCallout(LoggingLevel.ERROR))
-	.add(match.onException(), action.throwEx())
-	.add(match.onAnyErrorCode(), action.logCallout(LoggingLevel.ERROR))
-	.add(match.onAnyErrorCode(), action.throwEx())
-	.add(match.onSuccess(), action.logCallout(LoggingLevel.INFO))
-	.add(match.onSuccess(), action.returnJSON(responseType));
+    .add(match.onUnauthorized(), action.retry(1))
+    .add(match.onTimeout(), action.retry(1))
+    .slot('beforeValidation')
+    .add(match.onException(), action.logCallout(LoggingLevel.ERROR))
+    .add(match.onException(), action.throwEx())
+    .add(match.onAnyErrorCode(), action.logCallout(LoggingLevel.ERROR))
+    .add(match.onAnyErrorCode(), action.throwEx())
+    .add(match.onSuccess(), action.logCallout(LoggingLevel.INFO))
+    .add(match.onSuccess(), action.returnJSON(responseType));
 ```
 - Client code can remove or replace particular handlers. Name can be added to the handler, which then can be used to remove/replace.
 
@@ -353,21 +367,20 @@ onAfterCallout()
 * QoL for throwing exceptions based on Http response:
 ```apex
     private class UpdateErrorException extends CalloutResponseException {
-        public String errorCode;
-        public String errorMessage;
+    public String errorCode;
+    public String errorMessage;
 
-        public override String getMessage(HttpResponse response) {
-            UpdateErrorException ex = (UpdateErrorException) JSON.deserialize(
-                response.getBody(),
-                UpdateErrorException.class
-            );
-            this.errorCode = ex.errorCode;
-            this.errorMessage = ex.errorMessage;
-            return errorMessage;
-        }
+    public override String getMessage(HttpResponse response) {
+        UpdateErrorException ex = (UpdateErrorException) JSON.deserialize(
+            response.getBody(),
+            UpdateErrorException.class
+        );
+        this.errorCode = ex.errorCode;
+        this.errorMessage = ex.errorMessage;
+        return errorMessage;
     }
+}
 ```
-
 
 ### Ver. 1.1.1
 * Added sleep(Integer ms) handler

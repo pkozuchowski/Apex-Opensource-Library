@@ -55,7 +55,9 @@ private class CalloutTest {
      */
     private class AcmeAPIAuthHandler implements Callout.Handler {
         public Object handle(Callout c) {
-            c.setHeader('Authorization', 'Bearer XXX');
+            c.setHeaders(new Map<String, String>{
+                'Authorization' => 'Bearer XXX'
+            });
             return null;
         }
     }
@@ -247,13 +249,9 @@ private class CalloutTest {
 
     @IsTest
     static void shouldAddRecordId() {
-        AcmeAccountAPI accountAPI = new AcmeAccountAPI();
-        Account acc = new Account(name='Test Account');
-        insert acc;
-        Test.startTest();
-        accountAPI.setRecordId(acc.Id);
-        Test.stopTest();
-        Assert.areEqual(acc.Id, accountAPI.getRecordId(), 'Id should match the id set from callout class.');
+        Callout c = new Callout();
+        c.setRelatedId(UserInfo.getUserId());
+        Assert.areEqual(UserInfo.getUserId(), c.getRelatedId());
     }
 
     @IsTest
@@ -338,6 +336,9 @@ private class CalloutTest {
         Test.setMock(HttpCalloutMock.class, new Mock(200, 'OK', new List<Account>{}));
         c.execute();
         Test.stopTest();
+
+        Assert.isTrue(c.getDuration() >= 0);
+        Assert.areEqual('coverageHandlerMethods', c.getLogName());
     }
 
     @IsTest

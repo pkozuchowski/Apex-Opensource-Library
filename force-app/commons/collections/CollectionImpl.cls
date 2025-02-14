@@ -257,14 +257,14 @@ public inherited sharing class CollectionImpl extends Collection {
     }
 
     public override Collection orderAsc(SObjectField field) {
-        return orderBy((Comparator<Object>) new Comparators.SObjectComparator(field, 1));
+        return orderBy((System.Comparator<Object>) new Comparators.SObjectComparator(field, 1));
     }
 
     public override Collection orderDesc(SObjectField field) {
-        return orderBy((Comparator<Object>) new Comparators.SObjectComparator(field, -1));
+        return orderBy((System.Comparator<Object>) new Comparators.SObjectComparator(field, -1));
     }
 
-    public override Collection orderBy(Comparator<Object> comparator) {
+    public override Collection orderBy(System.Comparator<Object> comparator) {
         this.items.sort(comparator);
         return this;
     }

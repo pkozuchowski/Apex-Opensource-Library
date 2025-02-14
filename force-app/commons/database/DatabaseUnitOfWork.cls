@@ -255,7 +255,7 @@ public virtual inherited sharing class DatabaseUnitOfWork extends DatabaseServic
     /**
      * Sorts DML operations by SObject order.
      */
-    private class SObjectOrderComparator implements Comparator<DML.DMLOperation> {
+    private class SObjectOrderComparator implements System.Comparator<DML.DMLOperation> {
         private Map<String, Integer> orderMap = new Map<String, Integer>();
 
         public SObjectOrderComparator(List<DML.Order> order) {

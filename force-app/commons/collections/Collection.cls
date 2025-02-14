@@ -190,7 +190,7 @@ public abstract inherited sharing class Collection {
     /**
      * Sorts collection using given Comparator implementation.
      */
-    public abstract Collection orderBy(Comparator<Object> comparator);
+    public abstract Collection orderBy(System.Comparator<Object> comparator);
 
 
     /*

@@ -771,13 +771,13 @@ private class CollectionTest {
         }
 
         List<Opportunity> actual = (List<Opportunity>) Collection.of(opportunities)
-            .orderBy((Comparator<Object>) new ReverseProbabilityComparator())
+            .orderBy((System.Comparator<Object>) new ReverseProbabilityComparator())
             .getList();
 
         System.assertEquals(actual, expected);
     }
 
-    private class ReverseProbabilityComparator implements Comparator<Opportunity> {
+    private class ReverseProbabilityComparator implements System.Comparator<Opportunity> {
         public Integer compare(Opportunity thisOpp, Opportunity otherOpp) {
             if (thisOpp.Probability < otherOpp.Probability) {
                 return 1;

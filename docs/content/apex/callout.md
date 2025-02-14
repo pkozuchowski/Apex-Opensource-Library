@@ -363,6 +363,13 @@ onAfterCallout()
 
 ---
 # Change Log
+
+### Ver. 1.3
+- Added new methods to set additional information about Callout for logging purposes:
+    - `setMetadata(String key, Object value)`
+    - `getMetadata(String key)`
+    - `setRela
+
 ### Ver. 1.2
 * QoL for throwing exceptions based on Http response:
 ```apex

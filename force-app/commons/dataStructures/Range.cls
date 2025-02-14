@@ -21,7 +21,7 @@
 public with sharing class Range {
     private Object fromInclusive;
     private Object toInclusive;
-    private Comparator<Object> comparator;
+    private System.Comparator<Object> comparator;
 
     /**
      * Obtains a range with the specified minimum and maximum values (both inclusive).
@@ -41,12 +41,12 @@ public with sharing class Range {
      * @param comparator - the comparator to be used
      * @return the range object, not null
      */
-    public static Range between(Object fromInclusive, Object toInclusive, Comparator<Object> comparator) {
+    public static Range between(Object fromInclusive, Object toInclusive, System.Comparator<Object> comparator) {
         return new Range(fromInclusive, toInclusive, comparator);
     }
 
 
-    private Range(Object fromInclusive, Object toInclusive, Comparator<Object> comparator) {
+    private Range(Object fromInclusive, Object toInclusive, System.Comparator<Object> comparator) {
         this.fromInclusive = fromInclusive;
         this.toInclusive = toInclusive;
         this.comparator = comparator;

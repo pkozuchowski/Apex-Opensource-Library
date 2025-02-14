@@ -24,74 +24,74 @@
 
 public with sharing class Comparators {
 
-    public final static Map<Schema.SoapType, Comparator<Object>> comparatorsByFieldType = new Map<SoapType, Comparator<Object>>{
-        SoapType.ID => (Comparator<Object>) new StringComparator(),
-        SoapType.STRING => (Comparator<Object>) new StringComparator(),
-        SoapType.DATE => (Comparator<Object>) new DateTimeComparator(),
-        SoapType.DATETIME => (Comparator<Object>) new DateTimeComparator(),
-        SoapType.INTEGER => (Comparator<Object>) new LongComparator(),
-        SoapType.LONG => (Comparator<Object>) new LongComparator(),
-        SoapType.DECIMAL => (Comparator<Object>) new DoubleComparator(),
-        SoapType.DOUBLE => (Comparator<Object>) new DoubleComparator(),
-        SoapType.BOOLEAN => (Comparator<Object>) new BooleanComparator(),
-        SoapType.TIME => (Comparator<Object>) new TimeComparator()
+    public final static Map<Schema.SoapType, System.Comparator<Object>> comparatorsByFieldType = new Map<SoapType, System.Comparator<Object>>{
+        SoapType.ID => (System.Comparator<Object>) new StringComparator(),
+        SoapType.STRING => (System.Comparator<Object>) new StringComparator(),
+        SoapType.DATE => (System.Comparator<Object>) new DateTimeComparator(),
+        SoapType.DATETIME => (System.Comparator<Object>) new DateTimeComparator(),
+        SoapType.INTEGER => (System.Comparator<Object>) new LongComparator(),
+        SoapType.LONG => (System.Comparator<Object>) new LongComparator(),
+        SoapType.DECIMAL => (System.Comparator<Object>) new DoubleComparator(),
+        SoapType.DOUBLE => (System.Comparator<Object>) new DoubleComparator(),
+        SoapType.BOOLEAN => (System.Comparator<Object>) new BooleanComparator(),
+        SoapType.TIME => (System.Comparator<Object>) new TimeComparator()
     };
 
-    public static Comparator<Object> getByField(SObjectField field) {
+    public static System.Comparator<Object> getByField(SObjectField field) {
         SoapType soapType = field.getDescribe().getSoapType();
-        Comparator<Object> comparator = (Comparator<Object>) comparatorsByFieldType
+        System.Comparator<Object> comparator = (System.Comparator<Object>) comparatorsByFieldType
             .get(soapType);
         return comparator == null ? new Comparators.AnyComparator() : comparator;
     }
 
-    public static Comparator<Object> getForPrimitive(Object o1) {
-        if (o1 instanceof Id) return (Comparator<Object>) new StringComparator();
-        if (o1 instanceof String) return (Comparator<Object>) new StringComparator();
-        if (o1 instanceof Datetime) return (Comparator<Object>) new DateTimeComparator();
-        if (o1 instanceof Time) return (Comparator<Object>) new TimeComparator();
-        if (o1 instanceof Integer) return (Comparator<Object>) new LongComparator();
-        if (o1 instanceof Decimal) return (Comparator<Object>) new DoubleComparator();
-        if (o1 instanceof Double) return (Comparator<Object>) new DoubleComparator();
-        if (o1 instanceof Long) return (Comparator<Object>) new LongComparator();
-        if (o1 instanceof Boolean) return (Comparator<Object>) new BooleanComparator();
+    public static System.Comparator<Object> getForPrimitive(Object o1) {
+        if (o1 instanceof Id) return (System.Comparator<Object>) new StringComparator();
+        if (o1 instanceof String) return (System.Comparator<Object>) new StringComparator();
+        if (o1 instanceof Datetime) return (System.Comparator<Object>) new DateTimeComparator();
+        if (o1 instanceof Time) return (System.Comparator<Object>) new TimeComparator();
+        if (o1 instanceof Integer) return (System.Comparator<Object>) new LongComparator();
+        if (o1 instanceof Decimal) return (System.Comparator<Object>) new DoubleComparator();
+        if (o1 instanceof Double) return (System.Comparator<Object>) new DoubleComparator();
+        if (o1 instanceof Long) return (System.Comparator<Object>) new LongComparator();
+        if (o1 instanceof Boolean) return (System.Comparator<Object>) new BooleanComparator();
 
         return new AnyComparator();
     }
 
-    public class AnyComparator implements Comparator<Object> {
+    public class AnyComparator implements System.Comparator<Object> {
         public Integer compare(Object thisItem, Object otherItem) {
             String a = thisItem == null ? '' : '' + thisItem;
             String b = otherItem == null ? '' : '' + otherItem;
             return a.compareTo(b);
         }
     }
-    public class BooleanComparator implements Comparator<Boolean> {
+    public class BooleanComparator implements System.Comparator<Boolean> {
         public Integer compare(Object thisItem, Object otherItem) {
             Boolean a = (Boolean) thisItem, b = (Boolean) otherItem;
             return a == b ? 0 : 1;
         }
     }
-    public class DateTimeComparator implements Comparator<Datetime> {
+    public class DateTimeComparator implements System.Comparator<Datetime> {
         public Integer compare(Datetime a, Datetime b) {
             return a == b ? 0 : a > b ? 1 : -1;
         }
     }
-    public class DoubleComparator implements Comparator<Double> {
+    public class DoubleComparator implements System.Comparator<Double> {
         public Integer compare(Double a, Double b) {
             return a == b ? 0 : a > b ? 1 : -1;
         }
     }
-    public class LongComparator implements Comparator<Long> {
+    public class LongComparator implements System.Comparator<Long> {
         public Integer compare(Long a, Long b) {
             return a == b ? 0 : a > b ? 1 : -1;
         }
     }
-    public class StringComparator implements Comparator<String> {
+    public class StringComparator implements System.Comparator<String> {
         public Integer compare(String a, String b) {
             return a == b ? 0 : a > b ? 1 : -1;
         }
     }
-    public class TimeComparator implements Comparator<Time> {
+    public class TimeComparator implements System.Comparator<Time> {
         public Integer compare(Time a, Time b) {
             return a == b ? 0 : a > b ? 1 : -1;
         }
@@ -100,10 +100,10 @@ public with sharing class Comparators {
     /**
      * Compares records by values of the SObject field.
      */
-    public class SObjectComparator implements Comparator<SObject> {
+    public class SObjectComparator implements System.Comparator<SObject> {
         private SObjectField field;
         private Integer direction;
-        private Comparator<Object> comparator;
+        private System.Comparator<Object> comparator;
 
         public SObjectComparator(SObjectField field, Integer direction) {
             this.field = field;

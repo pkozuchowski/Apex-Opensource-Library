@@ -52,7 +52,7 @@
       "path": "force-app/commons/collections",
       "package": "Collection",
       "versionName": "ver 2.0",
-      "versionNumber": "2.0.0.NEXT",
+      "versionNumber": "2.0.1.NEXT",
       "default": false,
       "versionDescription": "",
       "dependencies": [
@@ -84,7 +84,7 @@
       "path": "./force-app/commons/database",
       "package": "DatabaseService",
       "versionName": "ver 2.1",
-      "versionNumber": "2.1.1.NEXT",
+      "versionNumber": "2.1.2.NEXT",
       "default": false,
       "versionDescription": "Added sobject record lists to DML.Register"
     },
@@ -137,16 +137,19 @@
     "Callout@1.0.1-2": "04t08000000UK6VAAW",
     "Callout@1.1.1-1": "04tJ6000000LXUMIA4",
     "Callout@1.2.0-1": "04tJ6000000LYEkIAO",
+    "Callout@1.3.0-1": "04tJ6000000LYsyIAG",
     "Collection": "0Ho08000000CaSKCA0",
     "Collection@1.0.0-1": "04t08000000ga99AAA",
     "Collection@1.0.1-1": "04t08000000UK6pAAG",
     "Collection@2.0.0-1": "04t08000000UK6uAAG",
+    "Collection@2.0.1-1": "04tJ6000000LYtIIAW",
     "DatabaseService": "0Ho08000000CaSUCA0",
     "DatabaseService@0.1.0-1": "04t08000000ga9OAAQ",
     "DatabaseService@1.1.0-1": "04t08000000UK7YAAW",
     "DatabaseService@2.0.0-1": "04tJ6000000LXDWIA4",
     "DatabaseService@2.1.0-1": "04tJ6000000LYEfIAO",
     "DatabaseService@2.1.1-1": "04tJ6000000LYWYIA4",
+    "DatabaseService@2.1.2-1": "04tJ6000000LYtNIAW",
     "Query Framework": "0Ho08000000CaSPCA0",
     "Query Framework@1.0.0-1": "04t08000000ga9TAAQ",
     "Query Framework@2.0.0-1": "04t08000000UK7dAAG",
@@ -165,7 +168,6 @@
     "TestDataBuilder": "0Ho08000000CaSeCAK",
     "TestDataBuilder@1.0.0-1": "04t08000000ga9dAAA",
     "TestDataSuite": "0Ho08000000CaSjCAK",
-    "TestDataSuite@1.0.0-1": "04t08000000ga9iAAA",
-    "Callout@1.3.0-1": "04tJ6000000LYsyIAG"
+    "TestDataSuite@1.0.0-1": "04t08000000ga9iAAA"
   }
 }

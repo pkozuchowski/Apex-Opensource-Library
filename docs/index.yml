@@ -12,6 +12,8 @@ nav:
     groups:
       - label: News
         items:
+          - path: 25_02_15
+            label: 2025.02.15 - Callout 1.3
           - path: 25_01_06
             label: 2025.01.06 - Database Service 2.0
           - path: 24_11_10

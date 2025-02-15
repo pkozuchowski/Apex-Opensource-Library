@@ -192,6 +192,10 @@ public abstract inherited sharing class Collection {
      */
     public abstract Collection orderBy(System.Comparator<Object> comparator);
 
+    /**
+     * Sets field value for all collection items.
+     */
+    public abstract Collection setField(SObjectField field, Object value);
 
     /*
     * INTERFACES

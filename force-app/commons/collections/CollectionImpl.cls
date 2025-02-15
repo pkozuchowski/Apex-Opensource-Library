@@ -269,6 +269,14 @@ public inherited sharing class CollectionImpl extends Collection {
         return this;
     }
 
+    public override Collection setField(SObjectField field, Object value) {
+        for (Integer i = 0, size = size(); i < size; i++) {
+            ((SObject) items[i]).put(field, value);
+        }
+
+        return this;
+    }
+
 
     /**
     * Filters

@@ -51,10 +51,10 @@
     {
       "path": "force-app/commons/collections",
       "package": "Collection",
-      "versionName": "ver 2.0",
-      "versionNumber": "2.0.1.NEXT",
+      "versionName": "ver 2.1",
+      "versionNumber": "2.1.0.NEXT",
       "default": false,
-      "versionDescription": "",
+      "versionDescription": "Added .setField(field, value) method.",
       "dependencies": [
         {
           "package": "Libra Shared",
@@ -143,6 +143,7 @@
     "Collection@1.0.1-1": "04t08000000UK6pAAG",
     "Collection@2.0.0-1": "04t08000000UK6uAAG",
     "Collection@2.0.1-1": "04tJ6000000LYtIIAW",
+    "Collection@2.1.0-1": "04tJ6000000LYtrIAG",
     "DatabaseService": "0Ho08000000CaSUCA0",
     "DatabaseService@0.1.0-1": "04t08000000ga9OAAQ",
     "DatabaseService@1.1.0-1": "04t08000000UK7YAAW",

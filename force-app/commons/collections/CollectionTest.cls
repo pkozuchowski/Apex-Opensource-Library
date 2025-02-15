@@ -853,6 +853,18 @@ private class CollectionTest {
 
 
     @IsTest
+    static void testSetField() {
+        Collection.of(opportunities)
+            .setField(Opportunity.Name, 'Test');
+
+        // Verify that the 'StageName' field has been set correctly for each opportunity
+        for (Opportunity opp : opportunities) {
+            Assert.areEqual('Test', opp.Name, 'StageName should be set to Prospecting');
+        }
+    }
+
+
+    @IsTest
     static void testFindByFilter() {
         Opportunity expected = opportunities[5];
         Opportunity actual = (Opportunity) Collection.of(opportunities).filter(new OpportunityNameContainsFilter('5')).getFirst();

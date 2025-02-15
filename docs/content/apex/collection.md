@@ -3,8 +3,8 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/collections)
 [Dependency](/apex/runtime)
-[Install in Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYtIIAW)
-[Install in Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYtIIAW)
+[Install in Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYtrIAG)
+[Install in Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYtrIAG)
 
 ```bash
 sf project deploy start \
@@ -282,6 +282,11 @@ Collection.of(contacts).getLast();  //=> returns last element or null
 Collection.of(contacts).removeLast();  //=> removes last element   
 ```
 
+#### Setting field in bulk
+```apex
+Collection.of(users).setField(User.IsActive, false);
+```
+
 ---
 # Interfaces
 
@@ -351,6 +356,8 @@ interface Collection {
 	Collection orderAsc(SObjectField field);
 	Collection orderDesc(SObjectField field);
 	Collection orderBy(Comparator<Object> comparator);
+	
+    Collection setField(SObjectField field, Object value);
 }
 ```
 </details>

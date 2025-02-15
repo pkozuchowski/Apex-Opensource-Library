@@ -99,14 +99,14 @@
     {
       "path": "./force-app/commons/testDataBuilder",
       "package": "TestDataBuilder",
-      "versionName": "ver 1.0",
-      "versionNumber": "1.0.0.NEXT",
+      "versionName": "ver 1.1",
+      "versionNumber": "1.1.0.NEXT",
       "default": false,
       "versionDescription": "",
       "dependencies": [
         {
           "package": "DatabaseService",
-          "versionNumber": "0.1.0.LATEST"
+          "versionNumber": "2.1.0.LATEST"
         }
       ]
     },
@@ -167,6 +167,7 @@
     "HttpMockRouter@1.1.1-1": "04tJ6000000LWKiIAO",
     "TestDataBuilder": "0Ho08000000CaSeCAK",
     "TestDataBuilder@1.0.0-1": "04t08000000ga9dAAA",
+    "TestDataBuilder@1.1.0-1": "04tJ6000000LYthIAG",
     "TestDataSuite": "0Ho08000000CaSjCAK",
     "TestDataSuite@1.0.0-1": "04t08000000ga9iAAA"
   }

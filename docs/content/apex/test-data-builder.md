@@ -3,8 +3,8 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/testDataBuilder)
 [Dependency](/apex/database-service)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga9dAAA)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga9dAAA)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYthIAG)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYthIAG)
 
 ```bash
 sf project deploy start -d "force-app/commons/testDataBuilder" \

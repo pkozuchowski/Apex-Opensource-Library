@@ -27,10 +27,11 @@
  * @see SObjectCacheTest
  */
 public inherited sharing class QueryCache {
-    private static final Storage
+    public static final String CACHE_PARTITION = 'local.queries';
+    private static Storage
         STATIC_STORAGE = new StaticStorage(),
-        SESSION_STORAGE = getPlatformCacheStorage('local.queries', false),
-        ORG_STORAGE = getPlatformCacheStorage('local.queries', true);
+        SESSION_STORAGE,
+        ORG_STORAGE;
 
     private static final Map<SObjectType, QueryCache> cacheRegistry = new Map<SObjectType, QueryCache>();
     private static final Map<SObjectType, Map<String, SObject>> staticMap = new Map<SObjectType, Map<String, SObject>>();
@@ -72,7 +73,7 @@ public inherited sharing class QueryCache {
         cacheRegistry.put(sObjectType, cache);
     }
 
-    private QueryCache(SObjectType sObjectType, QueryCache__mdt config){
+    private QueryCache(SObjectType sObjectType, QueryCache__mdt config) {
         this.query = config.SOQL__c;
         this.cachedFields = new Set<String>(config.CacheFields__c.split(','));
         this.ttl = (config.TimeToLive__c == null) ? DEFAULT_TTL : ((Integer) config.TimeToLive__c);
@@ -83,25 +84,47 @@ public inherited sharing class QueryCache {
                 this.cacheStorage = STATIC_STORAGE;
             }
             when 'Session' {
-                this.cacheStorage = SESSION_STORAGE;
+                this.cacheStorage = getSessionCacheStorage();
             }
             when 'Organization' {
-                this.cacheStorage = ORG_STORAGE;
+                this.cacheStorage = getOrgStorage();
             }
         }
     }
 
+    private static Storage getOrgStorage() {
+        if (ORG_STORAGE == null) {
+            ORG_STORAGE = getPlatformCacheStorage(true);
+        }
+        return ORG_STORAGE;
+    }
 
-    private static Storage getPlatformCacheStorage(String partition, Boolean isOrg) {
+    private static Storage getSessionCacheStorage() {
+        if (SESSION_STORAGE == null) {
+            SESSION_STORAGE = getPlatformCacheStorage(false);
+        }
+        return SESSION_STORAGE;
+    }
+
+    private static Storage getPlatformCacheStorage(Boolean isOrg) {
         try {
-            return isOrg ?
-                new CacheStorage(Cache.Org.getPartition(partition)) :
-                new CacheStorage(Cache.Session.getPartition(partition));
+            Cache.Partition partition = isOrg ?
+                (Cache.Partition) Cache.Org.getPartition(CACHE_PARTITION) :
+                (Cache.Partition) Cache.Session.getPartition(CACHE_PARTITION);
 
+            /*Check if there is any storage space allocated to our cache partition*/
+            partition.put('partitionTest', 'test');
+            if (partition.get('partitionTest') != 'test') {
+                throw new QueryException('Cache not available.');
+            }
+
+            return new CacheStorage(partition);
 
         } catch (Exception e) {
-            System.debug(LoggingLevel.ERROR, 'Platform Cache Partition not available. Falling back to static cache.\n' +
-                'Create "queries" platform cache partition or change selector settings to static cache.');
+            System.debug(LoggingLevel.ERROR, (isOrg ? 'Organization' : 'Session')
+                + ' Platform Cache Partition not available or does not have storage allocated.\n' +
+                'Falling back to static cache.\n' +
+                'Create "queries" platform cache partition or allocate more storage space.');
             return STATIC_STORAGE;
         }
     }
@@ -142,7 +165,7 @@ public inherited sharing class QueryCache {
         }
 
         public void persistCacheMap(SObjectType sobjectType, Map<String, SObject> storageMap) {
-            partition.put('' + sObjectType + (Test.isRunningTest() ? 'test' : ''), storageMap);
+            partition.put('' + sobjectType + (Test.isRunningTest() ? 'test' : ''), storageMap);
         }
     }
 

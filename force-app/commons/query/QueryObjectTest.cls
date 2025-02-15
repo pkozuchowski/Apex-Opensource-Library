@@ -561,7 +561,6 @@ public class QueryObjectTest {
         QueryCache.mock(User.SObjectType,
             new QueryCache__mdt(
                 CacheFields__c = 'Username',
-                SOQL__c = 'SELECT Id,Username FROM User WHERE Username = \'' + UserInfo.getUserName() + '\'',
                 Storage__c = 'Organization'
             ));
         new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).getList();

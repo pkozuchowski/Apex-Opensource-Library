@@ -3,7 +3,8 @@
   "edition": "Developer",
   "features": [
     "AuthorApex",
-    "API"
+    "API",
+    "PlatformCache"
   ],
   "settings": {
     "lightningExperienceSettings": {

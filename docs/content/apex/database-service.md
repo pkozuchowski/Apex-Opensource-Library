@@ -3,8 +3,8 @@
 sharing context in runtime.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/database)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYtNIAW)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYtNIAW)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Ld7ZIAS)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Ld7ZIAS)
 
 ```bash
 sf project deploy start -d "force-app/commons/database" -o sfdxOrg
@@ -310,11 +310,12 @@ service.doBusinessLogic();
 Framework can apply mock only to selected records and perform actual (or mocked) operations against the rest. This can be done using the following methods:
 ```apex
 mockDmlError(SObject);
-mockDmlError(DML.Type);
-mockDmlError(DML.Type, SObject);
-mockDmlResult(DML.Type, SObject, Boolean);
-mockDmlResult(DML.Type, SObject, DML.Result);
-mockDmlResult(DML.DmlResultMock);
+mockDmlError(DML.Type dmlType);
+mockDmlError(DML.Type dmlType, SObject record);
+mockDmlResultById(DML.Type dmlType, Id recordId, Boolean success);
+mockDmlResult(DML.Type dmlType, SObject record, Boolean success);
+mockDmlResult(DML.Type dmlType, SObject record, DML.Result result);
+mockDmlResult(DML.DmlResultMock mock);
 ```
 
 ## Mock Parameters
@@ -323,13 +324,14 @@ mockDmlResult(DML.DmlResultMock);
     - DML.Type.UPDATE_DML - will match updates
     - etc.
     - null matches all operations.
-2. **SObject** - is for matching sObject:
+2. **Id** - is for matching records by Id. 
+3. **SObject** - is for matching sObject:
     - `new Account()` will match all accounts
     - `new Account(Name='Test')` will match all accounts with specified fields – in this case, accounts with Name equals "Test".
     - null matches all records
-3. **Boolean success** - True, if result should be mocked as a success result or false for error result. If false, DML.GENERIC_ERROR will be used as error
+4. **Boolean success** - True, if result should be mocked as a success result or false for error result. If false, DML.GENERIC_ERROR will be used as error
    message.
-4. **DML.Result** - Provided result will be returned for DMLs. This result is cloned and customized with record ID for each row.
+5. **DML.Result** - Provided result will be returned for DMLs. This result is cloned and customized with record ID for each row.
 
 ## Query Mocking
 Query can be mocked using mockId or by sObjectType:
@@ -435,10 +437,13 @@ public class DatabaseService {
     public DML.Result upsertRecord(SObject record, SObjectField field);
     public List<DML.Result> upsertRecords(List<SObject> records, SObjectField field);
 
-
+    public DML.Result deleteRecord(Id recordId);
+    public List<DML.Result> deleteRecords(List<Id> recordIds);
     public DML.Result deleteRecord(SObject record);
     public List<DML.Result> deleteRecords(List<SObject> records);
 
+    public DML.Result undeleteRecord(Id recordId);
+    public List<DML.Result> undeleteRecords(List<Id> recordIds);
     public DML.Result undeleteRecord(SObject record);
     public List<DML.Result> undeleteRecords(List<SObject> records);
 
@@ -454,6 +459,7 @@ public class DatabaseService {
     @TestVisible DatabaseService mockDmlError(SObject matcherRecord);
     @TestVisible DatabaseService mockDmlError(DML.Type dmlType);
     @TestVisible DatabaseService mockDmlError(DML.Type dmlType, SObject matcherRecord);
+    @TestVisible DatabaseService mockDmlResultById(DML.Type dmlType, Id mockedRecordId, Boolean success);
     @TestVisible DatabaseService mockDmlResult(DML.Type dmlType, SObject matcherRecord, Boolean success);
     @TestVisible DatabaseService mockDmlResult(DML.Type dmlType, SObject matcherRecord, DML.Result result);
     @TestVisible DatabaseService mockDmlResult(DML.DmlResultMock mock);
@@ -476,6 +482,10 @@ public class DatabaseUnitOfWork extends DatabaseService {
 
 ---
 # Change Log
+### v2.2
+- Added delete and undelete by record Id operations.
+- Added mocking by record Id.
+
 ### v2.1
 - Added inserted/updated/deleted etc. record lists to register
 

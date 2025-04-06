@@ -611,9 +611,13 @@ public with sharing class DML {
         public DmlResultMock() {}
 
         public DmlResultMock(DML.Type matchingDmlType, SObject matchingRecord, Result result) {
-            this.matchingDmlType = matchingDmlType;
+            this(matchingDmlType, matchingRecord?.getPopulatedFieldsAsMap(), result);
             this.matchingSObjectType = matchingRecord?.getSObjectType();
-            this.matchingFieldValues = matchingRecord?.getPopulatedFieldsAsMap();
+        }
+
+        public DmlResultMock(DML.Type matchingDmlType, Map<String, Object> fields, Result result) {
+            this.matchingDmlType = matchingDmlType;
+            this.matchingFieldValues = fields;
             this.result = result;
         }
 
@@ -630,15 +634,26 @@ public with sharing class DML {
         protected virtual Boolean matches(DML.DMLOperation operation, Object dmlRow) {
             return (matchingDmlType == null || matchingDmlType == operation.dmlType)
                 && (matchingSObjectType == null || operation.sObjectType == matchingSObjectType)
-                && (!(dmlRow instanceof SObject) || matchingFieldValues == null || (hasSameFields((SObject) dmlRow)));
+                && (matchingFieldValues == null || isDmlRowMatching(dmlRow));
         }
 
-        protected Boolean hasSameFields(SObject record) {
-            for (String field : matchingFieldValues.keySet()) {
-                if (record.get(field) != matchingFieldValues.get(field)) {
-                    return false;
+        protected Boolean isDmlRowMatching(Object dmlRow) {
+            if (dmlRow instanceof Id) {
+                return matchingFieldValues.get('Id') == dmlRow;
+
+            } else if (dmlRow instanceof Database.LeadConvert) {
+                return matchingFieldValues.get('Id') == ((Database.LeadConvert) dmlRow).leadId;
+
+            } else if (dmlRow instanceof SObject) {
+                SObject record = (SObject) dmlRow;
+
+                for (String field : matchingFieldValues.keySet()) {
+                    if (record.get(field) != matchingFieldValues.get(field)) {
+                        return false;
+                    }
                 }
             }
+
             return true;
         }
 

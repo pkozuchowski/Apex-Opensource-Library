@@ -231,19 +231,39 @@ public inherited sharing virtual class DatabaseService {
     }
 
 
+    public DML.Result deleteRecord(Id recordId) {
+        SObject record = recordId.getSobjectType().newSObject(recordId);
+        return deleteRecord(record);
+    }
+
+    public List<DML.Result> deleteRecords(List<Id> recordIds) {
+        return deleteRecords(getRecordsFromIds(recordIds));
+    }
+
     public DML.Result deleteRecord(SObject record) {
         List<SObject> records = newConcreteSObjectList(record);
         return getFirstResult(deleteRecords(records));
     }
+
     public List<DML.Result> deleteRecords(List<SObject> records) {
         return (List<DML.Result>) execute(new DML.DeleteDML(records));
     }
 
 
+    public DML.Result undeleteRecord(Id recordId) {
+        SObject record = recordId.getSobjectType().newSObject(recordId);
+        return undeleteRecord(record);
+    }
+
+    public List<DML.Result> undeleteRecords(List<Id> recordIds) {
+        return undeleteRecords(getRecordsFromIds(recordIds));
+    }
+
     public DML.Result undeleteRecord(SObject record) {
         List<SObject> records = newConcreteSObjectList(record);
         return getFirstResult(undeleteRecords(records));
     }
+
     public List<DML.Result> undeleteRecords(List<SObject> records) {
         return (List<DML.Result>) execute(new DML.UndeleteDML(records));
     }
@@ -346,14 +366,20 @@ public inherited sharing virtual class DatabaseService {
     }
 
     /**
+     * Mocks DML Result with specified result just for this record id.
+     */
+    @TestVisible DatabaseService mockDmlResultById(DML.Type dmlType, Id mockedRecordId, Boolean success) {
+        DML.Result result = getMockedResult(dmlType, success);
+        return mockDmlResult(new DML.DmlResultMock(dmlType, new Map<String, Object>{
+            'Id' => mockedRecordId
+        }, result));
+    }
+
+    /**
      * Mocks DML Result with specified result.
      */
     @TestVisible DatabaseService mockDmlResult(DML.Type dmlType, SObject matcherRecord, Boolean success) {
-        DML.Result result =
-            dmlType == DML.Type.CONVERT_LEAD_DML ? new DML.LeadConvertResult(success)
-                : dmlType == DML.Type.MERGE_DML ? new DML.MergeResult(success)
-                : new DML.Result(success);
-
+        DML.Result result = getMockedResult(dmlType, success);
         return mockDmlResult(dmlType, matcherRecord, result);
     }
 
@@ -370,5 +396,29 @@ public inherited sharing virtual class DatabaseService {
     @TestVisible DatabaseService mockDmlResult(DML.DmlResultMock mock) {
         this.options.dmlMocks.add(mock);
         return this;
+    }
+
+    private DML.Result getMockedResult(DML.Type dmlType, Boolean success) {
+        switch on dmlType {
+            when CONVERT_LEAD_DML {
+                return new DML.LeadConvertResult(success);
+            }
+            when MERGE_DML {
+                return new DML.MergeResult(success);
+            }
+            when else {
+                return new DML.Result(success);
+            }
+        }
+    }
+
+    private List<SObject> getRecordsFromIds(List<Id> recordIds) {
+        List<SObject> records = new List<SObject>();
+
+        for (Integer i = 0; i < recordIds.size(); i++) {
+            SObject record = recordIds[i].getSobjectType().newSObject(recordIds[i]);
+            records.add(record);
+        }
+        return records;
     }
 }

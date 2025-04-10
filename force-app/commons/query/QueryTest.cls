@@ -38,7 +38,7 @@ private class QueryTest {
     @IsTest
     static void testQueryOf() {
         User mockUser = new User(LastName = 'Test');
-        Query.mock('QueryTest.testQueryOf', new List<User>{
+        Query.mock(QueryTest.class, 'testQueryOf', new List<User>{
             mockUser
         });
 

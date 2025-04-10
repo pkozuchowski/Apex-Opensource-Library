@@ -5,8 +5,8 @@
 [Selectors](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
 [Dependency 1](/apex/runtime)
 [Dependency 2](/apex/database-service)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYtmIAG)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYtmIAG)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LeGoIAK)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LeGoIAK)
 
 ```bash
 sf project deploy start \

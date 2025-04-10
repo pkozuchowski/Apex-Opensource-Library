@@ -51,7 +51,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testMockingQuery() {
-        new TestUserQuery().mock('QueryObjectTest.TestServiceClass.doSomething', new List<User>{
+        Query.mock(QueryObjectTest.class, 'TestServiceClass.doSomething', new List<User>{
             new User(Username = 'test')
         });
 
@@ -65,7 +65,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testMockingWithList() {
-        Query.mock('QueryObjectTest.TestServiceClass.doSomething', new List<User>{
+        Query.mock(TestServiceClass.class, 'doSomething', new List<User>{
             new User(Username = 'test')
         });
 
@@ -79,7 +79,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testMockingQueryDirectly() {
-        new TestUserQuery().mock('QueryObjectTest.TestServiceClass.doSomething2', new List<User>{
+        Query.mock(TestServiceClass.class, 'doSomething2', new List<User>{
             new User(Username = 'test')
         });
 
@@ -317,10 +317,10 @@ public class QueryObjectTest {
 
     @IsTest
     static void testCountMock() {
-        new TestUserQuery().mock('QueryObjectTest.testCountMock', 123);
+        Query.mock(User.SObjectType, QueryObjectTest.class, 'testCountMock', 123);
         Assert.areEqual(123, new TestUserQuery().getCount());
 
-        Query.mock(User.SObjectType, 'QueryObjectTest.testCountMock', new List<User>{
+        Query.mock(User.SObjectType, QueryObjectTest.class, 'testCountMock', new List<User>{
             new User()
         });
         Assert.areEqual(1, new TestUserQuery().getCount());
@@ -334,7 +334,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testGetIds() {
-        new TestUserQuery().mock('testGetIds', new List<User>{
+        Query.mock('testGetIds', new List<User>{
             new User(Id = '005000000000001'),
             new User(Id = '005000000000002')
         });
@@ -482,7 +482,7 @@ public class QueryObjectTest {
         List<User> mockedResult = new List<User>{
             new User(Username = 'mock@example.com')
         };
-        new TestUserQuery().mock('getById', mockedResult);
+        Query.mock('getById', mockedResult);
 
         List<User> queryResult = new TestUserQuery()
             .withMockId('getById')
@@ -494,7 +494,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testMockingWithClientMethodName() {
-        QueryResults.mock(User.SObjectType, 'QueryObjectTest.testMockingWithClientMethodName', new List<User>{
+        Query.mock(QueryObjectTest.class, 'testMockingWithClientMethodName', new List<User>{
             new User(Username = 'Test')
         });
 
@@ -505,7 +505,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testMockingWithRegexp() {
-        QueryResults.mock(User.SObjectType, '.*', new List<User>{
+        Query.mock(User.SObjectType, '.*', new List<User>{
             new User(Username = 'Test')
         });
 
@@ -516,7 +516,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testMockingWithRegexp2() {
-        QueryResults.mock(User.SObjectType, 'QueryObjectTest.*', new List<User>{
+        Query.mock(QueryObjectTest.class, '*', new List<User>{
             new User(Username = 'Test')
         });
 
@@ -527,7 +527,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testGetMapByString() {
-        new TestUserQuery().mock('test', new List<SObject>{
+        Query.mock('test', new List<User>{
             new User(Username = '1@example.com'),
             new User(Username = '2@example.com'),
             new User(Username = '3@example.com')

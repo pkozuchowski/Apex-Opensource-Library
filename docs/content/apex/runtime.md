@@ -2,8 +2,8 @@
 *Reflective Apex Utility*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/blob/master/force-app/commons/shared/Runtime.cls)
-[Install in Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga8zAAA)
-[Install in Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t08000000ga8zAAA)
+[Install in Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LeGeIAK)
+[Install in Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LeGeIAK)
 
 ```bash
 sf project deploy start -m "ApexClass:Runtime*" -o sfdxOrg

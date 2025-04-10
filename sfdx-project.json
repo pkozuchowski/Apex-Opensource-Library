@@ -30,7 +30,7 @@
       "path": "force-app/commons/shared",
       "package": "Libra Shared",
       "versionName": "ver 1.0",
-      "versionNumber": "1.0.0.NEXT",
+      "versionNumber": "1.0.1.NEXT",
       "default": false,
       "versionDescription": ""
     },
@@ -132,6 +132,7 @@
     "Libra Shared": "0Ho08000000CaSACA0",
     "Libra Shared@0.1.0-1": "04t08000000ga5bAAA",
     "Libra Shared@1.0.0-1": "04t08000000ga8zAAA",
+    "Libra Shared@1.0.1-1": "04tJ6000000LeGeIAK",
     "Callout": "0Ho08000000CaSFCA0",
     "Callout@1.0.0-1": "04t08000000ga94AAA",
     "Callout@1.0.1-2": "04t08000000UK6VAAW",

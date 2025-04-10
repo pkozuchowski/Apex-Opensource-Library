@@ -2,8 +2,8 @@
 *Configuration-driven, endpoint pattern-based router for Http Mocks.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/httpMocks)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LWKiIAO)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LWKiIAO)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LdBwIAK)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LdBwIAK)
 
 ```bash
 sf project deploy start -d force-app/commons/httpMocks -o sfdxOrg
@@ -254,6 +254,9 @@ public class MyCustomMock implements HttpCalloutMock {
 
 ---
 # Change Log
+### v1.1.2
+- Bugfix: Fixed endpoint variables not loading from metadata 
+
 ### v1.1.1
 - Bugfix: Added missing query fields
 

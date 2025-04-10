@@ -34,9 +34,8 @@ public with sharing class HttpMocksConfig {
 
 
     static {
-        Map<String, String> vars = new Map<String, String>();
         for (HttpCalloutMockVariable__mdt var : HttpCalloutMockVariable__mdt.getAll().values()) {
-            vars.put(var.DeveloperName, var.Pattern__c);
+            variables.put(var.DeveloperName, var.Pattern__c);
         }
     }
 
@@ -77,6 +76,6 @@ public with sharing class HttpMocksConfig {
     }
 
     @TestVisible static void mockVariables(Map<String, String> variables) {
-        HttpMocksConfig.variables = variables;
+        HttpMocksConfig.variables.putAll(variables);
     }
 }

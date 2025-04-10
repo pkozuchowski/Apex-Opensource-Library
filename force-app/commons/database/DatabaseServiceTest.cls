@@ -424,4 +424,83 @@ private class DatabaseServiceTest {
         Assert.areEqual(mockResult, operations[0].result);
         Assert.areEqual(soql, operations[0].soql);
     }
+
+    @IsTest
+    static void testDeleteRecordById() {
+        Id fakeId = DatabaseService.getFakeId(Account.SObjectType);
+
+        DatabaseService dbService = new DatabaseService().mockDmls();
+
+        Test.startTest();
+        DML.Result result = dbService.deleteRecord(fakeId);
+        Test.stopTest();
+
+        Assert.isTrue(result.success, 'Record should be deleted successfully');
+        Assert.areEqual(fakeId, result.id, 'Deleted record Id should be the same as provided');
+        Assert.areEqual(1, dbService.register.deletes.size(), 'Service should have only one delete operation');
+    }
+
+    @IsTest
+    static void testMockUpdateRecordById() {
+        Id fakeId = DatabaseService.getFakeId(Account.SObjectType);
+        Account account = new Account(Id = fakeId, Name = 'Test');
+
+        DatabaseService dbService = new DatabaseService()
+            .allOrNone(false)
+            .mockDmls()
+            .mockDmlResultById(DML.Type.UPDATE_DML, fakeId, false);
+
+        Test.startTest();
+        DML.Result result = dbService.updateRecord(account);
+        Test.stopTest();
+
+        Assert.isFalse(result.success, 'Result should be as mocked');
+    }
+
+    @IsTest
+    static void testMockDeleteRecordById() {
+        Id fakeId = DatabaseService.getFakeId(Account.SObjectType);
+
+        DatabaseService dbService = new DatabaseService()
+            .allOrNone(false)
+            .mockDmls()
+            .mockDmlResultById(DML.Type.DELETE_DML, fakeId, false);
+
+        Test.startTest();
+        DML.Result result = dbService.deleteRecord(fakeId);
+        Test.stopTest();
+
+        Assert.isFalse(result.success, 'Result should be as mocked');
+    }
+
+    @IsTest
+    static void testMockDeleteRecordByIds() {
+        Id fakeId = DatabaseService.getFakeId(Account.SObjectType);
+
+        DatabaseService dbService = new DatabaseService()
+            .allOrNone(false)
+            .mockDmls()
+            .mockDmlResultById(DML.Type.DELETE_DML, fakeId, false);
+
+        Test.startTest();
+        DML.Result[] result = dbService.deleteRecords(new List<Id>{fakeId});
+        Test.stopTest();
+
+        Assert.isFalse(result[0].success, 'Result should be as mocked');
+    }
+
+    @IsTest
+    static void testUndeleteRecordById() {
+        Id fakeId = DatabaseService.getFakeId(Account.SObjectType);
+
+        DatabaseService dbService = new DatabaseService().mockDmls();
+
+        Test.startTest();
+        DML.Result result = dbService.undeleteRecord(fakeId);
+        Test.stopTest();
+
+        Assert.isTrue(result.success, 'Record should be undeleted successfully');
+        Assert.areEqual(fakeId, result.id, 'Undeleted record Id should be the same as provided');
+        Assert.areEqual(1, dbService.register.undeletes.size(), 'Service should have only one undelete operation');
+    }
 }

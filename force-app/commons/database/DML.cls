@@ -407,7 +407,7 @@ public with sharing class DML {
     }
 
 
-    public class InsertDML extends DMLOperation {
+    public inherited sharing class InsertDML extends DMLOperation {
         public InsertDML(List<SObject> records) {
             super(DML.Type.INSERT_DML, records);
         }
@@ -420,7 +420,7 @@ public with sharing class DML {
         }
     }
 
-    public class UpdateDML extends DMLOperation {
+    public inherited sharing class UpdateDML extends DMLOperation {
         public UpdateDML(List<SObject> records) {
             super(DML.Type.UPDATE_DML, records);
         }
@@ -433,7 +433,7 @@ public with sharing class DML {
         }
     }
 
-    public class UpsertDML extends DMLOperation {
+    public inherited sharing class UpsertDML extends DMLOperation {
         public transient SObjectField upsertField { get; private set; }
 
         public UpsertDML(List<SObject> records, SObjectField upsertField) {
@@ -454,7 +454,7 @@ public with sharing class DML {
         }
     }
 
-    public class DeleteDML extends DMLOperation {
+    public inherited sharing class DeleteDML extends DMLOperation {
         public DeleteDML(List<SObject> records) {
             super(DML.Type.DELETE_DML, records);
         }
@@ -467,7 +467,7 @@ public with sharing class DML {
         }
     }
 
-    public class UndeleteDML extends DMLOperation {
+    public inherited sharing class UndeleteDML extends DMLOperation {
         public UndeleteDML(List<SObject> records) {
             super(DML.Type.UNDELETE_DML, records);
         }
@@ -480,7 +480,7 @@ public with sharing class DML {
         }
     }
 
-    public class MergeDML extends DMLOperation {
+    public inherited sharing class MergeDML extends DMLOperation {
         public List<MergeResult> results { get {return (List<MergeResult>) super.results;} }
         public SObject primaryRecord { get; private set; }
         public List<Id> duplicates { get; private set; }
@@ -505,7 +505,7 @@ public with sharing class DML {
         }
     }
 
-    public class ConvertLeadDML extends DMLOperation {
+    public inherited sharing class ConvertLeadDML extends DMLOperation {
         public List<LeadConvertResult> results { get {return (List<LeadConvertResult>) super.results;} }
 
         public ConvertLeadDML(List<Database.LeadConvert> leadConverts) {
@@ -552,7 +552,7 @@ public with sharing class DML {
         }
     }
 
-    public virtual class QueryOperation extends BaseQueryOperation {
+    public inherited sharing virtual class QueryOperation extends BaseQueryOperation {
         public List<SObject> results { get; protected set; }
 
         public QueryOperation(String mockId, String soql, Map<String, Object> boundVars) {
@@ -564,7 +564,7 @@ public with sharing class DML {
         }
     }
 
-    public class QueryLocatorOperation extends BaseQueryOperation {
+    public inherited sharing class QueryLocatorOperation extends BaseQueryOperation {
         public QueryLocatorOperation(String query, Map<String, Object> boundVars) {
             super(DML.Type.QUERY_LOCATOR, query, boundVars);
         }
@@ -573,7 +573,7 @@ public with sharing class DML {
         }
     }
 
-    public class QueryCursorOperation extends BaseQueryOperation {
+    public inherited sharing class QueryCursorOperation extends BaseQueryOperation {
         public QueryCursorOperation(String query, Map<String, Object> boundVars) {
             super(DML.Type.QUERY_CURSOR, query, boundVars);
         }
@@ -582,7 +582,7 @@ public with sharing class DML {
         }
     }
 
-    public class QueryCountOperation extends BaseQueryOperation {
+    public inherited sharing class QueryCountOperation extends BaseQueryOperation {
         public Integer result { get; private set; }
 
         public QueryCountOperation(String mockId, String query, Map<String, Object> boundVars) {

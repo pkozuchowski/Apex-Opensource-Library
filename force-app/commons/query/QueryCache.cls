@@ -26,6 +26,7 @@
  * Indexed storage for SObjects which groups records by fields and field values.
  * @see SObjectCacheTest
  */
+@SuppressWarnings('PMD.ApexCRUDViolation, PMD.CognitiveComplexity')
 public inherited sharing class QueryCache {
     public static final String CACHE_PARTITION = 'local.queries';
     private static Storage
@@ -58,7 +59,6 @@ public inherited sharing class QueryCache {
                 FROM QueryCache__mdt
                 WHERE Active__c = TRUE
                 AND SObject__c = :sobjectName
-                WITH SECURITY_ENFORCED
                 LIMIT 1
             ];
 

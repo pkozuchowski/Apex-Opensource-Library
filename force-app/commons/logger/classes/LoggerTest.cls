@@ -39,7 +39,7 @@ private class LoggerTest {
         System.assertEquals(3, logs.size(), '3 Logs should be created');
 
         for (Log__c log : logs) {
-            System.assertEquals('LoggerTest.testLogMessage', log.Source__c);
+            System.assertEquals(LoggerTest.class.getName() + '.testLogMessage', log.Source__c);
             System.assertEquals(log.Response__c, log.Severity__c);
         }
     }
@@ -80,7 +80,7 @@ private class LoggerTest {
         System.assert(log.Response__c.contains('Invalid conversion from runtime type Datetime to Date'), 'Message should contain exception message');
         System.assert(log.Response__c.contains('LoggerTest.testLogException'), 'Message should contain stack trace');
         System.assert(log.ExecutionTime__c > 0, 'Should measure how much time execution of the method took');
-        System.assertEquals('LoggerTest.testLogException', log.Source__c);
+        System.assertEquals(LoggerTest.class.getName() + '.testLogException', log.Source__c);
     }
 
 

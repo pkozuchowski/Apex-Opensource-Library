@@ -70,6 +70,48 @@ public with sharing class Mock {
     }
 
     /**
+     * Mocks SObject record with overridden formula fields, relationships and readonly fields.
+     */
+    public static SObjectBuilder sObject(SObject record) {
+        return new SObjectBuilder(record);
+    }
+
+    public inherited sharing class SObjectBuilder {
+        private Map<String, Object> record;
+        private SObjectType sobjType;
+
+        public SObjectBuilder(SObject record) {
+            this.record = record.getPopulatedFieldsAsMap().clone();
+            this.sobjType = record.getSObjectType();
+        }
+
+        public SObjectBuilder withField(SObjectField field, Object value) {
+            return withField('' + field, value);
+        }
+
+        public SObjectBuilder withField(String field, Object value) {
+            record.put(field, value);
+            return this;
+        }
+
+        public SObjectBuilder withChildren(String relationship, List<Object> records) {
+            record.put(relationship, new Map<String, Object>{
+                'done' => true,
+                'size' => records.size(),
+                'records' => records
+            });
+            return this;
+        }
+
+        public SObject build() {
+            return (SObject) JSON.deserialize(
+                JSON.serialize(record),
+                Type.forName('' + sobjType)
+            );
+        }
+    }
+
+    /**
      * @returns Mock that will return predefined response when any of it's methods is called.
      * If outcome is an exception, it will be thrown.
      */

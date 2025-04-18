@@ -125,7 +125,9 @@ public virtual with sharing class HttpMocks {
                 mock = staticResource((Integer) config.StatusCode__c, config.Status__c, config.StaticResource__c);
 
             } else if (String.isNotBlank(config.ApexClass__c)) {
-                mock = (HttpCalloutMock) Type.forName(config.ApexClass__c).newInstance();
+                mock = (HttpCalloutMock) Type.forName(
+                    config.ApexClassNamespace__c,
+                    config.ApexClass__c).newInstance();
 
             } else {
                 if (String.isNotBlank(config.Response__c)) {

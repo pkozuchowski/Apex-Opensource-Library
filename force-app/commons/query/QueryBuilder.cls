@@ -81,8 +81,20 @@ public inherited sharing class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder addFields(String[] fields) {
-        this.fields.addAll(fields);
+    public QueryBuilder addFields(Iterable<String> fields) {
+        if (fields instanceof List<String>) {
+            this.fields.addAll((List<String>) fields);
+
+        } else if (fields instanceof Set<String>) {
+            this.fields.addAll((Set<String>) fields);
+        }
+        return this;
+    }
+
+    public QueryBuilder addFields(String relationshipName, Iterable<Object> parentFields) {
+        for (Object parentField : parentFields) {
+            this.fields.add(relationshipName + '.' + parentField);
+        }
         return this;
     }
 

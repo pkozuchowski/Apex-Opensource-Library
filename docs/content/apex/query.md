@@ -5,8 +5,8 @@
 [Selectors](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
 [Dependency 1](/apex/runtime)
 [Dependency 2](/apex/database-service)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LeGoIAK)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LeGoIAK)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LemNIAS)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LemNIAS)
 
 ```bash
 sf project deploy start \
@@ -1367,6 +1367,15 @@ The framework will use String field parameters as a baseline parameters and SObj
 
 ---
 # Change Log
+### v2.4.5
+- Bugfixes and coverage improvements
+
+### v2.4.4
+- Fixed issues in namespaced orgs
+
+### v2.4.2
+- Fixed cache issue in orgs without any platform cache storage space
+
 ### v2.4.1
 - Added `withFieldSet()` method
 

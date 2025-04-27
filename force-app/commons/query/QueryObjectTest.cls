@@ -112,10 +112,15 @@ public class QueryObjectTest {
 
     @IsTest
     static void testSelectAllFields() {
-        String soql = new TestUserQuery().withAllFields().toSOQL();
+        String soql = new TestUserQuery()
+            .withAllFields()
+            .withFields('Owner.Name')
+            .toSOQL();
+
         Assert.isTrue(soql.containsIgnoreCase('Name'));
         Assert.isTrue(soql.containsIgnoreCase('Username'));
         Assert.isTrue(soql.containsIgnoreCase('FirstName'));
+        Assert.isTrue(soql.containsIgnoreCase('Owner.Name'));
     }
 
     @IsTest
@@ -367,10 +372,8 @@ public class QueryObjectTest {
 
     @IsTest
     static void coverage() {
-        new TestUserQuery()
+        QueryObject query = new TestUserQuery()
             .withFields('Name')
-            .withFields(new List<String>{'Name'})
-            .withAllFields()
             .forView()
             .forUpdate()
             .forReference()
@@ -379,18 +382,14 @@ public class QueryObjectTest {
             .asSystemWithoutSharing()
             .usingCache(true)
             .byId(UserInfo.getUserId())
-            .withLimit(100)
-            .stripInaccessible(AccessType.READABLE)
-            .getFirstOrNull();
+            .withLimit(100);
 
-        new TestUserQuery().byId(UserInfo.getUserId()).getCount();
-        new TestUserQuery().byId(UserInfo.getUserId()).getMapById();
-        new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
-        new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
-        new TestUserQuery().byId(UserInfo.getUserId()).getFirstIdOrNull();
-        new TestUserQuery().byId(UserInfo.getUserId()).getQueryLocator();
-        new TestUserQuery().byId(UserInfo.getUserId()).getFirstFieldOrNull(User.Name);
-        new TestUserQuery().byId(UserInfo.getUserId()).getFirstFieldOrFallback(User.Name, 'fallback value');
+        query.stripInaccessible(AccessType.UPDATABLE).getMapById();
+        query.getFirstOrNull();
+        query.getFirstIdOrNull();
+        query.getQueryLocator();
+        query.getFirstFieldOrNull(User.Name);
+        query.getFirstFieldOrFallback(User.Name, 'fallback value');
     }
 
 
@@ -634,6 +633,20 @@ public class QueryObjectTest {
             Assert.isTrue(e.getMessage().contains('Invalid FieldSet'));
             Assert.isTrue(e.getMessage().contains('TEST_USER_FIELDSET'));
         }
+    }
+
+    @IsTest
+    static void testLookupFields() {
+        String soql = new TestUserQuery()
+            .withLookup('Owner', new List<SObjectField>{
+                User.Name
+            })
+            .withLookup('Owner', new Set<String>{
+                'CreatedById'
+            }).toSOQL();
+
+        Assert.isTrue(soql.containsIgnoreCase('Owner.Name'));
+        Assert.isTrue(soql.containsIgnoreCase('Owner.CreatedById'));
     }
 
     public static void assertEquals(SObject[] expected, SObject[] actual) {

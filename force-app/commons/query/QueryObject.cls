@@ -90,7 +90,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
     /**
      * Selects given fields
      */
-    public QueryObject withFields(List<String> fields) {
+    public QueryObject withFields(Iterable<String> fields) {
         this.queryBuilder.addFields(fields);
         return this;
     }
@@ -125,19 +125,25 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * as the FIELDS(ALL/STANDARD/CUSTOM) is restricted to 200 records
      */
     public QueryObject withAllFields() {
-        Set<String> allFields = sObjType.getDescribe().fields.getMap().keySet();
+        Set<String> allFields = sObjType.getDescribe().fields.getMap().keySet().clone();
         allFields.remove('SystemModstamp');
-        queryBuilder.setFields(allFields);
+        queryBuilder.addFields(allFields);
         return this;
     }
 
     /**
-     *
+     * Adds lookup fields with given relationship name and parent fields.
      */
     public QueryObject withLookup(String relationshipName, List<SObjectField> parentFields) {
-        for (SObjectField parentField : parentFields) {
-            this.queryBuilder.addField(relationshipName + '.' + parentField);
-        }
+        queryBuilder.addFields(relationshipName, parentFields);
+        return this;
+    }
+
+    /**
+     * Adds lookup fields with given relationship name and parent fields.
+     */
+    public QueryObject withLookup(String relationshipName, Iterable<String> parentFields) {
+        queryBuilder.addFields(relationshipName, parentFields);
         return this;
     }
 

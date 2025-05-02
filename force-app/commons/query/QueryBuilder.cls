@@ -42,26 +42,17 @@ public inherited sharing class QueryBuilder {
      * Builds and returns SOQL query
      */
     public String toSOQL() {
-        List<String> fieldsWithSubqueries = new List<String>(fields);
-        fieldsWithSubqueries.addAll(subqueries);
-
-        String fieldsQueryPart = 'SELECT ' + String.join(new List<String>(fieldsWithSubqueries), ', ');
-
-        String[] query = new String[]{
-            fieldsQueryPart,
-            fromObject,
-            whereConditions,
-            groupBy,
-            havingConditions,
-            orderBy.isEmpty() ? '' : 'ORDER BY ' + String.join(orderBy, ', '),
-            limitQueryPart,
-            offsetQueryPart,
-            forPart
-        };
-
-        return String.join(query, ' ')
-            .trim()
-            .replaceAll('\\s{2,}', ' ');
+        return 'SELECT '
+            + String.join(fields, ', ')
+            + (subqueries.isEmpty() ? '' : ', ' + String.join(subqueries, ', '))
+            + ' ' + fromObject
+            + (String.isBlank(whereConditions) ? '' : ' ' + whereConditions)
+            + (String.isBlank(groupBy) ? '' : ' ' + groupBy)
+            + (String.isBlank(havingConditions) ? '' : ' ' + havingConditions)
+            + (String.isBlank(limitQueryPart) ? '' : ' ' + limitQueryPart)
+            + (String.isBlank(offsetQueryPart) ? '' : ' ' + offsetQueryPart)
+            + (orderBy.isEmpty() ? '' : ' ORDER BY ' + String.join(orderBy, ', '))
+            + (String.isBlank(forPart) ? '' : ' ' + forPart);
     }
 
     public QueryBuilder addField(SObjectField field) {

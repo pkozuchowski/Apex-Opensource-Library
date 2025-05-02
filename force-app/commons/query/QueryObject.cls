@@ -49,7 +49,6 @@ public virtual inherited sharing class QueryObject extends QueryResults {
     public QueryObject(SObjectType sObjectType) {
         this.sObjType = sObjectType;
         this.cache = QueryCache.get(sObjectType);
-        withFields('Id');
     }
 
     /**
@@ -83,7 +82,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * @param fields Comma separated fields ex. selectFields('Id, Name, Username')
      */
     public QueryObject withFields(String fields) {
-        List<String> fieldsSplit = fields.deleteWhitespace().split(',');
+        List<String> fieldsSplit = fields.trim().split('\\s*,\\s*');
         return withFields(fieldsSplit);
     }
 
@@ -125,9 +124,17 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * as the FIELDS(ALL/STANDARD/CUSTOM) is restricted to 200 records
      */
     public QueryObject withAllFields() {
-        Set<String> allFields = sObjType.getDescribe().fields.getMap().keySet().clone();
-        allFields.remove('SystemModstamp');
-        queryBuilder.addFields(allFields);
+        List<SObjectField> sObjectField = sObjType.getDescribe().fields.getMap().values();
+        Set<String> excluded = new Set<String>{'SystemModstamp'};
+
+        for (Integer i = 0; i < sObjectField.size(); i++) {
+            String field = '' + sObjectField[i];
+
+            if (!excluded.contains(field)) {
+                queryBuilder.addField(field);
+            }
+        }
+
         return this;
     }
 
@@ -152,7 +159,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * Disables caching.
      */
     public QueryObject withChildren(String fieldsCSV, String relationshipName) {
-        return withChildren(fieldsCSV.deleteWhitespace().split(','), relationshipName);
+        return withChildren(fieldsCSV.trim().split('\\s*,\\s*'), relationshipName);
     }
 
     /**
@@ -224,15 +231,22 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * Sets group by on query
      */
     public QueryObject groupBy(String fields, String groupBy) {
-        return groupBy(fields.split(','), groupBy);
+        return groupBy(fields.split('\\s*,\\s*'), groupBy);
     }
 
     /**
      * Sets group by on query
      */
     public QueryObject groupBy(List<String> fields, String groupBy) {
-        this.useCache = false;
         this.queryBuilder.setFields(new Set<String>(fields));
+        return groupBy(groupBy);
+    }
+
+    /**
+     * Sets group by on query
+     */
+    public QueryObject groupBy(String groupBy) {
+        this.useCache = false;
         this.queryBuilder.setGroupBy(groupBy);
         return this;
     }

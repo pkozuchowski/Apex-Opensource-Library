@@ -177,6 +177,16 @@ public class QueryObjectTest {
     }
 
     @IsTest
+    static void testGroupBy() {
+        String soql = Query.fromSObject(User.SObjectType)
+            .withFields('COUNT(Id) cnt, Profile.Name')
+            .groupBy('Profile.Name')
+            .toSOQL();
+
+        Assert.areEqual('SELECT COUNT(Id) cnt, Profile.Name FROM User GROUP BY Profile.Name', soql);
+    }
+
+    @IsTest
     static void testGroupByHaving() {
         QueryConditions c = new QueryConditions();
         String soql = new TestUserQuery()

@@ -659,7 +659,7 @@ public class QueryObjectTest {
     }
 
     @IsTest
-    static void testExcludeFields(){
+    static void testExcludeFields() {
         String soql = new TestUserQuery()
             .withoutFields(new List<String>{
                 'Username',
@@ -687,6 +687,46 @@ public class QueryObjectTest {
         Assert.isTrue(soql.containsIgnoreCase('Owner.Name'));
         Assert.isTrue(soql.containsIgnoreCase('Owner.CreatedById'));
     }
+
+    @IsTest
+    static void testGetPopulatedFields() {
+        Query.mock(User.SObjectType, QueryObjectTest.class, 'testAggregatedResultsMocking', new List<Map<String, Object>>{
+            new Map<String, Object>{
+                'cnt' => 1,
+                'name' => 'Test'
+            }
+        });
+
+        List<Map<String, Object>> results = Query.fromSObject(User.SObjectType)
+            .withFields('COUNT(Id) cnt, Profile.Name name')
+            .groupBy('Profile.Name')
+            .getPopulatedFieldsList();
+
+        Assert.areEqual(1, results[0].get('cnt'));
+    }
+
+    @IsTest
+    static void testAggregatedResultsMocking() {
+        Query.mock(User.SObjectType, QueryObjectTest.class, 'testAggregatedResultsMocking', new List<Query.AggregateResult>{
+            new Query.AggregateResult(new Map<String, Object>{})
+                .put('cnt', 1)
+                .put('name', 'Test'),
+
+            new Query.AggregateResult(new Map<String, Object>{
+                'cnt' => 1,
+                'name' => 'Test'
+            })
+        });
+
+        List<Query.AggregateResult> results = Query.fromSObject(User.SObjectType)
+            .withFields('COUNT(Id) cnt, Profile.Name name')
+            .groupBy('Profile.Name')
+            .getAggregatedResults();
+
+        Assert.areEqual(1, results[0].get('cnt'));
+        Assert.areEqual('Test', results[0].get('name'));
+    }
+
 
     public static void assertEquals(SObject[] expected, SObject[] actual) {
         Assert.areEqual(

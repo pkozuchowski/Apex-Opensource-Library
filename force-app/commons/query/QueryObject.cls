@@ -387,6 +387,15 @@ public virtual inherited sharing class QueryObject extends QueryResults {
         return this;
     }
 
+    /**
+     * If true, the results of the query are cached.
+     * Default is true.
+     */
+    public QueryObject cacheResults(Boolean cacheResults) {
+        this.cacheResults = cacheResults;
+        return this;
+    }
+
 
     /**
      * Enforces Object and Field level security on records.

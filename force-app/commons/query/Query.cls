@@ -108,4 +108,30 @@ public inherited sharing virtual class Query {
     public static void mock(SObjectType sobjType, String mockIdOrClientName, Object result) {
         QueryResults.mock(sobjType, mockIdOrClientName, result);
     }
+
+    /**
+     * Wrapper for Schema.AggregateResult to allow mocking and value setting.
+     */
+    public virtual class AggregateResult {
+        private Schema.AggregateResult result;
+        private Map<String, Object> values;
+
+        public AggregateResult(Map<String, Object> values) {
+            this.values = values;
+        }
+
+        public AggregateResult(Schema.AggregateResult result) {
+            this.result = result;
+        }
+
+        public virtual Object get(String fieldName) {
+            return values?.get(fieldName) ?? result.get(fieldName);
+        }
+
+        public AggregateResult put(String fieldName, Object value) {
+            values = values ?? new Map<String, Object>();
+            values.put(fieldName, value);
+            return this;
+        }
+    }
 }

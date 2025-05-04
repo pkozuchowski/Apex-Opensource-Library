@@ -1374,28 +1374,30 @@ This allows mocking aggregated queries and setting fields on the result:
 
 ```apex
 List<Query.AggregateResult> results = Query.of([
-    SELECT COUNT(Id), Profile.Name
-    FROM User
-    GROUP BY Profile.Name
-])
+        SELECT COUNT(Id) cnt, Profile.Name profile
+        FROM User
+        GROUP BY Profile.Name
+    ])
+    .withMockId('getUsersByProfile')
     .getAggregatedResults();
-```
-
-Setting additional values directly on AggregateResult
-```apex
-Query.AggregateResult result;
-result.put('myVal', 'Value I want to set');
 ```
 
 Mocking:
 ```apex
-Query.mock(AggregateResult.SObjectType, 'test', new List<Query.AggregateResult>{
+Query.mock(AggregateResult.SObjectType, 'getUsersByProfile', new List<Query.AggregateResult>{
     new Query.AggregateResult(new Map<String, Object>{
         'cnt' => 1,
         'name' => 'Test'
     })
 });
 ```
+
+Setting additional values directly on AggregateResult:
+```apex
+Query.AggregateResult result;
+result.put('myVal', 'Value I want to set');
+```
+
 
 #### Added `getPopulatedFieldsList()` method to base QueryObject class
 ```apex
@@ -1406,7 +1408,7 @@ List<Map<String, Object>> populatedFields = Query.Accounts
 
 #### Other
 - Performance Improvements
-- Bugfixed issue in withAllFields
+- Fixed bug in withAllFields when it was used in combination with lookup fields or subqueries
 - Added method to remove fields from a query : `withoutFields(List<String> fields)` 
 - Added method to exclude records from caching : `.cacheResults(false)`
 - Updated API Version to 63.0

@@ -727,6 +727,30 @@ public class QueryObjectTest {
         Assert.areEqual('Test', results[0].get('name'));
     }
 
+    @IsTest
+    static void testQueryOfAggregatedResultsMocking() {
+        Query.mock(AggregateResult.SObjectType, 'test', new List<Query.AggregateResult>{
+            new Query.AggregateResult(new Map<String, Object>{
+                'cnt' => 1,
+                'name' => 'Test'
+            })
+        });
+
+        List<Query.AggregateResult> results = Query.of([
+            SELECT COUNT(Id), Profile.Name b
+            FROM User
+            GROUP BY Profile.Name
+        ])
+            .withMockId('test')
+            .getAggregatedResults();
+
+        results[0].put('myValue', 2);
+
+        Assert.areEqual(1, results[0].get('cnt'));
+        Assert.areEqual('Test', results[0].get('name'));
+        Assert.areEqual(2, results[0].get('myValue'));
+    }
+
 
     public static void assertEquals(SObject[] expected, SObject[] actual) {
         Assert.areEqual(

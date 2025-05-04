@@ -37,6 +37,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
     private AccessType accessType = null;
     private QueryCache cache;
     private Boolean useCache = !Test.isRunningTest();
+    private Boolean cacheResults = true;
     private Boolean saveResultsToCache = true;
     private String subqueryRelationshipName;
     private String filterLogic;
@@ -673,7 +674,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
 
             SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), bindings.getMap());
 
-            if (cache != null && !(records instanceof AggregateResult[])) {
+            if (cache != null && cacheResults && !(records instanceof AggregateResult[])) {
                 cache.put(records);
             }
 

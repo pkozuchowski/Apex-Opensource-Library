@@ -566,6 +566,19 @@ public class QueryObjectTest {
     }
 
     @IsTest
+    static void testExcludeResultsCaching() {
+        QueryCache.mock(User.SObjectType, new QueryCache__mdt(
+            CacheFields__c = 'Username',
+            Storage__c = 'Transaction'
+        ));
+        new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).cacheResults(false).getList();
+        new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).cacheResults(false).getList();
+        new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).cacheResults(false).getList();
+
+        Assert.areEqual(3, Limits.getQueries(), 'Once queried users should be saved in cache.');
+    }
+
+    @IsTest
     static void testPlatformCaching() {
         QueryCache.mock(User.SObjectType,
             new QueryCache__mdt(

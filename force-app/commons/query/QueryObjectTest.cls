@@ -394,12 +394,12 @@ public class QueryObjectTest {
             .byId(UserInfo.getUserId())
             .withLimit(100);
 
-        query.stripInaccessible(AccessType.UPDATABLE).getMapById();
         query.getFirstOrNull();
         query.getFirstIdOrNull();
         query.getQueryLocator();
         query.getFirstFieldOrNull(User.Name);
         query.getFirstFieldOrFallback(User.Name, 'fallback value');
+        query.stripInaccessible(AccessType.READABLE).getMapById();
     }
 
 

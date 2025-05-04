@@ -654,30 +654,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
         }
     }
 
-
-    /**
-    * Executes query and caches results
-    */
-    protected override SObject[] executeQuery() {
-        try {
-            this.result = (SObject[]) getMock() ?? result;
-            this.result = result ?? getQueryResult();
-
-            if (accessType != null) {
-                SObjectAccessDecision decision = Security.stripInaccessible(accessType, result);
-                this.result = decision.getRecords();
-            }
-
-            return result;
-        } catch (Exception e) {
-            QueryException queryException = new QueryException();
-            queryException.initCause(e);
-            queryException.setMessage(e.getMessage() + '\n' + this.toString());
-            throw queryException;
-        }
-    }
-
-    private List<SObject> getQueryResult() {
+    protected override Object getQueryResult() {
         List<SObject> result = Runtime.newListOfItemType(sObjType);
         QueryConditions.Condition compiledExpr = compileConditions(whereConditions);
         Boolean doQuery = true;

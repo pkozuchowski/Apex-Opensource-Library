@@ -3,10 +3,10 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/query)
 [Selectors](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
-[Dependency 1](/apex/runtime)
-[Dependency 2](/apex/database-service)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LemNIAS)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LemNIAS)
+[Dependency: Runtime](/apex/runtime)
+[Dependency: Database Service](/apex/database-service)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LfWgIAK)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LfWgIAK)
 
 ```bash
 sf project deploy start \
@@ -1367,6 +1367,50 @@ The framework will use String field parameters as a baseline parameters and SObj
 
 ---
 # Change Log
+### v2.5
+
+#### Added Query.AggregatedResults wrapper to enable mocking and setting fields on AggregatedResults
+This allows mocking aggregated queries and setting fields on the result:
+
+```apex
+List<Query.AggregateResult> results = Query.of([
+    SELECT COUNT(Id), Profile.Name
+    FROM User
+    GROUP BY Profile.Name
+])
+    .getAggregatedResults();
+```
+
+Setting additional values directly on AggregateResult
+```apex
+Query.AggregateResult result;
+result.put('myVal', 'Value I want to set');
+```
+
+Mocking:
+```apex
+Query.mock(AggregateResult.SObjectType, 'test', new List<Query.AggregateResult>{
+    new Query.AggregateResult(new Map<String, Object>{
+        'cnt' => 1,
+        'name' => 'Test'
+    })
+});
+```
+
+#### Added `getPopulatedFieldsList()` method to base QueryObject class
+```apex
+List<Map<String, Object>> populatedFields = Query.Accounts
+    .byName('Test')
+    .getPopulatedFieldsList();
+```
+
+#### Other
+- Performance Improvements
+- Bugfixed issue in withAllFields
+- Added method to remove fields from a query : `withoutFields(List<String> fields)` 
+- Added method to exclude records from caching : `.cacheResults(false)`
+- Updated API Version to 63.0
+
 ### v2.4.5
 - Bugfixes and coverage improvements
 

@@ -64,7 +64,6 @@ nav:
           - path: secure-auth-provider-secrets
             label: Secure Auth. Provider Secrets
             description: How to store secrets securely in custom Auth. Providers.
-            badge: New
 
       - label: Frameworks
         items:
@@ -72,7 +71,6 @@ nav:
             label: Callout Framework
             description: Define common behaviour for outgoing callouts.
             iconName: standard:maintenance_work_rule
-            badge: Updated
             snippet: |
               onAfterCallout()
               .add(match.onUnauthorized(), action.retry(1))
@@ -103,7 +101,6 @@ nav:
           - path: database-service
             label: Database Service
             description: Issue and mock DMLs with configurable sharing and user mode.
-            badge: Updated v2.0
             snippet: |
               new DatabaseService()
                 .withoutSharing()
@@ -112,7 +109,7 @@ nav:
           - path: query
             label: Query Framework
             description: Flexible Selector Layer with Record Caching mechanism.
-            badge: Updated
+            badge: Updated v2.5
             snippet: |
               List<Contact> contact = Query.Contacts
                 .byAccountId(accountIds)

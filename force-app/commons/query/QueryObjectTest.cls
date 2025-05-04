@@ -646,6 +646,22 @@ public class QueryObjectTest {
     }
 
     @IsTest
+    static void testExcludeFields(){
+        String soql = new TestUserQuery()
+            .withoutFields(new List<String>{
+                'Username',
+                'Email'
+            })
+            .toSOQL();
+
+        System.debug('soql: ' + soql);
+
+        Assert.isTrue(soql.containsIgnoreCase('SELECT Id, Name FROM User'));
+        Assert.isFalse(soql.containsIgnoreCase('Username'));
+        Assert.isFalse(soql.containsIgnoreCase('Email'));
+    }
+
+    @IsTest
     static void testLookupFields() {
         String soql = new TestUserQuery()
             .withLookup('Owner', new List<SObjectField>{

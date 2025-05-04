@@ -118,6 +118,15 @@ public virtual inherited sharing class QueryObject extends QueryResults {
         return this;
     }
 
+    /**
+     * Removes given fields from the query.
+     * @param fields fields to remove
+     */
+    public QueryObject withoutFields(List<String> fields) {
+        this.queryBuilder.removeFields(fields);
+        return this;
+    }
+
 
     /**
      * Select all fields. Fields are retrieved from sObjectType describe and is different from selecting FIELDS(ALL)

@@ -94,6 +94,11 @@ public inherited sharing class QueryBuilder {
         return this;
     }
 
+    public QueryBuilder removeFields(List<String> fields) {
+        this.fields.removeAll(fields);
+        return this;
+    }
+
     public QueryBuilder addSubquery(QueryBuilder subqueryBuilder) {
         String subQuery = String.join(
             new String[]{

@@ -621,12 +621,16 @@ public class QueryObjectTest {
 
     @IsTest
     static void testGenericQuery() {
-        List<User> users = new QueryObject(User.SObjectType)
+        List<User> users = Query.fromSObject(User.SObjectType)
             .withFields('Id, Username')
             .withLimit(1)
             .getList();
-
         System.assertEquals(1, users.size());
+
+        Query.fromSObject(Account.SObjectType).getList();
+        Query.fromSObject(Account.SObjectType)
+            .withChildren('Id', 'Contacts')
+            .getList();
     }
 
     @IsTest
@@ -666,8 +670,6 @@ public class QueryObjectTest {
                 'Email'
             })
             .toSOQL();
-
-        System.debug('soql: ' + soql);
 
         Assert.isTrue(soql.containsIgnoreCase('SELECT Id, Name FROM User'));
         Assert.isFalse(soql.containsIgnoreCase('Username'));
@@ -730,10 +732,9 @@ public class QueryObjectTest {
     @IsTest
     static void testQueryOfAggregatedResultsMocking() {
         Query.mock(AggregateResult.SObjectType, 'test', new List<Query.AggregateResult>{
-            new Query.AggregateResult(new Map<String, Object>{
-                'cnt' => 1,
-                'name' => 'Test'
-            })
+            new Query.AggregateResult()
+                .put('cnt', 1)
+                .put('name', 'Test')
         });
 
         List<Query.AggregateResult> results = Query.of([

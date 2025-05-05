@@ -135,15 +135,14 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      */
     public QueryObject withAllFields() {
         List<SObjectField> sObjectField = sObjType.getDescribe().fields.getMap().values();
-        Set<String> excluded = new Set<String>{'SystemModstamp'};
 
         for (Integer i = 0; i < sObjectField.size(); i++) {
-            String field = '' + sObjectField[i];
-
-            if (!excluded.contains(field)) {
-                queryBuilder.addField(field);
-            }
+            queryBuilder.addField('' + sObjectField[i]);
         }
+
+        queryBuilder.removeFields(new List<String>{
+            'SystemModstamp'
+        });
 
         return this;
     }

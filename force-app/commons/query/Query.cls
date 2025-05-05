@@ -112,9 +112,11 @@ public inherited sharing virtual class Query {
     /**
      * Wrapper for Schema.AggregateResult to allow mocking and value setting.
      */
-    public virtual class AggregateResult {
+    public with sharing virtual class AggregateResult {
         private Schema.AggregateResult result;
         private Map<String, Object> values;
+
+        public AggregateResult() {}
 
         public AggregateResult(Map<String, Object> values) {
             this.values = values;

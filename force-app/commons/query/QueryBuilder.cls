@@ -42,9 +42,19 @@ public inherited sharing class QueryBuilder {
      * Builds and returns SOQL query
      */
     public String toSOQL() {
+        List<String> fieldsList = new List<String>(fields);
+        if (!subqueries.isEmpty()) {
+            fieldsList.add(String.join(subqueries, ', '));
+        }
+
+        String fields = String.join(fieldsList, ', ');
+
+        if (String.isBlank(fields)) {
+            fields = 'Id';
+        }
+
         return 'SELECT '
-            + String.join(fields, ', ')
-            + (subqueries.isEmpty() ? '' : ', ' + String.join(subqueries, ', '))
+            + fields
             + ' ' + fromObject
             + (String.isBlank(whereConditions) ? '' : ' ' + whereConditions)
             + (String.isBlank(groupBy) ? '' : ' ' + groupBy)

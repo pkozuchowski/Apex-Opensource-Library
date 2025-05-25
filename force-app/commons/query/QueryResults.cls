@@ -235,13 +235,13 @@ public virtual class QueryResults {
                 return sobjectMocks.get(mockId);
 
             } else {
-                Runtime.StackTraceLine[] stackTraceLines = Runtime.getStackTrace();
+                String[] stackTraceLines = new DmlException().getStackTraceString().split('\n');
 
                 for (Integer i = stackTraceLines.size() - 1; i >= 0; i--) {
-                    Runtime.StackTraceLine line = stackTraceLines.get(i);
+                    String classAndMethod = stackTraceLines[i].substringBetween('Class.', ':');
 
-                    Object mockResult = sobjectMocks.get(line.apexClassMethod) ??
-                        getMockByPattern(sobjectMocks, line.apexClassMethod);
+                    Object mockResult = sobjectMocks.get(classAndMethod) ??
+                        getMockByPattern(sobjectMocks, classAndMethod);
 
                     if (mockResult != null) {
                         return mockResult;

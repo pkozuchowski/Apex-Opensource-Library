@@ -34,7 +34,6 @@ public virtual inherited sharing class QueryObject extends QueryResults {
     protected final List<QueryConditions.Condition> havingConditions = new List<QueryConditions.Condition>();
     protected final QueryBindings bindings = new QueryBindings();
 
-    private AccessType accessType = null;
     private QueryCache cache;
     private Boolean useCache = !Test.isRunningTest();
     private Boolean cacheResults = true;
@@ -664,11 +663,12 @@ public virtual inherited sharing class QueryObject extends QueryResults {
     }
 
     protected override Object getQueryResult() {
-        List<SObject> result = Runtime.newListOfItemType(sObjType);
-        QueryConditions.Condition compiledExpr = compileConditions(whereConditions);
         Boolean doQuery = true;
+        Boolean canUseCache = canUseCache();
+        QueryConditions.Condition compiledExpr = compileConditions(whereConditions);
+        List<SObject> result = (List<SObject>) Type.forName('List<' + sObjType + '>').newInstance();
 
-        if (canUseCache()) {
+        if (canUseCache) {
             compiledExpr = getCachedRecordsAndReturnRemainderCondition(result);
             doQuery = compiledExpr != null;
         }
@@ -682,7 +682,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
 
             SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), bindings.getMap());
 
-            if (cache != null && cacheResults && !(records instanceof AggregateResult[])) {
+            if (canUseCache && cacheResults && !(records instanceof AggregateResult[])) {
                 cache.put(records);
             }
 

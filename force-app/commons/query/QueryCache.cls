@@ -205,7 +205,8 @@ public inherited sharing class QueryCache {
         Map<String, SObject> cachedRecords = getCachedRecords(sObjectType);
         Map<Id, SObject> resultMap = new Map<Id, SObject>();
         List<Object> listOfQueryValues = getList(value);
-        List<Object> remainingValues = Runtime.newListOfTheSameType(listOfQueryValues);
+        List<Object> remainingValues = listOfQueryValues.clone();
+        remainingValues.clear();
 
         for (Integer i = 0; i < listOfQueryValues.size(); i++) {
             Object val = listOfQueryValues[i];

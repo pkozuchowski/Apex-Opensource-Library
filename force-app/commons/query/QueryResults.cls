@@ -111,26 +111,6 @@ public virtual class QueryResults {
     }
 
     /**
-     * @return Populated Fields from records or AggregatedResults.
-     */
-    public virtual List<Map<String, Object>> getPopulatedFieldsList() {
-        Object result = executeQuery();
-
-        if (result instanceof List<Map<String, Object>>) {
-            return (List<Map<String, Object>>) result;
-        }
-
-        List<SObject> records = (List<SObject>) result;
-        List<Map<String, Object>> aggregateResults = new List<Map<String, Object>>();
-
-        for (Integer i = 0; i < records.size(); i++) {
-            aggregateResults.add(records[i].getPopulatedFieldsAsMap());
-        }
-
-        return aggregateResults;
-    }
-
-    /**
      * @return Mockable wrapper for Schema.AggregateResult
      */
     public virtual List<Query.AggregateResult> getAggregatedResults() {

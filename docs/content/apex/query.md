@@ -1398,14 +1398,6 @@ Query.AggregateResult result;
 result.put('myVal', 'Value I want to set');
 ```
 
-
-#### Added `getPopulatedFieldsList()` method to base QueryObject class
-```apex
-List<Map<String, Object>> populatedFields = Query.Accounts
-    .byName('Test')
-    .getPopulatedFieldsList();
-```
-
 #### Other
 - Performance Improvements
 - Fixed bug in withAllFields when it was used in combination with lookup fields or subqueries

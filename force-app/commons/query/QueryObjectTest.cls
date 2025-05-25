@@ -691,23 +691,6 @@ public class QueryObjectTest {
     }
 
     @IsTest
-    static void testGetPopulatedFields() {
-        Query.mock(User.SObjectType, QueryObjectTest.class, 'testAggregatedResultsMocking', new List<Map<String, Object>>{
-            new Map<String, Object>{
-                'cnt' => 1,
-                'name' => 'Test'
-            }
-        });
-
-        List<Map<String, Object>> results = Query.fromSObject(User.SObjectType)
-            .withFields('COUNT(Id) cnt, Profile.Name name')
-            .groupBy('Profile.Name')
-            .getPopulatedFieldsList();
-
-        Assert.areEqual(1, results[0].get('cnt'));
-    }
-
-    @IsTest
     static void testAggregatedResultsMocking() {
         Query.mock(User.SObjectType, QueryObjectTest.class, 'testAggregatedResultsMocking', new List<Query.AggregateResult>{
             new Query.AggregateResult(new Map<String, Object>{})

@@ -3,17 +3,11 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/query)
 [Selectors](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
-[Dependency: Runtime](/apex/runtime)
-[Dependency: Database Service](/apex/database-service)
 [Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LfbDIAS)
 [Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LfbDIAS)
 
 ```bash
-sf project deploy start \
--d force-app/commons/queries \
--d force-app/commons/shared \
--d force-app/commons/database \
--o sfdxOrg
+sf project deploy start -d force-app/commons/query -o sfdxOrg
 ```
 
 ---

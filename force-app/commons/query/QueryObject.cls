@@ -29,11 +29,12 @@
 public virtual inherited sharing class QueryObject extends QueryResults {
     protected final QueryConditions conditionFactory = new QueryConditions();
     protected final QueryBuilder queryBuilder = new QueryBuilder();
-    protected final DatabaseService databaseService = new DatabaseService().asSystem();
+    protected QueryIssuer issuer = new QueryIssuer();
     protected final List<QueryConditions.Condition> whereConditions = new List<QueryConditions.Condition>();
     protected final List<QueryConditions.Condition> havingConditions = new List<QueryConditions.Condition>();
     protected final QueryBindings bindings = new QueryBindings();
 
+    private AccessLevel accessLevel = System.AccessLevel.SYSTEM_MODE;
     private QueryCache cache;
     private Boolean useCache = !Test.isRunningTest();
     private Boolean cacheResults = true;
@@ -334,7 +335,8 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * or any of the fields
      */
     public QueryObject asUser() {
-        this.databaseService.asUser();
+        this.accessLevel = System.AccessLevel.USER_MODE;
+        this.issuer = new QueryIssuer.WithSharingIssuer();
         return this;
     }
 
@@ -344,7 +346,8 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * Permission Set permissions are added on top of user permissions.
      */
     public QueryObject asUserWithPermissionSetId(Id permissionSetId) {
-        this.databaseService.asUserWithPermissionSetId(permissionSetId);
+        this.accessLevel = System.AccessLevel.USER_MODE.withPermissionSetId(permissionSetId);
+        this.issuer = new QueryIssuer.WithSharingIssuer();
         return this;
     }
 
@@ -352,7 +355,8 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * Query will ignore Object and Field Level security and inherit sharing from calling class.
      */
     public QueryObject asSystem() {
-        this.databaseService.asSystem();
+        this.accessLevel = System.AccessLevel.SYSTEM_MODE;
+        this.issuer = new QueryIssuer();
         return this;
     }
 
@@ -360,7 +364,8 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * Query will ignore Object and Field Level security, but will enforce record access.
      */
     public QueryObject asSystemWithSharing() {
-        this.databaseService.asSystemWithSharing();
+        this.accessLevel = System.AccessLevel.SYSTEM_MODE;
+        this.issuer = new QueryIssuer.WithSharingIssuer();
         return this;
     }
 
@@ -368,7 +373,8 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * Query will ignore Object, Field Level security and sharing rules, giving access to all records.
      */
     public QueryObject asSystemWithoutSharing() {
-        this.databaseService.asSystemWithoutSharing();
+        this.accessLevel = System.AccessLevel.SYSTEM_MODE;
+        this.issuer = new QueryIssuer.WithoutSharingIssuer();
         return this;
     }
 
@@ -391,17 +397,6 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      */
     public QueryObject cacheResults(Boolean cacheResults) {
         this.cacheResults = cacheResults;
-        return this;
-    }
-
-
-    /**
-     * Enforces Object and Field level security on records.
-     * @throws System.NoAccessException No access to entity when user does not have READ permission to sOObject
-     * or any of the fields
-     */
-    public QueryObject withAccessLevel(AccessLevel accessLevel) {
-        this.databaseService.withAccessLevel(accessLevel);
         return this;
     }
 
@@ -634,14 +629,14 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * @return Query Locator for current query
      */
     public Database.QueryLocator getQueryLocator() {
-        return this.databaseService.getQueryLocator(toSOQL(), bindings.getMap());
+        return this.issuer.getQueryLocator(toSOQL(), bindings.getMap(), accessLevel);
     }
 
     /**
      * @return Database.Cursor for current query.
      */
     public Database.Cursor getCursor() {
-        return this.databaseService.getCursor(toSOQL(), bindings.getMap());
+        return this.issuer.getCursor(toSOQL(), bindings.getMap(), accessLevel);
     }
 
     /**
@@ -680,7 +675,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
                 .fromObject(sObjType)
                 .toSOQL();
 
-            SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), bindings.getMap());
+            SObject[] records = this.issuer.query(queryBuilder.toSOQL(), bindings.getMap(), accessLevel);
 
             if (canUseCache && cacheResults && !(records instanceof AggregateResult[])) {
                 cache.put(records);

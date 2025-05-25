@@ -27,7 +27,7 @@ private class QueryTest {
     @IsTest
     static void testQueryFrom() {
         Id userId = UserInfo.getUserId();
-        Id actualId = Query.fromSObject(User.SObjectType)
+        Id actualId = Query.of(User.SObjectType)
             .withStandardFields()
             .byId(userId)
             .getFirstIdOrNull();

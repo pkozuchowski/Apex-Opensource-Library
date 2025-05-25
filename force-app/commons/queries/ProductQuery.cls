@@ -63,7 +63,7 @@ public virtual inherited sharing class ProductQuery extends QueryObject {
      */
     public ProductQuery withPricebookEntries(Set<Id> pricebookIds) {
         this.withChildren(
-            Query.fromSObject(PricebookEntry.SObjectType)
+            Query.of(PricebookEntry.SObjectType)
                 .withFields(new List<String>{
                     'Id'
                 })

@@ -31,9 +31,17 @@ public inherited sharing virtual class Query {
 
     /**
      * @return Query instance for generic SObjectType
-     *
+     * @deprecated Use {@link Query#of(SObjectType)} instead.
      */
     public static QueryObject fromSObject(SObjectType sObjectType) {
+        return new QueryObject(sObjectType);
+    }
+
+
+    /**
+     * @return Query instance for generic SObjectType
+     */
+    public static QueryObject of(SObjectType sObjectType) {
         return new QueryObject(sObjectType);
     }
 

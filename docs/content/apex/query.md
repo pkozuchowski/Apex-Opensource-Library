@@ -1361,7 +1361,10 @@ The framework will use String field parameters as a baseline parameters and SObj
 
 ---
 # Change Log
-### v2.5
+### v2.5 - 2.6
+
+#### 
+Removed dependency on DatabaseService and Runtime classes.
 
 #### Added Query.AggregatedResults wrapper to enable mocking and setting fields on AggregatedResults
 This allows mocking aggregated queries and setting fields on the result:

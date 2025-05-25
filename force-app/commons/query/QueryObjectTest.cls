@@ -178,7 +178,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testGroupBy() {
-        String soql = Query.fromSObject(User.SObjectType)
+        String soql = Query.of(User.SObjectType)
             .withFields('COUNT(Id) cnt, Profile.Name')
             .groupBy('Profile.Name')
             .toSOQL();
@@ -621,14 +621,14 @@ public class QueryObjectTest {
 
     @IsTest
     static void testGenericQuery() {
-        List<User> users = Query.fromSObject(User.SObjectType)
+        List<User> users = Query.of(User.SObjectType)
             .withFields('Id, Username')
             .withLimit(1)
             .getList();
         System.assertEquals(1, users.size());
 
-        Query.fromSObject(Account.SObjectType).getList();
-        Query.fromSObject(Account.SObjectType)
+        Query.of(Account.SObjectType).getList();
+        Query.of(Account.SObjectType)
             .withChildren('Id', 'Contacts')
             .getList();
     }
@@ -703,7 +703,7 @@ public class QueryObjectTest {
             })
         });
 
-        List<Query.AggregateResult> results = Query.fromSObject(User.SObjectType)
+        List<Query.AggregateResult> results = Query.of(User.SObjectType)
             .withFields('COUNT(Id) cnt, Profile.Name name')
             .groupBy('Profile.Name')
             .getAggregatedResults();

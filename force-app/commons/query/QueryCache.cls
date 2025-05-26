@@ -58,6 +58,7 @@ public inherited sharing class QueryCache {
                 FROM QueryCache__mdt
                 WHERE Active__c = TRUE
                 AND SObject__c = :sobjectName
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
 

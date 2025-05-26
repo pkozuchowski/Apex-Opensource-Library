@@ -411,7 +411,7 @@ new AccountQuery().byName('Test').getList();
 It's possible to construct a query without an inheritance, but it will be only possible to use default fields.
 
 ```apex
-Query.fromSObject(Account.SObjectType)
+Query.of(Account.SObjectType)
     .byField(Account.Name, '=', 'Test Account')
     .getList();
 ```
@@ -790,7 +790,7 @@ Sets GROUP BY clause on the query.
 
 #### Usage
 ```apex
-Query.fromSObject(User.SObjectType)
+Query.of(User.SObjectType)
     .withFields('COUNT(Id), ProfileId')
     .groupBy('ProfileId')
     .havingCondition('COUNT(ID) > 1')
@@ -814,7 +814,7 @@ Sets HAVING condition on the query
 
 #### Usage
 ```apex
-Query.fromSObject(User.SObjectType)
+Query.of(User.SObjectType)
     .withFields('COUNT(Id), ProfileId')
     .groupBy('ProfileId')
     .havingCondition('COUNT(ID) > :count', new Map<String, Object>{'count' => userCount})

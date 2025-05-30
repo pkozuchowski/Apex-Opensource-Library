@@ -304,7 +304,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
     * Update records with information about when they were last viewed.
     */
     public QueryObject forView() {
-        this.queryBuilder.setFor('FOR VIEW');
+        this.queryBuilder.setFor(' FOR VIEW');
         return this;
     }
 
@@ -312,7 +312,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
     * Update records with information about when they were last referenced on related list view.
     */
     public QueryObject forReference() {
-        this.queryBuilder.setFor('FOR REFERENCE');
+        this.queryBuilder.setFor(' FOR REFERENCE');
         return this;
     }
 
@@ -320,7 +320,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
     * Locks records while they’re being updated in order to prevent race conditions and other thread safety problems.
     */
     public QueryObject forUpdate() {
-        this.queryBuilder.setFor('FOR UPDATE');
+        this.queryBuilder.setFor(' FOR UPDATE');
         return this;
     }
 

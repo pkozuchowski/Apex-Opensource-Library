@@ -43,26 +43,27 @@ public inherited sharing class QueryBuilder {
      */
     public String toSOQL() {
         List<String> fieldsList = new List<String>(fields);
+
+        if (fieldsList.isEmpty()) {
+            fieldsList.add('Id');
+        }
+
         if (!subqueries.isEmpty()) {
-            fieldsList.add(String.join(subqueries, ', '));
+            fieldsList.addAll(subqueries);
         }
 
         String fields = String.join(fieldsList, ', ');
 
-        if (String.isBlank(fields)) {
-            fields = 'Id';
-        }
-
         return 'SELECT '
             + fields
-            + ' ' + fromObject
-            + (String.isBlank(whereConditions) ? '' : ' ' + whereConditions)
-            + (String.isBlank(groupBy) ? '' : ' ' + groupBy)
-            + (String.isBlank(havingConditions) ? '' : ' ' + havingConditions)
-            + (String.isBlank(limitQueryPart) ? '' : ' ' + limitQueryPart)
-            + (String.isBlank(offsetQueryPart) ? '' : ' ' + offsetQueryPart)
+            + fromObject
+            + whereConditions
+            + groupBy
+            + havingConditions
             + (orderBy.isEmpty() ? '' : ' ORDER BY ' + String.join(orderBy, ', '))
-            + (String.isBlank(forPart) ? '' : ' ' + forPart);
+            + limitQueryPart
+            + offsetQueryPart
+            + forPart;
     }
 
     public QueryBuilder addField(SObjectField field) {
@@ -149,26 +150,26 @@ public inherited sharing class QueryBuilder {
     }
 
     public QueryBuilder fromObject(String fromObject) {
-        this.fromObject = 'FROM ' + fromObject;
+        this.fromObject = ' FROM ' + fromObject;
         return this;
     }
 
 
     public QueryBuilder setWhere(String condition) {
         if (String.isNotEmpty(condition)) {
-            this.whereConditions = 'WHERE ' + condition;
+            this.whereConditions = ' WHERE ' + condition;
         }
         return this;
     }
 
     public QueryBuilder setGroupBy(String groupBy) {
-        this.groupBy = 'GROUP BY ' + groupBy;
+        this.groupBy = ' GROUP BY ' + groupBy;
         return this;
     }
 
     public QueryBuilder setHaving(String havingConditionExpression) {
         if (String.isNotEmpty(havingConditionExpression)) {
-            this.havingConditions = 'HAVING ' + havingConditionExpression;
+            this.havingConditions = ' HAVING ' + havingConditionExpression;
         }
         return this;
     }
@@ -179,12 +180,12 @@ public inherited sharing class QueryBuilder {
     }
 
     public QueryBuilder setLimit(Integer limitOf) {
-        this.limitQueryPart = 'LIMIT ' + limitOf;
+        this.limitQueryPart = ' LIMIT ' + limitOf;
         return this;
     }
 
     public QueryBuilder setOffset(Integer offsetOf) {
-        this.offsetQueryPart = 'OFFSET ' + offsetOf;
+        this.offsetQueryPart = ' OFFSET ' + offsetOf;
         return this;
     }
 

@@ -65,20 +65,10 @@
     {
       "path": "./force-app/commons/query",
       "package": "Query Framework",
-      "versionName": "ver 2.5",
-      "versionNumber": "2.5.2.NEXT",
+      "versionName": "ver 2.6",
+      "versionNumber": "2.6.0.NEXT",
       "default": false,
-      "versionDescription": "AggregatedResults wrapper, performance improvements and bug fixes",
-      "dependencies": [
-        {
-          "package": "Libra Shared",
-          "versionNumber": "1.0.0.LATEST"
-        },
-        {
-          "package": "DatabaseService",
-          "versionNumber": "2.0.0.LATEST"
-        }
-      ]
+      "versionDescription": "Removed Dependencies on DatabaseService and Runtime."
     },
     {
       "path": "./force-app/commons/database",
@@ -168,6 +158,7 @@
     "Query Framework@2.5.0-1": "04tJ6000000LfWgIAK",
     "Query Framework@2.5.1-1": "04tJ6000000Lfb8IAC",
     "Query Framework@2.5.2-1": "04tJ6000000LfbDIAS",
+    "Query Framework@2.6.0-3": "04tJ6000000LhrkIAC",
     "HttpMockRouter": "0Ho08000000CaSZCA0",
     "HttpMockRouter@1.0.0-1": "04t08000000ga9YAAQ",
     "HttpMockRouter@1.0.1-1": "04t08000000cSySAAU",

@@ -109,7 +109,7 @@ nav:
           - path: query
             label: Query Framework
             description: Flexible Selector Layer with Record Caching mechanism.
-            badge: Updated v2.5
+            badge: Updated v2.6
             snippet: |
               List<Contact> contact = Query.Contacts
                 .byAccountId(accountIds)

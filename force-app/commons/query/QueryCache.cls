@@ -38,7 +38,7 @@ public inherited sharing class QueryCache {
     private static final Integer DEFAULT_TTL = Integer.valueOf(QueryCache__mdt.TimeToLive__c.getDescribe().getDefaultValueFormula());
 
     private Storage cacheStorage;
-    private String query;
+    private String initializationQuery;
     private Set<String> cachedFields;
     private SObjectType sObjectType;
     private Integer ttl;
@@ -75,7 +75,7 @@ public inherited sharing class QueryCache {
     }
 
     private QueryCache(SObjectType sObjectType, QueryCache__mdt config) {
-        this.query = config.SOQL__c;
+        this.initializationQuery = config.SOQL__c;
         this.cachedFields = new Set<String>(config.CacheFields__c.split(','));
         this.ttl = (config.TimeToLive__c == null) ? DEFAULT_TTL : ((Integer) config.TimeToLive__c);
         this.sObjectType = sObjectType;
@@ -203,14 +203,13 @@ public inherited sharing class QueryCache {
       * List<Object> remaining values which weren't found in cache and has to be queried
       */
     public Result getCachedRecords(String field, Object value) {
+        Result result = new Result();
+        result.initializeLists(value);
+
         Map<String, SObject> cachedRecords = getCachedRecords(sObjectType);
         Map<Id, SObject> resultMap = new Map<Id, SObject>();
-        List<Object> listOfQueryValues = getList(value);
-        List<Object> remainingValues = listOfQueryValues.clone();
-        remainingValues.clear();
 
-        for (Integer i = 0; i < listOfQueryValues.size(); i++) {
-            Object val = listOfQueryValues[i];
+        for (Object val : result.requestedValues) {
             String cacheKey = '' + field + '.' + val;
 
             if (val != null && val != '' && cachedRecords.containsKey(cacheKey)) {
@@ -218,11 +217,12 @@ public inherited sharing class QueryCache {
                 resultMap.put(record.Id, record);
 
             } else {
-                remainingValues.add(val);
+                result.remainingValues.add(val);
             }
         }
 
-        return new Result(resultMap, remainingValues);
+        result.cachedRecords = resultMap;
+        return result;
     }
 
     /**
@@ -238,8 +238,8 @@ public inherited sharing class QueryCache {
         if (cachedRecords == null) {
             cachedRecords = new Map<String, SObject>();
 
-            if (String.isNotBlank(query)) {
-                List<SObject> records = Database.query(query);
+            if (String.isNotBlank(initializationQuery)) {
+                List<SObject> records = Database.query(initializationQuery);
                 return put(records);
             }
         }
@@ -249,51 +249,34 @@ public inherited sharing class QueryCache {
 
 
     /**
-    * Transforms value into uniform iterable:
-    * - primitive V is transformed into new List<T>{V}
-    * - List or Sets are casted into Iterable<Object>
-    * - SObject[] is changed into Iterable<Id>
-    */
-    private List<Object> getList(Object value) {
-
-        if (value instanceof SObject[]) {
-            return new List<Id>(
-                new Map<Id, SObject>((SObject[]) value).keySet()
-            );
-
-        } else if (value instanceof List<Object>) {
-            return (List<Object>) value;
-
-        } else {
-            if (value instanceof Id) return new List<Id>{(Id) value};
-            if (value instanceof String) return new List<String>{(String) value};
-            if (value instanceof Date) return new List<Date>{(Date) value};
-            if (value instanceof Datetime) return new List<Datetime>{(Datetime) value};
-            if (value instanceof Time) return new List<Time>{(Time) value};
-            if (value instanceof Decimal) return new List<Decimal>{(Decimal) value};
-            if (value instanceof Boolean) return new List<Boolean>{(Boolean) value};
-            if (value instanceof Set<Id>) return new List<Id>((Set<Id>) value);
-            if (value instanceof Set<String>) return new List<String>((Set<String>) value);
-            if (value instanceof Set<Date>) return new List<Date>((Set<Date>) value);
-            if (value instanceof Set<Datetime>) return new List<Datetime>((Set<Datetime>) value);
-            if (value instanceof Set<Time>) return new List<Time>((Set<Time>) value);
-            if (value instanceof Set<Decimal>) return new List<Decimal>((Set<Decimal>) value);
-            if (value instanceof Set<Boolean>) return new List<Boolean>((Set<Boolean>) value);
-
-            throw new QueryException('Unrecognized value type: ' + value);
-        }
-    }
-
-    /**
-     * Result of Cache retrieve operation - a pair of cached records and remaining values that were not found in cache.
+     * Result of Cache retrieve operation - a pair of cached records
+     * and remaining values that were not found in cache.
      */
     public class Result {
         public Map<Id, SObject> cachedRecords;
+        public Iterable<Object> requestedValues;
         public List<Object> remainingValues;
 
-        private Result(Map<Id, SObject> cachedRecords, List<Object> remainingValues) {
-            this.cachedRecords = cachedRecords;
-            this.remainingValues = remainingValues;
+        /**
+        * Initializes requested and remaining value lists based on the type of the provided value.
+        */
+        private void initializeLists(Object value) {
+            if (value instanceof Id) {
+                requestedValues = new List<Id>{(Id) value};
+                remainingValues = new List<Id>();
+
+            } else if (value instanceof String) {
+                requestedValues = new List<String>{(String) value};
+                remainingValues = new List<String>();
+
+            } else if (value instanceof Iterable<Id>) {
+                requestedValues = (Iterable<Object>) value;
+                remainingValues = new List<Id>();
+
+            } else if (value instanceof Iterable<String>) {
+                requestedValues = (Iterable<Object>) value;
+                remainingValues = new List<String>();
+            }
         }
     }
 }

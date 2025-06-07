@@ -3,8 +3,8 @@
 sharing context in runtime.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/database)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Ld7ZIAS)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Ld7ZIAS)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Li0ZIAS)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Li0ZIAS)
 
 ```bash
 sf project deploy start -d "force-app/commons/database" -o sfdxOrg
@@ -191,6 +191,21 @@ DatabaseUnitOfWork relate(SObject record, SObjectField lookupField, SObject pare
 void insertRecord(SObject record, SObjectField lookupField, SObject parent);
 void updateRecord(SObject record, SObjectField lookupField, SObject parent);
 void upsertRecord(SObject record, SObjectField extId, SObjectField lookupField, SObject parent);
+
+/* Plus all  methods inherited from DatabaseService */
+DatabaseService asUser();
+DatabaseService asUserWithPermissionSetId(Id permissionSetId);
+DatabaseService asSystem();
+DatabaseService asSystemWithSharing();
+DatabaseService asSystemWithoutSharing();
+
+DML.Result insertRecord(SObject record);
+DML.Result updateRecord(SObject record);
+DML.Result upsertRecord(SObject record);
+DML.Result deleteRecord(SObject record);
+DML.Result undeleteRecord(SObject record);
+DML.Result mergeRecords(SObject record);
+//... etc.
 ```
 
 ```apex | Example of usage
@@ -256,6 +271,34 @@ DatabaseUnitOfWork uow = (DatabaseUnitOfWork) new DatabaseUnitOfWork(new List<DM
 ## Failure Handling
 When Unit of Work operates in `"All or None"` mode, this mode applies to entire Unit of Work. When any of the operations fails,
 all operations are rolled back.
+
+---
+# UoW Invocable
+
+Unit of Work now features an Invocable Action that can be used in Flows to register DMLs.
+
+This action allows you to register DML operations in various Flows, which will be executed at the end of the Flow when Commit is called.
+By using this action, you can ensure that the updated to the same record, performed in different flows,
+will be registered as a single update operation, with all modified fields updated.
+
+![db-uow-flow-1.png](/img/db-uow-flow-1.png)
+![db-uow-flow-2.png](/img/db-uow-flow-2.png)
+
+Commit should be called at the end of the flow, to ensure all DMLs are executed.
+![db-uow-flow-3.png](/img/db-uow-flow-3.png)
+
+When commit is called, all new operations will be registered in new Unit of Work instance.
+
+
+## How to Use:
+1. Create a new Flow variable of **Record** type and set it the fields you intend to modify.
+2. Add the **Database Unit of Work** action to your Flow. Specify operation and input record variable.
+3. Add new Record-Triggered Flow to be executed last and put Commit operation there.
+
+## Note
+Unit of Work will try to deduplicate records, so if you update the same record in multiple places,
+it will register as 1 update on 1 record with all provided fields.
+Therefore, it's important to only update fields that are actually changed.
 
 
 ---
@@ -324,7 +367,7 @@ mockDmlResult(DML.DmlResultMock mock);
     - DML.Type.UPDATE_DML - will match updates
     - etc.
     - null matches all operations.
-2. **Id** - is for matching records by Id. 
+2. **Id** - is for matching records by Id.
 3. **SObject** - is for matching sObject:
     - `new Account()` will match all accounts
     - `new Account(Name='Test')` will match all accounts with specified fields – in this case, accounts with Name equals "Test".
@@ -429,22 +472,19 @@ public class DatabaseService {
 
 
     public DML.Result insertRecord(SObject record);
-    public List<DML.Result> insertRecords(List<SObject> records);
-
     public DML.Result updateRecord(SObject record);
-    public List<DML.Result> updateRecords(List<SObject> records);
-
     public DML.Result upsertRecord(SObject record, SObjectField field);
-    public List<DML.Result> upsertRecords(List<SObject> records, SObjectField field);
-
     public DML.Result deleteRecord(Id recordId);
-    public List<DML.Result> deleteRecords(List<Id> recordIds);
     public DML.Result deleteRecord(SObject record);
-    public List<DML.Result> deleteRecords(List<SObject> records);
-
     public DML.Result undeleteRecord(Id recordId);
-    public List<DML.Result> undeleteRecords(List<Id> recordIds);
     public DML.Result undeleteRecord(SObject record);
+
+    public List<DML.Result> insertRecords(List<SObject> records);
+    public List<DML.Result> updateRecords(List<SObject> records);
+    public List<DML.Result> upsertRecords(List<SObject> records, SObjectField field);
+    public List<DML.Result> deleteRecords(List<Id> recordIds);
+    public List<DML.Result> deleteRecords(List<SObject> records);
+    public List<DML.Result> undeleteRecords(List<Id> recordIds);
     public List<DML.Result> undeleteRecords(List<SObject> records);
 
     public DML.MergeResult mergeRecords(SObject primary, List<Id> duplicates);
@@ -482,6 +522,9 @@ public class DatabaseUnitOfWork extends DatabaseService {
 
 ---
 # Change Log
+### v2.3
+- Added Invocable Unit of Work action to register DMLs in Flows
+
 ### v2.2
 - Added delete and undelete by record Id operations.
 - Added mocking by record Id.

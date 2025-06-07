@@ -25,7 +25,7 @@
  * *
  */
 
-@IsTest
+@IsTest(IsParallel=true)
 private class DatabaseUnitOfWorkTest {
 
     @IsTest
@@ -376,6 +376,102 @@ private class DatabaseUnitOfWorkTest {
         Assert.isFalse(saveResultsContact.get(0).success);
     }
 
+    @IsTest
+    static void shouldUpdateTheSameRecordWhenItsUpdatedInManyFlows() {
+        DatabaseUnitOfWork uow = DatabaseUnitOfWorkFlow.uow;
+        uow.mockDmls();
+
+        Id accountId = DatabaseService.getFakeId(Account.SObjectType);
+        Id accountId2 = DatabaseService.getFakeId(Account.SObjectType);
+
+        //Simulate the invocable method calls
+        DatabaseUnitOfWorkFlow.execute(new List<DatabaseUnitOfWorkFlow.Input>{
+            input('update', new Account(Id = accountId, Name = 'Test1'), null),
+            input('update', new Account(Id = accountId2, Name = 'Test2'), null)
+        });
+
+        // Second Flow call with the same record
+        DatabaseUnitOfWorkFlow.execute(new List<DatabaseUnitOfWorkFlow.Input>{
+            input('update', new Account(Id = accountId, ShippingCity = 'Warsaw'), null)
+        });
+
+        // Third Flow call
+        DatabaseUnitOfWorkFlow.execute(new List<DatabaseUnitOfWorkFlow.Input>{
+            input('insert', new Account(BillingCity = 'London'), null)
+        });
+
+        DatabaseUnitOfWorkFlow.execute(new List<DatabaseUnitOfWorkFlow.Input>{
+            input('commit', null, null)
+        });
+
+
+        Assert.areEqual(1, uow.register.inserts.size());
+        Assert.areEqual(1, uow.register.updates.size());
+        Assert.areEqual(2, uow.register.updated.size());
+
+        Account account = (Account) uow.register.updated[0];
+        Assert.areEqual('Test1', account.Name);
+        Assert.areEqual('Warsaw', account.ShippingCity);
+    }
+
+    @IsTest
+    static void shouldDeduplicateRecordOnUpsert() {
+        DatabaseUnitOfWork uow = DatabaseUnitOfWorkFlow.uow;
+        uow.mockDmls();
+
+        Id userId = DatabaseService.getFakeId(User.SObjectType);
+
+        //Simulate the invocable method calls
+        DatabaseUnitOfWorkFlow.execute(new List<DatabaseUnitOfWorkFlow.Input>{
+            input('upsert', new User(Username = 'test@test.com', LastName = 'Doe'), 'Username')
+        });
+
+        // Second Flow call with the same record
+        DatabaseUnitOfWorkFlow.execute(new List<DatabaseUnitOfWorkFlow.Input>{
+            input('upsert', new User(Username = 'test@test.com', FirstName = 'John'), 'Username')
+        });
+
+        // Second Flow call with the same record
+        DatabaseUnitOfWorkFlow.execute(new List<DatabaseUnitOfWorkFlow.Input>{
+            input('delete', new User(Id = userId), null)
+        });
+
+        DatabaseUnitOfWorkFlow.Input input = input('commit', null, null);
+        input.runInMode = 'systemWithSharing';
+        DatabaseUnitOfWorkFlow.execute(new List<DatabaseUnitOfWorkFlow.Input>{
+            input
+        });
+
+
+        Assert.areEqual(1, uow.register.upserts.size());
+        Assert.areEqual(1, uow.register.deletes.size());
+
+        User usr = (User) uow.register.upserted[0];
+        Assert.areEqual('John', usr.FirstName);
+        Assert.areEqual('Doe', usr.LastName);
+        Assert.areEqual('test@test.com', usr.Username);
+    }
+
+    private static DatabaseUnitOfWorkFlow.Input input(
+        String operationType,
+        SObject record,
+        String upsertField
+    ) {
+        DatabaseUnitOfWorkFlow.Input op = new DatabaseUnitOfWorkFlow.Input();
+        op.operationType = operationType;
+        op.record = record;
+        op.upsertField = upsertField;
+
+        return op;
+    }
+
+    /**
+     * Validates that the order of operations in the actual list matches the expected order.
+     *
+     * @param expected The expected order of operations.
+     * @param actual The actual list of DMLOperations.
+     * @return True if the order is valid, false otherwise.
+     */
     private static Boolean isOperationOrderValid(List<DML.Order> expected, List<DML.DMLOperation> actual) {
         Assert.areEqual(expected.size(), actual.size());
 

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>63.0</apiVersion>
+    <description>Database Unit Of Work Properties</description>
+    <isExposed>true</isExposed>
+    <masterLabel>Database Unit Of Work Properties</masterLabel>
+</LightningComponentBundle>

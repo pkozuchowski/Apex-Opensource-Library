@@ -73,10 +73,10 @@
     {
       "path": "./force-app/commons/database",
       "package": "DatabaseService",
-      "versionName": "ver 2.2",
-      "versionNumber": "2.2.0.NEXT",
+      "versionName": "ver 2.3",
+      "versionNumber": "2.3.0.NEXT",
       "default": false,
-      "versionDescription": "Added delete and undelete by ids"
+      "versionDescription": "Added Invocable Method for Unit of Work"
     },
     {
       "path": "./force-app/commons/httpMocks",
@@ -143,6 +143,7 @@
     "DatabaseService@2.1.1-1": "04tJ6000000LYWYIA4",
     "DatabaseService@2.1.2-1": "04tJ6000000LYtNIAW",
     "DatabaseService@2.2.0-1": "04tJ6000000Ld7ZIAS",
+    "DatabaseService@2.3.0-1": "04tJ6000000Li0ZIAS",
     "Query Framework": "0Ho08000000CaSPCA0",
     "Query Framework@1.0.0-1": "04t08000000ga9TAAQ",
     "Query Framework@2.0.0-1": "04t08000000UK7dAAG",

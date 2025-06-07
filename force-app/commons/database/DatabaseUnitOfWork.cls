@@ -214,7 +214,7 @@ public virtual inherited sharing class DatabaseUnitOfWork extends DatabaseServic
             return newOp;
 
         } else {
-            existingOp.dmlRows.addAll(newOp.dmlRows);
+            existingOp.addWithoutDuplicates(newOp.dmlRows);
             return existingOp;
         }
     }

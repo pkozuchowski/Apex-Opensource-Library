@@ -1,0 +1,41 @@
+<template>
+    <div class="slds-m-bottom_x-small">
+        <h2 class="slds-text-heading_medium slds-p-around_xx-small lgc-bg-inverse">
+            Register Unit of Work Operation
+        </h2>
+
+        <div>
+            <lightning-combobox
+                    label="Operation"
+                    value={operation}
+                    options={operations}
+                    onchange={handleOperationChange}
+                    required></lightning-combobox>
+
+            <template lwc:if={isCommit}>
+                <lightning-combobox
+                        name="runInMode"
+                        label="Run In Mode"
+                        value={runInMode}
+                        options={runInModes}
+                        onchange={handleValueChange}
+                        required></lightning-combobox>
+            </template>
+            <template lwc:else>
+                <lightning-combobox
+                        label="Record"
+                        value={record}
+                        onchange={handleRecordChange}
+                        options={recordOptions}></lightning-combobox>
+
+                <lightning-combobox
+                        name="upsertField"
+                        lwc:if={isUpsert}
+                        label="Upsert Field"
+                        value={upsertField}
+                        onchange={handleValueChange}
+                        options={upsertFieldOptions}></lightning-combobox>
+            </template>
+        </div>
+    </div>
+</template>

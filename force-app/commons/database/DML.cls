@@ -111,7 +111,7 @@ public with sharing class DML {
      * Wrapper for passing Database Operation Options
      */
     public class Options {
-        public AccessLevel accessLevel = System.AccessLevel.SYSTEM_MODE;
+        public transient AccessLevel accessLevel = System.AccessLevel.SYSTEM_MODE;
         public Database.DMLOptions dmlOptions = new Database.DMLOptions();
         public List<DML.DmlResultMock> dmlMocks = new List<DML.DmlResultMock>();
         public Map<String, Object> queryMocks = new Map<String, Object>();
@@ -284,12 +284,6 @@ public with sharing class DML {
         public DML.Type dmlType { get; protected set; }
 
         public abstract Object execute(Options options);
-
-        public List<Operation> getOperationList() {
-            String className = '' + DML.class + '.' + this.toString().substringBefore(':');
-            return (List<Operation>) System.Type.forName('List<' + className + '>')
-                .newInstance();
-        }
     }
 
 
@@ -299,6 +293,7 @@ public with sharing class DML {
     public abstract class DMLOperation extends Operation {
         public String operationId { get; protected set; }
         public transient SObjectType sObjectType { get; protected set; }
+        private Map<Object, Object> mappedDmlRows;
         public List<Object> dmlRows { get; protected set; }
         public List<Object> successRows { get; protected set; }
         public List<Object> errorRows { get; protected set; }
@@ -331,6 +326,43 @@ public with sharing class DML {
         }
 
         /**
+         * Adds new records to the DML operation, without duplicates.
+         * If there are any records with the same Id/ExternalId, they will be merged.
+         * If there are no Ids, they will be added as is.
+         */
+        public virtual void addWithoutDuplicates(List<Object> newDmlRows) {
+            if (mappedDmlRows == null) {
+                mappedDmlRows = new Map<Object, Object>();
+
+                List<SObject> records = (List<SObject>) dmlRows;
+
+                for (Integer i = 0; i < records.size(); i++) {
+                    mappedDmlRows.put(
+                        getRecordId(records[0]),
+                        records[0]
+                    );
+                }
+            }
+
+            for (Integer i = 0; i < newDmlRows.size(); i++) {
+                SObject record = (SObject) newDmlRows.get(i);
+                Object id = getRecordId(record);
+
+                if (mappedDmlRows.containsKey(id)) {
+                    SObject existingRecord = (SObject) mappedDmlRows.get(id);
+                    Map<String, Object> populatedFields = record.getPopulatedFieldsAsMap();
+
+                    for (String field : populatedFields.keySet()) {
+                        existingRecord.put(field, populatedFields.get(field));
+                    }
+                } else {
+                    mappedDmlRows.put(id, record);
+                    this.dmlRows.add(record);
+                }
+            }
+        }
+
+        /**
          * Executes DML operation with given DMLOptions and AccessLevel.
          * If there are any mocked results, they will be used instead of actual DML.
          */
@@ -346,6 +378,10 @@ public with sharing class DML {
             dbResults = executeDML(rowsToDML, options);
             mapDatabaseResults(mockResults, dbResults);
             return results;
+        }
+
+        protected virtual Object getRecordId(SObject record) {
+            return record.Id;
         }
 
         /**
@@ -407,6 +443,11 @@ public with sharing class DML {
     }
 
 
+    /**
+     * OPERATIONS
+     */
+
+
     public class InsertDML extends DMLOperation {
         public InsertDML(List<SObject> records) {
             super(DML.Type.INSERT_DML, records);
@@ -435,11 +476,13 @@ public with sharing class DML {
 
     public class UpsertDML extends DMLOperation {
         public transient SObjectField upsertField { get; private set; }
+        private String upsertFieldName;
 
         public UpsertDML(List<SObject> records, SObjectField upsertField) {
             super(DML.Type.UPSERT_DML, records);
             this.upsertField = upsertField;
-            this.operationId = this.operationId + '.' + (upsertField?.toString() ?? 'Id');
+            this.upsertFieldName = upsertField?.toString() ?? 'Id';
+            this.operationId = this.operationId + '.' + upsertFieldName;
         }
 
         protected override List<Object> executeDML(List<Object> records, Options opts) {
@@ -451,6 +494,10 @@ public with sharing class DML {
         protected override Result getResult(Object dbResult) {
             Database.UpsertResult result = (Database.UpsertResult) dbResult;
             return new Result(result.id, result.success, result.errors);
+        }
+
+        protected override Object getRecordId(SObject record) {
+            return record.get(upsertFieldName);
         }
     }
 

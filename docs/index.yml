@@ -101,6 +101,7 @@ nav:
           - path: database-service
             label: Database Service
             description: Issue and mock DMLs with configurable sharing and user mode.
+            badge: Updated v2.3
             snippet: |
               new DatabaseService()
                 .withoutSharing()

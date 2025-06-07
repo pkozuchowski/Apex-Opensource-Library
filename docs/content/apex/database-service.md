@@ -291,7 +291,7 @@ When commit is called, all new operations will be registered in new Unit of Work
 
 
 ## How to Use:
-1. Create a new Flow variable of **Record** type and set it the fields you intend to modify.
+1. Create a new Flow variable of **Record** type and set the fields you intend to modify using an Assignment element.
 2. Add the **Database Unit of Work** action to your Flow. Specify operation and input record variable.
 3. Add new Record-Triggered Flow to be executed last and put Commit operation there.
 

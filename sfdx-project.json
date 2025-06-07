@@ -52,7 +52,7 @@
       "path": "force-app/commons/collections",
       "package": "Collection",
       "versionName": "ver 2.1",
-      "versionNumber": "2.1.0.NEXT",
+      "versionNumber": "2.1.1.NEXT",
       "default": false,
       "versionDescription": "Added .setField(field, value) method.",
       "dependencies": [
@@ -135,6 +135,7 @@
     "Collection@2.0.0-1": "04t08000000UK6uAAG",
     "Collection@2.0.1-1": "04tJ6000000LYtIIAW",
     "Collection@2.1.0-1": "04tJ6000000LYtrIAG",
+    "Collection@2.1.1-1": "04tJ6000000Li0eIAC",
     "DatabaseService": "0Ho08000000CaSUCA0",
     "DatabaseService@0.1.0-1": "04t08000000ga9OAAQ",
     "DatabaseService@1.1.0-1": "04t08000000UK7YAAW",

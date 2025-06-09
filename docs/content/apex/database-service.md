@@ -3,8 +3,8 @@
 sharing context in runtime.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/database)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Li0ZIAS)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Li0ZIAS)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Li8zIAC)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Li8zIAC)
 
 ```bash
 sf project deploy start -d "force-app/commons/database" -o sfdxOrg
@@ -275,30 +275,52 @@ all operations are rolled back.
 ---
 # UoW Invocable
 
-Unit of Work now features an Invocable Action that can be used in Flows to register DMLs.
+## Invocable Action for Flows
 
-This action allows you to register DML operations in various Flows, which will be executed at the end of the Flow when Commit is called.
-By using this action, you can ensure that the updated to the same record, performed in different flows,
-will be registered as a single update operation, with all modified fields updated.
+The **Unit of Work** feature now includes an **Invocable Action** that enables the registration of DML operations within Flows. This enhancement allows DMLs to
+be queued throughout various parts of a Flow and executed collectively when the `Commit` operation is invoked.
+
+By leveraging this action, updates to the same record—across multiple Flows—are consolidated into a single DML operation, ensuring all field changes are applied
+in one atomic transaction.
+
+## Key Guidelines
+
+- Always invoke the `Commit` operation at the end of the flow, or in case of Record-Triggered flows as the last Flow, to ensure all registered DMLs are
+  executed.
+- After `Commit` is called, any new DML operations will be tracked in a new Unit of Work instance.
+- Commit Action can be configured to run in User Mode, System With Sharing or System Without Sharing mode. Flow's Run Mode is ignored.
+
+## How to Use
+
+1. **Create a Record Variable**  
+   Define a new Flow variable of type **Record** and use an **Assignment** element to set the fields you want to update.
+
+2. **Register the DML Operation**  
+   Add the **Database Unit of Work Operation** action to your Flow. Specify the desired DML operation and pass in the input record variable.
+
+3. **Invoke Commit**  
+   Create a separate **Record-Triggered Flow** (configured to run last) and include the **Commit** action to finalize the DML execution.
+
+## Important Notes
+
+- The Unit of Work mechanism attempts to **deduplicate** record operations using record Id or Upsert Field. If the same record is updated in multiple places, it
+  will be registered as a single update with all modified fields.
+- To avoid unintended overwrites, ensure that only the fields with actual changes are included in the **Assignment** element.
+- DML operations are executed in the order they are registered, following the same rules as the `DatabaseUnitOfWork` class.
+
+## Roadmap
+- Support for "**Relate**" method and adding parent records directly in insert/upsert/update operation.
+  When a parent record is provided, parent is inserted first, and then child records are inserted with the lookup field populated.
+- Support for setting fields directly in the action, instead of using a Record variable and Assignment element.
+- Support for **Discard Work** action to clear all registered DMLs without executing them.
 
 ![db-uow-flow-1.png](/img/db-uow-flow-1.png)
 ![db-uow-flow-2.png](/img/db-uow-flow-2.png)
-
-Commit should be called at the end of the flow, to ensure all DMLs are executed.
 ![db-uow-flow-3.png](/img/db-uow-flow-3.png)
+![db-uow-flow-3.png](/img/db-uow-flow-4.png)
+![db-uow-flow-3.png](/img/db-uow-flow-5.png)
 
-When commit is called, all new operations will be registered in new Unit of Work instance.
 
-
-## How to Use:
-1. Create a new Flow variable of **Record** type and set the fields you intend to modify using an Assignment element.
-2. Add the **Database Unit of Work** action to your Flow. Specify operation and input record variable.
-3. Add new Record-Triggered Flow to be executed last and put Commit operation there.
-
-## Note
-Unit of Work will try to deduplicate records, so if you update the same record in multiple places,
-it will register as 1 update on 1 record with all provided fields.
-Therefore, it's important to only update fields that are actually changed.
 
 
 ---

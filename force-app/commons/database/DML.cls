@@ -454,7 +454,7 @@ public with sharing class DML {
     /**
      * Insert DML operation, which inserts records into the database.
      */
-    public class InsertDML extends DMLOperation {
+    public inherited sharing class InsertDML extends DMLOperation {
         public InsertDML(List<SObject> records) {
             super(DML.Type.INSERT_DML, records);
         }
@@ -473,7 +473,7 @@ public with sharing class DML {
     /**
      * Update DML operation, which updates records in the database.
      */
-    public class UpdateDML extends DMLOperation {
+    public inherited sharing class UpdateDML extends DMLOperation {
         public UpdateDML(List<SObject> records) {
             super(DML.Type.UPDATE_DML, records);
         }
@@ -491,7 +491,7 @@ public with sharing class DML {
      * Upsert DML operation, which can use a specific field for upsert or default to Id.
      * If upsertField is null, it will use Id as the upsert field.
      */
-    public class UpsertDML extends DMLOperation {
+    public inherited sharing class UpsertDML extends DMLOperation {
         public transient SObjectField upsertField { get; private set; }
         private String upsertFieldName;
 
@@ -521,7 +521,7 @@ public with sharing class DML {
     /**
      * Delete DML operation, which deletes records from the database.
      */
-    public class DeleteDML extends DMLOperation {
+    public inherited sharing class DeleteDML extends DMLOperation {
         public DeleteDML(List<SObject> records) {
             super(DML.Type.DELETE_DML, records);
         }
@@ -537,7 +537,7 @@ public with sharing class DML {
     /**
      * Undelete DML operation, which restores deleted records in the database.
      */
-    public class UndeleteDML extends DMLOperation {
+    public inherited sharing class UndeleteDML extends DMLOperation {
         public UndeleteDML(List<SObject> records) {
             super(DML.Type.UNDELETE_DML, records);
         }
@@ -554,7 +554,7 @@ public with sharing class DML {
      * Merge DML operation, which merges records in the database.
      * The primaryRecord is the record that will be kept, and duplicates are the records that will be merged into it.
      */
-    public class MergeDML extends DMLOperation {
+    public inherited sharing class MergeDML extends DMLOperation {
         public List<MergeResult> results { get {return (List<MergeResult>) super.results;} }
         public SObject primaryRecord { get; private set; }
         public List<Id> duplicates { get; private set; }
@@ -583,7 +583,7 @@ public with sharing class DML {
      * Convert Lead DML operation, which converts leads in the database.
      * The leadConverts is a list of Database.LeadConvert objects that specify the leads to convert.
      */
-    public class ConvertLeadDML extends DMLOperation {
+    public inherited sharing class ConvertLeadDML extends DMLOperation {
         public List<LeadConvertResult> results { get {return (List<LeadConvertResult>) super.results;} }
 
         public ConvertLeadDML(List<Database.LeadConvert> leadConverts) {
@@ -635,7 +635,7 @@ public with sharing class DML {
      * Query operation, which executes a SOQL query and returns the results as a List<SObject>.
      * If there are any mocked results, they will be used instead of actual query.
      */
-    public virtual class QueryOperation extends BaseQueryOperation {
+    public inherited sharing virtual class QueryOperation extends BaseQueryOperation {
         public List<SObject> results { get; protected set; }
 
         public QueryOperation(String mockId, String soql, Map<String, Object> boundVars) {
@@ -651,7 +651,7 @@ public with sharing class DML {
      * Query operations, which can be used to execute SOQL queries with query locator
      * These operations can be used to mock query results in tests.
      */
-    public class QueryLocatorOperation extends BaseQueryOperation {
+    public inherited sharing class QueryLocatorOperation extends BaseQueryOperation {
         public QueryLocatorOperation(String query, Map<String, Object> boundVars) {
             super(DML.Type.QUERY_LOCATOR, query, boundVars);
         }
@@ -664,7 +664,7 @@ public with sharing class DML {
      * Query operations, which can be used to execute SOQL queries with cursor.
      * These operations can be used to mock query results in tests.
      */
-    public class QueryCursorOperation extends BaseQueryOperation {
+    public inherited sharing class QueryCursorOperation extends BaseQueryOperation {
         public QueryCursorOperation(String query, Map<String, Object> boundVars) {
             super(DML.Type.QUERY_CURSOR, query, boundVars);
         }
@@ -673,7 +673,7 @@ public with sharing class DML {
         }
     }
 
-    public class QueryCountOperation extends BaseQueryOperation {
+    public inherited sharing class QueryCountOperation extends BaseQueryOperation {
         public Integer result { get; private set; }
 
         public QueryCountOperation(String mockId, String query, Map<String, Object> boundVars) {

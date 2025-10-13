@@ -143,12 +143,12 @@ DatabaseService provides a variety of ways to mock DMLs:
 
 ### Setting DML options
 Provided DML options are applied to all DMLs.
-Developers can set them through setDmlOptions() method and there's shorthand method for allOrNone() parameter.
+Developers can set them through withDmlOptions() method and there's shorthand method for allOrNone() parameter.
 DML Options can be constructed with builder class:
 
 ```apex
 DatabaseService databaseService = new DatabaseService()
-    .setDMLOptions(new DMLOptionsBuilder()
+    .withDMLOptions(new DMLOptionsBuilder()
         .allOrNone(false)
         .allowDuplicates(false)
         .allowFieldTruncation(false)

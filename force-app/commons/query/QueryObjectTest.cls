@@ -112,10 +112,15 @@ public class QueryObjectTest {
 
     @IsTest
     static void testSelectAllFields() {
-        String soql = new TestUserQuery().withAllFields().toSOQL();
+        String soql = new TestUserQuery()
+            .withAllFields()
+            .withFields('Owner.Name')
+            .toSOQL();
+
         Assert.isTrue(soql.containsIgnoreCase('Name'));
         Assert.isTrue(soql.containsIgnoreCase('Username'));
         Assert.isTrue(soql.containsIgnoreCase('FirstName'));
+        Assert.isTrue(soql.containsIgnoreCase('Owner.Name'));
     }
 
     @IsTest
@@ -169,6 +174,16 @@ public class QueryObjectTest {
 
         Assert.isNotNull(soql.containsIgnoreCase('LIMIT 10'));
         Assert.isNotNull(soql.containsIgnoreCase('OFFSET 5'));
+    }
+
+    @IsTest
+    static void testGroupBy() {
+        String soql = Query.of(User.SObjectType)
+            .withFields('COUNT(Id) cnt, Profile.Name')
+            .groupBy('Profile.Name')
+            .toSOQL();
+
+        Assert.areEqual('SELECT COUNT(Id) cnt, Profile.Name FROM User GROUP BY Profile.Name', soql);
     }
 
     @IsTest
@@ -367,10 +382,8 @@ public class QueryObjectTest {
 
     @IsTest
     static void coverage() {
-        new TestUserQuery()
+        QueryObject query = new TestUserQuery()
             .withFields('Name')
-            .withFields(new List<String>{'Name'})
-            .withAllFields()
             .forView()
             .forUpdate()
             .forReference()
@@ -379,18 +392,14 @@ public class QueryObjectTest {
             .asSystemWithoutSharing()
             .usingCache(true)
             .byId(UserInfo.getUserId())
-            .withLimit(100)
-            .stripInaccessible(AccessType.READABLE)
-            .getFirstOrNull();
+            .withLimit(100);
 
-        new TestUserQuery().byId(UserInfo.getUserId()).getCount();
-        new TestUserQuery().byId(UserInfo.getUserId()).getMapById();
-        new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
-        new TestUserQuery().byId(UserInfo.getUserId()).getFirstOrNull();
-        new TestUserQuery().byId(UserInfo.getUserId()).getFirstIdOrNull();
-        new TestUserQuery().byId(UserInfo.getUserId()).getQueryLocator();
-        new TestUserQuery().byId(UserInfo.getUserId()).getFirstFieldOrNull(User.Name);
-        new TestUserQuery().byId(UserInfo.getUserId()).getFirstFieldOrFallback(User.Name, 'fallback value');
+        query.getFirstOrNull();
+        query.getFirstIdOrNull();
+        query.getQueryLocator();
+        query.getFirstFieldOrNull(User.Name);
+        query.getFirstFieldOrFallback(User.Name, 'fallback value');
+        query.stripInaccessible(AccessType.READABLE).getMapById();
     }
 
 
@@ -557,6 +566,19 @@ public class QueryObjectTest {
     }
 
     @IsTest
+    static void testExcludeResultsCaching() {
+        QueryCache.mock(User.SObjectType, new QueryCache__mdt(
+            CacheFields__c = 'Username',
+            Storage__c = 'Transaction'
+        ));
+        new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).cacheResults(false).getList();
+        new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).cacheResults(false).getList();
+        new TestUserQuery().byUsername(UserInfo.getUserName()).usingCache(true).cacheResults(false).getList();
+
+        Assert.areEqual(3, Limits.getQueries(), 'Once queried users should be saved in cache.');
+    }
+
+    @IsTest
     static void testPlatformCaching() {
         QueryCache.mock(User.SObjectType,
             new QueryCache__mdt(
@@ -599,12 +621,16 @@ public class QueryObjectTest {
 
     @IsTest
     static void testGenericQuery() {
-        List<User> users = new QueryObject(User.SObjectType)
+        List<User> users = Query.of(User.SObjectType)
             .withFields('Id, Username')
             .withLimit(1)
             .getList();
-
         System.assertEquals(1, users.size());
+
+        Query.of(Account.SObjectType).getList();
+        Query.of(Account.SObjectType)
+            .withChildren('Id', 'Contacts')
+            .getList();
     }
 
     @IsTest
@@ -635,6 +661,80 @@ public class QueryObjectTest {
             Assert.isTrue(e.getMessage().contains('TEST_USER_FIELDSET'));
         }
     }
+
+    @IsTest
+    static void testExcludeFields() {
+        String soql = new TestUserQuery()
+            .withoutFields(new List<String>{
+                'Username',
+                'Email'
+            })
+            .toSOQL();
+
+        Assert.isTrue(soql.containsIgnoreCase('SELECT Id, Name FROM User'));
+        Assert.isFalse(soql.containsIgnoreCase('Username'));
+        Assert.isFalse(soql.containsIgnoreCase('Email'));
+    }
+
+    @IsTest
+    static void testLookupFields() {
+        String soql = new TestUserQuery()
+            .withLookup('Owner', new List<SObjectField>{
+                User.Name
+            })
+            .withLookup('Owner', new Set<String>{
+                'CreatedById'
+            }).toSOQL();
+
+        Assert.isTrue(soql.containsIgnoreCase('Owner.Name'));
+        Assert.isTrue(soql.containsIgnoreCase('Owner.CreatedById'));
+    }
+
+    @IsTest
+    static void testAggregatedResultsMocking() {
+        Query.mock(User.SObjectType, QueryObjectTest.class, 'testAggregatedResultsMocking', new List<Query.AggregateResult>{
+            new Query.AggregateResult(new Map<String, Object>{})
+                .put('cnt', 1)
+                .put('name', 'Test'),
+
+            new Query.AggregateResult(new Map<String, Object>{
+                'cnt' => 1,
+                'name' => 'Test'
+            })
+        });
+
+        List<Query.AggregateResult> results = Query.of(User.SObjectType)
+            .withFields('COUNT(Id) cnt, Profile.Name name')
+            .groupBy('Profile.Name')
+            .getAggregatedResults();
+
+        Assert.areEqual(1, results[0].get('cnt'));
+        Assert.areEqual('Test', results[0].get('name'));
+    }
+
+    @IsTest
+    static void testQueryOfAggregatedResultsMocking() {
+        Query.mock(AggregateResult.SObjectType, 'test', new List<Query.AggregateResult>{
+            new Query.AggregateResult()
+                .put('cnt', 1)
+                .put('name', 'Test')
+        });
+
+        List<Query.AggregateResult> results = Query.of([
+            SELECT COUNT(Id), Profile.Name b
+            FROM User
+            GROUP BY Profile.Name
+        ])
+            .withMockId('test')
+            .getAggregatedResults();
+
+        results[0].put('myValue', 2);
+
+        Assert.areEqual(1, results[0].get('cnt'));
+        Assert.areEqual('Test', results[0].get('name'));
+        Assert.areEqual(2, results[0].get('myValue'));
+    }
+
 
     public static void assertEquals(SObject[] expected, SObject[] actual) {
         Assert.areEqual(

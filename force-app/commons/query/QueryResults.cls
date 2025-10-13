@@ -31,7 +31,7 @@
 public virtual class QueryResults {
     private final static Map<SObjectType, Map<String, Object>> mocks = new Map<SObjectType, Map<String, Object>>();
 
-    protected List<SObject> result;
+    protected Object result;
     protected SObjectType sObjType;
     protected String mockId = '';
     protected AccessType accessType = null;
@@ -106,8 +106,28 @@ public virtual class QueryResults {
      * @return First record or null if list has no results
      */
     public virtual SObject getFirstOrNull() {
-        List<SObject> result = executeQuery();
+        List<SObject> result = (List<SObject>) executeQuery();
         return result.isEmpty() ? null : result.get(0);
+    }
+
+    /**
+     * @return Mockable wrapper for Schema.AggregateResult
+     */
+    public virtual List<Query.AggregateResult> getAggregatedResults() {
+        Object result = executeQuery();
+
+        if (result instanceof List<Query.AggregateResult>) {
+            return (List<Query.AggregateResult>) result;
+        }
+
+        List<AggregateResult> records = (List<AggregateResult>) result;
+        List<Query.AggregateResult> aggregateResults = new List<Query.AggregateResult>();
+
+        for (Integer i = 0; i < records.size(); i++) {
+            aggregateResults.add(new Query.AggregateResult(records[i]));
+        }
+
+        return aggregateResults;
     }
 
 
@@ -115,7 +135,7 @@ public virtual class QueryResults {
      * @return List of SObjects for given conditions
      */
     public virtual SObject[] getList() {
-        return executeQuery();
+        return (SObject[]) executeQuery();
     }
 
 
@@ -150,7 +170,9 @@ public virtual class QueryResults {
         Map<String, SObject> resultMap = (Map<String, SObject>) Type.forName('Map<String,' + sObjType + '>')
             .newInstance();
 
-        for (SObject record : getList()) {
+        List<SObject> records = getList();
+        for (Integer i = 0; i < records.size(); i++) {
+            SObject record = records[i];
             String key = '' + record.get(field);
             resultMap.put(key, record);
         }
@@ -158,14 +180,27 @@ public virtual class QueryResults {
         return resultMap;
     }
 
-    protected virtual SObject[] executeQuery() {
-        this.result = (SObject[]) getMock() ?? result;
+    protected virtual Object executeQuery() {
+        try {
+            this.result = getMock() ?? result ?? getQueryResult();
+            stripInaccessible();
+            return result;
 
-        if (accessType != null) {
-            SObjectAccessDecision decision = Security.stripInaccessible(accessType, result);
-            this.result = decision.getRecords();
+        } catch (Exception e) {
+            QueryException queryException = new QueryException();
+            queryException.setMessage(e.getMessage() + '\n' + this.toString());
+            throw queryException;
         }
+    }
 
+    protected virtual void stripInaccessible() {
+        if (accessType != null && (result instanceof List<SObject>)) {
+            SObjectAccessDecision decision = Security.stripInaccessible(accessType, (List<SObject>) result);
+            result = decision.getRecords();
+        }
+    }
+
+    protected virtual Object getQueryResult() {
         return result;
     }
 
@@ -180,13 +215,13 @@ public virtual class QueryResults {
                 return sobjectMocks.get(mockId);
 
             } else {
-                Runtime.StackTraceLine[] stackTraceLines = Runtime.getStackTrace();
+                String[] stackTraceLines = new DmlException().getStackTraceString().split('\n');
 
                 for (Integer i = stackTraceLines.size() - 1; i >= 0; i--) {
-                    Runtime.StackTraceLine line = stackTraceLines.get(i);
+                    String classAndMethod = stackTraceLines[i].substringBetween('Class.', ':');
 
-                    Object mockResult = sobjectMocks.get(line.apexClassMethod) ??
-                        getMockByPattern(sobjectMocks, line.apexClassMethod);
+                    Object mockResult = sobjectMocks.get(classAndMethod) ??
+                        getMockByPattern(sobjectMocks, classAndMethod);
 
                     if (mockResult != null) {
                         return mockResult;

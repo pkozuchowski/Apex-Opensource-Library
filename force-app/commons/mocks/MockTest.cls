@@ -87,6 +87,23 @@ public class MockTest {
         Assert.areEqual(Date.today(), account.Contacts[0].CreatedDate);
     }
 
+    @IsTest
+    static void shouldMockSObjectWithBuilder() {
+        Account account = (Account) Mock.sObject(new Account())
+            .withField('CreatedBy', new Map<String, Object>{
+                'CreatedDate' => Date.today()
+            })
+            .withChildren('Contacts', new List<Object>{
+                new Map<String, Object>{
+                    'CreatedDate' => Date.today()
+                }
+            })
+            .build();
+
+        Assert.areEqual(Date.today(), account.CreatedBy.CreatedDate);
+        Assert.areEqual(Date.today(), account.Contacts[0].CreatedDate);
+    }
+
     /*Method Mocking*/
 
     public Integer positiveRandom() {

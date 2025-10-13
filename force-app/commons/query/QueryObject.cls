@@ -29,14 +29,15 @@
 public virtual inherited sharing class QueryObject extends QueryResults {
     protected final QueryConditions conditionFactory = new QueryConditions();
     protected final QueryBuilder queryBuilder = new QueryBuilder();
-    protected final DatabaseService databaseService = new DatabaseService().asSystem();
+    protected QueryIssuer issuer = new QueryIssuer();
     protected final List<QueryConditions.Condition> whereConditions = new List<QueryConditions.Condition>();
     protected final List<QueryConditions.Condition> havingConditions = new List<QueryConditions.Condition>();
     protected final QueryBindings bindings = new QueryBindings();
 
-    private AccessType accessType = null;
+    private AccessLevel accessLevel = System.AccessLevel.SYSTEM_MODE;
     private QueryCache cache;
     private Boolean useCache = !Test.isRunningTest();
+    private Boolean cacheResults = true;
     private Boolean saveResultsToCache = true;
     private String subqueryRelationshipName;
     private String filterLogic;
@@ -49,7 +50,6 @@ public virtual inherited sharing class QueryObject extends QueryResults {
     public QueryObject(SObjectType sObjectType) {
         this.sObjType = sObjectType;
         this.cache = QueryCache.get(sObjectType);
-        withFields('Id');
     }
 
     /**
@@ -83,14 +83,14 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * @param fields Comma separated fields ex. selectFields('Id, Name, Username')
      */
     public QueryObject withFields(String fields) {
-        List<String> fieldsSplit = fields.deleteWhitespace().split(',');
+        List<String> fieldsSplit = fields.trim().split('\\s*,\\s*');
         return withFields(fieldsSplit);
     }
 
     /**
      * Selects given fields
      */
-    public QueryObject withFields(List<String> fields) {
+    public QueryObject withFields(Iterable<String> fields) {
         this.queryBuilder.addFields(fields);
         return this;
     }
@@ -119,25 +119,47 @@ public virtual inherited sharing class QueryObject extends QueryResults {
         return this;
     }
 
+    /**
+     * Removes given fields from the query.
+     * @param fields fields to remove
+     */
+    public QueryObject withoutFields(List<String> fields) {
+        this.queryBuilder.removeFields(fields);
+        return this;
+    }
+
 
     /**
      * Select all fields. Fields are retrieved from sObjectType describe and is different from selecting FIELDS(ALL)
      * as the FIELDS(ALL/STANDARD/CUSTOM) is restricted to 200 records
      */
     public QueryObject withAllFields() {
-        Set<String> allFields = sObjType.getDescribe().fields.getMap().keySet();
-        allFields.remove('SystemModstamp');
-        queryBuilder.setFields(allFields);
+        List<SObjectField> sObjectField = sObjType.getDescribe().fields.getMap().values();
+
+        for (Integer i = 0; i < sObjectField.size(); i++) {
+            queryBuilder.addField('' + sObjectField[i]);
+        }
+
+        queryBuilder.removeFields(new List<String>{
+            'SystemModstamp'
+        });
+
         return this;
     }
 
     /**
-     *
+     * Adds lookup fields with given relationship name and parent fields.
      */
     public QueryObject withLookup(String relationshipName, List<SObjectField> parentFields) {
-        for (SObjectField parentField : parentFields) {
-            this.queryBuilder.addField(relationshipName + '.' + parentField);
-        }
+        queryBuilder.addFields(relationshipName, parentFields);
+        return this;
+    }
+
+    /**
+     * Adds lookup fields with given relationship name and parent fields.
+     */
+    public QueryObject withLookup(String relationshipName, Iterable<String> parentFields) {
+        queryBuilder.addFields(relationshipName, parentFields);
         return this;
     }
 
@@ -146,7 +168,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * Disables caching.
      */
     public QueryObject withChildren(String fieldsCSV, String relationshipName) {
-        return withChildren(fieldsCSV.deleteWhitespace().split(','), relationshipName);
+        return withChildren(fieldsCSV.trim().split('\\s*,\\s*'), relationshipName);
     }
 
     /**
@@ -218,15 +240,22 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * Sets group by on query
      */
     public QueryObject groupBy(String fields, String groupBy) {
-        return groupBy(fields.split(','), groupBy);
+        return groupBy(fields.split('\\s*,\\s*'), groupBy);
     }
 
     /**
      * Sets group by on query
      */
     public QueryObject groupBy(List<String> fields, String groupBy) {
-        this.useCache = false;
         this.queryBuilder.setFields(new Set<String>(fields));
+        return groupBy(groupBy);
+    }
+
+    /**
+     * Sets group by on query
+     */
+    public QueryObject groupBy(String groupBy) {
+        this.useCache = false;
         this.queryBuilder.setGroupBy(groupBy);
         return this;
     }
@@ -275,7 +304,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
     * Update records with information about when they were last viewed.
     */
     public QueryObject forView() {
-        this.queryBuilder.setFor('FOR VIEW');
+        this.queryBuilder.setFor(' FOR VIEW');
         return this;
     }
 
@@ -283,7 +312,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
     * Update records with information about when they were last referenced on related list view.
     */
     public QueryObject forReference() {
-        this.queryBuilder.setFor('FOR REFERENCE');
+        this.queryBuilder.setFor(' FOR REFERENCE');
         return this;
     }
 
@@ -291,7 +320,7 @@ public virtual inherited sharing class QueryObject extends QueryResults {
     * Locks records while they’re being updated in order to prevent race conditions and other thread safety problems.
     */
     public QueryObject forUpdate() {
-        this.queryBuilder.setFor('FOR UPDATE');
+        this.queryBuilder.setFor(' FOR UPDATE');
         return this;
     }
 
@@ -306,7 +335,8 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * or any of the fields
      */
     public QueryObject asUser() {
-        this.databaseService.asUser();
+        this.accessLevel = System.AccessLevel.USER_MODE;
+        this.issuer = new QueryIssuer.WithSharingIssuer();
         return this;
     }
 
@@ -316,7 +346,8 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * Permission Set permissions are added on top of user permissions.
      */
     public QueryObject asUserWithPermissionSetId(Id permissionSetId) {
-        this.databaseService.asUserWithPermissionSetId(permissionSetId);
+        this.accessLevel = System.AccessLevel.USER_MODE.withPermissionSetId(permissionSetId);
+        this.issuer = new QueryIssuer.WithSharingIssuer();
         return this;
     }
 
@@ -324,7 +355,8 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * Query will ignore Object and Field Level security and inherit sharing from calling class.
      */
     public QueryObject asSystem() {
-        this.databaseService.asSystem();
+        this.accessLevel = System.AccessLevel.SYSTEM_MODE;
+        this.issuer = new QueryIssuer();
         return this;
     }
 
@@ -332,7 +364,8 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * Query will ignore Object and Field Level security, but will enforce record access.
      */
     public QueryObject asSystemWithSharing() {
-        this.databaseService.asSystemWithSharing();
+        this.accessLevel = System.AccessLevel.SYSTEM_MODE;
+        this.issuer = new QueryIssuer.WithSharingIssuer();
         return this;
     }
 
@@ -340,7 +373,8 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * Query will ignore Object, Field Level security and sharing rules, giving access to all records.
      */
     public QueryObject asSystemWithoutSharing() {
-        this.databaseService.asSystemWithoutSharing();
+        this.accessLevel = System.AccessLevel.SYSTEM_MODE;
+        this.issuer = new QueryIssuer.WithoutSharingIssuer();
         return this;
     }
 
@@ -357,14 +391,12 @@ public virtual inherited sharing class QueryObject extends QueryResults {
         return this;
     }
 
-
     /**
-     * Enforces Object and Field level security on records.
-     * @throws System.NoAccessException No access to entity when user does not have READ permission to sOObject
-     * or any of the fields
+     * If true, the results of the query are cached.
+     * Default is true.
      */
-    public QueryObject withAccessLevel(AccessLevel accessLevel) {
-        this.databaseService.withAccessLevel(accessLevel);
+    public QueryObject cacheResults(Boolean cacheResults) {
+        this.cacheResults = cacheResults;
         return this;
     }
 
@@ -597,14 +629,14 @@ public virtual inherited sharing class QueryObject extends QueryResults {
      * @return Query Locator for current query
      */
     public Database.QueryLocator getQueryLocator() {
-        return this.databaseService.getQueryLocator(toSOQL(), bindings.getMap());
+        return this.issuer.getQueryLocator(toSOQL(), bindings.getMap(), accessLevel);
     }
 
     /**
      * @return Database.Cursor for current query.
      */
     public Database.Cursor getCursor() {
-        return this.databaseService.getCursor(toSOQL(), bindings.getMap());
+        return this.issuer.getCursor(toSOQL(), bindings.getMap(), accessLevel);
     }
 
     /**
@@ -625,35 +657,13 @@ public virtual inherited sharing class QueryObject extends QueryResults {
         }
     }
 
-
-    /**
-    * Executes query and caches results
-    */
-    protected override SObject[] executeQuery() {
-        try {
-            this.result = (SObject[]) getMock() ?? result;
-            this.result = result ?? getQueryResult();
-
-            if (accessType != null) {
-                SObjectAccessDecision decision = Security.stripInaccessible(accessType, result);
-                this.result = decision.getRecords();
-            }
-
-            return result;
-        } catch (Exception e) {
-            QueryException queryException = new QueryException();
-            queryException.initCause(e);
-            queryException.setMessage(e.getMessage() + '\n' + this.toString());
-            throw queryException;
-        }
-    }
-
-    private List<SObject> getQueryResult() {
-        List<SObject> result = Runtime.newListOfItemType(sObjType);
-        QueryConditions.Condition compiledExpr = compileConditions(whereConditions);
+    protected override Object getQueryResult() {
         Boolean doQuery = true;
+        Boolean canUseCache = canUseCache();
+        QueryConditions.Condition compiledExpr = compileConditions(whereConditions);
+        List<SObject> result = (List<SObject>) Type.forName('List<' + sObjType + '>').newInstance();
 
-        if (canUseCache()) {
+        if (canUseCache) {
             compiledExpr = getCachedRecordsAndReturnRemainderCondition(result);
             doQuery = compiledExpr != null;
         }
@@ -665,9 +675,9 @@ public virtual inherited sharing class QueryObject extends QueryResults {
                 .fromObject(sObjType)
                 .toSOQL();
 
-            SObject[] records = this.databaseService.query(queryBuilder.toSOQL(), bindings.getMap());
+            SObject[] records = this.issuer.query(queryBuilder.toSOQL(), bindings.getMap(), accessLevel);
 
-            if (cache != null && !(records instanceof AggregateResult[])) {
+            if (canUseCache && cacheResults && !(records instanceof AggregateResult[])) {
                 cache.put(records);
             }
 

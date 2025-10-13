@@ -3,17 +3,11 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/query)
 [Selectors](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
-[Dependency 1](/apex/runtime)
-[Dependency 2](/apex/database-service)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LeGoIAK)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LeGoIAK)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LhrkIAC)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LhrkIAC)
 
 ```bash
-sf project deploy start \
--d force-app/commons/queries \
--d force-app/commons/shared \
--d force-app/commons/database \
--o sfdxOrg
+sf project deploy start -d force-app/commons/query -o sfdxOrg
 ```
 
 ---
@@ -316,7 +310,7 @@ Query.mock('.*', new List<Account>{/*...*/});
 ```
 
 ### Mock Ids
-Alternatively, you can still use mockId:
+Alternatively to Class Name and Method Name, you can still specify a mock Id for the query.:
 ```apex
 public with sharing class AccountQuotingService {
 
@@ -339,6 +333,30 @@ static void myTestMethod() {
         // my mocked query result
     });
 }
+```
+
+### Mocking Aggregated Results
+You can also mock aggregated results, such as COUNT() queries using Query.AggregateResult wrapper.
+The reason for this wrapper is that Schema.AggregateResult cannot be mocked directly in Apex.
+
+```apex
+List<Query.AggregateResult> results = Query.of([
+    SELECT COUNT(Id) cnt, Profile.Name profile
+    FROM User
+    GROUP BY Profile.Name
+])
+    .withMockId('getUsersByProfile')
+    .getAggregatedResults();
+```
+
+Mocking:
+```apex
+Query.mock(AggregateResult.SObjectType, 'getUsersByProfile', new List<Query.AggregateResult>{
+    new Query.AggregateResult(new Map<String, Object>{
+        'cnt' => 1,
+        'name' => 'Test'
+    })
+});
 ```
 
 ### Special cases:
@@ -417,7 +435,7 @@ new AccountQuery().byName('Test').getList();
 It's possible to construct a query without an inheritance, but it will be only possible to use default fields.
 
 ```apex
-Query.fromSObject(Account.SObjectType)
+Query.of(Account.SObjectType)
     .byField(Account.Name, '=', 'Test Account')
     .getList();
 ```
@@ -796,7 +814,7 @@ Sets GROUP BY clause on the query.
 
 #### Usage
 ```apex
-Query.fromSObject(User.SObjectType)
+Query.of(User.SObjectType)
     .withFields('COUNT(Id), ProfileId')
     .groupBy('ProfileId')
     .havingCondition('COUNT(ID) > 1')
@@ -820,7 +838,7 @@ Sets HAVING condition on the query
 
 #### Usage
 ```apex
-Query.fromSObject(User.SObjectType)
+Query.of(User.SObjectType)
     .withFields('COUNT(Id), ProfileId')
     .groupBy('ProfileId')
     .havingCondition('COUNT(ID) > :count', new Map<String, Object>{'count' => userCount})
@@ -1367,6 +1385,54 @@ The framework will use String field parameters as a baseline parameters and SObj
 
 ---
 # Change Log
+### v2.5 - 2.6
+
+
+#### Added Query.AggregatedResults wrapper to enable mocking and setting fields on AggregatedResults
+This allows mocking aggregated queries and setting fields on the result:
+
+```apex
+List<Query.AggregateResult> results = Query.of([
+    SELECT COUNT(Id) cnt, Profile.Name profile
+    FROM User
+    GROUP BY Profile.Name
+])
+    .withMockId('getUsersByProfile')
+    .getAggregatedResults();
+```
+
+Mocking:
+```apex
+Query.mock(AggregateResult.SObjectType, 'getUsersByProfile', new List<Query.AggregateResult>{
+    new Query.AggregateResult(new Map<String, Object>{
+        'cnt' => 1,
+        'name' => 'Test'
+    })
+});
+```
+
+Setting additional values directly on AggregateResult:
+```apex
+Query.AggregateResult result;
+result.put('myVal', 'Value I want to set');
+```
+
+- Removed dependency on DatabaseService and Runtime classes.
+- Performance Improvements
+- Fixed bug in withAllFields when it was used in combination with lookup fields or subqueries
+- Added a method to remove fields from a query : `withoutFields(List<String> fields)`
+- Added method to exclude queried records from caching : `.cacheResults(false)`
+- Updated API Version to 63.0
+
+### v2.4.5
+- Bugfixes and coverage improvements
+
+### v2.4.4
+- Fixed issues in namespaced orgs
+
+### v2.4.2
+- Fixed cache issue in orgs without any platform cache storage space
+
 ### v2.4.1
 - Added `withFieldSet()` method
 

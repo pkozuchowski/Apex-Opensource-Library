@@ -311,4 +311,38 @@ private class HttpCalloutMockRouterTest {
         Assert.areEqual('https://salesforce.com/api/test', HttpMocks.getRequests().get(0).getEndpoint());
         Assert.areEqual(301, HttpMocks.getResponses().get(0).getStatusCode());
     }
+
+    @IsTest
+    static void shouldRespondWithApexClass() {
+        HttpMocksConfig.mock(new List<HttpCalloutMock__mdt>{
+            new HttpCalloutMock__mdt(
+                DeveloperName = 'SF_REST_Query',
+                Default__c = true,
+                Methods__c = 'GET',
+                Endpoint__c = '.*/api/test',
+                ApexClass__c = 'HttpCalloutMockRouterTest.TestMock'
+            )
+        });
+
+        HttpRequest request = new HttpRequest();
+        request.setMethod('GET');
+        request.setEndpoint('https://salesforce.com/api/test');
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, HttpMocks.config());
+        HttpResponse response = new Http().send(request);
+        Test.stopTest();
+
+        Assert.areEqual(200, response.getStatusCode());
+        Assert.areEqual('Apex Class Response', response.getBody());
+    }
+
+    public class TestMock implements HttpCalloutMock {
+        public HttpResponse respond(HttpRequest request) {
+            HttpResponse res = new HttpResponse();
+            res.setStatusCode(200);
+            res.setBody('Apex Class Response');
+            return res;
+        }
+    }
 }

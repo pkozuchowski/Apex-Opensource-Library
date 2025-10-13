@@ -3,8 +3,8 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/collections)
 [Dependency](/apex/runtime)
-[Install in Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYtrIAG)
-[Install in Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LYtrIAG)
+[Install in Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Li0eIAC)
+[Install in Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Li0eIAC)
 
 ```bash
 sf project deploy start \

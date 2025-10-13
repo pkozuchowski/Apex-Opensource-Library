@@ -652,11 +652,9 @@ private class CollectionTest {
     static void testGetList() {
         List<String> strings = Collection.of(opportunities).collect(Opportunity.Name).getListString();
         List<Id> ids = Collection.of(opportunities).collect(Opportunity.Id).getListId();
-        List<Integer> integers = Collection.of(opportunities).collect(Opportunity.FiscalYear).getListInteger();
 
         Assert.isFalse(strings.isEmpty());
         Assert.isFalse(ids.isEmpty());
-        Assert.isFalse(integers.isEmpty());
     }
 
     @IsTest
@@ -674,11 +672,32 @@ private class CollectionTest {
     static void testGetSet() {
         Set<String> strings = Collection.of(opportunities).collect(Opportunity.Name).getSetString();
         Set<Id> ids = Collection.of(opportunities).collect(Opportunity.Id).getSetId();
-        Set<Integer> integers = Collection.of(opportunities).collect(Opportunity.FiscalYear).getSetInteger();
 
         Assert.isFalse(strings.isEmpty());
         Assert.isFalse(ids.isEmpty());
-        Assert.isFalse(integers.isEmpty());
+    }
+
+    @IsTest
+    static void testGetIntegerCollections() {
+        List<Account> accounts = new List<Account>{
+            new Account(NumberOfEmployees = 10),
+            new Account(NumberOfEmployees = 20),
+            new Account(NumberOfEmployees = 30)
+        };
+
+        Assert.areEqual(
+            new Set<Integer>{10, 20, 30},
+            Collection.of(accounts)
+                .collect(Account.NumberOfEmployees)
+                .getSetInteger()
+        );
+
+        Assert.areEqual(
+            new List<Integer>{10, 20, 30},
+            Collection.of(accounts)
+                .collect(Account.NumberOfEmployees)
+                .getListInteger()
+        );
     }
 
     @IsTest

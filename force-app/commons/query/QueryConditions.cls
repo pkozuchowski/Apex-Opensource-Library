@@ -270,7 +270,13 @@ public with sharing class QueryConditions {
         public Boolean isCacheable() {
             return (operator == '=' || operator == 'IN')
                 && value != null
-                && value != '';
+                && value != ''
+                && (
+                value instanceof Id
+                || value instanceof String
+                || value instanceof Iterable<Id>
+                || value instanceof Iterable<String>
+            );
         }
 
         public String getCacheKey() {

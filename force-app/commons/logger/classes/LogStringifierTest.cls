@@ -38,10 +38,10 @@ private class LogStringifierTest {
         } catch (Exception ex) {
             String[] str = LogStringifier.toString(ex).split('\n');
             System.assertEquals(str[0], 'System.CalloutException: Script-thrown exception');
-            System.assert(str[1].startsWith('Class.LogStringifierTest.testStringifyException: line '));
+            System.assert(str[1].contains('LogStringifierTest.testStringifyException: line '));
             System.assertEquals(str[3], 'Caused by');
             System.assertEquals(str[4], 'System.CalloutException: test');
-            System.assert(str[5].startsWith('Class.LogStringifierTest.testStringifyException:'));
+            System.assert(str[5].contains('LogStringifierTest.testStringifyException:'));
         }
         Exception ex2 = null;
         System.assertEquals(LogStringifier.toString(ex2), '');

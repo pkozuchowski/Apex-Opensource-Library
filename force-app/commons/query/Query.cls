@@ -31,9 +31,17 @@ public inherited sharing virtual class Query {
 
     /**
      * @return Query instance for generic SObjectType
-     *
+     * @deprecated Use {@link Query#of(SObjectType)} instead.
      */
     public static QueryObject fromSObject(SObjectType sObjectType) {
+        return new QueryObject(sObjectType);
+    }
+
+
+    /**
+     * @return Query instance for generic SObjectType
+     */
+    public static QueryObject of(SObjectType sObjectType) {
         return new QueryObject(sObjectType);
     }
 
@@ -107,5 +115,33 @@ public inherited sharing virtual class Query {
     */
     public static void mock(SObjectType sobjType, String mockIdOrClientName, Object result) {
         QueryResults.mock(sobjType, mockIdOrClientName, result);
+    }
+
+    /**
+     * Wrapper for Schema.AggregateResult to allow mocking and value setting.
+     */
+    public with sharing virtual class AggregateResult {
+        private Schema.AggregateResult result;
+        private Map<String, Object> values;
+
+        public AggregateResult() {}
+
+        public AggregateResult(Map<String, Object> values) {
+            this.values = values;
+        }
+
+        public AggregateResult(Schema.AggregateResult result) {
+            this.result = result;
+        }
+
+        public virtual Object get(String fieldName) {
+            return values?.get(fieldName) ?? result.get(fieldName);
+        }
+
+        public AggregateResult put(String fieldName, Object value) {
+            values = values ?? new Map<String, Object>();
+            values.put(fieldName, value);
+            return this;
+        }
     }
 }

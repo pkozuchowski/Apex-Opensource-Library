@@ -42,26 +42,28 @@ public inherited sharing class QueryBuilder {
      * Builds and returns SOQL query
      */
     public String toSOQL() {
-        List<String> fieldsWithSubqueries = new List<String>(fields);
-        fieldsWithSubqueries.addAll(subqueries);
+        List<String> fieldsList = new List<String>(fields);
 
-        String fieldsQueryPart = 'SELECT ' + String.join(new List<String>(fieldsWithSubqueries), ', ');
+        if (fieldsList.isEmpty()) {
+            fieldsList.add('Id');
+        }
 
-        String[] query = new String[]{
-            fieldsQueryPart,
-            fromObject,
-            whereConditions,
-            groupBy,
-            havingConditions,
-            orderBy.isEmpty() ? '' : 'ORDER BY ' + String.join(orderBy, ', '),
-            limitQueryPart,
-            offsetQueryPart,
-            forPart
-        };
+        if (!subqueries.isEmpty()) {
+            fieldsList.addAll(subqueries);
+        }
 
-        return String.join(query, ' ')
-            .trim()
-            .replaceAll('\\s{2,}', ' ');
+        String fields = String.join(fieldsList, ', ');
+
+        return 'SELECT '
+            + fields
+            + fromObject
+            + whereConditions
+            + groupBy
+            + havingConditions
+            + (orderBy.isEmpty() ? '' : ' ORDER BY ' + String.join(orderBy, ', '))
+            + limitQueryPart
+            + offsetQueryPart
+            + forPart;
     }
 
     public QueryBuilder addField(SObjectField field) {
@@ -81,13 +83,30 @@ public inherited sharing class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder addFields(String[] fields) {
-        this.fields.addAll(fields);
+    public QueryBuilder addFields(Iterable<String> fields) {
+        if (fields instanceof List<String>) {
+            this.fields.addAll((List<String>) fields);
+
+        } else if (fields instanceof Set<String>) {
+            this.fields.addAll((Set<String>) fields);
+        }
+        return this;
+    }
+
+    public QueryBuilder addFields(String relationshipName, Iterable<Object> parentFields) {
+        for (Object parentField : parentFields) {
+            this.fields.add(relationshipName + '.' + parentField);
+        }
         return this;
     }
 
     public QueryBuilder setFields(Set<String> fields) {
         this.fields = fields;
+        return this;
+    }
+
+    public QueryBuilder removeFields(List<String> fields) {
+        this.fields.removeAll(fields);
         return this;
     }
 
@@ -131,26 +150,26 @@ public inherited sharing class QueryBuilder {
     }
 
     public QueryBuilder fromObject(String fromObject) {
-        this.fromObject = 'FROM ' + fromObject;
+        this.fromObject = ' FROM ' + fromObject;
         return this;
     }
 
 
     public QueryBuilder setWhere(String condition) {
         if (String.isNotEmpty(condition)) {
-            this.whereConditions = 'WHERE ' + condition;
+            this.whereConditions = ' WHERE ' + condition;
         }
         return this;
     }
 
     public QueryBuilder setGroupBy(String groupBy) {
-        this.groupBy = 'GROUP BY ' + groupBy;
+        this.groupBy = ' GROUP BY ' + groupBy;
         return this;
     }
 
     public QueryBuilder setHaving(String havingConditionExpression) {
         if (String.isNotEmpty(havingConditionExpression)) {
-            this.havingConditions = 'HAVING ' + havingConditionExpression;
+            this.havingConditions = ' HAVING ' + havingConditionExpression;
         }
         return this;
     }
@@ -161,12 +180,12 @@ public inherited sharing class QueryBuilder {
     }
 
     public QueryBuilder setLimit(Integer limitOf) {
-        this.limitQueryPart = 'LIMIT ' + limitOf;
+        this.limitQueryPart = ' LIMIT ' + limitOf;
         return this;
     }
 
     public QueryBuilder setOffset(Integer offsetOf) {
-        this.offsetQueryPart = 'OFFSET ' + offsetOf;
+        this.offsetQueryPart = ' OFFSET ' + offsetOf;
         return this;
     }
 

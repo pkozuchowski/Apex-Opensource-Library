@@ -52,7 +52,7 @@
       "path": "force-app/commons/collections",
       "package": "Collection",
       "versionName": "ver 2.1",
-      "versionNumber": "2.1.0.NEXT",
+      "versionNumber": "2.1.1.NEXT",
       "default": false,
       "versionDescription": "Added .setField(field, value) method.",
       "dependencies": [
@@ -65,34 +65,24 @@
     {
       "path": "./force-app/commons/query",
       "package": "Query Framework",
-      "versionName": "ver 2.4",
-      "versionNumber": "2.4.4.NEXT",
+      "versionName": "ver 2.6",
+      "versionNumber": "2.6.0.NEXT",
       "default": false,
-      "versionDescription": "",
-      "dependencies": [
-        {
-          "package": "Libra Shared",
-          "versionNumber": "1.0.0.LATEST"
-        },
-        {
-          "package": "DatabaseService",
-          "versionNumber": "2.0.0.LATEST"
-        }
-      ]
+      "versionDescription": "Removed Dependencies on DatabaseService and Runtime."
     },
     {
       "path": "./force-app/commons/database",
       "package": "DatabaseService",
-      "versionName": "ver 2.2",
-      "versionNumber": "2.2.0.NEXT",
+      "versionName": "ver 2.3",
+      "versionNumber": "2.3.1.NEXT",
       "default": false,
-      "versionDescription": "Added delete and undelete by ids"
+      "versionDescription": "Added Invocable Method for Unit of Work"
     },
     {
       "path": "./force-app/commons/httpMocks",
       "package": "HttpMockRouter",
-      "versionName": "ver 1.1",
-      "versionNumber": "1.1.2.NEXT",
+      "versionName": "ver 1.2",
+      "versionNumber": "1.2.0.NEXT",
       "default": false,
       "versionDescription": ""
     },
@@ -121,7 +111,7 @@
   ],
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "61.0",
+  "sourceApiVersion": "63.0",
   "packageAliases": {
     "Trigger Handler": "0Ho08000000CaS0CAK",
     "Trigger Handler@1.0.1-1": "04t08000000cSiXAAU",
@@ -145,6 +135,7 @@
     "Collection@2.0.0-1": "04t08000000UK6uAAG",
     "Collection@2.0.1-1": "04tJ6000000LYtIIAW",
     "Collection@2.1.0-1": "04tJ6000000LYtrIAG",
+    "Collection@2.1.1-1": "04tJ6000000Li0eIAC",
     "DatabaseService": "0Ho08000000CaSUCA0",
     "DatabaseService@0.1.0-1": "04t08000000ga9OAAQ",
     "DatabaseService@1.1.0-1": "04t08000000UK7YAAW",
@@ -153,6 +144,8 @@
     "DatabaseService@2.1.1-1": "04tJ6000000LYWYIA4",
     "DatabaseService@2.1.2-1": "04tJ6000000LYtNIAW",
     "DatabaseService@2.2.0-1": "04tJ6000000Ld7ZIAS",
+    "DatabaseService@2.3.0-1": "04tJ6000000Li0ZIAS",
+    "DatabaseService@2.3.1-1": "04tJ6000000Li8zIAC",
     "Query Framework": "0Ho08000000CaSPCA0",
     "Query Framework@1.0.0-1": "04t08000000ga9TAAQ",
     "Query Framework@2.0.0-1": "04t08000000UK7dAAG",
@@ -164,6 +157,11 @@
     "Query Framework@2.4.1-1": "04tJ6000000LXpZIAW",
     "Query Framework@2.4.2-1": "04tJ6000000LYtmIAG",
     "Query Framework@2.4.4-1": "04tJ6000000LeGoIAK",
+    "Query Framework@2.4.5-1": "04tJ6000000LemNIAS",
+    "Query Framework@2.5.0-1": "04tJ6000000LfWgIAK",
+    "Query Framework@2.5.1-1": "04tJ6000000Lfb8IAC",
+    "Query Framework@2.5.2-1": "04tJ6000000LfbDIAS",
+    "Query Framework@2.6.0-3": "04tJ6000000LhrkIAC",
     "HttpMockRouter": "0Ho08000000CaSZCA0",
     "HttpMockRouter@1.0.0-1": "04t08000000ga9YAAQ",
     "HttpMockRouter@1.0.1-1": "04t08000000cSySAAU",
@@ -171,6 +169,7 @@
     "HttpMockRouter@1.1.0-1": "04tJ6000000LVAGIA4",
     "HttpMockRouter@1.1.1-1": "04tJ6000000LWKiIAO",
     "HttpMockRouter@1.1.2-1": "04tJ6000000LdBwIAK",
+    "HttpMockRouter@1.2.0-1": "04tJ6000000LeQMIA0",
     "TestDataBuilder": "0Ho08000000CaSeCAK",
     "TestDataBuilder@1.0.0-1": "04t08000000ga9dAAA",
     "TestDataBuilder@1.1.0-1": "04tJ6000000LYthIAG",

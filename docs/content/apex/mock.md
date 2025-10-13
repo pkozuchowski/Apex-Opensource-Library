@@ -131,13 +131,30 @@ List<Account> accounts = Mock.sObjects(Account.SObjectType, new List<Map<String,
 
 Relationship records can be also passed as generic lists or maps if you need to mock readonly field on child record:
 ```apex
-        Account account = (Account) Mock.sObject(Account.SObjectType, new Map<String, Object>{
+Account account = (Account) Mock.sObject(Account.SObjectType, new Map<String, Object>{
     'CreatedBy' => new Map<String, Object>{
         'CreatedDate' => Date.today()
     }
 });
 ```
 
+Another way of mocking sobject is using the builder method:
+```apex
+Account acc = (Account) Mock.sObject(
+    new Account(
+        Name = 'Test Account'
+    ))
+    .withField(Account.Formula__c, 'Test')
+    .withField('CreatedBy', new User(
+        LastName = 'Test User'
+    ))
+    .withChildren('Contacts', new List<Contact>{
+        new Contact(
+            LastName = 'Test Contact'
+        )
+    })
+    .build();
+```
 ---
 # Change Log
 ### v1.1.0

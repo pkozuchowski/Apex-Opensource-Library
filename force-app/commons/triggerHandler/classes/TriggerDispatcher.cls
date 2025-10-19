@@ -11,7 +11,7 @@
  * }
  */
 public inherited sharing class TriggerDispatcher {
-
+    @TestVisible static List<ApexTypeImplementor> mockedExceptionHandlers;
 
     /**
      * Runs instance of concrete Trigger Handler implementation
@@ -34,11 +34,23 @@ public inherited sharing class TriggerDispatcher {
                 triggerHandler.finalize(records, ctx);
             }
         } catch (Exception ex) {
-            triggerHandler.onException(ex, ctx.getRecords(), ctx);
+            triggerHandler.onException(ex, ctx);
+            handleException(ex, ctx);
             throw ex;
         }
     }
 
+    /**
+    * @return True when:
+    * - is in trigger context (can be mocked in unit tests)
+    * - if it's not disabled in Bypass Triggers settings
+    * - if it's not manually disabled in code via  disableTrigger();
+    */
+    private static Boolean shouldRun(TriggerContext triggerContext, TriggerHandler th) {
+        return triggerContext.isExecuting && TriggerSettings.isSObjectTriggerEnabled(triggerContext.sObjectType);
+    }
+
+    /** Returns list of Trigger Actions to be executed for given Trigger Context */
     private static List<TriggerAction> getActions(TriggerHandler triggerHandler, TriggerContext ctx) {
         List<SObject> records = ctx.getRecords();
 
@@ -68,15 +80,21 @@ public inherited sharing class TriggerDispatcher {
         return new List<TriggerAction>();
     }
 
+    /** Invokes all registered Trigger Exception Handlers */
+    private static void handleException(Exception ex, TriggerContext ctx) {
+        List<ApexTypeImplementor> handlers = mockedExceptionHandlers ?? [
+            SELECT ClassName
+            FROM ApexTypeImplementor
+            WHERE InterfaceName = 'TriggerExceptionHandler'
+            AND IsConcrete = TRUE
+            WITH SYSTEM_MODE
+        ];
 
-    /**
-    * @return True when:
-    * - is in trigger context (can be mocked in unit tests)
-    * - if it's not disabled in Bypass Triggers settings
-    * - if it's not manually disabled in code via  disableTrigger();
-    */
-    private static Boolean shouldRun(TriggerContext triggerContext, TriggerHandler th) {
-        return triggerContext.isExecuting && TriggerSettings.isSObjectTriggerEnabled(triggerContext.sObjectType);
+        for (ApexTypeImplementor implementor : handlers) {
+            Type handlerType = Type.forName(implementor.ClassName);
+            TriggerExceptionHandler handler = (TriggerExceptionHandler) handlerType?.newInstance();
+            handler?.onException(ex, ctx);
+        }
     }
 
     private TriggerDispatcher() {}

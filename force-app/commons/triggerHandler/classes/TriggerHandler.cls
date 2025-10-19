@@ -122,7 +122,7 @@ public virtual inherited sharing class TriggerHandler {
      * @param triggerNew list of SObject records that were being processed
      * @param ctx trigger context containing error and execution state
      */
-    public virtual void onException(Exception ex, List<SObject> triggerNew, TriggerContext ctx) {}
+    public virtual void onException(Exception ex, TriggerContext ctx) {}
 
     /**
      * Finalization method called after trigger processing is complete.

@@ -30,7 +30,7 @@ private class MetadataTriggerHandlerTest {
         }
     }
 
-    public class AccountShippingCountryFiller implements TriggerLogic {
+    public class AccountShippingCountryFiller implements TriggerAction {
         public void execute(List<Account> records, TriggerContext ctx) {
             for (Account acc : records) {
                 if (ctx.isNew() && String.isBlank(acc.ShippingCountry)) {
@@ -114,7 +114,7 @@ private class MetadataTriggerHandlerTest {
     /**
      * Example of TriggerHandler.Logic class which can be parametrized through custom metadata.
      */
-    public class ParameterizableLogic implements TriggerLogic {
+    public class ParameterizableLogic implements TriggerAction {
         private String parameterName;
 
         public void execute(List<SObject> records, TriggerContext ctx) {

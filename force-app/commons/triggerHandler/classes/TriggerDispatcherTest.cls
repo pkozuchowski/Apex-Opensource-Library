@@ -3,6 +3,8 @@
 
 @IsTest(IsParallel=true)
 private class TriggerDispatcherTest {
+    private static Exception handledException;
+
     @SuppressWarnings('PMD.AvoidHardcodingId')
     private static final String
         ID_1 = '001000000000000',
@@ -274,5 +276,59 @@ private class TriggerDispatcherTest {
             TriggerContext tc = new TriggerContext(op, accounts, accounts);
             TriggerDispatcher.run(new TriggerHandler(), tc);
         }
+    }
+
+
+    public class TestTriggerExceptionHandler implements TriggerExceptionHandler {
+        public void onException(Exception ex, TriggerContext ctx) {
+            handledException = ex;
+        }
+    }
+
+    public class TestFailingAction implements TriggerAction {
+        public void execute(List<SObject> records, TriggerContext ctx) {
+            throw new DmlException('Simulated exception in TriggerAction');
+        }
+    }
+
+    public class TestFailingHandler extends TriggerHandler {
+        public override List<TriggerAction> afterUpdate(List<SObject> triggerNew, TriggerContext tc) {
+            return new List<TriggerAction>{
+                new TestFailingAction()
+            };
+        }
+    }
+
+    /**
+     * Tests the exception handling functionality of the TriggerDispatcher by simulating a failing trigger action.
+     * Verifies that:
+     * - The exception is properly caught and handled by the TestTriggerExceptionHandler
+     * - The original exception is re-thrown after handling
+     * - The handled exception matches the thrown exception
+     */
+    @IsTest
+    static void testExceptionHandler() {
+        List<Account> accounts = new List<Account>{
+            new Account(Id = ID_1, Name = NAME_TEST)
+        };
+        TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_UPDATE, accounts, accounts);
+        TriggerDispatcher.mockedExceptionHandlers = (List<ApexTypeImplementor>) JSON.deserialize(
+            '[{"className":"TriggerDispatcherTest.TestTriggerExceptionHandler"}]',
+            List<ApexTypeImplementor>.class
+        );
+        Exception thrownException;
+
+        Test.startTest();
+        try {
+            TriggerDispatcher.run(new TestFailingHandler(), tc);
+            Assert.fail();
+        } catch (Exception e) {
+            thrownException = e;
+        }
+        Test.stopTest();
+
+
+        Assert.isNotNull(handledException);
+        Assert.areEqual(thrownException, handledException);
     }
 }

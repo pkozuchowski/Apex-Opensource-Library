@@ -1,129 +1,106 @@
-/*
- * *
- *  MIT License
- *
- *  Copyright (c) 2023 Piotr Kożuchowski
- *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
- *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
- */
+// SPDX-License-Identifier: MIT
+// Copyright 2023 Piotr Kożuchowski
 
 public with sharing class TriggerCommons {
 
     /**
-     * Sets default value on a field
+     * Utility trigger logic that evaluates a formula and assigns the computed value
+     * to a specified field on processed SObjects. Intended for use in BEFORE triggers
+     * to populate or override a field value based on a formula evaluated per record.
+     *
+     * Parameters (provided via metadata):
+     * - {@code field} : API name of the target field to populate.
+     * - {@code formula} : formula text to be evaluated in the context of each record.
+     * - {@code replaceIfSet} : optional boolean controlling whether existing values
+     *   should be replaced (defaults to false).
      */
-    public class DefaultField implements TriggerLogic {
-        private String field, value;
+    public class FieldSetter implements TriggerAction {
+        private String field;
+        private String formula;
+        private Boolean replaceIfSet = true;
+        private FormulaEval.FormulaInstance formulaInstance;
 
-        public void setParameters(String parameters) {
-            List<String> fields = parameters.split(':');
-            field = fields[0];
-            value = fields[1];
-        }
-
+        /**
+         * Evaluates the configured formula for each record in {@code records} and
+         * assigns the result to {@code field} when the existing value is null or
+         * {@code replaceIfSet} is true.
+         *
+         * @param records list of SObjects processed by the trigger
+         * @param ctx trigger context helper providing {@code sObjectType} and access
+         *            to old values where applicable
+         */
         public void execute(List<SObject> records, TriggerContext ctx) {
-            for (SObject sobj : records) {
-                if (sobj.get(field) == null) {
-                    sobj.put(field, value);
+            initFormulaInstance(ctx);
+
+            for (SObject record : records) {
+                Object currentValue = record.get(field);
+
+                if (currentValue == null || replaceIfSet == true) {
+                    Object computed = evaluateFormula(record);
+                    record.put(field, computed);
                 }
             }
         }
-    }
 
-    /**
-     * Copies one field to another
-     */
-    public class CopyField implements TriggerLogic {
-        private String source, target;
-
-        public void setParameters(String parameters) {
-            List<String> fields = parameters.split(':');
-            source = fields[0];
-            target = fields[1];
-        }
-
-        public void execute(List<SObject> records, TriggerContext ctx) {
-            for (SObject sobj : records) {
-                sobj.put(target, sobj.get(source));
-            }
-        }
-    }
-
-    /**
-     * Executes Flow with given name and parameters
-     */
-    public class ExecuteFlow implements TriggerLogic {
-        private String flowName, namespace;
-        private Map<String, Object> params = new Map<String, Object>();
-
-        public void execute(List<SObject> records, TriggerContext ctx) {
-            for (SObject sobj : records) {
-                params.put('record', sobj);
-                params.put('old', ctx.getOld(sobj));
-
-                Flow.Interview interview = Flow.Interview.createInterview(namespace, flowName, params);
-                interview.start();
-
-                SObject flowResult = (SObject) interview.getVariableValue('record');
-                updateRecord(flowResult, sobj, ctx);
+        /**
+         * Lazily builds the {@link FormulaEval.FormulaInstance} from the configured
+         * {@link #formula} using the provided trigger context type. No-op if the
+         * instance is already built or if {@code formula} is null.
+         *
+         * @param ctx trigger context providing the {@code sObjectType} required by the builder
+         */
+        private void initFormulaInstance(TriggerContext ctx) {
+            if (formulaInstance == null) {
+                FormulaEval.FormulaReturnType formulaReturnType = getReturnType(ctx.sObjectType, field);
+                formulaInstance = System.Formula.builder()
+                    .withType(ctx.sObjectType)
+                    .withFormula(formula)
+                    .withReturnType(formulaReturnType)
+                    .parseAsTemplate(formulaReturnType == FormulaEval.FormulaReturnType.STRING)
+                    .build();
             }
         }
 
-        public void setParameters(String parameters) {
-            String[] lines = parameters.split('\n');
-            setFlowName(lines);
-            setFlowAdditionalParameters(lines);
+        /**
+         * Determines the appropriate {@link FormulaEval.FormulaReturnType} for the
+         * target field on the given SObject type.
+         *
+         * @param sobjType SObjectType of the records being processed
+         * @param field API name of the target field
+         * @return corresponding FormulaReturnType
+         */
+        private FormulaEval.FormulaReturnType getReturnType(SObjectType sobjType, String field) {
+            Schema.DescribeFieldResult dfr = sobjType.getDescribe().fields.getMap().get(field).getDescribe();
+            Schema.DisplayType dt = dfr.getType();
+
+            return new Map<DisplayType, FormulaEval.FormulaReturnType>{
+                DisplayType.BOOLEAN => FormulaEval.FormulaReturnType.BOOLEAN,
+                DisplayType.DATE => FormulaEval.FormulaReturnType.DATE,
+                DisplayType.DATETIME => FormulaEval.FormulaReturnType.DATETIME,
+                DisplayType.TIME => FormulaEval.FormulaReturnType.TIME,
+                DisplayType.ID => FormulaEval.FormulaReturnType.ID,
+                DisplayType.REFERENCE => FormulaEval.FormulaReturnType.ID,
+                DisplayType.CURRENCY => FormulaEval.FormulaReturnType.DECIMAL,
+                DisplayType.PERCENT => FormulaEval.FormulaReturnType.DECIMAL,
+                DisplayType.DOUBLE => FormulaEval.FormulaReturnType.DOUBLE,
+                DisplayType.INTEGER => FormulaEval.FormulaReturnType.INTEGER,
+                DisplayType.LONG => FormulaEval.FormulaReturnType.LONG
+            }.get(dt) ?? FormulaEval.FormulaReturnType.STRING;
         }
 
-        private void setFlowName(String[] lines) {
-            this.flowName = lines[0].trim();
-            if (flowName.contains('__')) {
-                String[] namespaceName = flowName.split('__');
-                this.namespace = namespaceName[0];
-                this.flowName = namespaceName[1];
+
+        /**
+         * Evaluates the prepared formula instance against the given record.
+         *
+         * @param contextRecord SObject used as the evaluation context for the formula
+         * @return computed value or {@code null} when no formula instance is available
+         */
+        private Object evaluateFormula(SObject contextRecord) {
+            if (formulaInstance == null) {
+                return null;
             }
-        }
-
-        private void setFlowAdditionalParameters(String[] lines) {
-            for (Integer i = 1; i < lines.size(); i++) {
-                String[] param = lines[i].split(':');
-                params.put(param[0], param[1]);
-            }
-        }
-
-        @TestVisible
-        private void updateRecord(SObject flowOutput, SObject sobj, TriggerContext ctx) {
-            if (flowOutput != null) {
-                switch on ctx.operationType {
-                    when BEFORE_INSERT, BEFORE_UPDATE {
-                        Map<String, Object> populatedFields = flowOutput.getPopulatedFieldsAsMap();
-
-                        for (String field : populatedFields.keySet()) {
-                            Object value = populatedFields.get(field);
-
-                            if (sobj.get(field) != value) {
-                                sobj.put(field, value);
-                            }
-                        }
-                    }
-                }
-            }
+            // Assumes FormulaInstance.evaluate(SObject) exists and returns computed value
+            return formulaInstance.evaluate(contextRecord);
         }
     }
 }

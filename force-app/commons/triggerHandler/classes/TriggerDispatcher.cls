@@ -1,26 +1,15 @@
+// SPDX-License-Identifier: MIT
+// Copyright 2019 Piotr Kożuchowski
+
 /**
-* MIT License
-*
-* Copyright (c) 2019 Piotr Kożuchowski
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
+ * Dispatcher class responsible for executing trigger handlers in the proper context.
+ * This class acts as a central point for trigger execution, ensuring that logic is executed in the correct order.
+ *
+ * @example
+ * trigger AccountTrigger on Account (before insert, after insert, before update, after update) {
+ *   TriggerDispatcher.run(new AccountTriggerHandler());
+ * }
+ */
 public inherited sharing class TriggerDispatcher {
 
 
@@ -32,38 +21,51 @@ public inherited sharing class TriggerDispatcher {
     }
 
     @TestVisible
-    private static void run(TriggerHandler triggerHandler, TriggerContext triggerContext) {
+    private static void run(TriggerHandler triggerHandler, TriggerContext ctx) {
         try {
-            if (shouldRun(triggerContext, triggerHandler)) {
-                switch on triggerContext.operationType {
-                    when BEFORE_INSERT {
-                        triggerHandler.beforeInsert(triggerContext.getRecords(), triggerContext);
-                    }
-                    when BEFORE_UPDATE {
-                        triggerHandler.beforeUpdate(triggerContext.getRecords(), triggerContext);
-                    }
-                    when BEFORE_DELETE {
-                        triggerHandler.beforeDelete(triggerContext.getRecords(), triggerContext);
-                    }
-                    when AFTER_INSERT {
-                        triggerHandler.afterInsert(triggerContext.getRecords(), triggerContext);
-                    }
-                    when AFTER_UPDATE {
-                        triggerHandler.afterUpdate(triggerContext.getRecords(), triggerContext);
-                    }
-                    when AFTER_DELETE {
-                        triggerHandler.afterDelete(triggerContext.getRecords(), triggerContext);
-                    }
-                    when AFTER_UNDELETE {
-                        triggerHandler.afterUndelete(triggerContext.getRecords(), triggerContext);
-                    }
+            if (shouldRun(ctx, triggerHandler)) {
+                List<SObject> records = ctx.getRecords();
+                triggerHandler.initialize(ctx.getRecords(), ctx);
+
+                for (TriggerAction action : getActions(triggerHandler, ctx)) {
+                    action.execute(records, ctx);
                 }
+
+                triggerHandler.finalize(records, ctx);
             }
-        } catch (Exception e) {
-            // Plug-in Logger implementation
-            // Logger.error(new Log(e));
-            throw e;
+        } catch (Exception ex) {
+            triggerHandler.onException(ex, ctx.getRecords(), ctx);
+            throw ex;
         }
+    }
+
+    private static List<TriggerAction> getActions(TriggerHandler triggerHandler, TriggerContext ctx) {
+        List<SObject> records = ctx.getRecords();
+
+        switch on ctx.operationType {
+            when BEFORE_INSERT {
+                return triggerHandler.beforeInsert(records, ctx);
+            }
+            when BEFORE_UPDATE {
+                return triggerHandler.beforeUpdate(records, ctx);
+            }
+            when BEFORE_DELETE {
+                return triggerHandler.beforeDelete(records, ctx);
+            }
+            when AFTER_INSERT {
+                return triggerHandler.afterInsert(records, ctx);
+            }
+            when AFTER_UPDATE {
+                return triggerHandler.afterUpdate(records, ctx);
+            }
+            when AFTER_DELETE {
+                return triggerHandler.afterDelete(records, ctx);
+            }
+            when AFTER_UNDELETE {
+                return triggerHandler.afterUndelete(records, ctx);
+            }
+        }
+        return new List<TriggerAction>();
     }
 
 
@@ -74,10 +76,7 @@ public inherited sharing class TriggerDispatcher {
     * - if it's not manually disabled in code via  disableTrigger();
     */
     private static Boolean shouldRun(TriggerContext triggerContext, TriggerHandler th) {
-        String thName = th.toString().substringBefore(':');
-        return triggerContext.isExecuting
-            && TriggerSettings.isSObjectTriggerEnabled(triggerContext.sObjectType)
-            && TriggerSettings.isTriggerHandlerEnabled(thName);
+        return triggerContext.isExecuting && TriggerSettings.isSObjectTriggerEnabled(triggerContext.sObjectType);
     }
 
     private TriggerDispatcher() {}

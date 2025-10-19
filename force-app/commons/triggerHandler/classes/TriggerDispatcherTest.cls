@@ -1,28 +1,9 @@
-/**
-* MIT License
-*
-* Copyright (c) 2019 Piotr Kożuchowski
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
+// SPDX-License-Identifier: MIT
+// Copyright 2019 Piotr Kożuchowski
+
 @IsTest(IsParallel=true)
 private class TriggerDispatcherTest {
+    @SuppressWarnings('PMD.AvoidHardcodingId')
     private static final String
         ID_1 = '001000000000000',
         ID_2 = '001000000000001',
@@ -37,17 +18,19 @@ private class TriggerDispatcherTest {
     /**
      * Emulation of AccountTriggerHandler class
      */
-    private class TestAccountTriggerHandler extends TriggerHandler {
-        public override void beforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
-            new AccountAddressPopulator().populateDefaultAddress(triggerNew, tc);
+    public class TestAccountTriggerHandler extends TriggerHandler {
+        public override List<TriggerAction> beforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
+            return new List<TriggerAction>{
+                new AccountAddressPopulator()
+            };
         }
     }
 
     /**
      * Emulation of Trigger logic class
      */
-    public class AccountAddressPopulator {
-        public void populateDefaultAddress(List<Account> records, TriggerContext ctx) {
+    public class AccountAddressPopulator implements TriggerAction {
+        public void execute(List<Account> records, TriggerContext ctx) {
             for (Account acc : (Account[]) records) {
                 if (String.isBlank(acc.BillingCountry)) {
                     acc.BillingCountry = COUNTRY_USA;
@@ -278,31 +261,6 @@ private class TriggerDispatcherTest {
 
         Assert.areEqual(1, accounts[0].NumberOfEmployees);
     }
-
-    @IsTest
-    static void testTriggerHandlerToggle() {
-        TriggerSettings.disableTriggerHandler(TestAccountTriggerHandler.class);
-
-        List<Account> accounts = new List<Account>{
-            new Account(Id = ID_1, Name = NAME_TEST, NumberOfEmployees = 0)
-        };
-        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
-
-
-        Test.startTest();
-        TriggerSettings.disableTriggerHandler(TestAccountTriggerHandler.class);
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
-        TriggerSettings.enableTriggerHandler(TestAccountTriggerHandler.class);
-
-        Assert.areEqual(0, tc.getRunCount('AccountAddressPopulator', accounts[0].Id));
-
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
-        Test.stopTest();
-
-
-        Assert.areEqual(1, tc.getRunCount('AccountAddressPopulator', accounts[0].Id));
-    }
-
 
     @IsTest
     static void testOperationCoverage() {

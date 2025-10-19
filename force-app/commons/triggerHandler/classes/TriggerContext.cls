@@ -1,26 +1,5 @@
-/**
-* MIT License
-*
-* Copyright (c) 2019 Piotr Kożuchowski
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
+// SPDX-License-Identifier: MIT
+// Copyright 2019 Piotr Kożuchowski
 
 /**
  * Encapsulation for Trigger context variables.
@@ -28,8 +7,9 @@
  * but may also be used to mock trigger execution in unit tests.
  * It also contains helper method for checking field changes.
  */
+@SuppressWarnings('PMD')
 public virtual class TriggerContext {
-    private static Map<String, Integer> PROCESSED_COUNT = new Map<String, Integer>();
+    private final static Map<String, Integer> PROCESSED_COUNT = new Map<String, Integer>();
     public Boolean isExecuting { get; protected set; }
     public Boolean isInsert { get; protected set; }
     public Boolean isUpdate { get; protected set; }
@@ -103,14 +83,14 @@ public virtual class TriggerContext {
      * @return Trigger.old in DELETE triggers and Trigger.new in all other cases
      */
     public SObject[] getRecords() {
-        return triggerNew == null ? triggerOld : triggerNew;
+        return triggerNew ?? triggerOld;
     }
 
     /**
-     * @return Trigger.oldMap in DELETE trsiggers and Trigger.newMap in all other cases
+     * @return Trigger.oldMap in DELETE triggers and Trigger.newMap in all other cases
      */
     public Map<Id, SObject> getRecordsMap() {
-        return triggerNewMap == null ? triggerOldMap : triggerNewMap;
+        return triggerNewMap ?? triggerOldMap;
     }
 
     /**

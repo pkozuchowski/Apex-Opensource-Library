@@ -1,26 +1,5 @@
-/**
-* MIT License
-*
-* Copyright (c) 2019 Piotr Kożuchowski
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
+// SPDX-License-Identifier: MIT
+// Copyright 2019 Piotr Kożuchowski
 
 /**
  * This class is responsible for querying custom metadata (TriggerLogic__mdt)
@@ -29,19 +8,17 @@
 public virtual inherited sharing class TriggerLogicSelector {
 
     /**
-     * @param tc Trigger Context of running trigger
-     * @return Trigger Logic for currently executing trigger
+     * @param ctx Trigger Context of running trigger
+     * @return Trigger Actions for currently executing trigger
      */
-    public List<TriggerLogic> getLogic(TriggerContext tc) {
-        List<TriggerLogic> classes = new List<TriggerLogic>();
+    public List<TriggerAction> getTriggerActions(TriggerContext ctx) {
+        List<TriggerAction> classes = new List<TriggerAction>();
 
-        for (TriggerLogic__mdt setting : getCustomMetadataRecords(tc.sObjectType, tc.operationType)) {
+        for (TriggerLogic__mdt setting : getCustomMetadataRecords(ctx.sObjectType, ctx.operationType)) {
             try {
                 if (isPermitted(setting)) {
                     Type ruleClass = Type.forName(setting.ApexClass__c);
-                    TriggerLogic logic = (TriggerLogic) ruleClass.newInstance();
-                    logic.setParameters(setting.Parameters__c);
-
+                    TriggerAction logic = (TriggerAction) JSON.deserialize(setting.Parameters__c ?? '{}', ruleClass);
                     classes.add(logic);
                 }
             } catch (Exception ex) {
@@ -49,8 +26,8 @@ public virtual inherited sharing class TriggerLogicSelector {
                 System.debug(ex.getStackTraceString());
                 TypeException typeException = new TypeException(
                     'Apex class defined in custom metadata TriggerLogic__mdt.' + setting.DeveloperName
-                        + ' (' + setting.ApexClass__c + ') is invalid. ' +
-                        'Please check if corresponding class is public and implements correct interface.'
+                    + ' (' + setting.ApexClass__c + ') is invalid. ' +
+                    'Please check if corresponding class is public and implements correct interface.'
                 );
                 typeException.initCause(ex);
                 throw typeException;

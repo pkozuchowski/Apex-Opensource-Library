@@ -331,4 +331,34 @@ private class TriggerDispatcherTest {
         Assert.isNotNull(handledException);
         Assert.areEqual(thrownException, handledException);
     }
+
+    @IsTest
+    static void testDisablingAction() {
+        List<Account> accounts = new List<Account>{
+            new Account(Id = ID_1, Name = NAME_TEST)
+        };
+        TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_UPDATE, accounts, accounts);
+        TriggerSettings.disableAction(TestFailingAction.class);
+        Exception ex1;
+        Exception ex2;
+
+        Test.startTest();
+        try {
+            TriggerDispatcher.run(new TestFailingHandler(), tc);
+        } catch (Exception e) {
+            ex1 = e;
+        }
+
+        TriggerSettings.enableAction(TestFailingAction.class);
+
+        try {
+            TriggerDispatcher.run(new TestFailingHandler(), tc);
+        } catch (Exception e) {
+            ex2 = e;
+        }
+        Test.stopTest();
+
+        Assert.isNull(ex1);
+        Assert.isNotNull(ex2);
+    }
 }

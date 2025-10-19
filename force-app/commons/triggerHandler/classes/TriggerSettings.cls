@@ -10,6 +10,7 @@ public inherited sharing class TriggerSettings {
     private static Boolean triggersEnabled = true;
     private static LogicSwitch__c logicSwitchSetting = LogicSwitch__c.getInstance();
     private static Set<SObjectType> disabledTriggers = new Set<SObjectType>();
+    private static Set<String> disabledActions = new Set<String>();
 
 
     /**
@@ -50,6 +51,36 @@ public inherited sharing class TriggerSettings {
     }
 
     /**
+     * Checks if a specific trigger action is enabled.
+     * 
+     * @param action The trigger action to check
+     * @return True if the action is enabled (no actions are disabled or this specific action is disabled)
+     */
+    public static Boolean isActionEnabled(TriggerAction action) {
+        return disabledActions.isEmpty()
+            || !disabledActions.contains(getTypeName(action));
+    }
+
+    /**
+     * Enables a specific trigger action type.
+     *
+     * @param actionType The type of trigger action to enable
+     */
+    public static void enableAction(Type actionType) {
+        disabledActions.remove(actionType.getName());
+    }
+
+    /**
+     * Disables a specific trigger action type.
+     * 
+     * @param actionType The type of trigger action to disable
+     */
+    public static void disableAction(Type actionType) {
+        disabledActions.add(actionType.getName());
+    }
+
+
+    /**
     * Disable all logic (Workflow Rules, Triggers, Process Builders, Validation Rules) which handle LogicSwitch__c.
     * Disablement is done by temporarily upserting LogicSwitch__c record for running user and restoring it later with enableAllAutomations.
     * This action performs DML.
@@ -72,6 +103,18 @@ public inherited sharing class TriggerSettings {
     public static void enableAllLogic() {
         delete [SELECT Id FROM LogicSwitch__c WHERE SetupOwnerId = :UserInfo.getUserId() WITH SYSTEM_MODE];
         logicSwitchSetting = LogicSwitch__c.getInstance();
+    }
+
+    private static String getTypeName(Object o) {
+        try {
+            Account a = (Account) o;
+            return null;
+        } catch (Exception e) {
+            return e.getMessage().substringBetween(
+                'Invalid conversion from runtime type ',
+                ' to Account'
+            );
+        }
     }
 
     private TriggerSettings() {}

@@ -12,6 +12,17 @@ public inherited sharing class TriggerSettings {
     private static Set<SObjectType> disabledTriggers = new Set<SObjectType>();
     private static Set<String> disabledActions = new Set<String>();
 
+    /**
+    * Load disabled actions from LogicSwitch__c setting
+    */
+    static {
+        if (String.isNotBlank(logicSwitchSetting.DisabledActions__c)) {
+            List<String> actions = logicSwitchSetting.DisabledActions__c.split('\r\n');
+            for (String action : actions) {
+                disabledActions.add(action.trim());
+            }
+        }
+    }
 
     /**
      * Disables triggers on all SObjects

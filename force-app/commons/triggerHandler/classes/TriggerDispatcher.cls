@@ -29,11 +29,7 @@ public inherited sharing class TriggerDispatcher {
 
                 for (TriggerAction action : getActions(triggerHandler, ctx)) {
                     if (TriggerSettings.isActionEnabled(action)) {
-                        System.debug('action enabled');
                         action.execute(records, ctx);
-                    } else {
-                        System.debug('action not enabled');
-
                     }
                 }
 

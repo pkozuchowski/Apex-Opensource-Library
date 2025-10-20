@@ -17,7 +17,12 @@ public inherited sharing class TriggerSettings {
     */
     static {
         if (String.isNotBlank(logicSwitchSetting.DisabledActions__c)) {
-            List<String> actions = logicSwitchSetting.DisabledActions__c.split('\r\n');
+            List<String> actions = (logicSwitchSetting.DisabledActions__c
+                + logicSwitchSetting.DisabledActions2__c)
+                .split('\r\n');
+
+            System.debug(JSON.serializePretty(actions));
+
             for (String action : actions) {
                 disabledActions.add(action.trim());
             }

@@ -26,6 +26,11 @@ public virtual class TriggerContext {
     protected Map<Id, SObject> triggerOldMap { get; protected set; }
 
     /**
+     * Additional data object that can be used to pass data between different trigger actions executed in the same trigger context.
+     */
+    public Object contextData { get; set; }
+
+    /**
      * @return Instance of TriggerContext object if ran during trigger or test execution, null otherwise.
      */
     public static TriggerContext getInstance() {

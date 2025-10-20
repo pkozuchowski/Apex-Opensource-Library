@@ -32,7 +32,7 @@
  * @see TriggerContext
  * @see TriggerDispatcher
  */
-public interface TriggerAction {
+public virtual interface TriggerAction {
 
     /**
      * Execute the action against the provided records and trigger context.

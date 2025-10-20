@@ -23,7 +23,7 @@ public inherited sharing class TriggerDispatcher {
     @TestVisible
     private static void run(TriggerHandler triggerHandler, TriggerContext ctx) {
         try {
-            if (shouldRun(ctx, triggerHandler)) {
+            if (shouldRun(ctx)) {
                 List<SObject> records = ctx.getRecords();
                 triggerHandler.initialize(ctx.getRecords(), ctx);
 
@@ -48,7 +48,7 @@ public inherited sharing class TriggerDispatcher {
     * - if it's not disabled in Bypass Triggers settings
     * - if it's not manually disabled in code via  disableTrigger();
     */
-    private static Boolean shouldRun(TriggerContext triggerContext, TriggerHandler th) {
+    private static Boolean shouldRun(TriggerContext triggerContext) {
         return triggerContext.isExecuting && TriggerSettings.isSObjectTriggerEnabled(triggerContext.sObjectType);
     }
 

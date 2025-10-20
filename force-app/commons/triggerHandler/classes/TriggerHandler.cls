@@ -18,7 +18,6 @@
 @SuppressWarnings('PMD.EmptyStatementBlock')
 public virtual inherited sharing class TriggerHandler {
 
-
     /**
      * Initialization method called at the start of trigger processing.
      *

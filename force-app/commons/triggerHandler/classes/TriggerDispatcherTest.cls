@@ -12,7 +12,6 @@ private class TriggerDispatcherTest {
         ID_3 = '001000000000002',
         ID_4 = '001000000000003',
         NAME_TEST = 'Test',
-        SOBJECT_ACCOUNT = 'Account',
         COUNTRY_USA = 'USA',
         CITY_NY = 'New York';
 
@@ -215,7 +214,7 @@ private class TriggerDispatcherTest {
         System.assertEquals(true, setting.DisableTriggers__c, expectedDisabled);
 
 
-        TriggerSettings.enableAllLogic();
+        TriggerSettings.removeUserSettings();
         setting = LogicSwitch__c.getInstance();
         String expectedEnabled = 'TriggerSettings.enableAllLogic() should uncheck all checkboxes on LogicSwitch';
         System.assertEquals(false, setting.DisableWorkflowRules__c, expectedEnabled);
@@ -361,5 +360,24 @@ private class TriggerDispatcherTest {
 
         Assert.isNull(ex1);
         Assert.isNotNull(ex2);
+    }
+
+    @IsTest
+    static void testDisableTriggerOperation() {
+        LogicSwitch__c setting = LogicSwitch__c.getInstance();
+        setting.DisableSelectedTriggers__c = 'Account.BEFORE_UPDATE';
+        upsert setting;
+
+        List<Account> accounts = new List<Account>{
+            new Account(Id = ID_1, Name = NAME_TEST)
+        };
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
+
+
+        Test.startTest();
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        Test.stopTest();
+
+        Assert.isNull(accounts[0].BillingCountry);
     }
 }

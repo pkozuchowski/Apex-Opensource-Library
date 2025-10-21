@@ -9,6 +9,7 @@
  */
 @SuppressWarnings('PMD')
 public virtual class TriggerContext {
+    private static TriggerContext instance;
     private final static Map<String, Integer> PROCESSED_COUNT = new Map<String, Integer>();
     public Boolean isExecuting { get; protected set; }
     public Boolean isInsert { get; protected set; }
@@ -35,12 +36,24 @@ public virtual class TriggerContext {
      * @return Instance of TriggerContext object if ran during trigger or test execution, null otherwise.
      */
     public static TriggerContext getInstance() {
-        if (Trigger.isExecuting || Test.isRunningTest()) {
-            return new TriggerContext();
-
+        if (Trigger.isExecuting) {
+            if (instance == null) {
+                instance = new TriggerContext();
+            }
+            return instance;
         } else {
             return null;
         }
+    }
+
+    /**
+     * Internal Method.
+     * Initializes new TriggerContext instance.Called by TriggerDispatcher when entering Trigger.
+     * @return New instance of TriggerContext object if ran during trigger or test execution, null otherwise.
+     */
+    public static TriggerContext newContext() {
+        instance = null;
+        return getInstance();
     }
 
     protected TriggerContext() {

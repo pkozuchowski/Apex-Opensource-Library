@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>DisabledActions__c</fullName>
+    <fullName>DisableActions__c</fullName>
     <inlineHelpText>New space separated list of Trigger Action class names</inlineHelpText>
     <label>Disabled Actions</label>
     <required>false</required>

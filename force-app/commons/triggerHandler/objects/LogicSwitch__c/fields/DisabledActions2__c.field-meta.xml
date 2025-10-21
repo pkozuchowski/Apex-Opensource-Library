@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>DisabledActions2__c</fullName>
-    <inlineHelpText>New space separated list of Trigger Action class names</inlineHelpText>
-    <label>Disabled Actions Part 2</label>
-    <required>false</required>
-    <trackTrending>false</trackTrending>
-    <type>TextArea</type>
-</CustomField>

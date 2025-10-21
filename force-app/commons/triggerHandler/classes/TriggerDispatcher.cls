@@ -17,18 +17,18 @@ public inherited sharing class TriggerDispatcher {
      * Runs instance of concrete Trigger Handler implementation
      */
     public static void run(TriggerHandler triggerHandler) {
-        run(triggerHandler, TriggerContext.getInstance());
+        run(triggerHandler, TriggerContext.newContext());
     }
 
     @TestVisible
     private static void run(TriggerHandler triggerHandler, TriggerContext ctx) {
         try {
-            if (shouldRun(ctx)) {
+            if (TriggerSettings.shouldRun(ctx)) {
                 List<SObject> records = ctx.getRecords();
                 triggerHandler.initialize(ctx.getRecords(), ctx);
 
                 for (TriggerAction action : getActions(triggerHandler, ctx)) {
-                    String actionName = TriggerSettings.getActionName(action);
+                    String actionName = getActionName(action);
 
                     if (TriggerSettings.isActionEnabled(actionName)) {
                         ctx.setCurrentAction(actionName);
@@ -43,16 +43,6 @@ public inherited sharing class TriggerDispatcher {
             handleException(ex, ctx);
             throw ex;
         }
-    }
-
-    /**
-    * @return True when:
-    * - is in trigger context (can be mocked in unit tests)
-    * - if it's not disabled in Bypass Triggers settings
-    * - if it's not manually disabled in code via  disableTrigger();
-    */
-    private static Boolean shouldRun(TriggerContext triggerContext) {
-        return triggerContext.isExecuting && TriggerSettings.isSObjectTriggerEnabled(triggerContext.sObjectType);
     }
 
     /** Returns list of Trigger Actions to be executed for given Trigger Context */
@@ -99,6 +89,18 @@ public inherited sharing class TriggerDispatcher {
             Type handlerType = Type.forName(implementor.ClassName);
             TriggerExceptionHandler handler = (TriggerExceptionHandler) handlerType?.newInstance();
             handler?.onException(ex, ctx);
+        }
+    }
+
+    private static String getActionName(Object action) {
+        try {
+            Account a = (Account) action;
+            return null;
+        } catch (Exception e) {
+            return e.getMessage().substringBetween(
+                'Invalid conversion from runtime type ',
+                ' to Account'
+            );
         }
     }
 

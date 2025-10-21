@@ -43,10 +43,10 @@ private class TriggerDispatcherTest {
                     acc.ShippingCity = acc.BillingCity;
                 }
 
-                if (ctx.isFirstRun('AccountAddressPopulator', acc.Id)) {
+                if (ctx.isFirstActionRun(acc.Id)) {
                     // Increment to test trigger recursion
                     acc.NumberOfEmployees = acc.NumberOfEmployees == null ? 1 : acc.NumberOfEmployees + 1;
-                    ctx.setExecuted('AccountAddressPopulator', acc.Id);
+                    ctx.markActionExecuted(acc.Id);
                 }
             }
         }
@@ -122,6 +122,7 @@ private class TriggerDispatcherTest {
         System.assert(ctx.getRecordsMap().containsKey(ID_1));
         System.assert(ctx.getRecordsIds().contains(ID_1));
         System.assert(ctx.getOldMap().containsKey(ID_1));
+        System.assertEquals(ID_1, ctx.getOld()[0].Id);
     }
 
     /**

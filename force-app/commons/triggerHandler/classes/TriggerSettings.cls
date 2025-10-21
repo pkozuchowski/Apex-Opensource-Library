@@ -68,13 +68,14 @@ public inherited sharing class TriggerSettings {
 
     /**
      * Checks if a specific trigger action is enabled.
-     * 
-     * @param action The trigger action to check
+     * Trigger Dispatcher checks this before executing each action.
+     *
+     * @param action Class name of trigger action to check
      * @return True if the action is enabled (no actions are disabled or this specific action is disabled)
      */
-    public static Boolean isActionEnabled(TriggerAction action) {
+    public static Boolean isActionEnabled(String actionClass) {
         return disabledActions.isEmpty()
-            || !disabledActions.contains(getTypeName(action));
+            || !disabledActions.contains(actionClass);
     }
 
     /**
@@ -121,9 +122,9 @@ public inherited sharing class TriggerSettings {
         logicSwitchSetting = LogicSwitch__c.getInstance();
     }
 
-    private static String getTypeName(Object o) {
+    public static String getActionName(TriggerAction action) {
         try {
-            Account a = (Account) o;
+            Account a = (Account) action;
             return null;
         } catch (Exception e) {
             return e.getMessage().substringBetween(

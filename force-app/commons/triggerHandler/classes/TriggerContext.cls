@@ -24,6 +24,7 @@ public virtual class TriggerContext {
     protected List<SObject> triggerOld { get; protected set; }
     protected Map<Id, SObject> triggerNewMap { get; protected set; }
     protected Map<Id, SObject> triggerOldMap { get; protected set; }
+    private String currentAction;
 
     /**
      * Additional data object that can be used to pass data between different trigger actions executed in the same trigger context.
@@ -114,6 +115,13 @@ public virtual class TriggerContext {
         } else {
             return null;
         }
+    }
+
+    /**
+     * @return Trigger Old records list
+     */
+    public List<SObject> getOld() {
+        return triggerOld;
     }
 
     /**
@@ -249,6 +257,16 @@ public virtual class TriggerContext {
     }
 
     /**
+     * Checks if the current action is executed for the first time for given record.
+     * 
+     * @param recordId Id of record in trigger
+     * @return True if record is executed in the current action for the first time.
+     */
+    public Boolean isFirstActionRun(Id recordId) {
+        return isFirstRun(currentAction, recordId);
+    }
+
+    /**
      * @param featureName Name of class or feature that is calling this method.
      * It is used to cover scenario where record did not initially meet criteria to process, but was updated by flow/another DML to meet the criteria.
      * @param recordId Id of record in trigger
@@ -261,11 +279,19 @@ public virtual class TriggerContext {
     }
 
     /**
+     * Marks that current action was executed for given record.
+     * @param recordId Id of record in trigger
+     */
+    public void markActionExecuted(Id recordId) {
+        markExecuted(currentAction, recordId);
+    }
+
+    /**
      * @param featureName Name of class or feature that is calling this method.
      * It is used to cover scenario where record did not initially meet criteria to process, but was updated by flow/another DML to meet the criteria.
      * @param recordId Id of record in trigger
      */
-    public void setExecuted(String featureName, Id recordId) {
+    public void markExecuted(String featureName, Id recordId) {
         Integer count = getRunCount(featureName, recordId);
         String key = '' + recordId + featureName;
         PROCESSED_COUNT.put(key, count + 1);
@@ -279,5 +305,13 @@ public virtual class TriggerContext {
         String key = '' + recordId + featureName;
         Integer count = PROCESSED_COUNT.get(key);
         return count == null ? 0 : count;
+    }
+
+    /**
+     * Internal Method.
+     * Trigger Dispatcher sets the name of the current action being executed.
+     */
+    public void setCurrentAction(String actionName) {
+        this.currentAction = actionName;
     }
 }

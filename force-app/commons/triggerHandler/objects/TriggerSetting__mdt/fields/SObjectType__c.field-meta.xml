@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>CustomPermission__c</fullName>
+    <fullName>SObjectType__c</fullName>
+    <caseSensitive>false</caseSensitive>
     <externalId>false</externalId>
     <fieldManageability>DeveloperControlled</fieldManageability>
-    <inlineHelpText>Custom Permission required to execute this logic.</inlineHelpText>
-    <label>Custom Permission</label>
+    <inlineHelpText>API Name of the SObject Type, namespace included.</inlineHelpText>
+    <label>SObject Type</label>
     <length>255</length>
-    <required>false</required>
+    <required>true</required>
     <type>Text</type>
-    <unique>false</unique>
+    <unique>true</unique>
 </CustomField>

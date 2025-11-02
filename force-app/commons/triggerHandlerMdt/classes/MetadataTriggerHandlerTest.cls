@@ -15,8 +15,8 @@ private class MetadataTriggerHandlerTest {
     @IsTest
     static void triggerShouldExecuteTriggerLogicClassesDefinedInSettings() {
         TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
-        MetadataTriggerHandler.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(ApexClass__c = 'MetadataTriggerHandlerTest.AccountShippingCountryFiller')
+        MetadataTriggerHandler.mockMetadata(new List<TriggerAction__mdt>{
+            new TriggerAction__mdt(ApexClass__c = 'MetadataTriggerHandlerTest.AccountShippingCountryFiller')
         });
 
 
@@ -51,8 +51,8 @@ private class MetadataTriggerHandlerTest {
             new Account(Id = '001000000000002')
         };
         TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_DELETE, accounts, accounts);
-        MetadataTriggerHandler.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(ApexClass__c = 'MetadataTriggerHandlerTest.InvalidClass')
+        MetadataTriggerHandler.mockMetadata(new List<TriggerAction__mdt>{
+            new TriggerAction__mdt(ApexClass__c = 'MetadataTriggerHandlerTest.InvalidClass')
         });
         Exception ex;
 
@@ -92,8 +92,8 @@ private class MetadataTriggerHandlerTest {
             new Account(Id = '001000000000002', Name = 'Test')
         };
         TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
-        MetadataTriggerHandler.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(
+        MetadataTriggerHandler.mockMetadata(new List<TriggerAction__mdt>{
+            new TriggerAction__mdt(
                 ApexClass__c = 'MetadataTriggerHandlerTest.ParameterizableLogic',
                 Parameters__c = '{"parameterName":"New Name"}'
             )

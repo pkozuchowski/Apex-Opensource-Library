@@ -12,10 +12,6 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>
-                <field>SObject__c</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Required</behavior>
                 <field>Operation__c</field>
             </layoutItems>
             <layoutItems>
@@ -39,8 +35,8 @@
                 <field>IsProtected</field>
             </layoutItems>
             <layoutItems>
-                <behavior>Edit</behavior>
-                <field>CustomPermission__c</field>
+                <behavior>Required</behavior>
+                <field>Trigger__c</field>
             </layoutItems>
         </layoutColumns>
         <layoutColumns>

@@ -9,8 +9,8 @@ private class TriggerCommonsTest {
         Account account = new Account(BillingCountry = 'US');
 
         Test.startTest();
-        MetadataTriggerHandler.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(
+        MetadataTriggerHandler.mockMetadata(new List<TriggerAction__mdt>{
+            new TriggerAction__mdt(
                 ApexClass__c = 'TriggerCommons.FieldSetter',
                 Parameters__c = '{"field":"ShippingCountry","formula":"{!BillingCountry}","replaceIfSet":false}'
             )

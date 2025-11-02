@@ -18,3 +18,4 @@ trigger-handler.md
 **/tsconfig*.json
 **/*.tsbuildinfo
 **/eslint.config.mjs
+#force-app/main/**

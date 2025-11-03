@@ -260,11 +260,11 @@ It is possible to customize the order of the operations using constructors:
   DMLs will follow specified SObject, Operation and Upsert Field order:
 ```apex
 DatabaseUnitOfWork uow = (DatabaseUnitOfWork) new DatabaseUnitOfWork(new List<DML.Order>{
-    new DML.Order(User.SObjectType, DML.UPSERT_DML, Schema.User.Username),
-    new DML.Order(User.SObjectType, DML.UPSERT_DML, Schema.User.FederationIdentifier),
-    new DML.Order(Contact.SObjectType, DML.INSERT_DML),
-    new DML.Order(Opportunity.SObjectType, DML.DELETE_DML),
-    new DML.Order(Opportunity.SObjectType, DML.INSERT_DML)
+    new DML.Order(User.SObjectType, DML.Type.UPSERT_DML, Schema.User.Username),
+    new DML.Order(User.SObjectType, DML.Type.UPSERT_DML, Schema.User.FederationIdentifier),
+    new DML.Order(Contact.SObjectType, DML.Type.INSERT_DML),
+    new DML.Order(Opportunity.SObjectType, DML.Type.DELETE_DML),
+    new DML.Order(Opportunity.SObjectType, DML.Type.INSERT_DML)
 });
 ```
 

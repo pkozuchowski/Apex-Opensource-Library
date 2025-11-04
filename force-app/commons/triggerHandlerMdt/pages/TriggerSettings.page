@@ -1,0 +1,39 @@
+<apex:page id="TriggerSettingPage" standardController="TriggerSetting__mdt" extensions="TriggerSettingsCtrl" setup="true" applyBodyTag="false">
+    <body style="margin: 0">
+    <apex:form>
+        <apex:pageBlock title="Trigger Actions" mode="inlineEdit"
+                        helpTitle="Documentation"
+                        helpUrl="https://apexlibra.org/apex/trigger-handler-mdt">
+            <apex:pageBlockButtons>
+                <apex:outputLink value="{!newUrl}" target="_blank" styleClass="btn" style="text-decoration:none;padding:4px;">New</apex:outputLink>
+            </apex:pageBlockButtons>
+
+            <apex:repeat value="{!operations}" var="op">
+                <apex:pageBlockSection title="{!op}" columns="1">
+                    <apex:pageBlockTable value="{!actionsMap[op]}" var="item">
+                        <apex:column headerValue="Actions" width="130">
+                            <apex:outputLink value="/{!item.Id}/e?{!retUrl}" target="_blank">Edit</apex:outputLink>
+                            &nbsp;|&nbsp;
+                            <apex:outputLink value="/{!item.Id}/e?clone=1&{!retUrl}" target="_blank">Clone</apex:outputLink>
+                        </apex:column>
+                        <apex:column value="{!item.Order__c}"/>
+                        <apex:column value="{!item.Active__c}"/>
+                        <apex:column headerValue="Developer Name">
+                            <apex:outputLink value="/{!item.Id}" target="_blank">{!item.DeveloperName}</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Apex Class">
+                            <apex:commandLink target="_blank" action="{!openClass}" >
+                                <apex:param name="name" value="{!item.ApexClass__c}" assignTo="{!apexClass}"/>
+                                {!item.ApexClass__c}
+                            </apex:commandLink>
+                        </apex:column>
+                        <apex:column value="{!item.RequiredPermission__c}"/>
+                        <apex:column value="{!item.BypassPermission__c}"/>
+                        <apex:column value="{!item.Parameters__c}"/>
+                    </apex:pageBlockTable>
+                </apex:pageBlockSection>
+            </apex:repeat>
+        </apex:pageBlock>
+    </apex:form>
+    </body>
+</apex:page>

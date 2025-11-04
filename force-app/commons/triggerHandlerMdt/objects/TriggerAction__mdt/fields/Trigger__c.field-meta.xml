@@ -4,7 +4,6 @@
     <fieldManageability>DeveloperControlled</fieldManageability>
     <label>Trigger</label>
     <referenceTo>TriggerSetting__mdt</referenceTo>
-    <relationshipLabel>Trigger Actions</relationshipLabel>
     <relationshipName>TriggerActions</relationshipName>
     <required>true</required>
     <type>MetadataRelationship</type>

@@ -20,24 +20,24 @@
                 <label>BEFORE_INSERT</label>
             </value>
             <value>
-                <fullName>BEFORE_UPDATE</fullName>
-                <default>false</default>
-                <label>BEFORE_UPDATE</label>
-            </value>
-            <value>
-                <fullName>BEFORE_DELETE</fullName>
-                <default>false</default>
-                <label>BEFORE_DELETE</label>
-            </value>
-            <value>
                 <fullName>AFTER_INSERT</fullName>
                 <default>false</default>
                 <label>AFTER_INSERT</label>
             </value>
             <value>
+                <fullName>BEFORE_UPDATE</fullName>
+                <default>false</default>
+                <label>BEFORE_UPDATE</label>
+            </value>
+            <value>
                 <fullName>AFTER_UPDATE</fullName>
                 <default>false</default>
                 <label>AFTER_UPDATE</label>
+            </value>
+            <value>
+                <fullName>BEFORE_DELETE</fullName>
+                <default>false</default>
+                <label>BEFORE_DELETE</label>
             </value>
             <value>
                 <fullName>AFTER_DELETE</fullName>

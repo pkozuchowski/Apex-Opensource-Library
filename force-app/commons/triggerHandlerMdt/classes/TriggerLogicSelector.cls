@@ -14,7 +14,7 @@ public virtual inherited sharing class TriggerLogicSelector {
     public List<TriggerAction> getTriggerActions(SObjectType sObjectType, String operation) {
         List<TriggerAction> classes = new List<TriggerAction>();
 
-        for (TriggerAction__mdt setting : getCustomMetadataRecords(sObjectType, operation)) {
+        for (TriggerAction__mdt setting : getCustomMetadataRecords(sObjectType.toString(), operation)) {
             try {
                 if (isPermitted(setting)) {
                     Type ruleClass = Type.forName(setting.ApexClass__c);
@@ -44,7 +44,7 @@ public virtual inherited sharing class TriggerLogicSelector {
 
 
 //        if (String.isBlank(setting.CustomPermission__c)) {
-            return true;
+        return true;
 //
 //        } else {
 //            return FeatureManagement.checkPermission(setting.CustomPermission__c);
@@ -54,17 +54,16 @@ public virtual inherited sharing class TriggerLogicSelector {
     /**
      * @return List of trigger logic metadata for given trigger operation.
      */
-    protected virtual List<TriggerAction__mdt> getCustomMetadataRecords(SObjectType sObjectType, String operation) {
+    public virtual List<TriggerAction__mdt> getCustomMetadataRecords(String sObjectType, String operation) {
         String qualifiedApiName = '' + sObjectType;
-        return new List<TriggerAction__mdt>();
-//        return [
-//            SELECT DeveloperName, ApexClass__c, Parameters__c, CustomPermission__c
-//            FROM TriggerAction__mdt
-//            WHERE SObject__r.QualifiedApiName = :qualifiedApiName
-//            AND Enabled__c = TRUE
-//            AND Operation__c = :op.name()
-//            ORDER BY Order__c ASC NULLS LAST, ApexClass__c ASC
-//        ];
+        return [
+            SELECT Id, DeveloperName, Order__c, ApexClass__c, Parameters__c, Active__c,
+                BypassPermission__c, RequiredPermission__c, Operation__c
+            FROM TriggerAction__mdt
+            WHERE Trigger__r.SObjectType__c = :qualifiedApiName
+            AND Operation__c = :operation
+            ORDER BY Order__c ASC NULLS LAST, ApexClass__c ASC
+        ];
     }
 
 
@@ -78,7 +77,7 @@ public virtual inherited sharing class TriggerLogicSelector {
             this.mockMetadata = mockMetadata;
         }
 
-        protected override List<TriggerAction__mdt> getCustomMetadataRecords(SObjectType sObjectType, String op) {
+        public override List<TriggerAction__mdt> getCustomMetadataRecords(String sObjectType, String op) {
             return mockMetadata;
         }
     }

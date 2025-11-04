@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Enabled__c</fullName>
+    <fullName>Active__c</fullName>
     <defaultValue>true</defaultValue>
     <fieldManageability>DeveloperControlled</fieldManageability>
-    <label>Enabled</label>
+    <label>Active</label>
     <type>Checkbox</type>
 </CustomField>

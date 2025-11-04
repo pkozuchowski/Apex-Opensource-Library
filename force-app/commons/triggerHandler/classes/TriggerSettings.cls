@@ -26,8 +26,8 @@ public inherited sharing class TriggerSettings {
     public static void refreshSettings() {
         triggersEnabled = true;
         settings = LogicSwitch__c.getInstance();
-        disabledActions.clear();
-        disabledTriggers.clear();
+        disabledActions = new Set<String>();
+        disabledTriggers = new Set<String>();
         addSettingLines(settings.DisableActions__c, disabledActions);
         addSettingLines(settings.DisableSelectedTriggers__c, disabledTriggers);
     }

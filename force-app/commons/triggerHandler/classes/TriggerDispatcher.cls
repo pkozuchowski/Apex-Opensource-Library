@@ -88,7 +88,7 @@ public inherited sharing class TriggerDispatcher {
         for (ApexTypeImplementor implementor : handlers) {
             Type handlerType = Type.forName(implementor.ClassName);
             TriggerExceptionHandler handler = (TriggerExceptionHandler) handlerType?.newInstance();
-            handler?.onException(ex, ctx);
+            handler?.onException(ctx.getRecords(), ctx, ex);
         }
     }
 

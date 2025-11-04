@@ -2,7 +2,7 @@
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
     <description>Configure which apex classes should be run in trigger to process records.
 Apex classes should be public and implement MetadataTriggerHandler.Logic interface.</description>
-    <label>Trigger Logic</label>
-    <pluralLabel>Trigger Logic</pluralLabel>
+    <label>Trigger Action</label>
+    <pluralLabel>Trigger Action</pluralLabel>
     <visibility>Public</visibility>
 </CustomObject>

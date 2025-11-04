@@ -10,5 +10,5 @@
  * onException method when an exception occurs.
  */
 public interface TriggerExceptionHandler {
-    void onException(Exception ex, TriggerContext ctx);
+    void onException(List<SObject> records, TriggerContext ctx, Exception ex);
 }

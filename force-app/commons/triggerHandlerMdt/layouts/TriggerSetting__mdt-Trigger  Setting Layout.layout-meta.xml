@@ -7,36 +7,20 @@
         <label>Information</label>
         <layoutColumns>
             <layoutItems>
-                <behavior>Edit</behavior>
-                <field>Active__c</field>
+                <behavior>Required</behavior>
+                <field>MasterLabel</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>
-                <field>Operation__c</field>
+                <field>DeveloperName</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>
-                <field>ApexClass__c</field>
+                <field>SObjectType__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
-                <field>Parameters__c</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Edit</behavior>
-                <field>Order__c</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Edit</behavior>
-                <field>Description__c</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Edit</behavior>
-                <field>IsProtected</field>
-            </layoutItems>
-            <layoutItems>
-                <behavior>Required</behavior>
-                <field>Trigger__c</field>
+                <field>RequiredPermission__c</field>
             </layoutItems>
         </layoutColumns>
         <layoutColumns>
@@ -45,12 +29,16 @@
                 <field>NamespacePrefix</field>
             </layoutItems>
             <layoutItems>
-                <behavior>Required</behavior>
-                <field>MasterLabel</field>
+                <behavior>Edit</behavior>
+                <field>IsProtected</field>
             </layoutItems>
             <layoutItems>
-                <behavior>Required</behavior>
-                <field>DeveloperName</field>
+                <behavior>Edit</behavior>
+                <field>Active__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>BypassPermission__c</field>
             </layoutItems>
         </layoutColumns>
         <style>TwoColumnsTopToBottom</style>
@@ -84,13 +72,38 @@
         <layoutColumns/>
         <style>CustomLinks</style>
     </layoutSections>
+    <layoutSections>
+        <customLabel>true</customLabel>
+        <detailHeading>false</detailHeading>
+        <editHeading>false</editHeading>
+        <label>Actions</label>
+        <layoutColumns>
+            <layoutItems>
+                <height>2000</height>
+                <page>TriggerSettings</page>
+                <showLabel>false</showLabel>
+                <showScrollbars>true</showScrollbars>
+                <width>100%</width>
+            </layoutItems>
+        </layoutColumns>
+        <style>OneColumn</style>
+    </layoutSections>
+    <relatedLists>
+        <fields>DeveloperName</fields>
+        <fields>ApexClass__c</fields>
+        <fields>Operation__c</fields>
+        <fields>Order__c</fields>
+        <fields>Parameters__c</fields>
+        <fields>Description__c</fields>
+        <relatedList>TriggerAction__mdt.Trigger__c</relatedList>
+    </relatedLists>
     <showEmailCheckbox>false</showEmailCheckbox>
-    <showHighlightsPanel>false</showHighlightsPanel>
-    <showInteractionLogPanel>false</showInteractionLogPanel>
+    <showHighlightsPanel>true</showHighlightsPanel>
+    <showInteractionLogPanel>true</showInteractionLogPanel>
     <showRunAssignmentRulesCheckbox>false</showRunAssignmentRulesCheckbox>
     <showSubmitAndAttachButton>false</showSubmitAndAttachButton>
     <summaryLayout>
-        <masterLabel>00h1l000001CjiL</masterLabel>
+        <masterLabel>00hKN000000cInh</masterLabel>
         <sizeX>4</sizeX>
         <sizeY>0</sizeY>
         <summaryLayoutStyle>Default</summaryLayoutStyle>

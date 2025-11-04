@@ -2,7 +2,7 @@
 <ListView xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>All_Triggers</fullName>
     <columns>MasterLabel</columns>
-    <columns>Enabled__c</columns>
+    <columns>Active__c</columns>
     <columns>Operation__c</columns>
     <columns>Order__c</columns>
     <columns>ApexClass__c</columns>

@@ -22,7 +22,7 @@
                             <apex:outputLink value="/{!item.Id}" target="_blank">{!item.DeveloperName}</apex:outputLink>
                         </apex:column>
                         <apex:column headerValue="Apex Class">
-                            <apex:commandLink target="_blank" action="{!openClass}" >
+                            <apex:commandLink target="_blank" action="{!openClass}">
                                 <apex:param name="name" value="{!item.ApexClass__c}" assignTo="{!apexClass}"/>
                                 {!item.ApexClass__c}
                             </apex:commandLink>

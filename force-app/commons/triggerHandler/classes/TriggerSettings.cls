@@ -79,7 +79,7 @@ public inherited sharing class TriggerSettings {
 
     /**
      * Checks if a specific trigger action is enabled.
-     * Trigger Dispatcher checks this before executing each action.
+     * Trigger Handler checks this before executing each action.
      *
      * @param action Class name of trigger action to check
      * @return True if the action is enabled (no actions are disabled or this specific action is disabled)

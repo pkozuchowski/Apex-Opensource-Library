@@ -11,9 +11,9 @@ public with sharing class TriggerSettingsCtrl {
 
     /** Current trigger setting metadata record */
     public TriggerSetting__mdt setting { get; set; }
-    /** Return URL for navigation */
+    /** Return URL to Trigger Settings records */
     public String retUrl { get; set; }
-    /** URL for creating new records */
+    /** URL for creating new Trigger Actions */
     public String newUrl { get; set; }
     /** Name of the Apex class */
     public String apexClass { get; set; }
@@ -47,8 +47,7 @@ public with sharing class TriggerSettingsCtrl {
      * @return PageReference URL reference to the Apex class page
      */
     public PageReference openClass() {
-        PageReference pageReference = new PageReference('/' + [SELECT Id FROM ApexClass WHERE Name = :apexClass].Id);
-        pageReference.setRedirect(true);
+        PageReference pageReference = new PageReference(Url.getOrgDomainUrl().toExternalForm() + '/' + [SELECT Id FROM ApexClass WHERE Name = :apexClass].Id);
         return pageReference;
     }
 }

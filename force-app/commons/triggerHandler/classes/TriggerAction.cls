@@ -30,7 +30,6 @@
  *
  * @see TriggerHandler
  * @see TriggerContext
- * @see TriggerDispatcher
  */
 public virtual interface TriggerAction {
 

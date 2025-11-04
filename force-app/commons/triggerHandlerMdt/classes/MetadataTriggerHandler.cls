@@ -5,7 +5,7 @@ public virtual with sharing class MetadataTriggerHandler extends TriggerHandler 
     private static TriggerLogicSelector logicSelector = new TriggerLogicSelector();
 
     public override void initialize(List<SObject> triggerNew, TriggerContext ctx) {
-        execute(ctx, 'INITIALIZE', triggerNew);
+        execute('INITIALIZE', triggerNew, ctx);
     }
 
     public override List<TriggerAction> beforeInsert(List<SObject> triggerNew, TriggerContext ctx) {
@@ -37,16 +37,14 @@ public virtual with sharing class MetadataTriggerHandler extends TriggerHandler 
     }
 
     public override void finalize(List<SObject> triggerNew, TriggerContext ctx) {
-        execute(ctx, 'FINALIZE', triggerNew);
+        execute('FINALIZE', triggerNew, ctx);
     }
 
-    private void execute(TriggerContext ctx, String type, List<SObject> triggerNew) {
+    private void execute(String type, List<SObject> triggerNew, TriggerContext ctx) {
         List<TriggerAction> triggerActions = logicSelector.getTriggerActions(
             ctx.sObjectType, type);
 
-        for (TriggerAction triggerAction : triggerActions) {
-            triggerAction.execute(triggerNew, ctx);
-        }
+        executeActions(triggerActions, triggerNew, ctx);
     }
 
     /**

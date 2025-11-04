@@ -17,6 +17,8 @@
  */
 @SuppressWarnings('PMD.EmptyStatementBlock')
 public virtual inherited sharing class TriggerHandler {
+    @TestVisible
+    private static List<TriggerExceptionHandler> exceptionHandlers;
 
     /**
      * Initialization method called at the start of trigger processing.
@@ -121,7 +123,7 @@ public virtual inherited sharing class TriggerHandler {
      * @param triggerNew list of SObject records that were being processed
      * @param ctx trigger context containing error and execution state
      */
-    public virtual void onException(Exception ex, TriggerContext ctx) {}
+    public virtual void onException(List<SObject> triggerNew, TriggerContext ctx, Exception ex) {}
 
     /**
      * Finalization method called after trigger processing is complete.
@@ -130,4 +132,125 @@ public virtual inherited sharing class TriggerHandler {
      * cleanup or final actions after all trigger logic has executed.
      */
     public virtual void finalize(List<SObject> triggerNew, TriggerContext ctx) {}
+
+
+    public void run() {
+        run(getTriggerContext());
+    }
+
+    protected virtual TriggerContext getTriggerContext() {
+        return TriggerContext.newContext();
+    }
+
+    @TestVisible
+    private void run(TriggerContext ctx) {
+        List<SObject> records = ctx.getRecords();
+        try {
+            if (TriggerSettings.shouldRun(ctx)) {
+                initialize(ctx.getRecords(), ctx);
+
+                List<TriggerAction> triggerActions = getActions(ctx);
+                executeActions(triggerActions, records, ctx);
+            }
+        } catch (Exception ex) {
+            onException(records, ctx, ex);
+            handleException(records, ctx, ex);
+            throw ex;
+        } finally {
+            finalize(records, ctx);
+        }
+    }
+
+    /** Returns list of Trigger Actions to be executed for given Trigger Context */
+    protected virtual List<TriggerAction> getActions(TriggerContext ctx) {
+        List<SObject> records = ctx.getRecords();
+
+        switch on ctx.operationType {
+            when BEFORE_INSERT {
+                return beforeInsert(records, ctx);
+            }
+            when BEFORE_UPDATE {
+                return beforeUpdate(records, ctx);
+            }
+            when BEFORE_DELETE {
+                return beforeDelete(records, ctx);
+            }
+            when AFTER_INSERT {
+                return afterInsert(records, ctx);
+            }
+            when AFTER_UPDATE {
+                return afterUpdate(records, ctx);
+            }
+            when AFTER_DELETE {
+                return afterDelete(records, ctx);
+            }
+            when AFTER_UNDELETE {
+                return afterUndelete(records, ctx);
+            }
+        }
+        return new List<TriggerAction>();
+    }
+
+    protected void executeActions(List<TriggerAction> triggerActions, List<SObject> records, TriggerContext ctx) {
+        for (TriggerAction action : triggerActions) {
+            String actionName = getActionName(action);
+
+            if (TriggerSettings.isActionEnabled(actionName)) {
+                ctx.setCurrentAction(actionName);
+                action.execute(records, ctx);
+            }
+        }
+    }
+
+    /** Invokes all registered Trigger Exception Handlers */
+    private void handleException(List<SObject> records, TriggerContext ctx, Exception ex) {
+        for (TriggerExceptionHandler handler : getExceptionHandlers()) {
+            handler?.onException(records, ctx, ex);
+        }
+    }
+
+    /**
+     * Returns a list of initialized TriggerExceptionHandlers for handling exceptions during trigger execution.
+     * 
+     * This method queries for and initializes concrete implementations of the TriggerExceptionHandler
+     * interface. The handlers are cached after first initialization to avoid repeated queries.
+     *
+     * @return List of initialized TriggerExceptionHandler instances
+     */
+    private List<TriggerExceptionHandler> getExceptionHandlers() {
+        if (exceptionHandlers != null) {
+            return exceptionHandlers;
+        } else {
+            exceptionHandlers = new List<TriggerExceptionHandler>();
+            List<ApexTypeImplementor> handlers = [
+                SELECT ClassName
+                FROM ApexTypeImplementor
+                WHERE InterfaceName = 'TriggerExceptionHandler'
+                AND IsConcrete = TRUE
+                WITH SYSTEM_MODE
+            ];
+
+            for (ApexTypeImplementor implementor : handlers) {
+                try {
+                    Type handlerType = Type.forName(implementor.ClassName);
+                    exceptionHandlers.add((TriggerExceptionHandler) handlerType?.newInstance());
+                } catch (Exception e) {
+                    System.debug(LoggingLevel.ERROR, 'Failed to initialize TriggerExceptionHandler');
+                    System.debug(LoggingLevel.ERROR, e);
+                }
+            }
+            return exceptionHandlers;
+        }
+    }
+
+    private static String getActionName(Object action) {
+        try {
+            return ((Account) action)?.Id;
+        } catch (Exception e) {
+            return e.getMessage().substringBetween(
+                'Invalid conversion from runtime type ',
+                ' to Account'
+            );
+        }
+    }
 }

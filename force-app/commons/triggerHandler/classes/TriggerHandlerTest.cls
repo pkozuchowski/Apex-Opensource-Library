@@ -2,8 +2,7 @@
 // Copyright 2019 Piotr Kożuchowski
 
 @IsTest(IsParallel=true)
-private class TriggerDispatcherTest {
-    private static Exception handledException;
+public class TriggerHandlerTest {
 
     @SuppressWarnings('PMD.AvoidHardcodingId')
     private static final String
@@ -26,6 +25,24 @@ private class TriggerDispatcherTest {
             };
         }
     }
+
+    /**
+     * Generic Trigger Handler
+     */
+    public class MockTriggerHandler extends TriggerHandler {
+        private Map<String, List<TriggerAction>> actions = new Map<String, List<TriggerAction>>();
+
+        public MockTriggerHandler add(TriggerOperation op, TriggerAction action) {
+            List<TriggerAction> actions = actions.get(op.toString()) ?? new List<TriggerAction>();
+            actions.add(action);
+            return this;
+        }
+
+        protected override List<TriggerAction> getActions(TriggerContext ctx) {
+            return actions.get(ctx.operationType.toString()) ?? new List<TriggerAction>();
+        }
+    }
+
 
     /**
      * Emulation of Trigger logic class
@@ -63,7 +80,7 @@ private class TriggerDispatcherTest {
 
 
         Test.startTest();
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        new TestAccountTriggerHandler().run(tc);
         Test.stopTest();
 
 
@@ -137,7 +154,7 @@ private class TriggerDispatcherTest {
 
         Test.startTest();
         TriggerSettings.disableTrigger(Account.SObjectType);
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        new TestAccountTriggerHandler().run(tc);
         TriggerSettings.enableTrigger(Account.SObjectType);
         Test.stopTest();
 
@@ -164,7 +181,7 @@ private class TriggerDispatcherTest {
 
 
         Test.startTest();
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        new TestAccountTriggerHandler().run(tc);
         Test.stopTest();
 
 
@@ -187,7 +204,7 @@ private class TriggerDispatcherTest {
 
         Test.startTest();
         TriggerSettings.disableTriggers();
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        new TestAccountTriggerHandler().run(tc);
         TriggerSettings.enableTriggers();
         Test.stopTest();
 
@@ -255,10 +272,10 @@ private class TriggerDispatcherTest {
 
 
         Test.startTest();
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        new TestAccountTriggerHandler().run(tc);
+        new TestAccountTriggerHandler().run(tc);
+        new TestAccountTriggerHandler().run(tc);
+        new TestAccountTriggerHandler().run(tc);
         Test.stopTest();
 
         Assert.areEqual(1, accounts[0].NumberOfEmployees);
@@ -270,17 +287,18 @@ private class TriggerDispatcherTest {
             new Account(Id = ID_1, Name = NAME_TEST, NumberOfEmployees = 0)
         };
         TriggerContext t = TriggerContext.getInstance();
-        Assert.isNull(t.operationType);
+        Assert.isNull(t);
 
         for (TriggerOperation op : TriggerOperation.values()) {
             TriggerContext tc = new TriggerContext(op, accounts, accounts);
-            TriggerDispatcher.run(new TriggerHandler(), tc);
+            new TriggerHandler().run(tc);
         }
     }
 
-
     public class TestTriggerExceptionHandler implements TriggerExceptionHandler {
-        public void onException(Exception ex, TriggerContext ctx) {
+        public Exception handledException;
+
+        public void onException(List<SObject> records, TriggerContext ctx, Exception ex) {
             handledException = ex;
         }
     }
@@ -300,7 +318,7 @@ private class TriggerDispatcherTest {
     }
 
     /**
-     * Tests the exception handling functionality of the TriggerDispatcher by simulating a failing trigger action.
+     * Tests the exception handling functionality of the Trigger Handler by simulating a failing trigger action.
      * Verifies that:
      * - The exception is properly caught and handled by the TestTriggerExceptionHandler
      * - The original exception is re-thrown after handling
@@ -312,24 +330,20 @@ private class TriggerDispatcherTest {
             new Account(Id = ID_1, Name = NAME_TEST)
         };
         TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_UPDATE, accounts, accounts);
-        TriggerDispatcher.mockedExceptionHandlers = (List<ApexTypeImplementor>) JSON.deserialize(
-            '[{"className":"TriggerDispatcherTest.TestTriggerExceptionHandler"}]',
-            List<ApexTypeImplementor>.class
-        );
-        Exception thrownException;
+        TestTriggerExceptionHandler testExHandler = new TestTriggerExceptionHandler();
+        TriggerHandler.exceptionHandlers = new List<TriggerExceptionHandler>{testExHandler};
 
         Test.startTest();
         try {
-            TriggerDispatcher.run(new TestFailingHandler(), tc);
+            new TestFailingHandler().run(tc);
             Assert.fail();
         } catch (Exception e) {
-            thrownException = e;
         }
         Test.stopTest();
 
 
-        Assert.isNotNull(handledException);
-        Assert.areEqual(thrownException, handledException);
+        Assert.isNotNull(testExHandler.handledException);
+        Assert.areEqual('Simulated exception in TriggerAction', testExHandler.handledException.getMessage());
     }
 
     @IsTest
@@ -344,7 +358,7 @@ private class TriggerDispatcherTest {
 
         Test.startTest();
         try {
-            TriggerDispatcher.run(new TestFailingHandler(), tc);
+            new TestFailingHandler().run(tc);
         } catch (Exception e) {
             ex1 = e;
         }
@@ -352,7 +366,7 @@ private class TriggerDispatcherTest {
         TriggerSettings.enableAction(TestFailingAction.class);
 
         try {
-            TriggerDispatcher.run(new TestFailingHandler(), tc);
+            new TestFailingHandler().run(tc);
         } catch (Exception e) {
             ex2 = e;
         }
@@ -375,7 +389,7 @@ private class TriggerDispatcherTest {
 
 
         Test.startTest();
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        new TestAccountTriggerHandler().run(tc);
         Test.stopTest();
 
         Assert.isNull(accounts[0].BillingCountry);

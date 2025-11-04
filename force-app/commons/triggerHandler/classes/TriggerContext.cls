@@ -48,7 +48,7 @@ public virtual class TriggerContext {
 
     /**
      * Internal Method.
-     * Initializes new TriggerContext instance.Called by TriggerDispatcher when entering Trigger.
+     * Initializes new TriggerContext instance.Called by Trigger Handler when entering Trigger.
      * @return New instance of TriggerContext object if ran during trigger or test execution, null otherwise.
      */
     public static TriggerContext newContext() {
@@ -322,7 +322,7 @@ public virtual class TriggerContext {
 
     /**
      * Internal Method.
-     * Trigger Dispatcher sets the name of the current action being executed.
+     * Trigger Handler sets the name of the current action being executed.
      */
     public void setCurrentAction(String actionName) {
         this.currentAction = actionName;

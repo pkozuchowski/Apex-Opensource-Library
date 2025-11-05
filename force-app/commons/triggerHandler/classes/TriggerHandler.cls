@@ -27,7 +27,7 @@ public virtual inherited sharing class TriggerHandler {
      * any necessary state or perform pre-processing before other lifecycle
      * methods are invoked.
      */
-    public virtual void initialize(List<SObject> triggerNew, TriggerContext ctx) {}
+    protected virtual void initialize(List<SObject> triggerNew, TriggerContext ctx) {}
 
     /**
      * Called before records are inserted (before insert).
@@ -37,7 +37,7 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute before insert
      */
-    public virtual List<TriggerAction> beforeInsert(List<SObject> triggerNew, TriggerContext ctx) {
+    protected virtual List<TriggerAction> beforeInsert(List<SObject> triggerNew, TriggerContext ctx) {
         return new List<TriggerAction>();
     }
 
@@ -49,7 +49,7 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute after insert
      */
-    public virtual List<TriggerAction> afterInsert(List<SObject> triggerNew, TriggerContext ctx) {
+    protected virtual List<TriggerAction> afterInsert(List<SObject> triggerNew, TriggerContext ctx) {
         return new List<TriggerAction>();
     }
 
@@ -61,7 +61,7 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute before update
      */
-    public virtual List<TriggerAction> beforeUpdate(List<SObject> triggerNew, TriggerContext ctx) {
+    protected virtual List<TriggerAction> beforeUpdate(List<SObject> triggerNew, TriggerContext ctx) {
         return new List<TriggerAction>();
     }
 
@@ -73,7 +73,7 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute after update
      */
-    public virtual List<TriggerAction> afterUpdate(List<SObject> triggerNew, TriggerContext ctx) {
+    protected virtual List<TriggerAction> afterUpdate(List<SObject> triggerNew, TriggerContext ctx) {
         return new List<TriggerAction>();
     }
 
@@ -85,7 +85,7 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute before delete
      */
-    public virtual List<TriggerAction> beforeDelete(List<SObject> triggerOld, TriggerContext ctx) {
+    protected virtual List<TriggerAction> beforeDelete(List<SObject> triggerOld, TriggerContext ctx) {
         return new List<TriggerAction>();
     }
 
@@ -97,7 +97,7 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute after delete
      */
-    public virtual List<TriggerAction> afterDelete(List<SObject> triggerOld, TriggerContext ctx) {
+    protected virtual List<TriggerAction> afterDelete(List<SObject> triggerOld, TriggerContext ctx) {
         return new List<TriggerAction>();
     }
 
@@ -109,7 +109,7 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute after undelete
      */
-    public virtual List<TriggerAction> afterUndelete(List<SObject> triggerNew, TriggerContext ctx) {
+    protected virtual List<TriggerAction> afterUndelete(List<SObject> triggerNew, TriggerContext ctx) {
         return new List<TriggerAction>();
     }
 
@@ -123,7 +123,7 @@ public virtual inherited sharing class TriggerHandler {
      * @param triggerNew list of SObject records that were being processed
      * @param ctx trigger context containing error and execution state
      */
-    public virtual void onException(List<SObject> triggerNew, TriggerContext ctx, Exception ex) {}
+    protected virtual void onException(List<SObject> triggerNew, TriggerContext ctx, Exception ex) {}
 
     /**
      * Finalization method called after trigger processing is complete.
@@ -131,7 +131,7 @@ public virtual inherited sharing class TriggerHandler {
      * Default implementation does nothing. Override to perform any necessary
      * cleanup or final actions after all trigger logic has executed.
      */
-    public virtual void finalize(List<SObject> triggerNew, TriggerContext ctx) {}
+    protected virtual void finalize(List<SObject> triggerNew, TriggerContext ctx) {}
 
 
     /**
@@ -156,7 +156,6 @@ public virtual inherited sharing class TriggerHandler {
         try {
             if (TriggerSettings.shouldRun(ctx)) {
                 initialize(ctx.getRecords(), ctx);
-
                 List<TriggerAction> triggerActions = getActions(ctx);
                 executeActions(triggerActions, records, ctx);
             }

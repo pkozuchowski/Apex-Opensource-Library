@@ -38,7 +38,7 @@ public with sharing class TriggerSettingsCtrl {
         this.actionsMap = new Map<String, List<TriggerAction__mdt>>();
         for (PicklistEntry entry : TriggerAction__mdt.Operation__c.getDescribe().getPicklistValues()) {
             operations.add(entry.value);
-            actionsMap.put(entry.value, selector.getCustomMetadataRecords(setting.SObjectType__c, entry.value));
+            actionsMap.put(entry.value, selector.getMetadata(setting.SObjectType__c, entry.value));
         }
     }
 

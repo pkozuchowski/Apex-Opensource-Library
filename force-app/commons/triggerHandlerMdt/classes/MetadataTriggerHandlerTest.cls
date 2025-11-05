@@ -21,7 +21,7 @@ private class MetadataTriggerHandlerTest {
 
 
         Test.startTest();
-        TriggerDispatcher.run(new MetadataTriggerHandler(), tc);
+        new MetadataTriggerHandler().run(tc);
         Test.stopTest();
 
 
@@ -59,7 +59,7 @@ private class MetadataTriggerHandlerTest {
 
         Test.startTest();
         try {
-            TriggerDispatcher.run(new MetadataTriggerHandler(), tc);
+            new MetadataTriggerHandler().run(tc);
         } catch (Exception e) {
             ex = e;
         }
@@ -72,8 +72,17 @@ private class MetadataTriggerHandlerTest {
 
     @IsTest
     static void testCoverage() {
+        MetadataTriggerHandler.mockMetadata(new List<TriggerAction__mdt>{
+            new TriggerAction__mdt(ApexClass__c = 'MetadataTriggerHandlerTest.AccountShippingCountryFiller')
+        });
         for (TriggerOperation triggerOperation : TriggerOperation.values()) {
-            TriggerDispatcher.run(new MetadataTriggerHandler(), new TriggerContext(triggerOperation, new List<SObject>(), new List<SObject>()));
+            new MetadataTriggerHandler().run(
+                new TriggerContext(
+                    triggerOperation,
+                    new List<Account>(),
+                    new List<Account>()
+                )
+            );
         }
         System.assert(true, 'No exception is expected to happen');
     }
@@ -91,7 +100,12 @@ private class MetadataTriggerHandlerTest {
             new Account(Id = '001000000000001', Name = 'Test'),
             new Account(Id = '001000000000002', Name = 'Test')
         };
-        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
+        TriggerContext tc = new TriggerContext(
+            TriggerOperation.BEFORE_INSERT,
+            accounts,
+            null
+        );
+
         MetadataTriggerHandler.mockMetadata(new List<TriggerAction__mdt>{
             new TriggerAction__mdt(
                 ApexClass__c = 'MetadataTriggerHandlerTest.ParameterizableLogic',
@@ -101,7 +115,7 @@ private class MetadataTriggerHandlerTest {
 
 
         Test.startTest();
-        TriggerDispatcher.run(new MetadataTriggerHandler(), tc);
+        new MetadataTriggerHandler().run(tc);
         Test.stopTest();
 
 

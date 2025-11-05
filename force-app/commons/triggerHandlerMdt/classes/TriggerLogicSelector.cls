@@ -14,7 +14,7 @@ public virtual inherited sharing class TriggerLogicSelector {
     public List<TriggerAction> getTriggerActions(SObjectType sObjectType, String operation) {
         List<TriggerAction> classes = new List<TriggerAction>();
 
-        for (TriggerAction__mdt setting : getCustomMetadataRecords(sObjectType.toString(), operation)) {
+        for (TriggerAction__mdt setting : getMetadata(sObjectType.toString(), operation)) {
             try {
                 if (isPermitted(setting)) {
                     Type ruleClass = Type.forName(setting.ApexClass__c);
@@ -41,20 +41,23 @@ public virtual inherited sharing class TriggerLogicSelector {
      * @return True if CustomPermissions is blank or user has defined custom permission.
      */
     private Boolean isPermitted(TriggerAction__mdt setting) {
+        if (String.isNotBlank(setting.BypassPermission__c)
+            && FeatureManagement.checkPermission(setting.BypassPermission__c)) {
+            return false;
+        }
 
+        if (String.isNotBlank(setting.RequiredPermission__c)
+            && !FeatureManagement.checkPermission(setting.RequiredPermission__c)) {
+            return false;
+        }
 
-//        if (String.isBlank(setting.CustomPermission__c)) {
         return true;
-//
-//        } else {
-//            return FeatureManagement.checkPermission(setting.CustomPermission__c);
-//        }
     }
 
     /**
      * @return List of trigger logic metadata for given trigger operation.
      */
-    public virtual List<TriggerAction__mdt> getCustomMetadataRecords(String sObjectType, String operation) {
+    public virtual List<TriggerAction__mdt> getMetadata(String sObjectType, String operation) {
         String qualifiedApiName = '' + sObjectType;
         return [
             SELECT Id, DeveloperName, Order__c, ApexClass__c, Parameters__c, Active__c,
@@ -77,7 +80,7 @@ public virtual inherited sharing class TriggerLogicSelector {
             this.mockMetadata = mockMetadata;
         }
 
-        public override List<TriggerAction__mdt> getCustomMetadataRecords(String sObjectType, String op) {
+        public override List<TriggerAction__mdt> getMetadata(String sObjectType, String op) {
             return mockMetadata;
         }
     }

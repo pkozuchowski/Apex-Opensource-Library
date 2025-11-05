@@ -26,23 +26,6 @@ public class TriggerHandlerTest {
         }
     }
 
-    /**
-     * Generic Trigger Handler
-     */
-    public class MockTriggerHandler extends TriggerHandler {
-        private Map<String, List<TriggerAction>> actions = new Map<String, List<TriggerAction>>();
-
-        public MockTriggerHandler add(TriggerOperation op, TriggerAction action) {
-            List<TriggerAction> actions = actions.get(op.toString()) ?? new List<TriggerAction>();
-            actions.add(action);
-            return this;
-        }
-
-        protected override List<TriggerAction> getActions(TriggerContext ctx) {
-            return actions.get(ctx.operationType.toString()) ?? new List<TriggerAction>();
-        }
-    }
-
 
     /**
      * Emulation of Trigger logic class
@@ -59,10 +42,9 @@ public class TriggerHandlerTest {
                     acc.ShippingCity = acc.BillingCity;
                 }
 
-                if (ctx.isFirstActionRun(acc.Id)) {
+                if (ctx.isFirstActionRun(acc.Id, true)) {
                     // Increment to test trigger recursion
                     acc.NumberOfEmployees = acc.NumberOfEmployees == null ? 1 : acc.NumberOfEmployees + 1;
-                    ctx.markActionExecuted(acc.Id);
                 }
             }
         }

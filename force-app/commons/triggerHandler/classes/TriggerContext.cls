@@ -271,6 +271,21 @@ public virtual class TriggerContext {
 
     /**
      * Checks if the current action is executed for the first time for given record.
+     *
+     * @param recordId Id of record in trigger
+     * @param markExecuted Whether to mark this action as executed for this record
+     * @return True if record is executed in the current action for the first time
+     */
+    public Boolean isFirstActionRun(Id recordId, Boolean markExecuted) {
+        Boolean result = isFirstRun(currentAction, recordId);
+        if (markExecuted == true) {
+            markActionExecuted(recordId);
+        }
+        return result;
+    }
+
+    /**
+     * Checks if the current action is executed for the first time for given record.
      * 
      * @param recordId Id of record in trigger
      * @return True if record is executed in the current action for the first time.
@@ -294,20 +309,25 @@ public virtual class TriggerContext {
     /**
      * Marks that current action was executed for given record.
      * @param recordId Id of record in trigger
+     * @return Count of how many times action has been run.
      */
-    public void markActionExecuted(Id recordId) {
-        markExecuted(currentAction, recordId);
+    public Integer markActionExecuted(Id recordId) {
+        return markExecuted(currentAction, recordId);
     }
 
     /**
-     * @param featureName Name of class or feature that is calling this method.
-     * It is used to cover scenario where record did not initially meet criteria to process, but was updated by flow/another DML to meet the criteria.
+     * Marks that a given feature has been executed for the record.
+     * This method is used to track recurrent trigger execution where record did not initially meet criteria to process,
+     * but was updated by flow/another DML to meet the criteria.
+     * @param featureName Name of class or feature that is marking execution
      * @param recordId Id of record in trigger
+     * @return Count of how many times action has been run.
      */
-    public void markExecuted(String featureName, Id recordId) {
+    public Integer markExecuted(String featureName, Id recordId) {
         Integer count = getRunCount(featureName, recordId);
         String key = '' + recordId + featureName;
         PROCESSED_COUNT.put(key, count + 1);
+        return count + 1;
     }
 
     /**

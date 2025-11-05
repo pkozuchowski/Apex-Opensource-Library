@@ -134,10 +134,18 @@ public virtual inherited sharing class TriggerHandler {
     public virtual void finalize(List<SObject> triggerNew, TriggerContext ctx) {}
 
 
+    /**
+     * Main entry point to execute the trigger handler. Runs the handler using the default trigger context.
+     * This method delegates to the run(TriggerContext) method with a newly created context.
+     */
     public void run() {
         run(getTriggerContext());
     }
 
+    /**
+     * @return the trigger context for this handler. Protected method that can be overridden
+     * by subclasses to provide custom trigger context with trigger specific properties.
+     */
     protected virtual TriggerContext getTriggerContext() {
         return TriggerContext.newContext();
     }
@@ -192,7 +200,8 @@ public virtual inherited sharing class TriggerHandler {
     }
 
     protected void executeActions(List<TriggerAction> triggerActions, List<SObject> records, TriggerContext ctx) {
-        for (TriggerAction action : triggerActions) {
+        for (Integer i = 0; i < triggerActions.size(); i++) {
+            TriggerAction action = triggerActions[i];
             String actionName = getActionName(action);
 
             if (TriggerSettings.isActionEnabled(actionName)) {

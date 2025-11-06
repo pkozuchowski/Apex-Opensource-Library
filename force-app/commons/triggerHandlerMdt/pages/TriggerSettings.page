@@ -1,35 +1,97 @@
-<apex:page id="TriggerSettingPage" standardController="TriggerSetting__mdt" extensions="TriggerSettingsCtrl" setup="true" applyBodyTag="false">
+<apex:page id="TriggerSettingPage" standardController="TriggerSetting__mdt" extensions="TriggerSettingsCtrl" setup="true" applyBodyTag="false"
+           docType="html-5.0">
     <body style="margin: 0">
     <apex:form>
-        <apex:pageBlock title="Trigger Actions" mode="inlineEdit"
+        <apex:pageBlock title="Trigger Actions"
+                        id="actions"
                         helpTitle="Documentation"
                         helpUrl="https://apexlibra.org/apex/trigger-handler-mdt">
+
             <apex:pageBlockButtons>
                 <apex:outputLink value="{!newUrl}" target="_blank" styleClass="btn" style="text-decoration:none;padding:4px;">New</apex:outputLink>
+                <apex:commandButton value="Edit" action="{!toggleEdit}" rendered="{!NOT(edit)}" status="counterStatus" reRender="actions"/>
+                <apex:commandButton value="Save" action="{!save}" rendered="{!edit}" reRender="actions"/>
+                <apex:commandButton value="Cancel" action="{!cancel}" rendered="{!edit}" reRender="actions"/>
+                <apex:commandButton value="Reset Order" action="{!resetOrder}" rendered="{!edit}" reRender="actions"/>
             </apex:pageBlockButtons>
 
             <apex:repeat value="{!operations}" var="op">
                 <apex:pageBlockSection title="{!op}" columns="1">
-                    <apex:pageBlockTable value="{!actionsMap[op]}" var="item">
+                    <apex:pageBlockTable value="{!actionsByOp[op]}" var="item">
                         <apex:column headerValue="Actions" width="130">
                             <apex:outputLink value="/{!item.Id}/e?{!retUrl}" target="_blank">Edit</apex:outputLink>
                             &nbsp;|&nbsp;
                             <apex:outputLink value="/{!item.Id}/e?clone=1&{!retUrl}" target="_blank">Clone</apex:outputLink>
                         </apex:column>
-                        <apex:column value="{!item.Order__c}"/>
-                        <apex:column value="{!item.Active__c}"/>
+
+                        <apex:column headerValue="Order" width="50">
+                            <apex:outputField value="{!item.Order__c}" rendered="{!NOT(edit)}"/>
+                            <apex:input type="text" value="{!item.Order__c}" rendered="{!edit}"/>
+                        </apex:column>
+
+                        <apex:column headerValue="Active" width="50">
+                            <apex:outputField value="{!item.Active__c}" rendered="{!NOT(edit)}"/>
+                            <apex:inputCheckbox value="{!item.Active__c}" rendered="{!edit}"/>
+                        </apex:column>
+
                         <apex:column headerValue="Developer Name">
                             <apex:outputLink value="/{!item.Id}" target="_blank">{!item.DeveloperName}</apex:outputLink>
                         </apex:column>
+
                         <apex:column headerValue="Apex Class">
-                            <apex:commandLink target="_blank" action="{!openClass}">
-                                <apex:param name="name" value="{!item.ApexClass__c}" assignTo="{!apexClass}"/>
+                            <apex:outputLink target="_blank"
+                                             rendered="{!NOT(edit)}"
+                                             value="/{!IF(classesMap[item.ApexClass__c] != null,
+                                                classesMap[item.ApexClass__c].ApexClassId,
+                                                '')}">
                                 {!item.ApexClass__c}
-                            </apex:commandLink>
+                            </apex:outputLink>
+
+                            <apex:selectList value="{!item.ApexClass__c}" rendered="{!edit}" size="1">
+                                <apex:selectOptions value="{!apexClassOptions}"/>
+                            </apex:selectList>
                         </apex:column>
-                        <apex:column value="{!item.RequiredPermission__c}"/>
-                        <apex:column value="{!item.BypassPermission__c}"/>
-                        <apex:column value="{!item.Parameters__c}"/>
+
+                        <apex:column headerValue="Required Permission">
+                            <apex:outputLink target="_blank"
+                                             rendered="{!NOT(edit)}"
+                                             value="/{!IF(permissionsByName[item.RequiredPermission__c] != null,
+                                                permissionsByName[item.RequiredPermission__c].Id,
+                                                '')}">
+                                {!item.RequiredPermission__c}
+                            </apex:outputLink>
+
+
+                            <apex:selectList value="{!item.RequiredPermission__c}" rendered="{!edit}" size="1">
+                                <apex:selectOption itemValue="" itemLabel=""/>
+                                <apex:selectOptions value="{!permissions}"/>
+                            </apex:selectList>
+                        </apex:column>
+
+                        <apex:column headerValue="Bypass Permission">
+                            <apex:outputLink target="_blank"
+                                             rendered="{!NOT(edit)}"
+                                             value="/{!IF(permissionsByName[item.BypassPermission__c] != null,
+                                                permissionsByName[item.BypassPermission__c].Id,
+                                                '')}">
+                                {!item.BypassPermission__c}
+                            </apex:outputLink>
+
+                            <apex:selectList value="{!item.BypassPermission__c}" rendered="{!edit}" size="1">
+                                <apex:selectOption itemValue="" itemLabel=""/>
+                                <apex:selectOptions value="{!permissions}"/>
+                            </apex:selectList>
+                        </apex:column>
+
+                        <apex:column headerValue="Parameters">
+                            <apex:outputField value="{!item.Parameters__c}" rendered="{!NOT(edit)}"/>
+                            <apex:inputTextarea value="{!item.Parameters__c}" rendered="{!edit}"/>
+                        </apex:column>
+
+                        <apex:column headerValue="Description">
+                            <apex:outputField value="{!item.Description__c}" rendered="{!NOT(edit)}"/>
+                            <apex:inputTextarea value="{!item.Description__c}" rendered="{!edit}"/>
+                        </apex:column>
                     </apex:pageBlockTable>
                 </apex:pageBlockSection>
             </apex:repeat>

@@ -60,8 +60,8 @@ public virtual inherited sharing class TriggerLogicSelector {
     public virtual List<TriggerAction__mdt> getMetadata(String sObjectType, String operation) {
         String qualifiedApiName = '' + sObjectType;
         return [
-            SELECT Id, DeveloperName, Order__c, ApexClass__c, Parameters__c, Active__c,
-                BypassPermission__c, RequiredPermission__c, Operation__c
+            SELECT Id, Label, DeveloperName, Order__c, ApexClass__c, Parameters__c, Active__c,
+                BypassPermission__c, RequiredPermission__c, Operation__c, Description__c
             FROM TriggerAction__mdt
             WHERE Trigger__r.SObjectType__c = :qualifiedApiName
             AND Operation__c = :operation

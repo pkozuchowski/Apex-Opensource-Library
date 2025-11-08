@@ -13,16 +13,10 @@ public with sharing class TriggerSettingsCtrl {
     public TriggerSetting__mdt setting { get; set; }
     /** Return URL to Trigger Settings records */
     public String retUrl { get; set; }
-    /** URL for creating new Trigger Actions */
-    public String newUrl { get; set; }
-    /** Name of the Apex class */
-    public String apexClass { get; set; }
     /** List of available trigger operations */
-    public List<String> operations { get; set; }
+    public List<SelectOption> operations { get; set; }
     /** Map of trigger operations to their corresponding actions */
     public Map<String, List<TriggerAction__mdt>> actionsByOp { get; set; }
-    public List<TriggerAction__mdt> actions { get; set; }
-    public Map<Id, TriggerAction__mdt> actionsById { get; set; }
     public Boolean edit { get; set; }
 
     /*Action Parameters*/
@@ -43,10 +37,6 @@ public with sharing class TriggerSettingsCtrl {
         this.edit = false;
         this.setting = (TriggerSetting__mdt) stdCtrl.getRecord();
         this.retUrl = 'retURL=%2F' + this.setting.Id;
-        this.newUrl = '/'
-            + TriggerAction__mdt.SObjectType.getDescribe().getKeyPrefix()
-            + '/e?' + retUrl;
-
         this.links = new Map<String, String>{null => '404'};
         initActions();
         initClasses();
@@ -54,16 +44,13 @@ public with sharing class TriggerSettingsCtrl {
     }
 
     private void initActions() {
-        this.operations = new List<String>();
+        this.operations = new List<SelectOption>();
         this.actionsByOp = new Map<String, List<TriggerAction__mdt>>();
-        this.actionsById = new Map<Id, TriggerAction__mdt>();
-        this.actions = new List<TriggerAction__mdt>();
 
         for (PicklistEntry entry : TriggerAction__mdt.Operation__c.getDescribe().getPicklistValues()) {
             List<TriggerAction__mdt> actionsMdt = selector.getActions(setting.SObjectType__c, entry.value);
-            operations.add(entry.value);
+            operations.add(new SelectOption(entry.value, entry.label));
             actionsByOp.put(entry.value, actionsMdt);
-            actions.addAll(actionsMdt);
 
             for (TriggerAction__mdt action : actionsMdt) {
                 links.put(action.ApexClass__c, '');
@@ -104,12 +91,13 @@ public with sharing class TriggerSettingsCtrl {
             Operation__c = operation
         );
         actionsByOp.get(operation).add(triggerAction);
-        actions.add(triggerAction);
     }
 
     public void save() {
         try {
-            deploy(this.actions);
+            List<TriggerAction__mdt> actions = actionsByOp.get(operation);
+            System.debug('actions: ' + JSON.serializePretty(actions));
+            deploy(actions);
             this.edit = false;
         } catch (Exception e) {
             this.edit = true;
@@ -119,11 +107,14 @@ public with sharing class TriggerSettingsCtrl {
 
     public void cancel() {
         initActions();
+        this.edit = true;
         this.edit = false;
+        System.debug('cancel:' + this.edit);
     }
 
     public void toggleEdit() {
-        this.edit = !this.edit;
+        this.edit = false;
+        this.edit = true;
     }
 
     public void resetOrder() {
@@ -137,7 +128,7 @@ public with sharing class TriggerSettingsCtrl {
         }
     }
 
-    private Id deploy(List<TriggerAction__mdt> records) {
+    private void deploy(List<TriggerAction__mdt> records) {
         Set<String> excludedFields = new Set<String>{'Id', 'Label', 'DeveloperName', 'Trigger__c'};
         Set<String> requiredFields = new Set<String>{'Order__c', 'DeveloperName', 'ApexClass__c'};
         Metadata.DeployContainer mdContainer = new Metadata.DeployContainer();
@@ -153,7 +144,7 @@ public with sharing class TriggerSettingsCtrl {
             customMetadata.values.add(field('Trigger__c', setting.DeveloperName));
 
             System.debug('record: ' + JSON.serializePretty(record));
-            
+
             for (String field : fields) {
                 Object value = populatedFields.get(field);
                 if (requiredFields.contains(field) && value == null) {
@@ -166,8 +157,7 @@ public with sharing class TriggerSettingsCtrl {
         }
 
 
-        Id id = Metadata.Operations.enqueueDeployment(mdContainer, null);
-        return id;
+        Metadata.Operations.enqueueDeployment(mdContainer, null);
     }
 
     private Metadata.CustomMetadataValue field(String field, Object value) {

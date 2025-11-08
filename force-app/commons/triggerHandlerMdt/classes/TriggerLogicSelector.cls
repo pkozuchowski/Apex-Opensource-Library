@@ -14,7 +14,7 @@ public virtual inherited sharing class TriggerLogicSelector {
     public List<TriggerAction> getTriggerActions(SObjectType sObjectType, String operation) {
         List<TriggerAction> classes = new List<TriggerAction>();
 
-        for (TriggerAction__mdt setting : getMetadata(sObjectType.toString(), operation)) {
+        for (TriggerAction__mdt setting : getActions(sObjectType.toString(), operation)) {
             try {
                 if (isPermitted(setting)) {
                     Type ruleClass = Type.forName(setting.ApexClass__c);
@@ -57,7 +57,7 @@ public virtual inherited sharing class TriggerLogicSelector {
     /**
      * @return List of trigger logic metadata for given trigger operation.
      */
-    public virtual List<TriggerAction__mdt> getMetadata(String sObjectType, String operation) {
+    public virtual List<TriggerAction__mdt> getActions(String sObjectType, String operation) {
         String qualifiedApiName = '' + sObjectType;
         return [
             SELECT Id, Label, DeveloperName, Order__c, ApexClass__c, Parameters__c, Active__c,
@@ -80,7 +80,7 @@ public virtual inherited sharing class TriggerLogicSelector {
             this.mockMetadata = mockMetadata;
         }
 
-        public override List<TriggerAction__mdt> getMetadata(String sObjectType, String op) {
+        public override List<TriggerAction__mdt> getActions(String sObjectType, String op) {
             return mockMetadata;
         }
     }

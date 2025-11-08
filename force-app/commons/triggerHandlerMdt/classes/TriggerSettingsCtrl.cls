@@ -21,20 +21,25 @@ public with sharing class TriggerSettingsCtrl {
     public List<String> operations { get; set; }
     /** Map of trigger operations to their corresponding actions */
     public Map<String, List<TriggerAction__mdt>> actionsByOp { get; set; }
+    public List<TriggerAction__mdt> actions { get; set; }
     public Map<Id, TriggerAction__mdt> actionsById { get; set; }
-    public Map<String, CustomPermission> permissionsByName { get; set; }
-    public Map<String, ApexTypeImplementor> classesMap { get; set; }
     public Boolean edit { get; set; }
-    public Id actionId { get; set; }
 
-    
+    /*Action Parameters*/
+    public Id actionId { get; set; }
+    public String operation { get; set; }
+
+    public Map<String, String> links { get; set; }
+    public List<SelectOption> classOpts { get; set; }
+    public List<SelectOption> permissionOpts { get; set; }
+
 
     /**
      * Constructor initializes the controller with trigger settings and actions
      * @param stdCtrl Standard controller for the trigger setting page
      */
     public TriggerSettingsCtrl(ApexPages.StandardController stdCtrl) {
-        stdCtrl.addFields(new List<String>{'SObjectType__c'});
+        stdCtrl.addFields(new List<String>{'SObjectType__c', 'DeveloperName'});
         this.edit = false;
         this.setting = (TriggerSetting__mdt) stdCtrl.getRecord();
         this.retUrl = 'retURL=%2F' + this.setting.Id;
@@ -42,43 +47,74 @@ public with sharing class TriggerSettingsCtrl {
             + TriggerAction__mdt.SObjectType.getDescribe().getKeyPrefix()
             + '/e?' + retUrl;
 
-        this.classesMap = new Map<String, ApexTypeImplementor>();
-        for (ApexTypeImplementor imp : [
-            SELECT ApexClassId, ClassName
-            FROM ApexTypeImplementor
-            WHERE IsConcrete = TRUE
-            AND InterfaceName = 'TriggerAction'
-        ]) {
-            classesMap.put(imp.ClassName, imp);
-        }
-
-        List<CustomPermission> permissions = [
-            SELECT Id, DeveloperName
-            FROM CustomPermission
-        ];
-        this.permissionsByName = new Map<String, CustomPermission>();
-        for (CustomPermission permission : permissions) {
-            permissionsByName.put(permission.DeveloperName, permission);
-        }
-        permissionsByName.put(null, new CustomPermission());
+        this.links = new Map<String, String>{null => '404'};
         initActions();
+        initClasses();
+        initPermissions();
     }
 
     private void initActions() {
         this.operations = new List<String>();
         this.actionsByOp = new Map<String, List<TriggerAction__mdt>>();
         this.actionsById = new Map<Id, TriggerAction__mdt>();
+        this.actions = new List<TriggerAction__mdt>();
+
         for (PicklistEntry entry : TriggerAction__mdt.Operation__c.getDescribe().getPicklistValues()) {
+            List<TriggerAction__mdt> actionsMdt = selector.getActions(setting.SObjectType__c, entry.value);
             operations.add(entry.value);
-            List<TriggerAction__mdt> triggerActions = selector.getMetadata(setting.SObjectType__c, entry.value);
-            actionsByOp.put(entry.value, triggerActions);
-            actionsById.putAll(triggerActions);
+            actionsByOp.put(entry.value, actionsMdt);
+            actions.addAll(actionsMdt);
+
+            for (TriggerAction__mdt action : actionsMdt) {
+                links.put(action.ApexClass__c, '');
+                links.put(action.RequiredPermission__c, '');
+                links.put(action.BypassPermission__c, '');
+            }
         }
     }
 
+    private void initClasses() {
+        this.classOpts = new List<SelectOption>();
+        for (ApexTypeImplementor imp : [
+            SELECT ApexClassId, ClassName
+            FROM ApexTypeImplementor
+            WHERE IsConcrete = TRUE
+            AND InterfaceName = 'TriggerAction'
+        ]) {
+            if (!imp.ClassName.containsIgnoreCase('Test')) {
+                links.put(imp.ClassName, imp.ApexClassId);
+                classOpts.add(new SelectOption(imp.ClassName, imp.ClassName));
+            }
+        }
+    }
+
+    private void initPermissions() {
+        this.permissionOpts = new List<SelectOption>{
+            new SelectOption('', '--None--')
+        };
+        for (CustomPermission p : [SELECT Id, DeveloperName FROM CustomPermission]) {
+            links.put(p.DeveloperName, p.Id);
+            permissionOpts.add(new SelectOption(p.DeveloperName, p.DeveloperName));
+        }
+    }
+
+    public void addNewAction() {
+        this.edit = true;
+        TriggerAction__mdt triggerAction = new TriggerAction__mdt(
+            Operation__c = operation
+        );
+        actionsByOp.get(operation).add(triggerAction);
+        actions.add(triggerAction);
+    }
+
     public void save() {
-        deploy(actionsById.values());
-        this.edit = false;
+        try {
+            deploy(this.actions);
+            this.edit = false;
+        } catch (Exception e) {
+            this.edit = true;
+            ApexPages.addMessages(e);
+        }
     }
 
     public void cancel() {
@@ -101,8 +137,9 @@ public with sharing class TriggerSettingsCtrl {
         }
     }
 
-    private static Id deploy(List<TriggerAction__mdt> records) {
+    private Id deploy(List<TriggerAction__mdt> records) {
         Set<String> excludedFields = new Set<String>{'Id', 'Label', 'DeveloperName', 'Trigger__c'};
+        Set<String> requiredFields = new Set<String>{'Order__c', 'DeveloperName', 'ApexClass__c'};
         Metadata.DeployContainer mdContainer = new Metadata.DeployContainer();
 
         for (TriggerAction__mdt record : records) {
@@ -112,37 +149,31 @@ public with sharing class TriggerSettingsCtrl {
 
             Metadata.CustomMetadata customMetadata = new Metadata.CustomMetadata();
             customMetadata.fullName = ('' + record.getSObjectType()).remove('__mdt') + '.' + record.DeveloperName;
-            customMetadata.label = record.Label;
+            customMetadata.label = record.Label ?? record.DeveloperName;
+            customMetadata.values.add(field('Trigger__c', setting.DeveloperName));
 
+            System.debug('record: ' + JSON.serializePretty(record));
+            
             for (String field : fields) {
-                Metadata.CustomMetadataValue customField = new Metadata.CustomMetadataValue();
-                customField.field = field;
-                customField.value = populatedFields.get(field);
-                customMetadata.values.add(customField);
+                Object value = populatedFields.get(field);
+                if (requiredFields.contains(field) && value == null) {
+                    throw new DmlException('Field Required: ' + field);
+                }
+                customMetadata.values.add(field(field, value));
             }
 
             mdContainer.addMetadata(customMetadata);
         }
 
+
         Id id = Metadata.Operations.enqueueDeployment(mdContainer, null);
         return id;
     }
 
-    public List<SelectOption> getPermissions() {
-        return getRecordOptions(permissionsByName.values(), CustomPermission.DeveloperName);
-    }
-
-    public List<SelectOption> getApexClassOptions() {
-        return getRecordOptions(classesMap.values(), ApexTypeImplementor.ClassName);
-    }
-
-    private List<SelectOption> getRecordOptions(List<SObject> records, SObjectField valueField) {
-        List<SelectOption> options = new List<SelectOption>();
-
-        for (SObject record : records) {
-            String name = (String) record.get(valueField);
-            options.add(new SelectOption(name, name));
-        }
-        return options;
+    private Metadata.CustomMetadataValue field(String field, Object value) {
+        Metadata.CustomMetadataValue customField = new Metadata.CustomMetadataValue();
+        customField.field = field;
+        customField.value = value;
+        return customField;
     }
 }

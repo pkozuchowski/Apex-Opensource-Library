@@ -65,6 +65,7 @@ public virtual inherited sharing class TriggerLogicSelector {
             FROM TriggerAction__mdt
             WHERE Trigger__r.SObjectType__c = :qualifiedApiName
             AND Operation__c = :operation
+            WITH SYSTEM_MODE
             ORDER BY Order__c ASC NULLS LAST, ApexClass__c ASC
         ];
     }

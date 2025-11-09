@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright 2019 Piotr Kożuchowski
 
+@SuppressWarnings('PMD')
 @IsTest
 private class MetadataTriggerHandlerTest {
     private static final String
@@ -11,6 +12,16 @@ private class MetadataTriggerHandlerTest {
         new Account(Id = '001000000000001', Name = 'Test 2', BillingCountry = COUNTRY_USA),
         new Account(Id = '001000000000002', Name = 'Test 3', BillingCountry = COUNTRY_USA)
     };
+
+    public class AccountShippingCountryFiller implements TriggerAction {
+        public void execute(List<Account> records, TriggerContext ctx) {
+            for (Account acc : records) {
+                if (ctx.isNew() && String.isBlank(acc.ShippingCountry)) {
+                    acc.ShippingCountry = acc.BillingCountry;
+                }
+            }
+        }
+    }
 
     @IsTest
     static void triggerShouldExecuteTriggerLogicClassesDefinedInSettings() {
@@ -27,16 +38,6 @@ private class MetadataTriggerHandlerTest {
 
         for (Account acc : accounts) {
             System.assertEquals(COUNTRY_USA, acc.BillingCountry, 'TriggerHandler should set Billing country');
-        }
-    }
-
-    public class AccountShippingCountryFiller implements TriggerAction {
-        public void execute(List<Account> records, TriggerContext ctx) {
-            for (Account acc : records) {
-                if (ctx.isNew() && String.isBlank(acc.ShippingCountry)) {
-                    acc.ShippingCountry = acc.BillingCountry;
-                }
-            }
         }
     }
 

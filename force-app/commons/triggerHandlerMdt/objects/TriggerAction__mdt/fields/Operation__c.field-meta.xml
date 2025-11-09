@@ -12,47 +12,47 @@
             <value>
                 <fullName>INITIALIZE</fullName>
                 <default>false</default>
-                <label>INITIALIZE</label>
+                <label>Initialize</label>
             </value>
             <value>
                 <fullName>BEFORE_INSERT</fullName>
                 <default>true</default>
-                <label>BEFORE_INSERT</label>
+                <label>Before Insert</label>
             </value>
             <value>
                 <fullName>AFTER_INSERT</fullName>
                 <default>false</default>
-                <label>AFTER_INSERT</label>
+                <label>After Insert</label>
             </value>
             <value>
                 <fullName>BEFORE_UPDATE</fullName>
                 <default>false</default>
-                <label>BEFORE_UPDATE</label>
+                <label>Before Update</label>
             </value>
             <value>
                 <fullName>AFTER_UPDATE</fullName>
                 <default>false</default>
-                <label>AFTER_UPDATE</label>
+                <label>After Update</label>
             </value>
             <value>
                 <fullName>BEFORE_DELETE</fullName>
                 <default>false</default>
-                <label>BEFORE_DELETE</label>
+                <label>Before Delete</label>
             </value>
             <value>
                 <fullName>AFTER_DELETE</fullName>
                 <default>false</default>
-                <label>AFTER_DELETE</label>
+                <label>After Delete</label>
             </value>
             <value>
                 <fullName>AFTER_UNDELETE</fullName>
                 <default>false</default>
-                <label>AFTER_UNDELETE</label>
+                <label>After Undelete</label>
             </value>
             <value>
                 <fullName>FINALIZE</fullName>
                 <default>false</default>
-                <label>FINALIZE</label>
+                <label>Finalize</label>
             </value>
         </valueSetDefinition>
     </valueSet>

@@ -1,14 +1,22 @@
+<!--SPDX-License-Identifier: MIT-->
+<!--Copyright 2025 Piotr Kożuchowski-->
 <apex:page id="TriggerSettingPage" standardController="TriggerSetting__mdt" extensions="TriggerSettingsCtrl"
            setup="true"
-           applyBodyTag="false"
-           docType="html-5.0">
+           applyBodyTag="false">
+    <style>
+        .actionLink:not(:last-child):after {
+            content: ' | ';
+        }
+
+        .narrowInput {
+            width: 50px;
+        }
+    </style>
 
     <body style="margin: 0">
     <apex:form>
-
-
         <apex:repeat value="{!operations}" var="op">
-            <apex:pageBlock title="{!op.label}"
+            <apex:pageBlock title="{!op.label} ({!op.actions.size} Actions)"
                             id="actions"
                             helpTitle="Documentation"
                             helpUrl="https://apexlibra.org/apex/trigger-handler-mdt">
@@ -16,90 +24,140 @@
                 <apex:pageMessages/>
 
                 <apex:pageBlockButtons>
-                    <apex:commandButton value="New" action="{!addNewAction}" reRender="actions">
-                        <apex:param name="operation" value="{!op.value}" assignTo="{!operation}"/>
+                    <apex:commandButton value="New" action="{!addNewAction}" immediate="true" reRender="actions">
+                        <apex:param name="operation" value="{!op.value}" assignTo="{!selectedOp}"/>
                     </apex:commandButton>
 
-                    <apex:commandButton value="Edit" action="{!toggleEdit}" rendered="{!NOT(edit)}" reRender="actions"/>
-
-                    <apex:commandButton value="Save" action="{!save}" rendered="{!edit}" reRender="actions">
-                        <apex:param name="operation" value="{!op.value}" assignTo="{!operation}"/>
+                    <apex:commandButton value="Edit"
+                                        rendered="{!NOT(op.edit) && op.actions.size > 0}"
+                                        reRender="actions">
+                        <apex:param name="edit" value="true" assignTo="{!op.edit}"/>
                     </apex:commandButton>
 
-                    <apex:commandButton value="Cancel" action="{!cancel}" rendered="{!edit}" reRender="actions" immediate="true"/>
+                    <apex:commandButton value="Save" action="{!save}" rendered="{!op.edit}" reRender="actions">
+                        <apex:param name="operation" value="{!op.value}" assignTo="{!selectedOp}"/>
+                    </apex:commandButton>
 
-                    <apex:commandButton value="Reset Order" action="{!resetOrder}" rendered="{!edit}" reRender="actions">
-                        <apex:param name="operation" value="{!op.value}" assignTo="{!operation}"/>
+                    <apex:commandButton value="Cancel" action="{!cancel}" immediate="true" rendered="{!op.edit}" reRender="actions">
+                        <apex:param name="operation" value="{!op.value}" assignTo="{!selectedOp}"/>
+                    </apex:commandButton>
+
+                    <apex:commandButton value="Reset Order" action="{!resetOrder}" rendered="{!op.edit}" reRender="actions">
+                        <apex:param name="operation" value="{!op.value}" assignTo="{!selectedOp}"/>
                     </apex:commandButton>
                 </apex:pageBlockButtons>
 
-                <apex:pageBlockTable value="{!actionsByOp[op.value]}" var="item">
-                    <apex:column headerValue="Actions" width="150">
-                        <apex:outputPanel layout="block" style="text-align: center; width: 75px;">
-                            <apex:outputLink value="/{!item.Id}/e?{!retUrl}" target="_blank">Edit</apex:outputLink>
-                            &nbsp;|&nbsp;
-                            <apex:outputLink value="/{!item.Id}/e?clone=1&{!retUrl}" target="_blank">Clone</apex:outputLink>
+                <apex:pageBlockTable value="{!op.actions}" var="item" id="table">
+                    <apex:column headerValue="Actions" styleClass="actionColumn">
+                        <apex:outputPanel layout="block" style="text-align: center;">
+                            <apex:outputLink value="/{!item.Id}/e?{!retUrl}"
+                                             rendered="{!NOT(CONTAINS(item.Id, 'new'))}"
+                                             styleClass="actionLink"
+                                             target="_blank">
+                                Edit
+                            </apex:outputLink>
+                            <apex:outputLink value="/{!item.Id}/e?clone=1&{!retUrl}"
+                                             rendered="{!NOT(CONTAINS(item.Id, 'new'))}"
+                                             styleClass="actionLink"
+                                             target="_blank">
+                                Clone
+                            </apex:outputLink>
+                            <apex:commandLink action="{!deleteAction}"
+                                              onclick="if(!confirm('Are you sure?')){return false};"
+                                              immediate="true"
+                                              styleClass="actionLink"
+                                              rendered="{!CONTAINS(item.Id, 'new')}"
+                                              reRender="actions">
+                                <apex:param name="operation" value="{!op.value}" assignTo="{!selectedOp}"/>
+                                <apex:param name="action" value="{!item.Id}" assignTo="{!selectedActionId}"/>
+                                Del
+                            </apex:commandLink>
                         </apex:outputPanel>
                     </apex:column>
 
                     <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.Order__c.Label}" width="50">
-                        <apex:outputField value="{!item.Order__c}" rendered="{!NOT(edit)}"/>
-                        <apex:input type="text" value="{!item.Order__c}" rendered="{!edit}"/>
+                        <apex:outputField value="{!item.Order__c}" rendered="{!NOT(op.edit)}"/>
+                        <apex:inputField ignoreEditPermissionForRendering="true"
+                                         styleClass="narrowInput"
+                                         value="{!item.Order__c}" rendered="{!op.edit}"/>
                     </apex:column>
 
-                    <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.Active__c.Label}" width="50">
-                        <apex:outputField value="{!item.Active__c}" rendered="{!NOT(edit)}"/>
-                        <apex:inputCheckbox value="{!item.Active__c}" rendered="{!edit}"/>
+                    <apex:column>
+                        <apex:facet name="header">
+                            <apex:outputPanel>
+                                <span>Active</span>
+                                <apex:inputCheckbox label="Active"
+                                                    rendered="{!op.edit}"
+                                                    onchange="copyActiveValue(this.checked, '{!$Component.actions.table}');"/>
+                            </apex:outputPanel>
+                        </apex:facet>
+                        <apex:outputField value="{!item.Active__c}" rendered="{!NOT(op.edit)}"/>
+                        <apex:inputField ignoreEditPermissionForRendering="true"
+                                         value="{!item.Active__c}"
+                                         rendered="{!op.edit}"/>
                     </apex:column>
 
                     <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.DeveloperName.Label}">
-                        <apex:outputLink value="/{!item.Id}" rendered="{!NOT(ISNULL(item.DeveloperName))}"
+                        <apex:outputLink value="/{!item.Id}"
+                                         rendered="{!NOT(CONTAINS(item.Id, 'new'))}"
                                          target="_blank">{!item.DeveloperName}</apex:outputLink>
-                        <apex:input type="text" value="{!item.DeveloperName}" rendered="{!edit && ISNULL(item.Id)}"/>
+
+                        <apex:inputField ignoreEditPermissionForRendering="true"
+                                         value="{!item.DeveloperName}"
+                                         rendered="{!op.edit && CONTAINS(item.Id, 'new')}"/>
                     </apex:column>
 
                     <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.ApexClass__c.Label}">
-                        <apex:outputLink target="_blank" rendered="{!NOT(edit)}" value="/{!links[item.ApexClass__c]}">
+                        <apex:outputLink target="_blank" rendered="{!NOT(op.edit)}" value="/{!links[item.ApexClass__c]}">
                             {!item.ApexClass__c}
                         </apex:outputLink>
 
-                        <apex:selectList value="{!item.ApexClass__c}" rendered="{!edit}" size="1">
+                        <apex:selectList value="{!item.ApexClass__c}" rendered="{!op.edit}" size="1">
                             <apex:selectOptions value="{!classOpts}"/>
                         </apex:selectList>
                     </apex:column>
 
                     <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.RequiredPermission__c.Label}">
-                        <apex:outputLink target="_blank" rendered="{!NOT(edit)}" value="/{!links[item.RequiredPermission__c]}">
+                        <apex:outputLink target="_blank" rendered="{!NOT(op.edit)}" value="/{!links[item.RequiredPermission__c]}">
                             {!item.RequiredPermission__c}
                         </apex:outputLink>
 
-                        <apex:selectList value="{!item.RequiredPermission__c}" rendered="{!edit}" size="1">
+                        <apex:selectList value="{!item.RequiredPermission__c}" rendered="{!op.edit}" size="1">
                             <apex:selectOptions value="{!permissionOpts}"/>
                         </apex:selectList>
                     </apex:column>
 
                     <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.BypassPermission__c.Label}">
-                        <apex:outputLink target="_blank" rendered="{!NOT(edit)}" value="/{!links[item.BypassPermission__c]}">
+                        <apex:outputLink target="_blank" rendered="{!NOT(op.edit)}" value="/{!links[item.BypassPermission__c]}">
                             {!item.BypassPermission__c}
                         </apex:outputLink>
 
-                        <apex:selectList value="{!item.BypassPermission__c}" rendered="{!edit}" size="1">
+                        <apex:selectList value="{!item.BypassPermission__c}" rendered="{!op.edit}" size="1">
                             <apex:selectOptions value="{!permissionOpts}"/>
                         </apex:selectList>
                     </apex:column>
 
                     <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.Parameters__c.Label}">
-                        <apex:outputField value="{!item.Parameters__c}" rendered="{!NOT(edit)}"/>
-                        <apex:inputTextarea value="{!item.Parameters__c}" rendered="{!edit}"/>
+                        <apex:outputField value="{!item.Parameters__c}" rendered="{!NOT(op.edit)}"/>
+                        <apex:inputTextarea value="{!item.Parameters__c}" rendered="{!op.edit}"/>
                     </apex:column>
 
                     <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.Description__c.Label}">
-                        <apex:outputField value="{!item.Description__c}" rendered="{!NOT(edit)}"/>
-                        <apex:inputTextarea value="{!item.Description__c}" rendered="{!edit}"/>
+                        <apex:outputField value="{!item.Description__c}" rendered="{!NOT(op.edit)}"/>
+                        <apex:inputTextarea value="{!item.Description__c}" rendered="{!op.edit}"/>
                     </apex:column>
                 </apex:pageBlockTable>
             </apex:pageBlock>
         </apex:repeat>
     </apex:form>
+
+    <script>
+        function copyActiveValue(value, tableId) {
+            const table = document.getElementById(tableId);
+            table.querySelectorAll(`tbody input[type=checkbox]`).forEach(function (el) {
+                el.checked = value;
+            });
+        }
+    </script>
     </body>
 </apex:page>

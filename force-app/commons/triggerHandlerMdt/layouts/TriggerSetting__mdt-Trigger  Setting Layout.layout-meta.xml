@@ -89,12 +89,9 @@
         <style>OneColumn</style>
     </layoutSections>
     <relatedLists>
+        <fields>MasterLabel</fields>
         <fields>DeveloperName</fields>
-        <fields>ApexClass__c</fields>
-        <fields>Operation__c</fields>
-        <fields>Order__c</fields>
-        <fields>Parameters__c</fields>
-        <fields>Description__c</fields>
+        <fields>NamespacePrefix</fields>
         <relatedList>TriggerAction__mdt.Trigger__c</relatedList>
     </relatedLists>
     <showEmailCheckbox>false</showEmailCheckbox>

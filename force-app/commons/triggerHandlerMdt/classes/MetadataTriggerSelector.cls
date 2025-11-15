@@ -5,7 +5,7 @@
  * This class is responsible for querying custom metadata (TriggerAction__mdt)
  * and creating instances of classes defined in ApexClass__c field.
  */
-public virtual inherited sharing class TriggerLogicSelector {
+public virtual inherited sharing class MetadataTriggerSelector {
 
     /**
      * @param ctx Trigger Context of running trigger
@@ -74,7 +74,7 @@ public virtual inherited sharing class TriggerLogicSelector {
     /**
      * Implementation of TriggerLogicSelector which returns set of predefined logic
      */
-    public class MockSelector extends TriggerLogicSelector {
+    public class MockSelector extends MetadataTriggerSelector {
         private List<TriggerAction__mdt> mockMetadata;
 
         public MockSelector(List<TriggerAction__mdt> mockMetadata) {

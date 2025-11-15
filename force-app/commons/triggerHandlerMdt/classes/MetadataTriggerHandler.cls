@@ -7,7 +7,7 @@
  * based on TriggerAction__mdt custom metadata configuration.
  */
 public virtual with sharing class MetadataTriggerHandler extends TriggerHandler {
-    private static TriggerLogicSelector logicSelector = new TriggerLogicSelector();
+    private static MetadataTriggerSelector logicSelector = new MetadataTriggerSelector();
 
     /**
      * Executes initialization logic before trigger processing
@@ -43,6 +43,6 @@ public virtual with sharing class MetadataTriggerHandler extends TriggerHandler 
      */
     @TestVisible
     private static void mockMetadata(List<TriggerAction__mdt> logic) {
-        logicSelector = new TriggerLogicSelector.MockSelector(logic);
+        logicSelector = new MetadataTriggerSelector.MockSelector(logic);
     }
 }

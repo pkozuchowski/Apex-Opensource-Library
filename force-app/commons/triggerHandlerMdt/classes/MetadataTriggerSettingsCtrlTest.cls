@@ -1,6 +1,6 @@
 @SuppressWarnings('PMD.EmptyStatementBlock')
 @IsTest(IsParallel=true)
-public class TriggerSettingsCtrlTest {
+public class MetadataTriggerSettingsCtrlTest {
 
     public class AccountPopulateFields implements TriggerAction {
         public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
@@ -18,7 +18,7 @@ public class TriggerSettingsCtrlTest {
         public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
     }
 
-    private static TriggerSettingsCtrl getController() {
+    private static MetadataTriggerSettingsCtrl getController() {
         TriggerSetting__mdt setting = new TriggerSetting__mdt(
             DeveloperName = 'AccountTrigger',
             Label = 'Account Trigger',
@@ -26,7 +26,7 @@ public class TriggerSettingsCtrlTest {
             Active__c = true
         );
 
-        TriggerSettingsCtrl.selector = new TriggerLogicSelector.MockSelector(
+        MetadataTriggerSettingsCtrl.selector = new MetadataTriggerSelector.MockSelector(
             new List<TriggerAction__mdt>{
                 new TriggerAction__mdt(
                     Order__c = 1,
@@ -54,13 +54,13 @@ public class TriggerSettingsCtrlTest {
         );
 
         ApexPages.StandardController stdController = new ApexPages.StandardController(setting);
-        TriggerSettingsCtrl controller = new TriggerSettingsCtrl(stdController);
+        MetadataTriggerSettingsCtrl controller = new MetadataTriggerSettingsCtrl(stdController);
         return controller;
     }
 
     @IsTest
     static void testApexOptions() {
-        TriggerSettingsCtrl controller = getController();
+        MetadataTriggerSettingsCtrl controller = getController();
 
         Test.startTest();
         List<SelectOption> classOpts = controller.classOpts;
@@ -80,7 +80,7 @@ public class TriggerSettingsCtrlTest {
 
     @IsTest
     static void testCustomPermissionsOptions() {
-        TriggerSettingsCtrl controller = getController();
+        MetadataTriggerSettingsCtrl controller = getController();
 
         Test.startTest();
         List<SelectOption> permissionOpts = controller.permissionOpts;
@@ -99,13 +99,13 @@ public class TriggerSettingsCtrlTest {
 
     @IsTest
     static void testNewAction() {
-        TriggerSettingsCtrl controller = getController();
+        MetadataTriggerSettingsCtrl controller = getController();
 
         Test.startTest();
         String op = TriggerOperation.BEFORE_UPDATE.name();
         controller.selectedOp = op;
         controller.addNewAction();
-        TriggerSettingsCtrl.Operation beforeUpdate = controller.getOperation(op);
+        MetadataTriggerSettingsCtrl.Operation beforeUpdate = controller.getOperation(op);
         Test.stopTest();
 
         Assert.areEqual(4, beforeUpdate.actions.size());
@@ -116,14 +116,14 @@ public class TriggerSettingsCtrlTest {
 
     @IsTest
     static void testCancel() {
-        TriggerSettingsCtrl controller = getController();
+        MetadataTriggerSettingsCtrl controller = getController();
 
         Test.startTest();
         String op = TriggerOperation.BEFORE_UPDATE.name();
         controller.selectedOp = op;
         controller.addNewAction();
         controller.cancel();
-        TriggerSettingsCtrl.Operation beforeUpdate = controller.getOperation(op);
+        MetadataTriggerSettingsCtrl.Operation beforeUpdate = controller.getOperation(op);
         Test.stopTest();
 
 
@@ -132,14 +132,14 @@ public class TriggerSettingsCtrlTest {
 
     @IsTest
     static void testDeleteAction() {
-        TriggerSettingsCtrl controller = getController();
+        MetadataTriggerSettingsCtrl controller = getController();
 
         Test.startTest();
         String op = TriggerOperation.BEFORE_UPDATE.name();
         controller.selectedOp = op;
         controller.addNewAction();
 
-        TriggerSettingsCtrl.Operation beforeUpdate = controller.getOperation(op);
+        MetadataTriggerSettingsCtrl.Operation beforeUpdate = controller.getOperation(op);
         Assert.areEqual(4, beforeUpdate.actions.size());
         TriggerAction__mdt newAction = beforeUpdate.actions[3];
 
@@ -152,7 +152,7 @@ public class TriggerSettingsCtrlTest {
 
     @IsTest
     static void testSave() {
-        TriggerSettingsCtrl controller = getController();
+        MetadataTriggerSettingsCtrl controller = getController();
 
         Test.startTest();
         PageReference p = Page.TriggerSettings;

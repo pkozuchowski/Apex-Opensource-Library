@@ -5,9 +5,9 @@
  * Controller class for managing Trigger Settings custom metadata configuration.
  * Provides functionality to handle trigger settings and associated trigger actions.
  */
-public with sharing class TriggerSettingsCtrl {
+public with sharing class MetadataTriggerSettingsCtrl {
     /** Selector instance for retrieving trigger logic records */
-    @TestVisible static TriggerLogicSelector selector = new TriggerLogicSelector();
+    @TestVisible static MetadataTriggerSelector selector = new MetadataTriggerSelector();
 
     private Integer actionCounter = 0;
     private String actionPrefix = TriggerAction__mdt.SObjectType
@@ -38,7 +38,7 @@ public with sharing class TriggerSettingsCtrl {
      * Constructor initializes the controller with trigger settings and actions
      * @param stdCtrl Standard controller for the trigger setting page
      */
-    public TriggerSettingsCtrl(ApexPages.StandardController stdCtrl) {
+    public MetadataTriggerSettingsCtrl(ApexPages.StandardController stdCtrl) {
         if (!Test.isRunningTest()) {
             stdCtrl.addFields(new List<String>{'SObjectType__c', 'DeveloperName'});
         }
@@ -186,7 +186,7 @@ public with sharing class TriggerSettingsCtrl {
      * @param records List of TriggerAction__mdt records to deploy
      */
     private void deploy(List<TriggerAction__mdt> records) {
-        Set<String> excludedFields = new Set<String>{'Id', 'Label', 'DeveloperName', 'Trigger__c'};
+        Set<String> excludedFields = new Set<String>{'Id', 'Label', 'DeveloperName', '' + TriggerAction__mdt.Trigger__c};
         Metadata.DeployContainer mdContainer = new Metadata.DeployContainer();
 
         for (TriggerAction__mdt record : records) {
@@ -197,12 +197,14 @@ public with sharing class TriggerSettingsCtrl {
             Metadata.CustomMetadata customMetadata = new Metadata.CustomMetadata();
             customMetadata.fullName = ('' + record.getSObjectType()).remove('__mdt') + '.' + record.DeveloperName;
             customMetadata.label = record.Label ?? record.DeveloperName;
-            customMetadata.values.add(field('Trigger__c', setting.DeveloperName));
+            customMetadata.values.add(field('' + TriggerAction__mdt.Trigger__c, setting.DeveloperName));
 
             for (String field : fields) {
                 Object value = populatedFields.get(field);
                 customMetadata.values.add(field(field, value));
             }
+
+            System.debug(JSON.serializePretty(customMetadata));
 
             mdContainer.addMetadata(customMetadata);
         }

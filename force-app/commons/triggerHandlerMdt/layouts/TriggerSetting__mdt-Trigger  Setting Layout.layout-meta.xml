@@ -80,7 +80,7 @@
         <layoutColumns>
             <layoutItems>
                 <height>2000</height>
-                <page>TriggerSettings</page>
+                <page>MetadataTriggerSettings</page>
                 <showLabel>false</showLabel>
                 <showScrollbars>true</showScrollbars>
                 <width>100%</width>

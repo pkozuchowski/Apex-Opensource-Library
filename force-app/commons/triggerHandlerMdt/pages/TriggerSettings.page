@@ -11,6 +11,12 @@
         .narrowInput {
             width: 50px;
         }
+
+        .warningIcon {
+            color: rgb(254, 147, 57);
+            font-size: 14pt;
+            font-weight: 100;
+        }
     </style>
 
     <body style="margin: 0">
@@ -42,7 +48,9 @@
                         <apex:param name="operation" value="{!op.value}" assignTo="{!selectedOp}"/>
                     </apex:commandButton>
 
-                    <apex:commandButton value="Reset Order" action="{!resetOrder}" rendered="{!op.edit}" reRender="actions">
+                    <apex:commandButton value="Reset Order"
+                                        onclick="resetOrder('{!$Component.actions.table}'); return false;"
+                                        rendered="{!op.edit}">
                         <apex:param name="operation" value="{!op.value}" assignTo="{!selectedOp}"/>
                     </apex:commandButton>
                 </apex:pageBlockButtons>
@@ -53,13 +61,13 @@
                             <apex:outputLink value="/{!item.Id}/e?{!retUrl}"
                                              rendered="{!NOT(CONTAINS(item.Id, 'new'))}"
                                              styleClass="actionLink"
-                                             target="_blank">
+                                             target="_top">
                                 Edit
                             </apex:outputLink>
                             <apex:outputLink value="/{!item.Id}/e?clone=1&{!retUrl}"
                                              rendered="{!NOT(CONTAINS(item.Id, 'new'))}"
                                              styleClass="actionLink"
-                                             target="_blank">
+                                             target="_top">
                                 Clone
                             </apex:outputLink>
                             <apex:commandLink action="{!deleteAction}"
@@ -78,7 +86,7 @@
                     <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.Order__c.Label}" width="50">
                         <apex:outputField value="{!item.Order__c}" rendered="{!NOT(op.edit)}"/>
                         <apex:inputField ignoreEditPermissionForRendering="true"
-                                         styleClass="narrowInput"
+                                         styleClass="order__c narrowInput"
                                          value="{!item.Order__c}" rendered="{!op.edit}"/>
                     </apex:column>
 
@@ -98,9 +106,7 @@
                     </apex:column>
 
                     <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.DeveloperName.Label}">
-                        <apex:outputLink value="/{!item.Id}"
-                                         rendered="{!NOT(CONTAINS(item.Id, 'new'))}"
-                                         target="_blank">{!item.DeveloperName}</apex:outputLink>
+                        <apex:outputLink value="/{!item.Id}" target="_blank">{!item.DeveloperName}</apex:outputLink>
 
                         <apex:inputField ignoreEditPermissionForRendering="true"
                                          value="{!item.DeveloperName}"
@@ -108,19 +114,39 @@
                     </apex:column>
 
                     <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.ApexClass__c.Label}">
-                        <apex:outputLink target="_blank" rendered="{!NOT(op.edit)}" value="/{!links[item.ApexClass__c]}">
+                        <apex:outputLink target="_blank"
+                                         rendered="{!NOT(op.edit) && links[item.ApexClass__c] !='404'}"
+                                         value="/{!links[item.ApexClass__c]}">
                             {!item.ApexClass__c}
                         </apex:outputLink>
 
-                        <apex:selectList value="{!item.ApexClass__c}" rendered="{!op.edit}" size="1">
+                        <apex:outputPanel layout="inline"
+                                          title="Class not found."
+                                          rendered="{!NOT(op.edit) && links[item.ApexClass__c] =='404'}">
+                            {!item.ApexClass__c}
+                            <span class="warningIcon">⚠</span>
+                        </apex:outputPanel>
+
+                        <apex:selectList value="{!item.ApexClass__c}" rendered="{!op.edit}" size="1" required="true">
                             <apex:selectOptions value="{!classOpts}"/>
                         </apex:selectList>
                     </apex:column>
 
                     <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.RequiredPermission__c.Label}">
-                        <apex:outputLink target="_blank" rendered="{!NOT(op.edit)}" value="/{!links[item.RequiredPermission__c]}">
+                        <apex:outputLink target="_blank"
+                                         rendered="{!NOT(op.edit) && links[item.RequiredPermission__c] !='404'}"
+                                         value="/{!links[item.RequiredPermission__c]}">
                             {!item.RequiredPermission__c}
                         </apex:outputLink>
+
+                        <apex:outputPanel layout="inline"
+                                          title="Permission not found."
+                                          rendered="{!NOT(op.edit)
+                                          && NOT(ISBLANK(item.RequiredPermission__c))
+                                          && links[item.RequiredPermission__c] =='404'}">
+                            {!item.RequiredPermission__c}
+                            <span class="warningIcon">⚠</span>
+                        </apex:outputPanel>
 
                         <apex:selectList value="{!item.RequiredPermission__c}" rendered="{!op.edit}" size="1">
                             <apex:selectOptions value="{!permissionOpts}"/>
@@ -128,9 +154,20 @@
                     </apex:column>
 
                     <apex:column headerValue="{!$ObjectType.TriggerAction__mdt.fields.BypassPermission__c.Label}">
-                        <apex:outputLink target="_blank" rendered="{!NOT(op.edit)}" value="/{!links[item.BypassPermission__c]}">
+                        <apex:outputLink target="_blank"
+                                         rendered="{!NOT(op.edit) && links[item.BypassPermission__c] !='404'}"
+                                         value="/{!links[item.BypassPermission__c]}">
                             {!item.BypassPermission__c}
                         </apex:outputLink>
+
+                        <apex:outputPanel layout="inline"
+                                          title="Permission not found."
+                                          rendered="{!NOT(op.edit)
+                                          && NOT(ISBLANK(item.BypassPermission__c))
+                                          && links[item.BypassPermission__c] =='404'}">
+                            {!item.BypassPermission__c}
+                            <span class="warningIcon">⚠</span>
+                        </apex:outputPanel>
 
                         <apex:selectList value="{!item.BypassPermission__c}" rendered="{!op.edit}" size="1">
                             <apex:selectOptions value="{!permissionOpts}"/>
@@ -153,10 +190,19 @@
 
     <script>
         function copyActiveValue(value, tableId) {
-            const table = document.getElementById(tableId);
-            table.querySelectorAll(`tbody input[type=checkbox]`).forEach(function (el) {
-                el.checked = value;
-            });
+            document.getElementById(tableId)
+                .querySelectorAll(`tbody input[type=checkbox]`)
+                .forEach(function (el) {
+                    el.checked = value;
+                });
+        }
+
+        function resetOrder(tableId) {
+            document.getElementById(tableId)
+                .querySelectorAll(`tbody input.order__c`)
+                .forEach(function (el, i) {
+                    el.value = i + 1;
+                });
         }
     </script>
     </body>

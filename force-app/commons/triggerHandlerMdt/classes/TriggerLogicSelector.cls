@@ -82,7 +82,7 @@ public virtual inherited sharing class TriggerLogicSelector {
         }
 
         public override List<TriggerAction__mdt> getActions(String sObjectType, String op) {
-            return mockMetadata;
+            return mockMetadata.deepClone();
         }
     }
 }

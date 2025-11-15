@@ -14,6 +14,9 @@ public with sharing class TriggerSettingsCtrl {
         .getDescribe(SObjectDescribeOptions.DEFERRED)
         .getKeyPrefix();
 
+    private Map<String, SelectOption> classOptsMap = new Map<String, SelectOption>();
+    private Map<String, SelectOption> permissionOptsMap = new Map<String, SelectOption>();
+
     /** Current trigger setting metadata record */
     public TriggerSetting__mdt setting { get; set; }
     /** Return URL to Trigger Settings records */
@@ -36,7 +39,9 @@ public with sharing class TriggerSettingsCtrl {
      * @param stdCtrl Standard controller for the trigger setting page
      */
     public TriggerSettingsCtrl(ApexPages.StandardController stdCtrl) {
-        stdCtrl.addFields(new List<String>{'SObjectType__c', 'DeveloperName'});
+        if (!Test.isRunningTest()) {
+            stdCtrl.addFields(new List<String>{'SObjectType__c', 'DeveloperName'});
+        }
         this.setting = (TriggerSetting__mdt) stdCtrl.getRecord();
         this.retUrl = 'retURL=%2F' + this.setting.Id;
         this.links = new Map<String, String>{null => '404'};
@@ -52,6 +57,7 @@ public with sharing class TriggerSettingsCtrl {
     private void initActions() {
         this.operations = new List<Operation>();
 
+
         for (PicklistEntry entry : TriggerAction__mdt.Operation__c.getDescribe().getPicklistValues()) {
             List<TriggerAction__mdt> actionsMdt = selector.getActions(setting.SObjectType__c, entry.value);
 
@@ -59,9 +65,23 @@ public with sharing class TriggerSettingsCtrl {
             operations.add(op);
 
             for (TriggerAction__mdt action : actionsMdt) {
-                links.put(action.ApexClass__c, '');
-                links.put(action.RequiredPermission__c, '');
-                links.put(action.BypassPermission__c, '');
+                String className = action.ApexClass__c;
+                String reqPerm = action.RequiredPermission__c;
+                String bypassPerm = action.BypassPermission__c;
+                links.put(className, '404');
+                links.put(reqPerm, '404');
+                links.put(bypassPerm, '404');
+
+                /*Add options that were defined on metadata, but do not exist in org*/
+                classOptsMap.put(className, new SelectOption(className, className + ' (!)', true));
+                if (String.isNotBlank(reqPerm)) {
+                    permissionOptsMap.put(reqPerm, new SelectOption(reqPerm, reqPerm + ' (!)', true));
+                }
+
+                if (String.isNotBlank(bypassPerm)) {
+                    permissionOptsMap.put(bypassPerm, new SelectOption(bypassPerm, bypassPerm + ' (!)', true));
+
+                }
             }
         }
     }
@@ -70,18 +90,21 @@ public with sharing class TriggerSettingsCtrl {
      * Initializes the list of available Apex classes implementing TriggerAction interface.
      */
     private void initClasses() {
-        this.classOpts = new List<SelectOption>();
         for (ApexTypeImplementor imp : [
             SELECT ApexClassId, ClassName
             FROM ApexTypeImplementor
             WHERE IsConcrete = TRUE AND InterfaceName = 'TriggerAction'
             WITH SYSTEM_MODE
         ]) {
-            if (!imp.ClassName.containsIgnoreCase('Test')) {
+            if (!imp.ClassName.containsIgnoreCase('Test') || Test.isRunningTest()) {
                 links.put(imp.ClassName, imp.ApexClassId);
-                classOpts.add(new SelectOption(imp.ClassName, imp.ClassName));
+                classOptsMap.put(imp.ClassName, new SelectOption(imp.ClassName, imp.ClassName));
             }
         }
+        this.classOpts = new List<SelectOption>{
+            new SelectOption('', '--None--')
+        };
+        this.classOpts.addAll(classOptsMap.values());
     }
 
     /**
@@ -93,8 +116,9 @@ public with sharing class TriggerSettingsCtrl {
         };
         for (CustomPermission p : [SELECT Id, DeveloperName FROM CustomPermission WITH SYSTEM_MODE]) {
             links.put(p.DeveloperName, p.Id);
-            permissionOpts.add(new SelectOption(p.DeveloperName, p.DeveloperName));
+            permissionOptsMap.put(p.DeveloperName, new SelectOption(p.DeveloperName, p.DeveloperName));
         }
+        this.permissionOpts.addAll(permissionOptsMap.values());
     }
 
     /**
@@ -105,7 +129,9 @@ public with sharing class TriggerSettingsCtrl {
         op.edit = true;
         TriggerAction__mdt newAction = new TriggerAction__mdt(
             Id = actionPrefix + ('new' + (actionCounter++)).leftPad(12, '0'),
-            Operation__c = selectedOp
+            Operation__c = selectedOp,
+            Active__c = true,
+            Order__c = op.actions.isEmpty() ? 0 : (op.actions[op.actions.size() - 1].Order__c ?? 0) + 1
         );
         op.actions.add(newAction);
         newActionIds.add(newAction.Id);
@@ -133,16 +159,6 @@ public with sharing class TriggerSettingsCtrl {
         Operation op = getOperation(selectedOp);
         op.edit = false;
         op.actions = selector.getActions(setting.SObjectType__c, op.value);
-    }
-
-    /**
-     * Resets the order of actions based on their current position in the list.
-     */
-    public void resetOrder() {
-        Operation op = getOperation(selectedOp);
-        for (Integer i = 0; i < op.actions.size(); i++) {
-            op.actions[i].Order__c = i;
-        }
     }
 
     /**
@@ -202,6 +218,7 @@ public with sharing class TriggerSettingsCtrl {
         return customField;
     }
 
+    @TestVisible
     private Operation getOperation(String value) {
         for (Operation operation : operations) {
             if (operation.value == value) {

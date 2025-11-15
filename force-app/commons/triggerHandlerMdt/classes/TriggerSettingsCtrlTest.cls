@@ -1,0 +1,169 @@
+@SuppressWarnings('PMD.EmptyStatementBlock')
+@IsTest(IsParallel=true)
+public class TriggerSettingsCtrlTest {
+
+    public class AccountPopulateFields implements TriggerAction {
+        public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
+    }
+
+    public class AccountValidate implements TriggerAction {
+        public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
+    }
+
+    public class AccountLinkContacts implements TriggerAction {
+        public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
+    }
+
+    public class AccountPreventMoreThanOneContact implements TriggerAction {
+        public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
+    }
+
+    private static TriggerSettingsCtrl getController() {
+        TriggerSetting__mdt setting = new TriggerSetting__mdt(
+            DeveloperName = 'AccountTrigger',
+            Label = 'Account Trigger',
+            SObjectType__c = 'Account',
+            Active__c = true
+        );
+
+        TriggerSettingsCtrl.selector = new TriggerLogicSelector.MockSelector(
+            new List<TriggerAction__mdt>{
+                new TriggerAction__mdt(
+                    Order__c = 1,
+                    DeveloperName = 'Action1',
+                    Label = 'Action 1',
+                    ApexClass__c = 'TriggerSettingsCtrlTest.AccountPopulateFields',
+                    Operation__c = TriggerOperation.BEFORE_UPDATE.name()
+                ),
+                new TriggerAction__mdt(
+                    Order__c = 2,
+                    DeveloperName = 'Action2',
+                    Label = 'Action 2',
+                    ApexClass__c = 'TriggerSettingsCtrlTest.AccountValidate',
+                    Operation__c = TriggerOperation.BEFORE_UPDATE.name()
+                ),
+                new TriggerAction__mdt(
+                    Order__c = 3,
+                    DeveloperName = 'Action3',
+                    Label = 'Action 3',
+                    ApexClass__c = 'TriggerSettingsCtrlTest.InvalidAction',
+                    Operation__c = TriggerOperation.BEFORE_UPDATE.name(),
+                    BypassPermission__c = 'TriggerSettingsCtrlTestPermission'
+                )
+            }
+        );
+
+        ApexPages.StandardController stdController = new ApexPages.StandardController(setting);
+        TriggerSettingsCtrl controller = new TriggerSettingsCtrl(stdController);
+        return controller;
+    }
+
+    @IsTest
+    static void testApexOptions() {
+        TriggerSettingsCtrl controller = getController();
+
+        Test.startTest();
+        List<SelectOption> classOpts = controller.classOpts;
+        Test.stopTest();
+
+        Set<String> classNames = new Set<String>();
+        for (SelectOption opt : classOpts) {
+            classNames.add(opt.getLabel());
+        }
+
+        Assert.isTrue(classNames.contains('TriggerSettingsCtrlTest.AccountPopulateFields'));
+        Assert.isTrue(classNames.contains('TriggerSettingsCtrlTest.AccountValidate'));
+        Assert.isTrue(classNames.contains('TriggerSettingsCtrlTest.AccountLinkContacts'));
+        Assert.isTrue(classNames.contains('TriggerSettingsCtrlTest.AccountPreventMoreThanOneContact'));
+        Assert.isTrue(classNames.contains('TriggerSettingsCtrlTest.InvalidAction (!)'));
+    }
+
+    @IsTest
+    static void testCustomPermissionsOptions() {
+        TriggerSettingsCtrl controller = getController();
+
+        Test.startTest();
+        List<SelectOption> permissionOpts = controller.permissionOpts;
+        Test.stopTest();
+
+        Set<String> permissionNames = new Set<String>();
+        for (SelectOption opt : permissionOpts) {
+            permissionNames.add(opt.getLabel());
+        }
+
+        Assert.isTrue(permissionNames.contains('TriggerSettingsCtrlTestPermission (!)'));
+        for (CustomPermission customPermission : [SELECT DeveloperName FROM CustomPermission]) {
+            Assert.isTrue(permissionNames.contains(customPermission.DeveloperName));
+        }
+    }
+
+    @IsTest
+    static void testNewAction() {
+        TriggerSettingsCtrl controller = getController();
+
+        Test.startTest();
+        String op = TriggerOperation.BEFORE_UPDATE.name();
+        controller.selectedOp = op;
+        controller.addNewAction();
+        TriggerSettingsCtrl.Operation beforeUpdate = controller.getOperation(op);
+        Test.stopTest();
+
+        Assert.areEqual(4, beforeUpdate.actions.size());
+        TriggerAction__mdt newAction = beforeUpdate.actions[3];
+        Assert.areEqual(true, newAction.Active__c);
+        Assert.areEqual(4, newAction.Order__c);
+    }
+
+    @IsTest
+    static void testCancel() {
+        TriggerSettingsCtrl controller = getController();
+
+        Test.startTest();
+        String op = TriggerOperation.BEFORE_UPDATE.name();
+        controller.selectedOp = op;
+        controller.addNewAction();
+        controller.cancel();
+        TriggerSettingsCtrl.Operation beforeUpdate = controller.getOperation(op);
+        Test.stopTest();
+
+
+        Assert.areEqual(3, beforeUpdate.actions.size());
+    }
+
+    @IsTest
+    static void testDeleteAction() {
+        TriggerSettingsCtrl controller = getController();
+
+        Test.startTest();
+        String op = TriggerOperation.BEFORE_UPDATE.name();
+        controller.selectedOp = op;
+        controller.addNewAction();
+
+        TriggerSettingsCtrl.Operation beforeUpdate = controller.getOperation(op);
+        Assert.areEqual(4, beforeUpdate.actions.size());
+        TriggerAction__mdt newAction = beforeUpdate.actions[3];
+
+        controller.selectedActionId = newAction.Id;
+        controller.deleteAction();
+        Test.stopTest();
+
+        Assert.areEqual(3, beforeUpdate.actions.size());
+    }
+
+    @IsTest
+    static void testSave() {
+        TriggerSettingsCtrl controller = getController();
+
+        Test.startTest();
+        PageReference p = Page.TriggerSettings;
+        Test.setCurrentPage(p);
+
+        controller.selectedOp = TriggerOperation.BEFORE_UPDATE.name();
+        controller.save();
+        Test.stopTest();
+
+
+        Assert.isFalse(ApexPages.getMessages().isEmpty());
+        Assert.areEqual('Metadata cannot be deployed from within a test', ApexPages.getMessages()[0].getSummary());
+    }
+}

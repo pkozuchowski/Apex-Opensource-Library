@@ -6,8 +6,7 @@
  * Provides functionality to handle trigger settings and associated trigger actions.
  */
 public with sharing class MetadataTriggerSettingsCtrl {
-    /** Selector instance for retrieving trigger logic records */
-    @TestVisible static MetadataTriggerSelector selector = new MetadataTriggerSelector();
+    @TestVisible static List<TriggerAction__mdt> mockActions;
 
     private Integer actionCounter = 0;
     private String actionPrefix = TriggerAction__mdt.SObjectType
@@ -40,7 +39,7 @@ public with sharing class MetadataTriggerSettingsCtrl {
      */
     public MetadataTriggerSettingsCtrl(ApexPages.StandardController stdCtrl) {
         if (!Test.isRunningTest()) {
-            stdCtrl.addFields(new List<String>{'SObjectType__c', 'DeveloperName'});
+            stdCtrl.addFields(new List<String>{'DeveloperName'});
         }
         this.setting = (TriggerSetting__mdt) stdCtrl.getRecord();
         this.retUrl = 'retURL=%2F' + this.setting.Id;
@@ -57,9 +56,8 @@ public with sharing class MetadataTriggerSettingsCtrl {
     private void initActions() {
         this.operations = new List<Operation>();
 
-
         for (PicklistEntry entry : TriggerAction__mdt.Operation__c.getDescribe().getPicklistValues()) {
-            List<TriggerAction__mdt> actionsMdt = selector.getActions(setting.SObjectType__c, entry.value);
+            List<TriggerAction__mdt> actionsMdt = getActions(entry.value);
 
             Operation op = new Operation(entry, actionsMdt);
             operations.add(op);
@@ -74,16 +72,31 @@ public with sharing class MetadataTriggerSettingsCtrl {
 
                 /*Add options that were defined on metadata, but do not exist in org*/
                 classOptsMap.put(className, new SelectOption(className, className + ' (!)', true));
+
                 if (String.isNotBlank(reqPerm)) {
                     permissionOptsMap.put(reqPerm, new SelectOption(reqPerm, reqPerm + ' (!)', true));
                 }
 
                 if (String.isNotBlank(bypassPerm)) {
                     permissionOptsMap.put(bypassPerm, new SelectOption(bypassPerm, bypassPerm + ' (!)', true));
-
                 }
             }
         }
+    }
+
+    /**
+     * Retrieves trigger actions for given operation.
+     */
+    private List<TriggerAction__mdt> getActions(String operation) {
+        return mockActions?.deepClone() ?? [
+            SELECT Id, Label, DeveloperName, Order__c, ApexClass__c, Parameters__c, Active__c,
+                BypassPermission__c, RequiredPermission__c, Operation__c, Description__c
+            FROM TriggerAction__mdt
+            WHERE Trigger__c = :setting.Id
+            AND Operation__c = :operation
+            WITH SYSTEM_MODE
+            ORDER BY Order__c ASC, ApexClass__c ASC
+        ];
     }
 
     /**
@@ -114,9 +127,15 @@ public with sharing class MetadataTriggerSettingsCtrl {
         this.permissionOpts = new List<SelectOption>{
             new SelectOption('', '--None--')
         };
-        for (CustomPermission p : [SELECT Id, DeveloperName FROM CustomPermission WITH SYSTEM_MODE]) {
-            links.put(p.DeveloperName, p.Id);
-            permissionOptsMap.put(p.DeveloperName, new SelectOption(p.DeveloperName, p.DeveloperName));
+
+        for (CustomPermission p : [
+            SELECT Id, DeveloperName, NamespacePrefix
+            FROM CustomPermission
+            WITH SYSTEM_MODE
+        ]) {
+            String name = String.join(new List<String>{p.NamespacePrefix, p.DeveloperName}, '__');
+            links.put(name, p.Id);
+            permissionOptsMap.put(name, new SelectOption(name, name));
         }
         this.permissionOpts.addAll(permissionOptsMap.values());
     }
@@ -158,7 +177,7 @@ public with sharing class MetadataTriggerSettingsCtrl {
     public void cancel() {
         Operation op = getOperation(selectedOp);
         op.edit = false;
-        op.actions = selector.getActions(setting.SObjectType__c, op.value);
+        op.actions = getActions(op.value);
     }
 
     /**

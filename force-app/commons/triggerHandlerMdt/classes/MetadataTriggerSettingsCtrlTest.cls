@@ -1,22 +1,5 @@
-@SuppressWarnings('PMD.EmptyStatementBlock')
 @IsTest(IsParallel=true)
-public class MetadataTriggerSettingsCtrlTest {
-
-    public class AccountPopulateFields implements TriggerAction {
-        public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
-    }
-
-    public class AccountValidate implements TriggerAction {
-        public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
-    }
-
-    public class AccountLinkContacts implements TriggerAction {
-        public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
-    }
-
-    public class AccountPreventMoreThanOneContact implements TriggerAction {
-        public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
-    }
+private class MetadataTriggerSettingsCtrlTest {
 
     private static MetadataTriggerSettingsCtrl getController() {
         TriggerSetting__mdt setting = new TriggerSetting__mdt(
@@ -26,32 +9,30 @@ public class MetadataTriggerSettingsCtrlTest {
             Active__c = true
         );
 
-        MetadataTriggerSettingsCtrl.selector = new MetadataTriggerSelector.MockSelector(
-            new List<TriggerAction__mdt>{
-                new TriggerAction__mdt(
-                    Order__c = 1,
-                    DeveloperName = 'Action1',
-                    Label = 'Action 1',
-                    ApexClass__c = 'TriggerSettingsCtrlTest.AccountPopulateFields',
-                    Operation__c = TriggerOperation.BEFORE_UPDATE.name()
-                ),
-                new TriggerAction__mdt(
-                    Order__c = 2,
-                    DeveloperName = 'Action2',
-                    Label = 'Action 2',
-                    ApexClass__c = 'TriggerSettingsCtrlTest.AccountValidate',
-                    Operation__c = TriggerOperation.BEFORE_UPDATE.name()
-                ),
-                new TriggerAction__mdt(
-                    Order__c = 3,
-                    DeveloperName = 'Action3',
-                    Label = 'Action 3',
-                    ApexClass__c = 'TriggerSettingsCtrlTest.InvalidAction',
-                    Operation__c = TriggerOperation.BEFORE_UPDATE.name(),
-                    BypassPermission__c = 'TriggerSettingsCtrlTestPermission'
-                )
-            }
-        );
+        MetadataTriggerSettingsCtrl.mockActions = new List<TriggerAction__mdt>{
+            new TriggerAction__mdt(
+                Order__c = 1,
+                DeveloperName = 'Action1',
+                Label = 'Action 1',
+                ApexClass__c = 'MetadataTriggerHandlerTest.AccountPopulateFields',
+                Operation__c = TriggerOperation.BEFORE_UPDATE.name()
+            ),
+            new TriggerAction__mdt(
+                Order__c = 2,
+                DeveloperName = 'Action2',
+                Label = 'Action 2',
+                ApexClass__c = 'MetadataTriggerHandlerTest.AccountValidate',
+                Operation__c = TriggerOperation.BEFORE_UPDATE.name()
+            ),
+            new TriggerAction__mdt(
+                Order__c = 3,
+                DeveloperName = 'Action3',
+                Label = 'Action 3',
+                ApexClass__c = 'MetadataTriggerHandlerTest.InvalidAction',
+                Operation__c = TriggerOperation.BEFORE_UPDATE.name(),
+                BypassPermission__c = 'MetadataTriggerHandlerTestPermission'
+            )
+        };
 
         ApexPages.StandardController stdController = new ApexPages.StandardController(setting);
         MetadataTriggerSettingsCtrl controller = new MetadataTriggerSettingsCtrl(stdController);
@@ -71,11 +52,11 @@ public class MetadataTriggerSettingsCtrlTest {
             classNames.add(opt.getLabel());
         }
 
-        Assert.isTrue(classNames.contains('TriggerSettingsCtrlTest.AccountPopulateFields'));
-        Assert.isTrue(classNames.contains('TriggerSettingsCtrlTest.AccountValidate'));
-        Assert.isTrue(classNames.contains('TriggerSettingsCtrlTest.AccountLinkContacts'));
-        Assert.isTrue(classNames.contains('TriggerSettingsCtrlTest.AccountPreventMoreThanOneContact'));
-        Assert.isTrue(classNames.contains('TriggerSettingsCtrlTest.InvalidAction (!)'));
+        Assert.isTrue(classNames.contains('MetadataTriggerHandlerTest.AccountPopulateFields'));
+        Assert.isTrue(classNames.contains('MetadataTriggerHandlerTest.AccountValidate'));
+        Assert.isTrue(classNames.contains('MetadataTriggerHandlerTest.AccountLinkContacts'));
+        Assert.isTrue(classNames.contains('MetadataTriggerHandlerTest.AccountPreventMoreThanOneContact'));
+        Assert.isTrue(classNames.contains('MetadataTriggerHandlerTest.InvalidAction (!)'));
     }
 
     @IsTest
@@ -91,9 +72,11 @@ public class MetadataTriggerSettingsCtrlTest {
             permissionNames.add(opt.getLabel());
         }
 
-        Assert.isTrue(permissionNames.contains('TriggerSettingsCtrlTestPermission (!)'));
-        for (CustomPermission customPermission : [SELECT DeveloperName FROM CustomPermission]) {
-            Assert.isTrue(permissionNames.contains(customPermission.DeveloperName));
+        Assert.isTrue(permissionNames.contains('MetadataTriggerHandlerTestPermission (!)'));
+        for (CustomPermission customPermission : [SELECT DeveloperName, NamespacePrefix FROM CustomPermission]) {
+            String name = '' + (customPermission.NamespacePrefix != null ? customPermission.NamespacePrefix + '__' : '')
+                + customPermission.DeveloperName;
+            Assert.isTrue(permissionNames.contains(name), 'Should contain:' + name);
         }
     }
 
@@ -155,7 +138,7 @@ public class MetadataTriggerSettingsCtrlTest {
         MetadataTriggerSettingsCtrl controller = getController();
 
         Test.startTest();
-        PageReference p = Page.TriggerSettings;
+        PageReference p = Page.MetadataTriggerSettings;
         Test.setCurrentPage(p);
 
         controller.selectedOp = TriggerOperation.BEFORE_UPDATE.name();

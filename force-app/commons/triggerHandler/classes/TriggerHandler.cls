@@ -154,7 +154,7 @@ public virtual inherited sharing class TriggerHandler {
     private void run(TriggerContext ctx) {
         List<SObject> records = ctx.getRecords();
         try {
-            if (TriggerSettings.shouldRun(ctx)) {
+            if (shouldRun(ctx)) {
                 initialize(ctx.getRecords(), ctx);
                 List<TriggerAction> triggerActions = getActions(ctx);
                 executeActions(triggerActions, records, ctx);
@@ -166,6 +166,11 @@ public virtual inherited sharing class TriggerHandler {
         } finally {
             finalize(records, ctx);
         }
+    }
+
+    /** Determines if the trigger handler should run based on the Trigger Context */
+    protected virtual Boolean shouldRun(TriggerContext ctx) {
+        return TriggerSettings.shouldRun(ctx);
     }
 
     /** Returns list of Trigger Actions to be executed for given Trigger Context */

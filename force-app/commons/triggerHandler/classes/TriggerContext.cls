@@ -273,6 +273,16 @@ public virtual class TriggerContext {
      * Checks if the current action is executed for the first time for given record.
      *
      * @param recordId Id of record in trigger
+     * @return True if record is executed in the current action for the first time.
+     */
+    public Boolean isFirstActionRun(Id recordId) {
+        return isFirstActionRun(recordId, false);
+    }
+
+    /**
+     * Checks if the current action is executed for the first time for given record.
+     *
+     * @param recordId Id of record in trigger
      * @param markExecuted Whether to mark this action as executed for this record
      * @return True if record is executed in the current action for the first time
      */
@@ -282,16 +292,6 @@ public virtual class TriggerContext {
             markActionExecuted(recordId);
         }
         return result;
-    }
-
-    /**
-     * Checks if the current action is executed for the first time for given record.
-     * 
-     * @param recordId Id of record in trigger
-     * @return True if record is executed in the current action for the first time.
-     */
-    public Boolean isFirstActionRun(Id recordId) {
-        return isFirstRun(currentAction, recordId);
     }
 
     /**

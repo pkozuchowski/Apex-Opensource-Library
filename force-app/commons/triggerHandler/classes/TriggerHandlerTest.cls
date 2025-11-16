@@ -67,7 +67,7 @@ public class TriggerHandlerTest {
 
 
         for (Account acc : accounts) {
-            System.assertEquals(COUNTRY_USA, acc.BillingCountry, 'TriggerHandler should set Billing country');
+            Assert.areEqual(COUNTRY_USA, acc.BillingCountry, 'TriggerHandler should set Billing country');
         }
     }
 
@@ -93,34 +93,34 @@ public class TriggerHandlerTest {
 
         TriggerContext ctx = new TriggerContext(TriggerOperation.AFTER_UPDATE, new List<SObject>{record}, new List<SObject>{oldRecord});
 
-        System.assertEquals(false, ctx.isNew());
-        System.assertEquals(true, ctx.isChanged());
-        System.assertEquals(false, ctx.isChanged(record, Account.Name));
-        System.assertEquals(true, ctx.isChanged(record, Account.BillingCountry));
-        System.assertEquals(true, ctx.isChanged(record, Account.BillingCity));
-        System.assertEquals(true, ctx.isChanged(record, Account.Phone));
+        Assert.areEqual(false, ctx.isNew());
+        Assert.areEqual(true, ctx.isChanged());
+        Assert.areEqual(false, ctx.isChanged(record, Account.Name));
+        Assert.areEqual(true, ctx.isChanged(record, Account.BillingCountry));
+        Assert.areEqual(true, ctx.isChanged(record, Account.BillingCity));
+        Assert.areEqual(true, ctx.isChanged(record, Account.Phone));
 
-        System.assertEquals(true, ctx.isChangedTo(record, Account.BillingCountry, COUNTRY_USA));
-        System.assertEquals(true, ctx.isChangedTo(record, Account.BillingCity, CITY_NY));
-        System.assertEquals(true, ctx.isChangedTo(record, Account.Phone, '(541) 754-3010'));
-        System.assertEquals(false, ctx.isChangedTo(record, Account.BillingCity, 'Washington'));
+        Assert.areEqual(true, ctx.isChangedTo(record, Account.BillingCountry, COUNTRY_USA));
+        Assert.areEqual(true, ctx.isChangedTo(record, Account.BillingCity, CITY_NY));
+        Assert.areEqual(true, ctx.isChangedTo(record, Account.Phone, '(541) 754-3010'));
+        Assert.areEqual(false, ctx.isChangedTo(record, Account.BillingCity, 'Washington'));
 
-        System.assertEquals(true, ctx.isChangedFrom(record, Account.BillingCountry, null));
-        System.assertEquals(true, ctx.isChangedFrom(record, Account.BillingCity, null));
-        System.assertEquals(true, ctx.isChangedFrom(record, Account.Phone, '(541) 754-3011'));
-        System.assertEquals(false, ctx.isChangedFrom(record, Account.Name, 'Washington'));
+        Assert.areEqual(true, ctx.isChangedFrom(record, Account.BillingCountry, null));
+        Assert.areEqual(true, ctx.isChangedFrom(record, Account.BillingCity, null));
+        Assert.areEqual(true, ctx.isChangedFrom(record, Account.Phone, '(541) 754-3011'));
+        Assert.areEqual(false, ctx.isChangedFrom(record, Account.Name, 'Washington'));
 
-        System.assertEquals(true, ctx.isChangedFromTo(record, Account.BillingCity, null, CITY_NY));
+        Assert.areEqual(true, ctx.isChangedFromTo(record, Account.BillingCity, null, CITY_NY));
 
 
         ctx = new TriggerContext(TriggerOperation.AFTER_INSERT, new List<SObject>{record}, new List<SObject>{oldRecord});
-        System.assertEquals(false, ctx.isChanged(record, Account.BillingCountry));
-        System.assertEquals(false, ctx.isChangedTo(record, Account.BillingCity, CITY_NY));
-        System.assertEquals(false, ctx.isChangedFrom(record, Account.BillingCity, null));
-        System.assert(ctx.getRecordsMap().containsKey(ID_1));
-        System.assert(ctx.getRecordsIds().contains(ID_1));
-        System.assert(ctx.getOldMap().containsKey(ID_1));
-        System.assertEquals(ID_1, ctx.getOld()[0].Id);
+        Assert.areEqual(false, ctx.isChanged(record, Account.BillingCountry));
+        Assert.areEqual(false, ctx.isChangedTo(record, Account.BillingCity, CITY_NY));
+        Assert.areEqual(false, ctx.isChangedFrom(record, Account.BillingCity, null));
+        Assert.isTrue(ctx.getRecordsMap().containsKey(ID_1));
+        Assert.isTrue(ctx.getRecordsIds().contains(ID_1));
+        Assert.isTrue(ctx.getOldMap().containsKey(ID_1));
+        Assert.areEqual(ID_1, ctx.getOld()[0].Id);
     }
 
     /**
@@ -142,7 +142,7 @@ public class TriggerHandlerTest {
 
 
         for (Account account : accounts) {
-            System.assertEquals(false, account.Name.startsWith('(Customer)'), 'Triggers should be disabled and do not update records');
+            Assert.areEqual(false, account.Name.startsWith('(Customer)'), 'Triggers should be disabled and do not update records');
         }
     }
 
@@ -168,7 +168,7 @@ public class TriggerHandlerTest {
 
 
         for (Account account : accounts) {
-            System.assertEquals(false, account.Name.startsWith('(Customer)'), 'When triggers are disabled in LogicSwitch__c, triggers shouldn\'t process any records');
+            Assert.areEqual(false, account.Name.startsWith('(Customer)'), 'When triggers are disabled in LogicSwitch__c, triggers shouldn\'t process any records');
         }
     }
 
@@ -192,7 +192,7 @@ public class TriggerHandlerTest {
 
 
         for (Account account : accounts) {
-            System.assertEquals(false, account.Name.startsWith('(Customer)'), 'Triggers should be disabled and do not update records');
+            Assert.areEqual(false, account.Name.startsWith('(Customer)'), 'Triggers should be disabled and do not update records');
         }
     }
 
@@ -207,19 +207,19 @@ public class TriggerHandlerTest {
         TriggerSettings.disableAllLogic();
         LogicSwitch__c setting = LogicSwitch__c.getInstance();
         String expectedDisabled = 'TriggerSettings.disableAllLogic() should check all checkboxes on LogicSwitch';
-        System.assertEquals(true, setting.DisableWorkflowRules__c, expectedDisabled);
-        System.assertEquals(true, setting.DisableValidationRules__c, expectedDisabled);
-        System.assertEquals(true, setting.DisableProcessBuilders__c, expectedDisabled);
-        System.assertEquals(true, setting.DisableTriggers__c, expectedDisabled);
+        Assert.areEqual(true, setting.DisableWorkflowRules__c, expectedDisabled);
+        Assert.areEqual(true, setting.DisableValidationRules__c, expectedDisabled);
+        Assert.areEqual(true, setting.DisableProcessBuilders__c, expectedDisabled);
+        Assert.areEqual(true, setting.DisableTriggers__c, expectedDisabled);
 
 
         TriggerSettings.removeUserSettings();
         setting = LogicSwitch__c.getInstance();
         String expectedEnabled = 'TriggerSettings.enableAllLogic() should uncheck all checkboxes on LogicSwitch';
-        System.assertEquals(false, setting.DisableWorkflowRules__c, expectedEnabled);
-        System.assertEquals(false, setting.DisableValidationRules__c, expectedEnabled);
-        System.assertEquals(false, setting.DisableProcessBuilders__c, expectedEnabled);
-        System.assertEquals(false, setting.DisableTriggers__c, expectedEnabled);
+        Assert.areEqual(false, setting.DisableWorkflowRules__c, expectedEnabled);
+        Assert.areEqual(false, setting.DisableValidationRules__c, expectedEnabled);
+        Assert.areEqual(false, setting.DisableProcessBuilders__c, expectedEnabled);
+        Assert.areEqual(false, setting.DisableTriggers__c, expectedEnabled);
         Test.stopTest();
     }
 

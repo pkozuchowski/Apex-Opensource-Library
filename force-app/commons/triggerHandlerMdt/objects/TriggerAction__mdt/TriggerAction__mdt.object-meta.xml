@@ -4,5 +4,5 @@
 Apex classes should be public and implement MetadataTriggerHandler.Logic interface.</description>
     <label>Trigger Action</label>
     <pluralLabel>Trigger Action</pluralLabel>
-    <visibility>Public</visibility>
+    <visibility>Protected</visibility>
 </CustomObject>

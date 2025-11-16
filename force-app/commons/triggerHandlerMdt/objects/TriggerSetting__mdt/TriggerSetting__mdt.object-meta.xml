@@ -2,5 +2,5 @@
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
     <label>Trigger  Setting</label>
     <pluralLabel>Trigger  Settings</pluralLabel>
-    <visibility>Public</visibility>
+    <visibility>PackageProtected</visibility>
 </CustomObject>

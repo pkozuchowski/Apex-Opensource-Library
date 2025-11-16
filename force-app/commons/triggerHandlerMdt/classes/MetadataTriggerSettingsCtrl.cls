@@ -223,8 +223,6 @@ public with sharing class MetadataTriggerSettingsCtrl {
                 customMetadata.values.add(field(field, value));
             }
 
-            System.debug(JSON.serializePretty(customMetadata));
-
             mdContainer.addMetadata(customMetadata);
         }
 

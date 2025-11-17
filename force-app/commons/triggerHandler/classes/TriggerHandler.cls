@@ -158,6 +158,7 @@ public virtual inherited sharing class TriggerHandler {
                 initialize(ctx.getRecords(), ctx);
                 List<TriggerAction> triggerActions = getActions(ctx);
                 executeActions(triggerActions, records, ctx);
+                finalize(records, ctx);
             }
         } catch (Exception ex) {
             onException(records, ctx, ex);

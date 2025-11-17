@@ -19,3 +19,5 @@ trigger-handler.md
 **/*.tsbuildinfo
 **/eslint.config.mjs
 #force-app/main/**
+
+**/graphql.config.yml

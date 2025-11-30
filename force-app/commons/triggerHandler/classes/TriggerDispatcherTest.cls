@@ -1,35 +1,17 @@
-/**
-* MIT License
-*
-* Copyright (c) 2019 Piotr Kożuchowski
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
+// SPDX-License-Identifier: MIT
+// Copyright 2019 Piotr Kożuchowski
+
 @IsTest(IsParallel=true)
 private class TriggerDispatcherTest {
+    private static Exception handledException;
+
+    @SuppressWarnings('PMD.AvoidHardcodingId')
     private static final String
         ID_1 = '001000000000000',
         ID_2 = '001000000000001',
         ID_3 = '001000000000002',
         ID_4 = '001000000000003',
         NAME_TEST = 'Test',
-        SOBJECT_ACCOUNT = 'Account',
         COUNTRY_USA = 'USA',
         CITY_NY = 'New York';
 
@@ -37,17 +19,19 @@ private class TriggerDispatcherTest {
     /**
      * Emulation of AccountTriggerHandler class
      */
-    private class TestAccountTriggerHandler extends TriggerHandler {
-        public override void beforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
-            new AccountAddressPopulator().populateDefaultAddress(triggerNew, tc);
+    public class TestAccountTriggerHandler extends TriggerHandler {
+        public override List<TriggerAction> beforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
+            return new List<TriggerAction>{
+                new AccountAddressPopulator()
+            };
         }
     }
 
     /**
      * Emulation of Trigger logic class
      */
-    public class AccountAddressPopulator {
-        public void populateDefaultAddress(List<Account> records, TriggerContext ctx) {
+    public class AccountAddressPopulator implements TriggerAction {
+        public void execute(List<Account> records, TriggerContext ctx) {
             for (Account acc : (Account[]) records) {
                 if (String.isBlank(acc.BillingCountry)) {
                     acc.BillingCountry = COUNTRY_USA;
@@ -58,10 +42,10 @@ private class TriggerDispatcherTest {
                     acc.ShippingCity = acc.BillingCity;
                 }
 
-                if (ctx.isFirstRun('AccountAddressPopulator', acc.Id)) {
+                if (ctx.isFirstActionRun(acc.Id)) {
                     // Increment to test trigger recursion
                     acc.NumberOfEmployees = acc.NumberOfEmployees == null ? 1 : acc.NumberOfEmployees + 1;
-                    ctx.setExecuted('AccountAddressPopulator', acc.Id);
+                    ctx.markActionExecuted(acc.Id);
                 }
             }
         }
@@ -137,6 +121,7 @@ private class TriggerDispatcherTest {
         System.assert(ctx.getRecordsMap().containsKey(ID_1));
         System.assert(ctx.getRecordsIds().contains(ID_1));
         System.assert(ctx.getOldMap().containsKey(ID_1));
+        System.assertEquals(ID_1, ctx.getOld()[0].Id);
     }
 
     /**
@@ -229,7 +214,7 @@ private class TriggerDispatcherTest {
         System.assertEquals(true, setting.DisableTriggers__c, expectedDisabled);
 
 
-        TriggerSettings.enableAllLogic();
+        TriggerSettings.removeUserSettings();
         setting = LogicSwitch__c.getInstance();
         String expectedEnabled = 'TriggerSettings.enableAllLogic() should uncheck all checkboxes on LogicSwitch';
         System.assertEquals(false, setting.DisableWorkflowRules__c, expectedEnabled);
@@ -280,31 +265,6 @@ private class TriggerDispatcherTest {
     }
 
     @IsTest
-    static void testTriggerHandlerToggle() {
-        TriggerSettings.disableTriggerHandler(TestAccountTriggerHandler.class);
-
-        List<Account> accounts = new List<Account>{
-            new Account(Id = ID_1, Name = NAME_TEST, NumberOfEmployees = 0)
-        };
-        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
-
-
-        Test.startTest();
-        TriggerSettings.disableTriggerHandler(TestAccountTriggerHandler.class);
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
-        TriggerSettings.enableTriggerHandler(TestAccountTriggerHandler.class);
-
-        Assert.areEqual(0, tc.getRunCount('AccountAddressPopulator', accounts[0].Id));
-
-        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
-        Test.stopTest();
-
-
-        Assert.areEqual(1, tc.getRunCount('AccountAddressPopulator', accounts[0].Id));
-    }
-
-
-    @IsTest
     static void testOperationCoverage() {
         List<Account> accounts = new List<Account>{
             new Account(Id = ID_1, Name = NAME_TEST, NumberOfEmployees = 0)
@@ -316,5 +276,108 @@ private class TriggerDispatcherTest {
             TriggerContext tc = new TriggerContext(op, accounts, accounts);
             TriggerDispatcher.run(new TriggerHandler(), tc);
         }
+    }
+
+
+    public class TestTriggerExceptionHandler implements TriggerExceptionHandler {
+        public void onException(Exception ex, TriggerContext ctx) {
+            handledException = ex;
+        }
+    }
+
+    public class TestFailingAction implements TriggerAction {
+        public void execute(List<SObject> records, TriggerContext ctx) {
+            throw new DmlException('Simulated exception in TriggerAction');
+        }
+    }
+
+    public class TestFailingHandler extends TriggerHandler {
+        public override List<TriggerAction> afterUpdate(List<SObject> triggerNew, TriggerContext tc) {
+            return new List<TriggerAction>{
+                new TestFailingAction()
+            };
+        }
+    }
+
+    /**
+     * Tests the exception handling functionality of the TriggerDispatcher by simulating a failing trigger action.
+     * Verifies that:
+     * - The exception is properly caught and handled by the TestTriggerExceptionHandler
+     * - The original exception is re-thrown after handling
+     * - The handled exception matches the thrown exception
+     */
+    @IsTest
+    static void testExceptionHandler() {
+        List<Account> accounts = new List<Account>{
+            new Account(Id = ID_1, Name = NAME_TEST)
+        };
+        TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_UPDATE, accounts, accounts);
+        TriggerDispatcher.mockedExceptionHandlers = (List<ApexTypeImplementor>) JSON.deserialize(
+            '[{"className":"TriggerDispatcherTest.TestTriggerExceptionHandler"}]',
+            List<ApexTypeImplementor>.class
+        );
+        Exception thrownException;
+
+        Test.startTest();
+        try {
+            TriggerDispatcher.run(new TestFailingHandler(), tc);
+            Assert.fail();
+        } catch (Exception e) {
+            thrownException = e;
+        }
+        Test.stopTest();
+
+
+        Assert.isNotNull(handledException);
+        Assert.areEqual(thrownException, handledException);
+    }
+
+    @IsTest
+    static void testDisablingAction() {
+        List<Account> accounts = new List<Account>{
+            new Account(Id = ID_1, Name = NAME_TEST)
+        };
+        TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_UPDATE, accounts, accounts);
+        TriggerSettings.disableAction(TestFailingAction.class);
+        Exception ex1;
+        Exception ex2;
+
+        Test.startTest();
+        try {
+            TriggerDispatcher.run(new TestFailingHandler(), tc);
+        } catch (Exception e) {
+            ex1 = e;
+        }
+
+        TriggerSettings.enableAction(TestFailingAction.class);
+
+        try {
+            TriggerDispatcher.run(new TestFailingHandler(), tc);
+        } catch (Exception e) {
+            ex2 = e;
+        }
+        Test.stopTest();
+
+        Assert.isNull(ex1);
+        Assert.isNotNull(ex2);
+    }
+
+    @IsTest
+    static void testDisableTriggerOperation() {
+        LogicSwitch__c setting = LogicSwitch__c.getInstance();
+        setting.DisableSelectedTriggers__c = 'Account.BEFORE_UPDATE';
+        upsert setting;
+
+        List<Account> accounts = new List<Account>{
+            new Account(Id = ID_1, Name = NAME_TEST)
+        };
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts);
+
+
+        Test.startTest();
+        TriggerDispatcher.run(new TestAccountTriggerHandler(), tc);
+        Test.stopTest();
+
+        Assert.isNull(accounts[0].BillingCountry);
     }
 }

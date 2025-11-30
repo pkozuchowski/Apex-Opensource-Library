@@ -26,11 +26,7 @@ public virtual class TriggerContext {
     protected Map<Id, SObject> triggerNewMap { get; protected set; }
     protected Map<Id, SObject> triggerOldMap { get; protected set; }
     private String currentAction;
-
-    /**
-     * Additional data object that can be used to pass data between different trigger actions executed in the same trigger context.
-     */
-    public Object contextData { get; set; }
+    private Object sharedState { get; set; }
 
     /**
      * @return Instance of TriggerContext object if ran during trigger or test execution, null otherwise.
@@ -142,6 +138,22 @@ public virtual class TriggerContext {
     */
     public Map<Id, SObject> getOldMap() {
         return triggerOldMap;
+    }
+
+    /**
+     * @return Shared state object that can be used to pass data between
+     * BEFORE and AFTER trigger contexts for the same trigger execution of the same record batch.
+     */
+    public Object getSharedState() {
+        return sharedState;
+    }
+
+    /**
+     * @param sharedState Shared state object that can be used to pass data between
+     * BEFORE and AFTER trigger contexts for the same trigger execution of the same record batch.
+     */
+    public void setSharedState(Object sharedState) {
+        this.sharedState = sharedState;
     }
 
     /**
@@ -328,6 +340,14 @@ public virtual class TriggerContext {
         String key = '' + recordId + featureName;
         PROCESSED_COUNT.put(key, count + 1);
         return count + 1;
+    }
+
+    /**
+     * @param recordId Id of record in trigger
+     * @return How many times this record was processed by current trigger action.
+     */
+    public Integer getRunCount(Id recordId) {
+        return getRunCount(currentAction, recordId);
     }
 
     /**

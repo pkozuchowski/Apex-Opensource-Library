@@ -50,14 +50,14 @@ public inherited sharing class TriggerSettings {
     * Disable all triggers execution for given sObjectType for current transaction or until enableTrigger is called
     */
     public static void disableTrigger(SObjectType sObjectType) {
-        disabledTriggers.add(sObjectType.toString());
+        disabledTriggers.add(sObjectType.toString().toLowerCase());
     }
 
     /**
     * Enabled previously disabled trigger execution for given sObjectType
     */
     public static void enableTrigger(SObjectType sObjectType) {
-        disabledTriggers.remove(sObjectType.toString());
+        disabledTriggers.remove(sObjectType.toString().toLowerCase());
     }
 
     /**
@@ -86,7 +86,7 @@ public inherited sharing class TriggerSettings {
      */
     public static Boolean isActionEnabled(String actionClass) {
         return disabledActions.isEmpty()
-            || !disabledActions.contains(actionClass);
+            || !disabledActions.contains(actionClass.toLowerCase());
     }
 
     /**
@@ -95,16 +95,15 @@ public inherited sharing class TriggerSettings {
      * @param actionType The type of trigger action to enable
      */
     public static void enableAction(Type actionType) {
-        disabledActions.remove(actionType.getName());
+        disabledActions.remove(actionType.getName().toLowerCase());
     }
 
     /**
      * Disables a specific trigger action type.
-     * 
      * @param actionType The type of trigger action to disable
      */
     public static void disableAction(Type actionType) {
-        disabledActions.add(actionType.getName());
+        disabledActions.add(actionType.getName().toLowerCase());
     }
 
 
@@ -156,5 +155,6 @@ public inherited sharing class TriggerSettings {
         }
     }
 
+    @SuppressWarnings('PMD.EmptyStatementBlock')
     private TriggerSettings() {}
 }

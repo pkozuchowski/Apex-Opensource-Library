@@ -14,15 +14,59 @@ public class TriggerHandlerTest {
         COUNTRY_USA = 'USA',
         CITY_NY = 'New York';
 
+    private static Integer sharedContextInitCounter = 0;
+
+    private class SharedAccountData {
+        public List<Contact> contacts;
+
+        public SharedAccountData(List<Account> accounts) {
+            sharedContextInitCounter++;
+            contacts = new List<Contact>();
+            /*Simulate related Contacts query*/
+            for (Account acc : accounts) {
+                contacts.add(new Contact(LastName = 'Test', AccountId = acc.Id));
+            }
+        }
+    }
 
     /**
      * Emulation of AccountTriggerHandler class
      */
     public class TestAccountTriggerHandler extends TriggerHandler {
+
+        protected override void initialize(List<SObject> triggerNew, TriggerContext ctx) {
+            ctx.setSharedState(new SharedAccountData(triggerNew));
+        }
+
         public override List<TriggerAction> beforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
             return new List<TriggerAction>{
-                new AccountAddressPopulator()
+                new TestAccountAddressPopulator()
             };
+        }
+
+        protected override List<TriggerAction> afterUpdate(List<SObject> triggerNew, TriggerContext ctx) {
+            Assert.isNotNull(ctx.getSharedState());
+
+            return new List<TriggerAction>{
+                new TestContactUpdater()
+            };
+        }
+    }
+
+    public class TestContactTriggerHandler extends TriggerHandler {
+        protected override void initialize(List<SObject> triggerNew, TriggerContext ctx) {
+            Assert.isNull(ctx.getSharedState());
+            ctx.setSharedState(123);
+        }
+
+        public override List<TriggerAction> beforeUpdate(List<SObject> triggerNew, TriggerContext ctx) {
+            Assert.areEqual(123, ctx.getSharedState());
+            return new List<TriggerAction>{};
+        }
+
+        protected override List<TriggerAction> afterUpdate(List<SObject> triggerNew, TriggerContext ctx) {
+            Assert.areEqual(123, ctx.getSharedState());
+            return new List<TriggerAction>{};
         }
     }
 
@@ -30,7 +74,7 @@ public class TriggerHandlerTest {
     /**
      * Emulation of Trigger logic class
      */
-    public class AccountAddressPopulator implements TriggerAction {
+    public class TestAccountAddressPopulator implements TriggerAction {
         public void execute(List<Account> records, TriggerContext ctx) {
             for (Account acc : (Account[]) records) {
                 if (String.isBlank(acc.BillingCountry)) {
@@ -47,6 +91,22 @@ public class TriggerHandlerTest {
                     acc.NumberOfEmployees = acc.NumberOfEmployees == null ? 1 : acc.NumberOfEmployees + 1;
                 }
             }
+        }
+    }
+
+    public class TestContactUpdater implements TriggerAction {
+        public void execute(List<SObject> records, TriggerContext ctx) {
+            SharedAccountData sharedData = (SharedAccountData) ctx.getSharedState();
+            Assert.isNotNull(sharedData);
+            Assert.areEqual(records.size(), sharedData.contacts.size());
+            List<Contact> contacts = new List<Contact>();
+
+            /*Simulate related Contacts update*/
+            new TestContactTriggerHandler().run(new TriggerContext(
+                TriggerOperation.BEFORE_UPDATE, contacts, contacts));
+
+            new TestContactTriggerHandler().run(new TriggerContext(
+                TriggerOperation.AFTER_UPDATE, contacts, contacts));
         }
     }
 
@@ -320,6 +380,7 @@ public class TriggerHandlerTest {
             new TestFailingHandler().run(tc);
             Assert.fail();
         } catch (Exception e) {
+            System.debug(LoggingLevel.ERROR, e);
         }
         Test.stopTest();
 
@@ -375,5 +436,33 @@ public class TriggerHandlerTest {
         Test.stopTest();
 
         Assert.isNull(accounts[0].BillingCountry);
+    }
+
+    /**
+     * In this test, we verify that the shared context initialized just once per trigger execution.
+     * This test assumes accounts trigger is executed twice, so the shared context should
+     * be initialized two times only.
+     */
+    @IsTest
+    static void testInitializeIsNotMixedBetweenTriggersAndRunOnce() {
+        List<Account> accounts = new List<Account>{
+            new Account(Id = ID_1, Name = NAME_TEST)
+        };
+
+        Test.startTest();
+        for (Integer i = 0; i < 2; i++) {
+            new TestAccountTriggerHandler().run(
+                new TriggerContext(TriggerOperation.BEFORE_UPDATE, accounts, accounts)
+            );
+            new TestAccountTriggerHandler().run(
+                new TriggerContext(TriggerOperation.AFTER_UPDATE, accounts, accounts)
+            );
+        }
+        Test.stopTest();
+
+
+        Assert.areEqual(2, sharedContextInitCounter);
+        Assert.areEqual(0, TriggerHandler.stackDepth);
+        Assert.isTrue(TriggerHandler.sharedStates.isEmpty());
     }
 }

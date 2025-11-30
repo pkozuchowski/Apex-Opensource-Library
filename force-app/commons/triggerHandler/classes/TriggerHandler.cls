@@ -18,6 +18,12 @@
 @SuppressWarnings('PMD.EmptyStatementBlock')
 public virtual inherited sharing class TriggerHandler {
     @TestVisible
+    private static Integer stackDepth = 0;
+
+    @TestVisible
+    private static Map<Integer, Object> sharedStates = new Map<Integer, Object>();
+
+    @TestVisible
     private static List<TriggerExceptionHandler> exceptionHandlers;
 
     /**
@@ -155,10 +161,22 @@ public virtual inherited sharing class TriggerHandler {
         List<SObject> records = ctx.getRecords();
         try {
             if (shouldRun(ctx)) {
-                initialize(ctx.getRecords(), ctx);
+                if (ctx.isBefore || ctx.operationType == TriggerOperation.AFTER_UNDELETE) {
+                    initialize(ctx.getRecords(), ctx);
+                    stackDepth++;
+                    sharedStates.put(stackDepth, ctx.getSharedState());
+                } else {
+                    ctx.setSharedState(sharedStates.get(stackDepth));
+                }
+
                 List<TriggerAction> triggerActions = getActions(ctx);
                 executeActions(triggerActions, records, ctx);
-                finalize(records, ctx);
+
+                if (ctx.isAfter) {
+                    finalize(records, ctx);
+                    sharedStates.remove(stackDepth);
+                    stackDepth--;
+                }
             }
         } catch (Exception ex) {
             onException(records, ctx, ex);
@@ -225,7 +243,7 @@ public virtual inherited sharing class TriggerHandler {
 
     /**
      * Returns a list of initialized TriggerExceptionHandlers for handling exceptions during trigger execution.
-     * 
+     *
      * This method queries for and initializes concrete implementations of the TriggerExceptionHandler
      * interface. The handlers are cached after first initialization to avoid repeated queries.
      *

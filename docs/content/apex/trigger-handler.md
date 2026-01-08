@@ -169,9 +169,9 @@ Settings class for manipulating trigger execution.
 
 1. Toggling trigger execution for SObject type:
    ```apex
-   TriggerSettings.disableTrigger(Account.SObject);
+   TriggerSettings.disableTrigger(Account.SObjectType);
    // Do Something without triggers running
-   TriggerSettings.enableTrigger(Account.SObject);
+   TriggerSettings.enableTrigger(Account.SObjectType);
    ```
 
 2. Toggling specific Trigger Handler

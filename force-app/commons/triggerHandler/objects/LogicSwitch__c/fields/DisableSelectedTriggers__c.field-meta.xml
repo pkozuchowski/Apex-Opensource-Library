@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>DisableSelectedTriggers__c</fullName>
+    <inlineHelpText>Disables selected triggers. This accepts &quot;SObjectName&quot; format and &quot;SObjectName.OperationTrigger&quot;.
+Examples:
+&quot;Account&quot;, &quot;Account.BEFORE_INSERT&quot;, &quot;Account.AFTER_UPDATE&quot;</inlineHelpText>
+    <label>Disable Selected Triggers</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>TextArea</type>
+</CustomField>

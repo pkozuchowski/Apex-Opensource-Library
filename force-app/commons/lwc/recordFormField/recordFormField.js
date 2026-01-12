@@ -14,6 +14,7 @@ export default class RecordFormField extends LightningElement {
     @api type;
     @api readOnly;
     @api disabled;
+    @api required;
     @api variant;
     @api record;
     @track formParams;
@@ -24,6 +25,21 @@ export default class RecordFormField extends LightningElement {
 
     connectedCallback() {
         this.dispatchEvent(new CustomEvent('fieldconnected', {bubbles: true}));
+    }
+
+    @api
+    reportValidity() {
+        return this.refs.input.reportValidity?.() ?? true;
+    }
+
+    @api
+    setCustomValidity(message) {
+        return this.refs.input.setCustomValidity?.(message);
+    }
+
+    @api
+    checkValidity() {
+        return this.refs.input.checkValidity?.() ?? true;
     }
 
     @api connectField(objectInfo, picklistValues, formParams) {

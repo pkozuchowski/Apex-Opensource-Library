@@ -13,7 +13,13 @@ export default class Preview extends LightningElement {
     value = '1';
 
     handleSwitch() {
-        this.condition = !this.condition;
+        try {
+
+            // this.condition = !this.condition;
+            // this.refs.recordForm.setCustomValidityForField('Website', 'This field is required');
+        } catch (e) {
+            console.log(e.message);
+        }
     }
 
     handleMode() {

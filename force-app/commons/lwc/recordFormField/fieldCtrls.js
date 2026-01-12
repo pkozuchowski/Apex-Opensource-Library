@@ -18,6 +18,7 @@ function FieldCtrl({props = noop, render, outputValue}) {
             return ({
                 label   : cmp.label || cmp.fieldInfo.label,
                 readOnly: cmp.isReadOnly,
+                required: cmp.required,
                 variant : cmp.variant || cmp.formParams?.variant,
                 value   : cmp.fieldValue,
                 disabled: cmp.disabled,

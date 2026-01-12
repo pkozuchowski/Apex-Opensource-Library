@@ -19,6 +19,7 @@ export default class RecordForm extends LightningElement {
         designSystem: "lightning",
         variant     : "label-stacked"
     };
+    fields = {};
 
     @api get readOnly() {
         return this.formParams.readOnly;
@@ -32,6 +33,40 @@ export default class RecordForm extends LightningElement {
     objectInfo;
     picklistValues;
     recordTypeId;
+
+    @api reportValidity() {
+        return this.validate(field => field?.reportValidity())
+    }
+
+    @api checkValidity() {
+        return this.validate(field => field?.checkValidity())
+    }
+
+    validate(method) {
+        let result = {valid: true, fields: {}};
+        for (const field in this.fields) {
+            const validity = method(this.fields[field]);
+            result.valid = result.valid && (validity ?? true);
+            result.fields[field] = validity;
+        }
+        return result;
+    }
+
+    @api
+    reportValidityForField(field) {
+        this.fields[field]?.reportValidity();
+    }
+
+    @api
+    setCustomValidityForField(field, message) {
+        console.log(this.fields[field]);
+        this.fields[field]?.setCustomValidity(message);
+    }
+
+    @api
+    checkValidityForField(field) {
+        this.fields[field]?.checkValidity();
+    }
 
     @wire(getObjectInfo, {objectApiName: '$objectName'})
     describeObjectInfo({err, data}) {
@@ -78,6 +113,7 @@ export default class RecordForm extends LightningElement {
         ev.preventDefault();
         ev.stopPropagation();
         if (ev.target.connectField) {
+            this.fields[ev.target.field] = ev.target;
             ev.target.record = this.record;
             ev.target.connectField(
                 this.objectInfo,

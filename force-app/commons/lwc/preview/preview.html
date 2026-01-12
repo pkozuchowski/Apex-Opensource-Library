@@ -3,8 +3,10 @@
     <lightning-card>
         <lightning-layout>
             <lightning-layout-item size="6">
+                <lightning-button label="Show Field" onclick={handleSwitch}></lightning-button>
 
                 <c-record-form
+                        lwc:ref="recordForm"
                         object-name="Account"
                         record={account}
                         label-overrides={labelOverrides}
@@ -15,7 +17,7 @@
                     <c-record-form-field field="GrandChild__c"></c-record-form-field>
                     <c-record-form-field field="MyCurrency__c"></c-record-form-field>
                     <c-record-form-field field="Rating"></c-record-form-field>
-                    <c-record-form-field field="Website"></c-record-form-field>
+                    <c-record-form-field field="Website" required></c-record-form-field>
                     <c-record-form-field field="MyCheckbox__c"></c-record-form-field>
                     <c-record-form-field field="MyDate__c"></c-record-form-field>
                     <c-record-form-field field="MyDatetime__c"></c-record-form-field>
@@ -78,7 +80,6 @@
             </lightning-layout-item>
         </lightning-layout>
 
-        <lightning-button label="Show Field" onclick={handleSwitch}></lightning-button>
         <lightning-button label="Switch Mode" onclick={handleMode}></lightning-button>
 
         <lightning-select options={options}

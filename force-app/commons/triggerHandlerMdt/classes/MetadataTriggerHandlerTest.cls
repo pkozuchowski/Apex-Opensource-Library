@@ -1,33 +1,13 @@
-/*
- * *
- *  MIT License
- *
- *  Copyright (c) 2019 Piotr Kożuchowski
- *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
- *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
- */
+// SPDX-License-Identifier: MIT
+// Copyright 2019 Piotr Kożuchowski
 
+@SuppressWarnings('PMD')
 @IsTest
-private class MetadataTriggerHandlerTest {
+public class MetadataTriggerHandlerTest {
+
     private static final String
-        SOBJECT_ACCOUNT = 'Account',
-        COUNTRY_USA = 'USA';
+        COUNTRY_USA = 'USA',
+        CLASS_NAME = MetadataTriggerHandlerTest.class.toString();
 
     private static List<Account> accounts = new List<Account>{
         new Account(Id = '001000000000000', Name = 'Test 1', BillingCountry = COUNTRY_USA),
@@ -35,25 +15,7 @@ private class MetadataTriggerHandlerTest {
         new Account(Id = '001000000000002', Name = 'Test 3', BillingCountry = COUNTRY_USA)
     };
 
-    @IsTest
-    static void triggerShouldExecuteTriggerLogicClassesDefinedInSettings() {
-        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
-        MetadataTriggerHandler.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(ApexClass__c = 'MetadataTriggerHandlerTest.AccountShippingCountryFiller')
-        });
-
-
-        Test.startTest();
-        TriggerDispatcher.run(new MetadataTriggerHandler(), tc);
-        Test.stopTest();
-
-
-        for (Account acc : accounts) {
-            System.assertEquals(COUNTRY_USA, acc.BillingCountry, 'TriggerHandler should set Billing country');
-        }
-    }
-
-    public class AccountShippingCountryFiller implements TriggerLogic {
+    public class AccountShippingCountryFiller implements TriggerAction {
         public void execute(List<Account> records, TriggerContext ctx) {
             for (Account acc : records) {
                 if (ctx.isNew() && String.isBlank(acc.ShippingCountry)) {
@@ -61,8 +23,56 @@ private class MetadataTriggerHandlerTest {
                 }
             }
         }
+    }
 
-        public void setParameters(String parameters) {}
+    public class AccountPopulateFields implements TriggerAction {
+        public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
+    }
+
+    public class AccountValidate implements TriggerAction {
+        public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
+    }
+
+    public class AccountLinkContacts implements TriggerAction {
+        public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
+    }
+
+    public class AccountPreventMoreThanOneContact implements TriggerAction {
+        public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
+    }
+
+    /**
+     * Example of TriggerAction class which can be parametrized through custom metadata.
+     */
+    public class ParameterizableAction implements TriggerAction {
+        private String parameterName;
+
+        public void execute(List<SObject> records, TriggerContext ctx) {
+            for (Account acc : (Account[]) records) {
+                acc.Name = parameterName;
+            }
+        }
+    }
+
+    @IsTest
+    static void triggerShouldExecuteTriggerLogicClassesDefinedInSettings() {
+        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
+        MetadataTriggerHandler.mock(
+            new TriggerSetting__mdt(),
+            new List<TriggerAction__mdt>{
+                new TriggerAction__mdt(ApexClass__c = CLASS_NAME + '.AccountShippingCountryFiller')
+            }
+        );
+
+
+        Test.startTest();
+        new MetadataTriggerHandler().run(tc);
+        Test.stopTest();
+
+
+        for (Account acc : accounts) {
+            Assert.areEqual(COUNTRY_USA, acc.BillingCountry, 'TriggerHandler should set Billing country');
+        }
     }
 
     /**
@@ -76,31 +86,48 @@ private class MetadataTriggerHandlerTest {
             new Account(Id = '001000000000002')
         };
         TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_DELETE, accounts, accounts);
-        MetadataTriggerHandler.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(ApexClass__c = 'MetadataTriggerHandlerTest.InvalidClass')
-        });
+        MetadataTriggerHandler.mock(
+            new TriggerSetting__mdt(),
+            new List<TriggerAction__mdt>{
+                new TriggerAction__mdt(ApexClass__c = CLASS_NAME + '.InvalidClass')
+            }
+        );
         Exception ex;
 
 
         Test.startTest();
         try {
-            TriggerDispatcher.run(new MetadataTriggerHandler(), tc);
+            new MetadataTriggerHandler().run(tc);
         } catch (Exception e) {
             ex = e;
         }
         Test.stopTest();
 
 
-        System.assert(ex instanceof TypeException && ex.getMessage().contains('(MetadataTriggerHandlerTest.InvalidClass)'),
-            'If TriggerLogic cannot be constructed, TypeException should be thrown.');
+        Assert.isTrue(ex instanceof TypeException
+            && ex.getMessage().contains(CLASS_NAME + '.InvalidClass)'),
+            'If TriggerAction cannot be constructed, TypeException should be thrown.');
     }
 
     @IsTest
     static void testCoverage() {
+        MetadataTriggerHandler.mock(
+            new TriggerSetting__mdt(),
+            new List<TriggerAction__mdt>{
+                new TriggerAction__mdt(ApexClass__c = CLASS_NAME + '.AccountShippingCountryFiller')
+            }
+        );
+
         for (TriggerOperation triggerOperation : TriggerOperation.values()) {
-            TriggerDispatcher.run(new MetadataTriggerHandler(), new TriggerContext(triggerOperation, new List<SObject>(), new List<SObject>()));
+            new MetadataTriggerHandler().run(
+                new TriggerContext(
+                    triggerOperation,
+                    new List<Account>(),
+                    new List<Account>()
+                )
+            );
         }
-        System.assert(true, 'No exception is expected to happen');
+        Assert.isTrue(true, 'No exception is expected to happen');
     }
 
 
@@ -116,40 +143,29 @@ private class MetadataTriggerHandlerTest {
             new Account(Id = '001000000000001', Name = 'Test'),
             new Account(Id = '001000000000002', Name = 'Test')
         };
-        TriggerContext tc = new TriggerContext(TriggerOperation.BEFORE_INSERT, accounts, null);
-        MetadataTriggerHandler.mockMetadata(new List<TriggerLogic__mdt>{
-            new TriggerLogic__mdt(
-                ApexClass__c = 'MetadataTriggerHandlerTest.ParameterizableLogic',
-                Parameters__c = 'New Name'
-            )
-        });
+        TriggerContext tc = new TriggerContext(
+            TriggerOperation.BEFORE_INSERT,
+            accounts,
+            null
+        );
+
+        MetadataTriggerHandler.mock(
+            new TriggerSetting__mdt(),
+            new List<TriggerAction__mdt>{
+                new TriggerAction__mdt(
+                    ApexClass__c = CLASS_NAME + '.ParameterizableAction',
+                    Parameters__c = '{"parameterName":"New Name"}')
+            }
+        );
 
 
         Test.startTest();
-        TriggerDispatcher.run(new MetadataTriggerHandler(), tc);
+        new MetadataTriggerHandler().run(tc);
         Test.stopTest();
 
 
         for (Account account : accounts) {
-            System.assertEquals('New Name', account.Name, 'Name should be updated to the value passed in custom metadata parameter.');
-        }
-    }
-
-
-    /**
-     * Example of TriggerHandler.Logic class which can be parametrized through custom metadata.
-     */
-    public class ParameterizableLogic implements TriggerLogic {
-        private String parameterName;
-
-        public void execute(List<SObject> records, TriggerContext ctx) {
-            for (Account acc : (Account[]) records) {
-                acc.Name = parameterName;
-            }
-        }
-
-        public void setParameters(String parameters) {
-            this.parameterName = parameters;
+            Assert.areEqual('New Name', account.Name, 'Name should be updated to the value passed in custom metadata parameter.');
         }
     }
 }

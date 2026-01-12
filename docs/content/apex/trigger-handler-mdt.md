@@ -17,18 +17,17 @@ sf project deploy start \
 # Documentation
 Extension to the standard version of the Trigger Handler Framework. All standard features - such as Logic toggle are available.
 
-Metadata Trigger Handler is a Dependency-Injection oriented pattern that moves orchestration from the code of sObject specific Trigger Handler classes to the
+Metadata Trigger Handler is a Dependency-Injection oriented pattern that moves orchestration from the code of Trigger Handler classes to the
 Custom Metadata records.  
 Each record defines SObject, Trigger operation, Apex Class name and optional Parameters and Custom Permission.
 Framework initializes and parametrizes each of the defined classes and executes its code.
 
-![th-mdt-full.png](/img/th-mdt-full.png)
+![th-mdt-full.png](../../img/th-mdt-full.png)
 
 Apex Classes defined in the custom metadata must implement TriggerLogic interface:
 ```apex
 public interface TriggerLogic {
-	void setParameters(String parameters);
-	void execute(List<SObject> records, TriggerContext ctx);
+    void execute(List<SObject> records, TriggerContext ctx);
 }
 ```
 
@@ -36,22 +35,20 @@ Example of a class that copies BillingCountry to ShippingCountry when it's blank
 ```apex
 public class AccountShippingCountryFiller implements TriggerLogic {
 
-	public void execute(List<Account> records, TriggerContext ctx) {
-		for (Account acc : records) {
-			if (ctx.isChanged(acc, Account.BillingCountry) && String.isBlank(acc.ShippingCountry)) {
-				acc.ShippingCountry = acc.BillingCountry;
-			}
-		}
-	}
-
-	public void setParameters(String parameters) {}
+    public void execute(List<Account> records, TriggerContext ctx) {
+        for (Account acc : records) {
+            if (ctx.isChanged(acc, Account.BillingCountry) && String.isBlank(acc.ShippingCountry)) {
+                acc.ShippingCountry = acc.BillingCountry;
+            }
+        }
+    }
 }
 ```
 
 To run Metadata Trigger Handler, define your trigger as follows:
 ```apex
 trigger AccountTrigger on Account (before insert, before update, before delete, after insert, after update, after delete, after undelete) {
-	TriggerDispatcher.run(new MetadataTriggerHandler());
+    TriggerDispatcher.run(new MetadataTriggerHandler());
 }
 ```
 
@@ -63,43 +60,39 @@ trigger AccountTrigger on Account (before insert, before update, before delete, 
 
 #### Cons
 - Custom Metadata is an additive deployment, which means that deleting metadata from the source of truth does not remove it from the org.
-  Depending on the situation, CI/CD pipeline or the lack of it, missed manual steps, deploying to refresh org, etc — it's possible to have unwanted trigger
-  logic running in the org, without being aware of it.
-- It's harder to navigate through the trigger code. Developers will have to jump between custom metadata page and IDE to check what's executed.
-- Static Analysis may report false-positive unused classes, that are only referenced in the custom metadata.
+  Depending on the situation, CI/CD pipeline or the lack of it, missed manual steps, deploying to refresh org, etc. — it's possible to have unwanted trigger
+  logic running in the org without being aware of it.
+- It's harder to navigate through the trigger code. Developers will have to jump between the custom metadata page and IDE to check what's executed.
+- Code Analyzer may report false-positive unused classes that are only referenced in the custom metadata.
 
 #### Recommendation
 Based on my experience, it's easier to work with the code version of the trigger handler, hence why I prefer to use it on small to medium-sized projects.  
-However, configuration-based also has a lot of merits-especially on enterprise-tier orgs. If you pick configuration-based trigger handler, make sure to also
-read through Cons.
+However, configuration-based also has a lot of merits-especially on enterprise-tier orgs. If you pick a configuration-based trigger handler, make sure to also read through Cons.
 
 
 ---
-# Common Logic
-`TriggerCommons` class is a container for generic reusable building blocks of your org.  
-Consider your requirements in terms of generic puzzles that can be parameterized to fulfill the requirement:
-- if there's a need to copy field from one to another
-- or set default value
-- or validate if the field is not empty or has a predefined value
+# TriggerCommons
 
-We can create a generic class which will fulfill the requirement and parametrize it to our needs.
+Lightweight library of reusable trigger building blocks. Each inner class implements `TriggerLogic` and is intended to be configured from Custom Metadata (or
+used directly from code). Designed for BEFORE/AFTER trigger contexts and optimized for common tasks: setting fields with formulas and invoking Flows.
 
-I've included a few of those generic classes to serve as an example:
+## FieldSetter
 
-##### TriggerCommons.DefaultField
-- `sObjectField:value`
+Purpose: evaluate a formula per record and assign the computed value to a target field. Intended for BEFORE triggers to populate or override a field.
 
-Sets the field on record if it's blank.
+Parameters
+- `field` — API name of the target field (required).
+- `formula` — formula text evaluated in the context of each record (required).
+- `replaceIfSet` — optional boolean. When `true` the computed value replaces any existing value; when `false` assignment occurs only if the target value is
+  null. Default: `true`.
 
-##### TriggerCommons.CopyField
-- `sourceSObjectField:targetSObjectField`
+Behavior
+- Builds a `FormulaEval.FormulaInstance` lazily using the trigger SObject type and the configured formula.
+- Determines the formula return type from the target field's schema display type (boolean, date, datetime, time, id/reference, decimal/currency/percent, double,
+  integer, long, otherwise string).
+- If the formula return type is STRING, the formula is parsed as a template.
+- For each record, evaluates the formula and assigns the result to the configured field when the target is null or `replaceIfSet` is `true`.
 
-Copies field value from source to the target field.
-
-##### TriggerCommons.ExecuteFlow
-- The first line is `namespace__FlowDeveloperName` - or just `FlowDeveloperName` for local namespace
-- All subsequent lines are additional flow parameters in `name:value` format.
-- Flow should have input SObject variables named `record` and `old`.
-
-Executes Auto-launched flow with `record` and `old` parameters and any additionally defined parameters.
-See `Set Capital` custom metadata on the image above for reference.
+Notes
+- Field API name must exist on the target SObject type.
+- Formula evaluation happens per record; keep heavy expressions in mind for performance.

@@ -13,23 +13,23 @@ sf project deploy start -d "force-app/commons/triggerHandler" -o sfdxOrg
 # Documentation
 Trigger Handler is an apex design pattern that solves a few problems which arouse around apex triggers:
 
-1. If there's more than one trigger per SObject in org, order of trigger execution is not deterministic.  
-   Recommended practice is to have one trigger per SObject and delegate logic execution inside it.
-1. Trigger file is not treated as a class, but as a block of apex code — similarly to anonymous apex. It cannot extend any virtual class on its own, it has to
-   delegate everything to a fully-fledged class - Trigger Handler.
+1. If there's more than one trigger per SObject in org, the order of trigger execution is not deterministic.  
+   The recommended practice is to have one trigger per SObject and delegate logic execution inside it.
+1. Trigger file is not treated as a class but as a block of apex code — similarly to anonymous apex. It cannot extend any virtual class on its own, it has to
+   delegate everything to a fully-fledged class—Trigger Handler.
 1. Triggers will have repeated switch logic for checking context
 
 ## Trigger Dispatcher
-Entry point of every trigger. This class encapsulates trigger context variables into TriggerContext instance
-and dispatches execution to correct Trigger Handler method.
+Entry point of every trigger. This class encapsulates trigger context variables into the TriggerContext class instance 
+and dispatches execution to the correct Trigger Handler method.
 
-It contains method:
+It contains the method:
 * `public static void run(TriggerHandler triggerHandler)` which runs concrete TriggerHandler class.
 
 and another that is visible only in unit tests and provides an ability to mock TriggerContext:
 * `@TestVisible private static void run(TriggerHandler triggerHandler, TriggerContext triggerContext)`
 
-Trigger should contain only one line of code which executes trigger handler:
+Trigger should contain only one line of code which executes the trigger handler:
 ```apex
 trigger AccountTrigger on Account (before insert, after insert, before update, after update, before delete, after delete, after undelete) {
 	TriggerDispatcher.run(new AccountTriggerHandler());
@@ -42,7 +42,7 @@ public static void run(TriggerHandler triggerHandler);
 ```
 
 ## Trigger Handler
-This virtual class is the heart of framework. It contains virtual methods which should be overwritten, each one corresponding to the trigger event.
+This virtual class is the heart of the framework. It contains virtual methods which should be overwritten, each one corresponding to the trigger event.
 Each sObject should have a concrete trigger handler class, which extends TriggerHandler class, and override method it wants to handle in the trigger execution.
 
 ```apex | TriggerHandler
@@ -174,20 +174,13 @@ Settings class for manipulating trigger execution.
    TriggerSettings.enableTrigger(Account.SObjectType);
    ```
 
-2. Toggling specific Trigger Handler
-   ```apex
-   TriggerSettings.disableTriggerHandler(AccountTriggerHandler.class);
-   // Do Something without triggers running
-   TriggerSettings.enableTriggerHandler(AccountTriggerHandler.class);
-   ```
-
-3. Toggling all trigger:
+2. Toggling all trigger:
    ```apex
    TriggerSettings.disableTriggers();
    TriggerSettings.enableTriggers();
    ```
 
-4. Toggling all logic on custom setting level for current user. The methods below perform DML to update LogicSwitch__c custom setting for current user.
+3. Toggling all logic on the custom setting level for the current user. The methods below perform DML to update LogicSwitch__c custom setting for current user.
    ```apex
    TriggerSettings.disableAllLogic();
    TriggerSettings.enableAllLogic();

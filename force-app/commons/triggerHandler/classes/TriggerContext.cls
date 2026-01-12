@@ -1,26 +1,5 @@
-/**
-* MIT License
-*
-* Copyright (c) 2019 Piotr Kożuchowski
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
+// SPDX-License-Identifier: MIT
+// Copyright 2019 Piotr Kożuchowski
 
 /**
  * Encapsulation for Trigger context variables.
@@ -28,8 +7,10 @@
  * but may also be used to mock trigger execution in unit tests.
  * It also contains helper method for checking field changes.
  */
+@SuppressWarnings('PMD')
 public virtual class TriggerContext {
-    private static Map<String, Integer> PROCESSED_COUNT = new Map<String, Integer>();
+    private static TriggerContext instance;
+    private final static Map<String, Integer> PROCESSED_COUNT = new Map<String, Integer>();
     public Boolean isExecuting { get; protected set; }
     public Boolean isInsert { get; protected set; }
     public Boolean isUpdate { get; protected set; }
@@ -44,17 +25,31 @@ public virtual class TriggerContext {
     protected List<SObject> triggerOld { get; protected set; }
     protected Map<Id, SObject> triggerNewMap { get; protected set; }
     protected Map<Id, SObject> triggerOldMap { get; protected set; }
+    private String currentAction;
+    private Object sharedState { get; set; }
 
     /**
      * @return Instance of TriggerContext object if ran during trigger or test execution, null otherwise.
      */
     public static TriggerContext getInstance() {
-        if (Trigger.isExecuting || Test.isRunningTest()) {
-            return new TriggerContext();
-
+        if (Trigger.isExecuting) {
+            if (instance == null) {
+                instance = new TriggerContext();
+            }
+            return instance;
         } else {
             return null;
         }
+    }
+
+    /**
+     * Internal Method.
+     * Initializes new TriggerContext instance.Called by Trigger Handler when entering Trigger.
+     * @return New instance of TriggerContext object if ran during trigger or test execution, null otherwise.
+     */
+    public static TriggerContext newContext() {
+        instance = null;
+        return getInstance();
     }
 
     protected TriggerContext() {
@@ -103,14 +98,14 @@ public virtual class TriggerContext {
      * @return Trigger.old in DELETE triggers and Trigger.new in all other cases
      */
     public SObject[] getRecords() {
-        return triggerNew == null ? triggerOld : triggerNew;
+        return triggerNew ?? triggerOld;
     }
 
     /**
-     * @return Trigger.oldMap in DELETE trsiggers and Trigger.newMap in all other cases
+     * @return Trigger.oldMap in DELETE triggers and Trigger.newMap in all other cases
      */
     public Map<Id, SObject> getRecordsMap() {
-        return triggerNewMap == null ? triggerOldMap : triggerNewMap;
+        return triggerNewMap ?? triggerOldMap;
     }
 
     /**
@@ -132,10 +127,33 @@ public virtual class TriggerContext {
     }
 
     /**
+     * @return Trigger Old records list
+     */
+    public List<SObject> getOld() {
+        return triggerOld;
+    }
+
+    /**
     * @return Trigger Old Map
     */
     public Map<Id, SObject> getOldMap() {
         return triggerOldMap;
+    }
+
+    /**
+     * @return Shared state object that can be used to pass data between
+     * BEFORE and AFTER trigger contexts for the same trigger execution of the same record batch.
+     */
+    public Object getSharedState() {
+        return sharedState;
+    }
+
+    /**
+     * @param sharedState Shared state object that can be used to pass data between
+     * BEFORE and AFTER trigger contexts for the same trigger execution of the same record batch.
+     */
+    public void setSharedState(Object sharedState) {
+        this.sharedState = sharedState;
     }
 
     /**
@@ -264,6 +282,31 @@ public virtual class TriggerContext {
     }
 
     /**
+     * Checks if the current action is executed for the first time for given record.
+     *
+     * @param recordId Id of record in trigger
+     * @return True if record is executed in the current action for the first time.
+     */
+    public Boolean isFirstActionRun(Id recordId) {
+        return isFirstActionRun(recordId, false);
+    }
+
+    /**
+     * Checks if the current action is executed for the first time for given record.
+     *
+     * @param recordId Id of record in trigger
+     * @param markExecuted Whether to mark this action as executed for this record
+     * @return True if record is executed in the current action for the first time
+     */
+    public Boolean isFirstActionRun(Id recordId, Boolean markExecuted) {
+        Boolean result = isFirstRun(currentAction, recordId);
+        if (markExecuted == true) {
+            markActionExecuted(recordId);
+        }
+        return result;
+    }
+
+    /**
      * @param featureName Name of class or feature that is calling this method.
      * It is used to cover scenario where record did not initially meet criteria to process, but was updated by flow/another DML to meet the criteria.
      * @param recordId Id of record in trigger
@@ -276,14 +319,35 @@ public virtual class TriggerContext {
     }
 
     /**
-     * @param featureName Name of class or feature that is calling this method.
-     * It is used to cover scenario where record did not initially meet criteria to process, but was updated by flow/another DML to meet the criteria.
+     * Marks that current action was executed for given record.
      * @param recordId Id of record in trigger
+     * @return Count of how many times action has been run.
      */
-    public void setExecuted(String featureName, Id recordId) {
+    public Integer markActionExecuted(Id recordId) {
+        return markExecuted(currentAction, recordId);
+    }
+
+    /**
+     * Marks that a given feature has been executed for the record.
+     * This method is used to track recurrent trigger execution where record did not initially meet criteria to process,
+     * but was updated by flow/another DML to meet the criteria.
+     * @param featureName Name of class or feature that is marking execution
+     * @param recordId Id of record in trigger
+     * @return Count of how many times action has been run.
+     */
+    public Integer markExecuted(String featureName, Id recordId) {
         Integer count = getRunCount(featureName, recordId);
         String key = '' + recordId + featureName;
         PROCESSED_COUNT.put(key, count + 1);
+        return count + 1;
+    }
+
+    /**
+     * @param recordId Id of record in trigger
+     * @return How many times this record was processed by current trigger action.
+     */
+    public Integer getRunCount(Id recordId) {
+        return getRunCount(currentAction, recordId);
     }
 
     /**
@@ -294,5 +358,13 @@ public virtual class TriggerContext {
         String key = '' + recordId + featureName;
         Integer count = PROCESSED_COUNT.get(key);
         return count == null ? 0 : count;
+    }
+
+    /**
+     * Internal Method.
+     * Trigger Handler sets the name of the current action being executed.
+     */
+    public void setCurrentAction(String actionName) {
+        this.currentAction = actionName;
     }
 }

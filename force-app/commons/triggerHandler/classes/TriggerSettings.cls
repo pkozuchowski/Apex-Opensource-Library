@@ -1,30 +1,5 @@
-/**
-* MIT License
-*
-* Copyright (c) 2021 Piotr Kożuchowski
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
-/**
-*  Please find the newest source code at https://github.com/pkozuchowski/Apex-Opensource-Library
-*
-*/
+// SPDX-License-Identifier: MIT
+// Copyright 2019 Piotr Kożuchowski
 
 /**
  * Settings for Trigger logic.
@@ -33,10 +8,29 @@
  */
 public inherited sharing class TriggerSettings {
     private static Boolean triggersEnabled = true;
-    private final static LogicSwitch__c logicSwitchSetting = LogicSwitch__c.getInstance();
-    private final static Set<SObjectType> disabledTriggers = new Set<SObjectType>();
-    private final static Set<String> disabledTriggerHandlers = new Set<String>();
+    private static LogicSwitch__c settings;
+    private static Set<String> disabledTriggers;
+    private static Set<String> disabledActions;
 
+    /**
+    * Load disabled actions from LogicSwitch__c setting
+    */
+    static {
+        refreshSettings();
+    }
+
+    /**
+     * Refreshes settings from LogicSwitch__c custom setting.
+     * All previously disabled triggers and actions are cleared.
+     */
+    public static void refreshSettings() {
+        triggersEnabled = true;
+        settings = LogicSwitch__c.getInstance();
+        disabledActions = new Set<String>();
+        disabledTriggers = new Set<String>();
+        addSettingLines(settings.DisableActions__c, disabledActions);
+        addSettingLines(settings.DisableSelectedTriggers__c, disabledTriggers);
+    }
 
     /**
      * Disables triggers on all SObjects
@@ -56,76 +50,111 @@ public inherited sharing class TriggerSettings {
     * Disable all triggers execution for given sObjectType for current transaction or until enableTrigger is called
     */
     public static void disableTrigger(SObjectType sObjectType) {
-        disabledTriggers.add(sObjectType);
-    }
-
-    /**
-     * Disables specific Trigger Handler
-     */
-    public static void disableTriggerHandler(Type triggerHandlerType) {
-        if (TriggerHandler.class.isAssignableFrom(triggerHandlerType)) {
-            String name = triggerHandlerType.getName();
-            name = name.contains('.') ? name.substringAfter('.') : name;
-            disabledTriggerHandlers.add(name);
-        }
-    }
-
-    /**
-     * Disables specific Trigger Handler
-     */
-    public static void enableTriggerHandler(Type triggerHandlerType) {
-        if (TriggerHandler.class.isAssignableFrom(triggerHandlerType)) {
-            String name = triggerHandlerType.getName();
-            name = name.contains('.') ? name.substringAfter('.') : name;
-            disabledTriggerHandlers.remove(name);
-        }
-    }
-
-    /**
-     * @return True if specific TriggerHandler class is disabled
-     */
-    public static Boolean isTriggerHandlerEnabled(String triggerHandlerName) {
-        return !disabledTriggerHandlers.contains(triggerHandlerName);
+        disabledTriggers.add(sObjectType.toString().toLowerCase());
     }
 
     /**
     * Enabled previously disabled trigger execution for given sObjectType
     */
     public static void enableTrigger(SObjectType sObjectType) {
-        disabledTriggers.remove(sObjectType);
+        disabledTriggers.remove(sObjectType.toString().toLowerCase());
     }
 
     /**
-     * @return True, if triggers for given SObject Type are enabled.
+     * Checks if triggers should run in the current context.
+     *
+     * @param ctx The trigger context to check
+     * @return True if triggers should run, false otherwise
      */
-    public static Boolean isSObjectTriggerEnabled(SObjectType sObjectType) {
-        return disabledTriggers.contains(sObjectType) == false
-            && logicSwitchSetting.DisableTriggers__c == false
-            && triggersEnabled == true;
+    public static Boolean shouldRun(TriggerContext ctx) {
+        String sobjectName = ctx.sObjectType.toString().toLowerCase();
+        return ctx.isExecuting
+            && triggersEnabled == true
+            && settings.DisableTriggers__c == false
+            && disabledTriggers.contains(sobjectName) == false
+            && disabledTriggers.contains(
+            (sobjectName + '.' + ctx.operationType).toLowerCase()
+        ) == false;
     }
+
+    /**
+     * Checks if a specific trigger action is enabled.
+     * Trigger Handler checks this before executing each action.
+     *
+     * @param action Class name of trigger action to check
+     * @return True if the action is enabled (no actions are disabled or this specific action is disabled)
+     */
+    public static Boolean isActionEnabled(String actionClass) {
+        return disabledActions.isEmpty()
+            || !disabledActions.contains(actionClass.toLowerCase());
+    }
+
+    /**
+     * Enables a specific trigger action type.
+     *
+     * @param actionType The type of trigger action to enable
+     */
+    public static void enableAction(Type actionType) {
+        disabledActions.remove(actionType.getName().toLowerCase());
+    }
+
+    /**
+     * Disables a specific trigger action type.
+     * @param actionType The type of trigger action to disable
+     */
+    public static void disableAction(Type actionType) {
+        disabledActions.add(actionType.getName().toLowerCase());
+    }
+
 
     /**
     * Disable all logic (Workflow Rules, Triggers, Process Builders, Validation Rules) which handle LogicSwitch__c.
-    * Disablement is done by temporarily upserting LogicSwitch__c record for running user and restoring it later with enableAllAutomations.
+    * Disablement is done by temporarily upserting LogicSwitch__c record for running user..
     * This action performs DML.
     */
     public static void disableAllLogic() {
-        LogicSwitch__c clone = LogicSwitch__c.getInstance();
-        clone.DisableWorkflowRules__c = true;
-        clone.DisableTriggers__c = true;
-        clone.DisableProcessBuilders__c = true;
-        clone.DisableValidationRules__c = true;
-        clone.DisableFlows__c = true;
-        upsert clone;
+        setUserSettings(true);
     }
 
     /**
-    * Restores previous LogicSwitch values on the user.
+    * Enables all logic (Workflow Rules, Triggers, Process Builders, Validation Rules) in LogicSwitch__c.
+    * Creates new settings for running user with all options enabled.
     * This action performs DML.
     */
     public static void enableAllLogic() {
-        delete [SELECT Id FROM LogicSwitch__c WHERE SetupOwnerId = :UserInfo.getUserId()];
+        setUserSettings(false);
     }
 
+    private static void setUserSettings(Boolean value) {
+        LogicSwitch__c clone = LogicSwitch__c.getInstance();
+        clone.DisableWorkflowRules__c = value;
+        clone.DisableTriggers__c = value;
+        clone.DisableProcessBuilders__c = value;
+        clone.DisableValidationRules__c = value;
+        clone.DisableFlows__c = value;
+        upsert as system clone;
+        settings = clone;
+    }
+
+    /**
+    * Reverts to org defaults by deleting LogicSwitch__c record for assigned to running user.
+    * This action performs DML.
+    */
+    public static void removeUserSettings() {
+        delete [SELECT Id FROM LogicSwitch__c WHERE SetupOwnerId = :UserInfo.getUserId() WITH SYSTEM_MODE];
+        settings = LogicSwitch__c.getInstance();
+    }
+
+    private static void addSettingLines(String fieldValue, Set<String> disabledOptions) {
+        if (String.isNotBlank(fieldValue)) {
+            List<String> actions = fieldValue.split('\r\n');
+
+            for (String action : actions) {
+                disabledOptions.add(action.trim().toLowerCase());
+            }
+        }
+    }
+
+    @SuppressWarnings('PMD.EmptyStatementBlock')
     private TriggerSettings() {}
 }

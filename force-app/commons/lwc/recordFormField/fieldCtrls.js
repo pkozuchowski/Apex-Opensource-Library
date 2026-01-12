@@ -7,11 +7,12 @@ import lightningRichText from './lightningRichText.html';
 import lightningDuelingListbox from './lightningDuelingListbox.html';
 import lightningRadioGroup from './lightningRadioGroup.html';
 import lightningCheckboxGroup from './lightningCheckboxGroup.html';
+import lightningAddress from './lightningAddress.html';
 
-const eventValue = (event) => event.detail.value;
+const eventValue = (cmp, event) => ({[cmp.field]: event.detail.value})
 const noop = () => {};
 
-export function getFieldHandler(cmp) {
+export function getFieldHandler(cmp, objectInfo) {
     try {
         let designSystem = cmp.formParams.designSystem;
         if (!designSystem || designSystem === "lightning") {
@@ -47,6 +48,8 @@ export function getFieldHandler(cmp) {
                     return LightningPicklistCtrl;
                 case 'MultiPicklist':
                     return LightningMultiPicklistCtrl;
+                case 'Address':
+                    return LightningAddressCtrl(cmp, objectInfo);
             }
         }
     } catch (e) {
@@ -85,7 +88,9 @@ const LightningCheckboxCtrl = LightningInputCtrl({
         type   : 'checkbox',
         checked: cmp.fieldValue
     }),
-    outputValue: (event) => event.detail.checked
+    outputValue: (cmp, event) => ({
+        [cmp.field]: event.detail.checked
+    })
 });
 
 const LightningNumberCtrl = function (cmp) {
@@ -171,7 +176,9 @@ const LightningReferenceCtrl = LightningInputCtrl({
         objectApiName: cmp.fieldInfo.referenceToInfos[0].apiName,
         disabled     : cmp.disabled || cmp.isReadOnly
     }),
-    outputValue: (event) => event.detail.recordId
+    outputValue: (cmp, event) => ({
+        [cmp.field]: event.detail.recordId
+    })
 });
 
 const LightningPicklistCtrl = LightningInputCtrl({
@@ -208,5 +215,48 @@ const LightningMultiPicklistCtrl = LightningInputCtrl({
         sourceLabel  : "Available",
         selectedLabel: "Selected"
     }),
-    outputValue: (event) => event.detail.value.join(';')
+    outputValue: (cmp, event) => ({
+        [cmp.field]: event.detail.value.join(';')
+    })
 });
+
+const LightningAddressCtrl = function (cmp, objectInfo) {
+    const addressField = cmp.field;
+    const addressComponents = {};
+
+    Object.values(objectInfo.fields).forEach(field => {
+        if (field.compoundFieldName === addressField) {
+            addressComponents[field.compoundComponentName] = field;
+        }
+    });
+
+    let street = addressComponents.Street;
+    let city = addressComponents.City;
+    let country = addressComponents.Country;
+    let postalCode = addressComponents.PostalCode;
+    let province = addressComponents.State;
+
+    return LightningInputCtrl({
+        render     : () => lightningAddress,
+        props      : (cmp) => ({
+            addressLabel   : cmp.label || cmp.fieldInfo.label,
+            street         : cmp.getField(street?.apiName),
+            streetLabel    : street?.label,
+            city           : cmp.getField(city?.apiName),
+            cityLabel      : city?.label,
+            country        : cmp.getField(country?.apiName),
+            countryLabel   : country?.label,
+            postalCode     : cmp.getField(postalCode?.apiName),
+            postalCodeLabel: postalCode?.label,
+            province       : cmp.getField(province?.apiName),
+            provinceLabel  : province?.label,
+        }),
+        outputValue: (cmp, event) => ({
+            [street.apiName]    : event.target.street,
+            [city.apiName]      : event.target.city,
+            [province.apiName]  : event.target.province,
+            [country.apiName]   : event.target.country,
+            [postalCode.apiName]: event.target.postalCode,
+        })
+    });
+}

@@ -22,7 +22,7 @@ export default class Preview extends LightningElement {
         }
     }
 
-    handleMode() {
+    edit() {
         this.readOnly = !this.readOnly;
     }
 
@@ -40,12 +40,11 @@ export default class Preview extends LightningElement {
     @wire(getRecord, {recordId: '006KM0000033FC6YAM', layoutTypes: 'Full'})
     getAccount({error, data}) {
         if (data) {
-            console.log('data', data);
+            console.log('account', data);
             let record = {};
             for (let field in data.fields) {
                 record[field] = data.fields[field].value;
             }
-            // console.log('this.account', JSON.stringify(data, null, 2));
             this.opportunity = JSON.parse(JSON.stringify(record));
         }
     }
@@ -57,8 +56,6 @@ export default class Preview extends LightningElement {
             for (let field in data.fields) {
                 record[field] = data.fields[field].value;
             }
-            // console.log('this.account', JSON.stringify(record, null, 2));
-            // console.log('this.opportunity', JSON.stringify(data, null, 2));
             this.account = JSON.parse(JSON.stringify(record));
         }
     }
@@ -66,10 +63,8 @@ export default class Preview extends LightningElement {
     onRecordChange(ev) {
         ev.preventDefault();
         ev.stopPropagation();
-        console.log('recordChange', ev.detail.field, ev.detail.value);
         try {
-            this.account[ev.detail.field] = ev.detail.value;
-
+            this.account = Object.assign(this.account, ev.detail.value);
         } catch (e) {
             console.log(e, e.message, e.detail);
         }
@@ -79,7 +74,7 @@ export default class Preview extends LightningElement {
         ev.preventDefault();
         ev.stopPropagation();
         try {
-            this.account = {...this.account, [ev.detail.field]: ev.detail.value};
+            this.account = {...this.account, ...ev.detail};
         } catch (e) {
             console.log(e, e.message, e.detail);
         }

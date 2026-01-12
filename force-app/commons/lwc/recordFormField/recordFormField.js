@@ -49,7 +49,7 @@ export default class RecordFormField extends LightningElement {
             this.fieldInfo = objectInfo.fields[this.field];
             this.controllerName = this.fieldInfo.controllerName;
             this.picklistValues = picklistValues[this.field];
-            this.fieldCtrl = getFieldHandler(this);
+            this.fieldCtrl = getFieldHandler(this, objectInfo);
         } catch (e) {
             console.error('error.connectField', e.message);
         }
@@ -64,11 +64,15 @@ export default class RecordFormField extends LightningElement {
     }
 
     get fieldValue() {
-        return this.record ? this.record[this.field] : null;
+        return this.getField(this.field);
+    }
+
+    getField(field) {
+        return this.record?.[field];
     }
 
     get controllerValue() {
-        return this.record ? this.record[this.controllerName] : null;
+        return this.record?.[this.controllerName];
     }
 
     get classes() {
@@ -112,14 +116,17 @@ export default class RecordFormField extends LightningElement {
     }
 
     handleChange(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        this.dispatchEvent(new CustomEvent('change', {
-            detail : {
-                field: this.field,
-                value: this.fieldCtrl.outputValue(event)
-            },
-            bubbles: true,
-        }));
+        try {
+            event.preventDefault();
+            event.stopPropagation();
+            this.dispatchEvent(new CustomEvent('change', {
+                detail : {
+                    value: this.fieldCtrl.outputValue(this, event)
+                },
+                bubbles: true,
+            }));
+        } catch (e) {
+            console.error('RecordFormField.handleChange', e.message);
+        }
     }
 }

@@ -83,9 +83,9 @@ export default class RecordFormField extends LightningElement {
         return this.readOnly || this.formParams?.readOnly;
     }
 
-    /*TODO: Clear Dependant picklist when master changes*/
     get picklistOptions() {
         let options;
+
         if (this.options) {
             options = this.options;
 

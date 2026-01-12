@@ -45,7 +45,7 @@ export function getFieldHandler(cmp, objectInfo) {
                 case 'Reference':
                     return LightningReferenceCtrl;
                 case 'Picklist':
-                    return LightningPicklistCtrl;
+                    return LightningPicklistCtrl(cmp, objectInfo);
                 case 'MultiPicklist':
                     return LightningMultiPicklistCtrl;
                 case 'Address':
@@ -181,22 +181,36 @@ const LightningReferenceCtrl = LightningInputCtrl({
     })
 });
 
-const LightningPicklistCtrl = LightningInputCtrl({
-    render: (cmp) => {
-        if (cmp.isReadOnly) {
-            return lightningInput;
-        } else if (cmp.type === "radioGroup") {
-            return lightningRadioGroup;
-        } else {
-            return lightningSelect;
+const LightningPicklistCtrl = function (cmp, objectInfo) {
+    const controlledFields = {};
+    Object.values(objectInfo.fields).forEach(field => {
+        if (field.controllingFields.indexOf(cmp.field) > -1) {
+            controlledFields[field.apiName] = '';
         }
-    },
-    /*TODO: Display Picklist Label on Read Only*/
-    props: (cmp) => ({
-        value  : cmp.fieldValue || '',
-        options: cmp.picklistOptions
-    })
-});
+    });
+
+    return LightningInputCtrl({
+        render: (cmp) => {
+            if (cmp.isReadOnly) {
+                return lightningInput;
+            } else if (cmp.type === "radioGroup") {
+                return lightningRadioGroup;
+            } else {
+                return lightningSelect;
+            }
+        },
+        /*TODO: Display Picklist Label on Read Only*/
+        props      : (cmp) => ({
+            value  : cmp.fieldValue || '',
+            options: cmp.picklistOptions
+        }),
+        outputValue: (cmp, event) => ({
+            [cmp.field]: event.detail.value,
+            ...controlledFields
+        })
+    });
+};
+
 
 const LightningMultiPicklistCtrl = LightningInputCtrl({
     render     : (cmp) => {

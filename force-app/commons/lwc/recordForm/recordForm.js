@@ -71,6 +71,7 @@ export default class RecordForm extends LightningElement {
     @wire(getObjectInfo, {objectApiName: '$objectName'})
     describeObjectInfo({err, data}) {
         if (data) {
+            console.log('this.getObjectInfo', data);
             this.objectInfo = JSON.parse(JSON.stringify(data));
             this.getRecordTypeId(data);
             this.overrideFieldLabels();

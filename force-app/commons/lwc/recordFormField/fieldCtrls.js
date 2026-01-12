@@ -11,7 +11,50 @@ import lightningCheckboxGroup from './lightningCheckboxGroup.html';
 const eventValue = (event) => event.detail.value;
 const noop = () => {};
 
-function FieldCtrl({props = noop, render, outputValue}) {
+export function getFieldHandler(cmp) {
+    try {
+        let designSystem = cmp.formParams.designSystem;
+        if (!designSystem || designSystem === "lightning") {
+            switch (cmp.fieldInfo.dataType) {
+                case 'String':
+                    return LightningTextCtrl;
+                case 'Boolean':
+                    return LightningCheckboxCtrl;
+                case 'Double':
+                    return LightningNumberCtrl(cmp);
+                case 'Currency':
+                    return LightningNumberCtrl(cmp);
+                case 'Percent':
+                    return LightningNumberCtrl(cmp);
+                case 'DateTime':
+                    return LightningDateTimeCtrl;
+                case 'Date':
+                    return LightningDateCtrl;
+                case 'Email':
+                    return LightningEmailCtrl;
+                case 'Phone':
+                    return LightningPhoneCtrl;
+                case 'Time':
+                    return LightningTimeCtrl;
+                case 'Url':
+                    return LightningUrlCtrl;
+                case 'TextArea':
+                    return cmp.fieldInfo.extraTypeInfo === "PlainTextArea" ?
+                        LightningTextAreaInputCtrl : LightningRichTextCtrl;
+                case 'Reference':
+                    return LightningReferenceCtrl;
+                case 'Picklist':
+                    return LightningPicklistCtrl;
+                case 'MultiPicklist':
+                    return LightningMultiPicklistCtrl;
+            }
+        }
+    } catch (e) {
+        console.log(e.message);
+    }
+}
+
+function LightningInputCtrl({props = noop, render, outputValue}) {
     return {
         render     : render || (() => lightningInput),
         props      : (cmp) => {
@@ -33,11 +76,11 @@ function FieldCtrl({props = noop, render, outputValue}) {
     }
 }
 
-const StringCtrl = FieldCtrl({
+const LightningTextCtrl = LightningInputCtrl({
     props: () => ({type: 'text'})
 });
 
-const BooleanInputCtr = FieldCtrl({
+const LightningCheckboxCtrl = LightningInputCtrl({
     props      : (cmp) => ({
         type   : 'checkbox',
         checked: cmp.fieldValue
@@ -45,14 +88,14 @@ const BooleanInputCtr = FieldCtrl({
     outputValue: (event) => event.detail.checked
 });
 
-const NumberInputCtr = function (cmp) {
+const LightningNumberCtrl = function (cmp) {
     const step = cmp.step || (1 / Math.pow(10, cmp.fieldInfo.scale)).toString();
     const formatter = cmp.formatter || {
         Currency: 'currency',
         Percent : 'percent-fixed'
     }[cmp.fieldInfo.dataType] || 'decimal';
 
-    return FieldCtrl({
+    return LightningInputCtrl({
         props: () => ({
             type: 'number', formatter, step
         }),
@@ -67,7 +110,7 @@ function dateString(value, opts) {
     return value ? new Date(value).toLocaleString(LOCALE, opts) : '';
 }
 
-const DateCtrl = FieldCtrl({
+const LightningDateCtrl = LightningInputCtrl({
     props: (cmp) => ({
         type     : cmp.isReadOnly ? 'text' : 'date',
         dateStyle: 'short',
@@ -77,7 +120,7 @@ const DateCtrl = FieldCtrl({
     })
 });
 
-const DateTimeCtrl = FieldCtrl({
+const LightningDateTimeCtrl = LightningInputCtrl({
     props: (cmp) => ({
         type     : cmp.isReadOnly ? 'text' : 'datetime',
         dateStyle: 'short',
@@ -87,7 +130,7 @@ const DateTimeCtrl = FieldCtrl({
     })
 });
 
-const TimeCtrl = FieldCtrl({
+const LightningTimeCtrl = LightningInputCtrl({
     props: (cmp) => ({
         type : cmp.isReadOnly ? 'text' : 'time',
         value: cmp.isReadOnly ?
@@ -96,23 +139,23 @@ const TimeCtrl = FieldCtrl({
     })
 });
 
-const EmailCtrl = FieldCtrl({
+const LightningEmailCtrl = LightningInputCtrl({
     props: () => ({type: 'email'})
 });
 
-const PhoneCtrl = FieldCtrl({
+const LightningPhoneCtrl = LightningInputCtrl({
     props: () => ({type: 'phone'})
 });
 
-const UrlCtrl = FieldCtrl({
+const LightningUrlCtrl = LightningInputCtrl({
     props: () => ({type: 'url'})
 });
 
-const TextAreaInputCtrl = FieldCtrl({
+const LightningTextAreaInputCtrl = LightningInputCtrl({
     render: () => lightningTextarea,
 });
 
-const RichTextCtrl = FieldCtrl({
+const LightningRichTextCtrl = LightningInputCtrl({
     render: () => lightningRichText,
     props : () => ({
         formats: [
@@ -122,7 +165,7 @@ const RichTextCtrl = FieldCtrl({
     })
 });
 
-const ReferenceCtrl = FieldCtrl({
+const LightningReferenceCtrl = LightningInputCtrl({
     render     : () => lightningRecordPicker,
     props      : (cmp) => ({
         objectApiName: cmp.fieldInfo.referenceToInfos[0].apiName,
@@ -131,7 +174,7 @@ const ReferenceCtrl = FieldCtrl({
     outputValue: (event) => event.detail.recordId
 });
 
-const PicklistCtrl = FieldCtrl({
+const LightningPicklistCtrl = LightningInputCtrl({
     render: (cmp) => {
         if (cmp.isReadOnly) {
             return lightningInput;
@@ -148,7 +191,7 @@ const PicklistCtrl = FieldCtrl({
     })
 });
 
-const MultiPicklistCtrl = FieldCtrl({
+const LightningMultiPicklistCtrl = LightningInputCtrl({
     render     : (cmp) => {
         if (cmp.isReadOnly) {
             return lightningInput;
@@ -167,43 +210,3 @@ const MultiPicklistCtrl = FieldCtrl({
     }),
     outputValue: (event) => event.detail.value.join(';')
 });
-
-export function getFieldHandler(cmp) {
-    try {
-        switch (cmp.fieldInfo.dataType) {
-            case 'String':
-                return StringCtrl;
-            case 'Boolean':
-                return BooleanInputCtr;
-            case 'Double':
-                return NumberInputCtr(cmp);
-            case 'Currency':
-                return NumberInputCtr(cmp);
-            case 'Percent':
-                return NumberInputCtr(cmp);
-            case 'DateTime':
-                return DateTimeCtrl;
-            case 'Date':
-                return DateCtrl;
-            case 'Email':
-                return EmailCtrl;
-            case 'Phone':
-                return PhoneCtrl;
-            case 'Time':
-                return TimeCtrl;
-            case 'Url':
-                return UrlCtrl;
-            case 'TextArea':
-                return cmp.fieldInfo.extraTypeInfo === "PlainTextArea" ?
-                    TextAreaInputCtrl : RichTextCtrl;
-            case 'Reference':
-                return ReferenceCtrl;
-            case 'Picklist':
-                return PicklistCtrl;
-            case 'MultiPicklist':
-                return MultiPicklistCtrl;
-        }
-    } catch (e) {
-        console.log(e.message);
-    }
-}

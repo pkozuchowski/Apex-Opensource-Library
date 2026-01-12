@@ -17,6 +17,7 @@ export default class RecordFormField extends LightningElement {
     @api required;
     @api variant;
     @api record;
+    @api additionalProps;
     @track formParams;
     controllerName;
     fieldInfo;

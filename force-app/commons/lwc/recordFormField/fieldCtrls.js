@@ -22,7 +22,8 @@ function FieldCtrl({props = noop, render, outputValue}) {
                 variant : cmp.variant || cmp.formParams?.variant,
                 value   : cmp.fieldValue,
                 disabled: cmp.disabled,
-                ...props(cmp)
+                ...props(cmp),
+                ...cmp.additionalProps
             })
         },
         outputValue: outputValue || eventValue,
@@ -68,8 +69,9 @@ function dateString(value, opts) {
 
 const DateCtrl = FieldCtrl({
     props: (cmp) => ({
-        type : cmp.isReadOnly ? 'text' : 'date',
-        value: cmp.isReadOnly ?
+        type     : cmp.isReadOnly ? 'text' : 'date',
+        dateStyle: 'short',
+        value    : cmp.isReadOnly ?
             dateString(cmp.fieldValue, dateOptions)
             : cmp.fieldValue
     })
@@ -77,8 +79,9 @@ const DateCtrl = FieldCtrl({
 
 const DateTimeCtrl = FieldCtrl({
     props: (cmp) => ({
-        type : cmp.isReadOnly ? 'text' : 'datetime',
-        value: cmp.isReadOnly ?
+        type     : cmp.isReadOnly ? 'text' : 'datetime',
+        dateStyle: 'short',
+        value    : cmp.isReadOnly ?
             dateString(cmp.fieldValue, dateTimeOptions)
             : cmp.fieldValue
     })

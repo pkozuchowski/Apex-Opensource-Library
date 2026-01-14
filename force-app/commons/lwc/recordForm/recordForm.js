@@ -6,33 +6,60 @@ import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectIn
 const MASTER_RECORD_TYPE = "012000000000000AAA";
 
 export default class RecordForm extends LightningElement {
-    @api objectName;
+    /**Object API Name*/
+    @api objectApiName;
+    @api formClass;
+
+    /**Record Type Developer Name*/
     @api recordType;
-    @api record = {};
+
+    /**Accepted Values: comfy, compact*/
+    @api density = "comfy";
+
     /** Map<Field, Label> of label overrides*/
     @api labelOverrides;
     @api designSystem = "lightning";
-    @api inputVariant = "label-stacked";
-    @track
-    formParams = {
-        readOnly    : false,
-        designSystem: "lightning",
-        variant     : "label-stacked"
-    };
-    fields = {};
-
-    @api get readOnly() {
-        return this.formParams.readOnly;
-    }
-
-    set readOnly(value) {
-        this.formParams.readOnly = value;
-    }
-
+    fields = [];
     loading = true;
     objectInfo;
     picklistValues;
     recordTypeId;
+    _readOnly = false;
+    _record = {};
+
+
+    @api
+    get readOnly() {return this._readOnly;}
+
+    set readOnly(value) {this.setValues('_readOnly', value);}
+
+    /**Plain Record {fieldName, fieldValue}*/
+    @api
+    get record() {return this._record;}
+
+    set record(value) {this.setValues('record', value);}
+
+
+    setValues(property, value) {
+        this[`_${property}`] = value;
+        this.fields.forEach(field => field[property] = value);
+    }
+
+
+    @api
+    reportValidityForField(field) {
+        this.fields.find(cmp => cmp.field === field)?.reportValidity();
+    }
+
+    @api
+    setCustomValidityForField(field, message) {
+        this.fields.find(cmp => cmp.field === field)?.setCustomValidity(message);
+    }
+
+    @api
+    checkValidityForField(field) {
+        this.fields.find(cmp => cmp.field === field)?.checkValidity();
+    }
 
     @api reportValidity() {
         return this.validate(field => field?.reportValidity())
@@ -44,31 +71,19 @@ export default class RecordForm extends LightningElement {
 
     validate(method) {
         let result = {valid: true, fields: {}};
-        for (const field in this.fields) {
+        this.fields.forEach(field => {
             const validity = method(this.fields[field]);
             result.valid = result.valid && (validity ?? true);
             result.fields[field] = validity;
-        }
+        });
         return result;
     }
 
-    @api
-    reportValidityForField(field) {
-        this.fields[field]?.reportValidity();
+    get formClasses() {
+        return `slds-form ${this.formClass}`;
     }
 
-    @api
-    setCustomValidityForField(field, message) {
-        console.log(this.fields[field]);
-        this.fields[field]?.setCustomValidity(message);
-    }
-
-    @api
-    checkValidityForField(field) {
-        this.fields[field]?.checkValidity();
-    }
-
-    @wire(getObjectInfo, {objectApiName: '$objectName'})
+    @wire(getObjectInfo, {objectApiName: '$objectApiName'})
     describeObjectInfo({err, data}) {
         if (data) {
             console.log('this.getObjectInfo', data);
@@ -98,7 +113,7 @@ export default class RecordForm extends LightningElement {
     }
 
     @wire(getPicklistValuesByRecordType, {
-        objectApiName: "$objectName",
+        objectApiName: "$objectApiName",
         recordTypeId : "$recordTypeId",
     })
     describePicklistValues({err, data}) {
@@ -110,17 +125,45 @@ export default class RecordForm extends LightningElement {
         }
     };
 
-    onFieldConnected(ev) {
+    onFormFieldConnected(ev) {
         ev.preventDefault();
         ev.stopPropagation();
+        console.log('form field connected', ev.target.field, ev.target, ev.detail);
+
         if (ev.target.connectField) {
-            this.fields[ev.target.field] = ev.target;
-            ev.target.record = this.record;
             ev.target.connectField(
-                this.objectInfo,
-                this.picklistValues,
-                this.formParams
+                this.getConnectFieldPayload(ev)
             );
         }
+    }
+
+    onFieldConnected(ev) {
+        try {
+            ev.preventDefault();
+            ev.stopPropagation();
+            let field = this.objectInfo.fields[ev.target.field];
+            console.log('field connected', ev.target.field, ev.target, ev.detail);
+            if (ev.target.connectField) {
+                this.fields.push(ev.target);
+                ev.target.record = this._record;
+                ev.target.formReadOnly = this.readOnly;
+                ev.target.formVariant = this.density === "compact" ? "label-inline" : "label-stacked";
+                ev.target.designSystem = this.designSystem;
+
+                ev.target.connectField(
+                    this.getConnectFieldPayload(ev)
+                );
+            }
+        } catch (e) {
+            console.log('recordForm.onFieldConnected', e.message, e.stack);
+        }
+    }
+
+    getConnectFieldPayload(ev) {
+        return {
+            fieldInfo               : this.objectInfo.fields[ev.target.field],
+            objectInfo              : this.objectInfo,
+            recordTypePicklistValues: this.picklistValues
+        };
     }
 }

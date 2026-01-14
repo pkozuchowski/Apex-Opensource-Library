@@ -1,0 +1,17 @@
+<template>
+    <lightning-dual-listbox
+            lwc:ref="input"
+            onchange={handleFieldChange}
+            label={label}
+            disabled={disabled}
+            field-level-help={fieldLevelHelp}
+            options={picklistOptions}
+            required={required}
+            selected-label={selectedLabel}
+            size={size}
+            source-label={sourceLabel}
+            value={value}
+            validity={validity}
+            variant={variant}
+    ></lightning-dual-listbox>
+</template>

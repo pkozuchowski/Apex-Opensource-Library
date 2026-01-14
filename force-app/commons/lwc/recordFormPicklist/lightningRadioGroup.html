@@ -1,0 +1,14 @@
+<template>
+    <lightning-radio-group
+            lwc:ref="input"
+            onchange={handleFieldChange}
+            disabled={disabled}
+            label={label}
+            message-when-value-missing={messageWhenValueMissing}
+            required={required}
+            options={picklistOptions}
+            type={type}
+            value={value}
+            variant={variant}
+    ></lightning-radio-group>
+</template>

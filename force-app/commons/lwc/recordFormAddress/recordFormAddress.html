@@ -26,14 +26,14 @@
                              province-label={provinceLabel}
                              province-options={provinceOptions}
                              province-placeholder={provincePlaceholder}
-                             read-only={readOnly}
+                             read-only={isReadOnly}
                              required={required}
                              show-address-lookup={showAddressLookup}
                              show-compact-address={showCompactAddress}
                              street-label={streetLabel}
                              street-placeholder={streetPlaceholder}
                              validity={validity}
-                             variant={variant}
-                             lwc:spread={params}
+                             variant={inputVariant}
+                             lwc:spread={values}
     ></lightning-input-address>
 </template>

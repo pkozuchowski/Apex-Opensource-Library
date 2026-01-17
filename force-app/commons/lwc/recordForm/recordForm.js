@@ -31,7 +31,7 @@ export default class RecordForm extends LightningElement {
     @api
     get readOnly() {return this._readOnly;}
 
-    set readOnly(value) {this.setValues('_readOnly', value);}
+    set readOnly(value) {this.setValues('readOnly', value);}
 
     /**Plain Record {fieldName, fieldValue}*/
     @api
@@ -69,10 +69,10 @@ export default class RecordForm extends LightningElement {
         return this.validate(field => field?.checkValidity())
     }
 
-    validate(method) {
+    validate(validationFn) {
         let result = {valid: true, fields: {}};
         this.fields.forEach(field => {
-            const validity = method(this.fields[field]);
+            const validity = validationFn(field);
             result.valid = result.valid && (validity ?? true);
             result.fields[field] = validity;
         });
@@ -141,10 +141,12 @@ export default class RecordForm extends LightningElement {
         try {
             ev.preventDefault();
             ev.stopPropagation();
-            let field = this.objectInfo.fields[ev.target.field];
             console.log('field connected', ev.target.field, ev.target, ev.detail);
             if (ev.target.connectField) {
-                this.fields.push(ev.target);
+                if (!ev.detail.wrapper) {
+                    console.log('ev.target', ev.target);
+                    this.fields.push(ev.target);
+                }
                 ev.target.record = this._record;
                 ev.target.formReadOnly = this.readOnly;
                 ev.target.formVariant = this.density === "compact" ? "label-inline" : "label-stacked";

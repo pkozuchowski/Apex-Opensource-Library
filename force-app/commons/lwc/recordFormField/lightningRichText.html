@@ -1,12 +1,3 @@
 <template>
-    <c-record-form-field-label lwc:if={isReadOnly} label={inputProps.label}>
-        <lightning-formatted-rich-text value={inputProps.value}></lightning-formatted-rich-text>
-    </c-record-form-field-label>
-
-    <lightning-input-rich-text
-            lwc:else
-            lwc:spread={inputProps}
-            lwc:ref="input"
-            class={classes}
-            onchange={handleChange}></lightning-input-rich-text>
+    <c-record-form-rich-text lwc:ref="input" field={field}></c-record-form-rich-text>
 </template>

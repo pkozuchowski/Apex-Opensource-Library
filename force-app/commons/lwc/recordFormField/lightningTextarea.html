@@ -5,8 +5,22 @@
 
     <lightning-textarea
             lwc:else
-            lwc:spread={inputProps}
             lwc:ref="input"
-            class={classes}
-            onchange={handleChange}></lightning-textarea>
+            autocomplete={autocomplete}
+            disabled={disabled}
+            field-level-help={fieldLevelHelp}
+            label={label}
+            max-length={maxLength}
+            message-when-bad-input={messageWhenBadInput}
+            message-when-too-long={messageWhenTooLong}
+            message-when-too-short={messageWhenTooShort}
+            message-when-value-missing={messageWhenValueMissing}
+            min-length={minLength}
+            placeholder={placeholder}
+            read-only={isReadOnly}
+            required={required}
+            validity={validity}
+            value={value}
+            variant={inputVariant}
+            onchange={handleFieldChange}></lightning-textarea>
 </template>

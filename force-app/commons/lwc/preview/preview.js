@@ -23,8 +23,7 @@ export default class Preview extends LightningElement {
 
     handleSwitch() {
         try {
-
-            // this.condition = !this.condition;
+            this.condition = !this.condition;
             // this.refs.recordForm.setCustomValidityForField('Website', 'This field is required');
         } catch (e) {
             console.log(e.message);
@@ -58,15 +57,11 @@ export default class Preview extends LightningElement {
     @wire(getRecord, {recordId: '001KM00000Kko2AYAR', layoutTypes: 'Full'})
     getAccount({error, data}) {
         if (data) {
-            setTimeout(() => {
-
-
-                let record = {};
-                for (let field in data.fields) {
-                    record[field] = data.fields[field].value;
-                }
-                this.account = record;
-            }, 1000);
+            let record = {};
+            for (let field in data.fields) {
+                record[field] = data.fields[field].value;
+            }
+            this.account = record;
         }
     }
 

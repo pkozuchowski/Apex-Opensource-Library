@@ -1,5 +1,6 @@
 <template>
     <c-record-form-picklist
+            lwc:ref="input"
             field={field}
             options={options}
             message-when-value-missing={messageWhenValueMissing}
@@ -10,6 +11,6 @@
             variant={variant}
             type={type}
             record={record}
-            lwc:spread={additionalProps}
+            additional-props={additionalProps}
     ></c-record-form-picklist>
 </template>

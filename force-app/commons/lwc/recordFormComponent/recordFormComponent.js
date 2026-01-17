@@ -6,12 +6,12 @@ function RecordFormComponent(lightningComponent) {
 
         @api field;
         @api record;
-        @api formParams;
         @api fieldLevelHelp;
         @api readOnly;
         @api disabled;
         @api required;
         @api validity;
+        @api variant;
         @api formReadOnly;
         @api formVariant;
         @api designSystem;
@@ -19,7 +19,7 @@ function RecordFormComponent(lightningComponent) {
 
         connectedCallback() {
             this.dispatchEvent(new CustomEvent('fieldconnected', {
-                detail : this.hostElement,
+                detail : {},
                 bubbles: true, composed: true
             }));
         }
@@ -87,7 +87,7 @@ function RecordFormComponent(lightningComponent) {
         }
 
         get inputVariant() {
-            return this.formVariant;
+            return this.variant || this.formVariant;
         }
     };
 }

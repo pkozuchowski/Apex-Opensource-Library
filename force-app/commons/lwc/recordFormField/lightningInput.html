@@ -1,14 +1,12 @@
 <template>
-    <lightning-input
+    <c-record-form-input
             lwc:ref="input"
-            class={classes}
-            onchange={handleFieldChange}
+            field={field}
             autocomplete={autocomplete}
             data-style={dateStyle}
             disabled={disabled}
             field-level-help={fieldLevelHelp}
             formatter={formatter}
-            checked={value}
             label={label}
             max-length={maxLength}
             message-toggle-active={messageToggleActive}
@@ -24,13 +22,11 @@
             message-when-value-missing={messageWhenValueMissing}
             min={min}
             min-length={minLength}
-            multiple={multiple}
             pattern={pattern}
             placeholder={placeholder}
-            read-only={isReadOnly}
-            aria-readonly={isReadOnly}
+            read-only={readOnly}
+            aria-readonly={readOnly}
             required={required}
-            role={role}
             selection-end={selectionEnd}
             selection-start={selectionStart}
             step={step}
@@ -44,9 +40,8 @@
             time-step-minutes={timeStepMinutes}
             time-style={timeStyle}
             timezone={timezone}
-            value={value}
-            type={_type}
+            type={type}
             validity={validity}
-            variant={inputVariant}
-    ></lightning-input>
+            variant={variant}
+    ></c-record-form-input>
 </template>

@@ -1,0 +1,24 @@
+<!-- Record Form Rich Text -->
+<template>
+    <c-record-form-field-label lwc:if={isReadOnly} label={label}>
+        <lightning-formatted-rich-text value={value}></lightning-formatted-rich-text>
+    </c-record-form-field-label>
+
+    <lightning-input-rich-text
+            lwc:else
+            lwc:ref="input"
+            disabled={disabled}
+            disabled-categories={disabledCategories}
+            field-level-help={fieldLevelHelp}
+            formats={formats}
+            label={label}
+            label-visible={labelVisible}
+            message-when-bad-input={messageWhenBadInput}
+            placeholder={placeholder}
+            required={required}
+            share-with-entity-id={readOnly}
+            valid={shareWithEntityId}
+            value={valid}
+            variant={value}
+            onchange={handleFieldChange}></lightning-input-rich-text>
+</template>

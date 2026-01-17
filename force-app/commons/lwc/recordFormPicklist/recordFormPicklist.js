@@ -38,10 +38,14 @@ export default class RecordFormPicklist extends RecordFormComponent(LightningEle
     recordTypePicklistValues;
 
     connectField({fieldInfo, recordTypePicklistValues}) {
-        super.connectField(arguments[0]);
-        this.recordTypePicklistValues = recordTypePicklistValues[this.field];
-        this.multiple = fieldInfo.dataType === 'MultiPicklist';
-        this.type = this.type ?? (fieldInfo.dataType === 'MultiPicklist' ? 'listbox' : 'select');
+        try {
+            super.connectField(arguments[0]);
+            this.recordTypePicklistValues = recordTypePicklistValues[this.field];
+            this.multiple = fieldInfo.dataType === 'MultiPicklist';
+            this.type = this.type ?? (fieldInfo.dataType === 'MultiPicklist' ? 'listbox' : 'select');
+        } catch (e) {
+            console.log(e.message);
+        }
     }
 
     get value() {

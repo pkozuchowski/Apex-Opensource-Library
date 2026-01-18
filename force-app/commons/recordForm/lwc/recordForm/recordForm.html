@@ -1,8 +1,8 @@
 <template>
     <div class="slds-is-relative">
         <lightning-spinner lwc:if={loading} alternative-text="Loading" size="medium"></lightning-spinner>
-        <div lwc:else class="slds-form" role="list"
-             onfieldconnected={onFieldConnected}>
+
+        <div lwc:else class={formClasses} role="list" onfieldconnected={onFieldConnected}>
             <slot></slot>
         </div>
     </div>

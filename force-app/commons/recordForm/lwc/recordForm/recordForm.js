@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Piotr Kożuchowski
 import {api, LightningElement, track, wire} from 'lwc';
 import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectInfoApi";
+import {createRecord, updateRecord} from 'lightning/uiRecordApi';
 
 const MASTER_RECORD_TYPE = "012000000000000AAA";
 
@@ -20,7 +21,8 @@ export default class RecordForm extends LightningElement {
     @api labelOverrides;
     @api designSystem = "lightning";
     fields = [];
-    loading = true;
+    loaded = false;
+    spinner = true;
     objectInfo;
     picklistValues;
     recordTypeId;
@@ -79,6 +81,58 @@ export default class RecordForm extends LightningElement {
         return result;
     }
 
+    @api async submit(ev) {
+        ev?.preventDefault();
+        ev?.stopPropagation();
+        try {
+            this.spinner = true;
+            let isCreate = !this.record.Id;
+            let isUpdate = !isCreate;
+
+            let fieldsToUpdate = {};
+            for (let field in this.record) {
+                let fieldInfo = this.objectInfo.fields[field];
+
+                if (fieldInfo && (isCreate && fieldInfo?.createable) || (isUpdate && fieldInfo?.updateable)) {
+                    fieldsToUpdate[field] = this.record[field];
+                }
+            }
+            fieldsToUpdate.Id = this.record.Id;
+
+            let recordInput = {
+                fields: fieldsToUpdate
+            }
+
+            if (isCreate) {
+                recordInput.apiName = this.objectApiName;
+            }
+
+            console.log('fieldsToUpdate', JSON.stringify(fieldsToUpdate, null, 2));
+
+            let createOrUpdate = isCreate ? createRecord : updateRecord;
+            let result = await createOrUpdate(recordInput);
+            console.log('result', JSON.stringify(result, null, 2));
+
+            let flatRecord = {};
+            for (let field in result.fields) {
+                flatRecord[field] = result.fields[field].value;
+            }
+            flatRecord.Id = result.id;
+
+            this.dispatchEvent(new CustomEvent('change', {
+                detail: {
+                    value: flatRecord
+                }
+            }));
+
+        } catch (e) {
+            let err = await e;
+            console.log(err.message);
+        } finally {
+            this.spinner = false;
+        }
+    }
+
     get formClasses() {
         return `slds-form ${this.formClass}`;
     }
@@ -119,7 +173,8 @@ export default class RecordForm extends LightningElement {
     describePicklistValues({err, data}) {
         if (data) {
             this.picklistValues = JSON.parse(JSON.stringify(data.picklistFieldValues));
-            this.loading = false;
+            this.loaded = true;
+            this.spinner = false;
         } else if (err) {
             console.error('Error fetching picklist values', err);
         }

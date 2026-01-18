@@ -1,9 +1,11 @@
 <template>
     <div class="slds-is-relative">
-        <lightning-spinner lwc:if={loading} alternative-text="Loading" size="medium"></lightning-spinner>
+        <lightning-spinner lwc:if={spinner} alternative-text="Loading" size="medium"></lightning-spinner>
 
-        <div lwc:else class={formClasses} role="list" onfieldconnected={onFieldConnected}>
+        <form lwc:if={loaded} class={formClasses} role="list"
+              onfieldconnected={onFieldConnected}
+              onsubmit={submit}>
             <slot></slot>
-        </div>
+        </form>
     </div>
 </template>

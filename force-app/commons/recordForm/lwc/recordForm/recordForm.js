@@ -3,8 +3,8 @@
 import {api, LightningElement, track, wire} from 'lwc';
 import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectInfoApi";
 import {createRecord, updateRecord} from 'lightning/uiRecordApi';
-
-const MASTER_RECORD_TYPE = "012000000000000AAA";
+import {getFlatRecord, getRecordTypeId, getUpdatableFields, overrideFieldLabels, validate} from "./recordFormUtils";
+import {notifyRecordUpdateAvailable} from 'lightning/uiRecordApi';
 
 export default class RecordForm extends LightningElement {
     /**Object API Name*/
@@ -64,70 +64,39 @@ export default class RecordForm extends LightningElement {
     }
 
     @api reportValidity() {
-        return this.validate(field => field?.reportValidity())
+        return validate(field => field?.reportValidity())
     }
 
     @api checkValidity() {
-        return this.validate(field => field?.checkValidity())
-    }
-
-    validate(validationFn) {
-        let result = {valid: true, fields: {}};
-        this.fields.forEach(component => {
-            const validity = validationFn(component);
-            result.valid = result.valid && (validity ?? true);
-            result.fields[component.field] = validity;
-        });
-        return result;
+        return validate(field => field?.checkValidity())
     }
 
     @api async submit(ev) {
         ev?.preventDefault();
         ev?.stopPropagation();
+        this.spinner = true;
         try {
-            this.spinner = true;
-            let isCreate = !this.record.Id;
-            let isUpdate = !isCreate;
+            const isCreate = !this.record?.Id;
+            const fieldsToUpdate = getUpdatableFields(this.record, this.objectInfo, isCreate);
 
-            let fieldsToUpdate = {};
-            for (let field in this.record) {
-                let fieldInfo = this.objectInfo.fields[field];
+            const recordInput = {
+                fields: fieldsToUpdate,
+                ...(isCreate ? {apiName: this.objectApiName} : {})
+            };
 
-                if (fieldInfo && (isCreate && fieldInfo?.createable) || (isUpdate && fieldInfo?.updateable)) {
-                    fieldsToUpdate[field] = this.record[field];
-                }
-            }
-            fieldsToUpdate.Id = this.record.Id;
-
-            let recordInput = {
-                fields: fieldsToUpdate
-            }
-
-            if (isCreate) {
-                recordInput.apiName = this.objectApiName;
-            }
-
-            console.log('fieldsToUpdate', JSON.stringify(fieldsToUpdate, null, 2));
-
-            let createOrUpdate = isCreate ? createRecord : updateRecord;
-            let result = await createOrUpdate(recordInput);
-            console.log('result', JSON.stringify(result, null, 2));
-
-            let flatRecord = {};
-            for (let field in result.fields) {
-                flatRecord[field] = result.fields[field].value;
-            }
-            flatRecord.Id = result.id;
+            const action = isCreate ? createRecord : updateRecord;
+            const result = await action(recordInput);
+            let flatRecord = getFlatRecord(result);
 
             this.dispatchEvent(new CustomEvent('change', {
-                detail: {
-                    value: flatRecord
-                }
+                detail: {value: flatRecord}
             }));
+            notifyRecordUpdateAvailable([{recordId: result.id}]);
 
-        } catch (e) {
-            let err = await e;
-            console.log(err.message);
+            return flatRecord;
+        } catch (err) {
+            console.error(err?.message ?? err);
+            throw err;
         } finally {
             this.spinner = false;
         }
@@ -142,29 +111,12 @@ export default class RecordForm extends LightningElement {
         if (data) {
             console.log('this.getObjectInfo', data);
             this.objectInfo = JSON.parse(JSON.stringify(data));
-            this.getRecordTypeId(data);
-            this.overrideFieldLabels();
+            this.recordTypeId = getRecordTypeId(this.recordType, data);
+            overrideFieldLabels(this.labelOverrides, this.objectInfo);
         } else if (err) {
             console.error('Error fetching object info', err);
         }
     };
-
-    getRecordTypeId(data) {
-        if (this.recordType) {
-            const recordTypeInfos = data.recordTypeInfos;
-            this.recordTypeId = Object.values(recordTypeInfos)
-                .find(rti => rti.name === this.recordType)?.recordTypeId;
-        }
-        this.recordTypeId = this.recordTypeId || data.defaultRecordTypeId || MASTER_RECORD_TYPE;
-    }
-
-    overrideFieldLabels() {
-        if (this.labelOverrides) {
-            for (let field in this.labelOverrides) {
-                this.objectInfo.fields[field].label = this.labelOverrides[field];
-            }
-        }
-    }
 
     @wire(getPicklistValuesByRecordType, {
         objectApiName: "$objectApiName",

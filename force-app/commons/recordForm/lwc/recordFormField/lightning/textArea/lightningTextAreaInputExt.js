@@ -16,7 +16,7 @@ export class LightningTextAreaExt extends LightningTextExt {
 
 export class LightningRichTextExt extends LightningTextExt {
 
-    connectFieldExt({fieldInfo}) {
+    connectFieldExt({}) {
         this.formats = this.formats || ['font', 'size', 'bold', 'italic', 'underline', 'strike', 'list',
             'indent', 'align', 'link', 'image', 'clean', 'header', 'color'];
     }

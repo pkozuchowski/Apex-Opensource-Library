@@ -16,7 +16,7 @@ export class LightningInputExt {
             label         : this.label || this.fieldInfo.label,
             readOnly      : this.isReadOnly,
             required      : this.required,
-            variant       : this.variant ?? this.formVariant,
+            variant       : this.inputVariant,
             value         : this.fieldValue,
             disabled      : this.disabled,
             fieldLevelHelp: this.fieldLevelHelp,
@@ -168,7 +168,7 @@ export class LightningPhoneExt extends LightningTextExt {
     get attributes() {
         return {
             ...super.attributes,
-            type: 'phone'
+            type: 'tel'
         };
     }
 }

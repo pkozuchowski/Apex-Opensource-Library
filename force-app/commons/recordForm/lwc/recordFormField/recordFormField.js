@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
-import {api, LightningElement, track} from 'lwc';
+import {api, LightningElement} from 'lwc';
 import {extendCtrl} from "./extensions";
 import emptyTemplate from './recordFormField.html';
 import {RecordFormComponent} from "c/recordFormComponent";
@@ -54,7 +54,7 @@ export default class RecordFormField extends RecordFormComponent(LightningElemen
     @api validity;
     @api variant;
 
-    @api connectField({fieldInfo, objectInfo, recordTypePicklistValues}) {
+    @api connectField({}) {
         try {
             super.connectField(arguments[0]);
             extendCtrl(this, arguments[0]);

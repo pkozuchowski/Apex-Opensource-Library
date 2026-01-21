@@ -15,7 +15,6 @@ export default class LightningAddressExt {
             }
         });
 
-        this.label = this.label ?? fieldInfo.label;
         this.street = addressComponents.Street;
         this.city = addressComponents.City;
         this.country = addressComponents.Country;
@@ -29,6 +28,7 @@ export default class LightningAddressExt {
 
     get attributes() {
         return {
+            addressLabel   : this.label,
             street         : this.getField(this.street?.apiName),
             streetLabel    : this.street?.label,
             city           : this.getField(this.city?.apiName),
@@ -39,7 +39,7 @@ export default class LightningAddressExt {
             postalCodeLabel: this.postalCode?.label,
             province       : this.getField(this.province?.apiName),
             provinceLabel  : this.province?.label,
-            variant        : this.variant ?? this.formVariant,
+            variant        : this.inputVariant,
             ...this.typeAttributes
         };
     }
@@ -52,5 +52,12 @@ export default class LightningAddressExt {
             [this.country.apiName]   : event.target.country,
             [this.postalCode.apiName]: event.target.postalCode,
         };
+    }
+
+    /**
+     * Using lwc:else was duplicating address
+     */
+    get isEditMode() {
+        return !this.isReadOnly;
     }
 }

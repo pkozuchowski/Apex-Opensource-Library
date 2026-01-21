@@ -14,9 +14,8 @@ function RecordFormComponent(lightningComponent) {
         @api required;
         @api validity;
         @api variant;
-        @api formReadOnly;
-        @api formVariant;
         @api designSystem;
+        @api formAttributes = {};
         controllerName;
 
         connectedCallback() {
@@ -31,26 +30,25 @@ function RecordFormComponent(lightningComponent) {
             try {
                 this.label = this.label ?? fieldInfo.label;
                 this.fieldLevelHelp = fieldInfo.inlineHelpText;
-                this.readOnly = this.readOnly ?? fieldInfo.readOnly;
                 this.controllerName = fieldInfo.controllerName;
             } catch (e) {
-                console.log(e.message, e.stack);
+                console.log('connectField Cmp', fieldInfo, e.message, e.stack);
             }
         }
 
         @api
         reportValidity() {
-            return this.refs.input.reportValidity?.() ?? true;
+            return this.refs.input?.reportValidity?.() ?? true;
         }
 
         @api
         setCustomValidity(message) {
-            return this.refs.input.setCustomValidity?.(message);
+            return this.refs.input?.setCustomValidity?.(message);
         }
 
         @api
         checkValidity() {
-            return this.refs.input.checkValidity?.() ?? true;
+            return this.refs.input?.checkValidity?.() ?? true;
         }
 
         handleFieldChange(event) {
@@ -73,7 +71,7 @@ function RecordFormComponent(lightningComponent) {
         }
 
         get isReadOnly() {
-            return this.readOnly ?? this.formReadOnly;
+            return this.readOnly ?? this.formAttributes.readOnly;
         }
 
         get fieldValue() {
@@ -89,7 +87,8 @@ function RecordFormComponent(lightningComponent) {
         }
 
         get inputVariant() {
-            return this.variant || this.formVariant;
+            return this.variant || (this.formAttributes.density === "comfy" ?
+                "label-stacked" : "label-inline");
         }
     };
 }

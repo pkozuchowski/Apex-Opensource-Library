@@ -2,9 +2,8 @@
 // Copyright (c) 2026 Piotr Kożuchowski
 import {api, LightningElement, track, wire} from 'lwc';
 import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectInfoApi";
-import {createRecord, updateRecord} from 'lightning/uiRecordApi';
+import {createRecord, notifyRecordUpdateAvailable, updateRecord} from 'lightning/uiRecordApi';
 import {getFlatRecord, getRecordTypeId, getUpdatableFields, overrideFieldLabels, validate} from "./recordFormUtils";
-import {notifyRecordUpdateAvailable} from 'lightning/uiRecordApi';
 
 export default class RecordForm extends LightningElement {
     /**Object API Name*/
@@ -13,9 +12,6 @@ export default class RecordForm extends LightningElement {
 
     /**Record Type Developer Name*/
     @api recordType;
-
-    /**Accepted Values: comfy, compact*/
-    @api density = "comfy";
 
     /** Map<Field, Label> of label overrides*/
     @api labelOverrides;
@@ -26,14 +22,26 @@ export default class RecordForm extends LightningElement {
     objectInfo;
     picklistValues;
     recordTypeId;
-    _formReadOnly = false;
     _record = {};
+
+    @track
+    formAttributes = {
+        density     : "comfy",
+        readOnly    : false,
+        designSystem: "lightning"
+    }
 
 
     @api
-    get readOnly() {return this._formReadOnly;}
+    get readOnly() {return this.formAttributes.readOnly;}
 
-    set readOnly(value) {this.setValues('formReadOnly', value);}
+    set readOnly(value) {this.formAttributes.readOnly = value;}
+
+    /**Accepted Values: comfy, compact*/
+    @api
+    get density() {return this.formAttributes.density;}
+
+    set density(value) {this.formAttributes.density = value;}
 
     /**Plain Record {fieldName, fieldValue}*/
     @api
@@ -41,34 +49,36 @@ export default class RecordForm extends LightningElement {
 
     set record(value) {this.setValues('record', value);}
 
-
     setValues(property, value) {
         this[`_${property}`] = value;
         this.fields.forEach(field => field[property] = value);
     }
 
+    get formClasses() {
+        return `slds-form ${this.formClass}`;
+    }
 
     @api
     reportValidityForField(field) {
-        this.fields.find(cmp => cmp.field === field)?.reportValidity();
+        return this.fields.find(cmp => cmp.field === field)?.reportValidity();
     }
 
     @api
     setCustomValidityForField(field, message) {
-        this.fields.find(cmp => cmp.field === field)?.setCustomValidity(message);
+        return this.fields.find(cmp => cmp.field === field)?.setCustomValidity(message);
     }
 
     @api
     checkValidityForField(field) {
-        this.fields.find(cmp => cmp.field === field)?.checkValidity();
+        return this.fields.find(cmp => cmp.field === field)?.checkValidity();
     }
 
     @api reportValidity() {
-        return validate(field => field?.reportValidity())
+        return validate(this.fields, field => field?.reportValidity())
     }
 
     @api checkValidity() {
-        return validate(field => field?.checkValidity())
+        return validate(this.fields, field => field?.checkValidity())
     }
 
     @api async submit(ev) {
@@ -86,7 +96,7 @@ export default class RecordForm extends LightningElement {
 
             const action = isCreate ? createRecord : updateRecord;
             const result = await action(recordInput);
-            let flatRecord = getFlatRecord(result);
+            const flatRecord = getFlatRecord(result);
 
             this.dispatchEvent(new CustomEvent('change', {
                 detail: {value: flatRecord}
@@ -100,10 +110,6 @@ export default class RecordForm extends LightningElement {
         } finally {
             this.spinner = false;
         }
-    }
-
-    get formClasses() {
-        return `slds-form ${this.formClass}`;
     }
 
     @wire(getObjectInfo, {objectApiName: '$objectApiName'})
@@ -140,24 +146,18 @@ export default class RecordForm extends LightningElement {
             if (ev.target.connectField) {
                 this.fields.push(ev.target);
                 ev.target.record = this._record;
-                ev.target.formReadOnly = this.readOnly;
-                ev.target.formVariant = this.density === "compact" ? "label-inline" : "label-stacked";
-                ev.target.designSystem = this.designSystem;
-
+                ev.target.formAttributes = this.formAttributes;
                 ev.target.connectField(
-                    this.getConnectFieldPayload(ev)
+                    {
+                        fieldInfo               : this.objectInfo.fields[ev.target.field],
+                        objectInfo              : this.objectInfo,
+                        recordTypePicklistValues: this.picklistValues,
+                        formAttributes          : this.formAttributes
+                    }
                 );
             }
         } catch (e) {
-            console.log('recordForm.onFieldConnected', e.message, e.stack);
+            console.error('recordForm.onFieldConnected', e.message);
         }
-    }
-
-    getConnectFieldPayload(ev) {
-        return {
-            fieldInfo               : this.objectInfo.fields[ev.target.field],
-            objectInfo              : this.objectInfo,
-            recordTypePicklistValues: this.picklistValues
-        };
     }
 }

@@ -7,7 +7,7 @@
  *   - fields: {Object} Map of field names to their individual validation status
  */
 export function validate(fields, validationFn) {
-    let result = {valid: true, fields: {}};
+    const result = {valid: true, fields: {}};
     fields.forEach(component => {
         const validity = validationFn(component);
         result.valid = result.valid && (validity ?? true);
@@ -66,7 +66,7 @@ export function getRecordTypeId(recordTypeName, data) {
  */
 export function overrideFieldLabels(labelOverrides, objectInfo) {
     if (labelOverrides) {
-        for (let field in labelOverrides) {
+        for (const field in labelOverrides) {
             objectInfo.fields[field].label = labelOverrides[field];
         }
     }
@@ -80,9 +80,9 @@ export function overrideFieldLabels(labelOverrides, objectInfo) {
  * @returns {Object} Flat record object with field names as keys and field values as values, including the Id field
  */
 export function getFlatRecord(recordRepresentation) {
-    let flatRecord = {};
+    const flatRecord = {};
 
-    for (let field in recordRepresentation.fields) {
+    for (const field in recordRepresentation.fields) {
         flatRecord[field] = recordRepresentation.fields[field].value;
     }
     flatRecord.Id = recordRepresentation.id;

@@ -40,17 +40,18 @@ const EXTENSIONS = {
 /**
  * Extends RecordFormField instance with custom methods and properties based on field type
  */
-export function extendCtrl(cmp, {fieldInfo}) {
+export function extendCtrl(cmp, {fieldInfo, formAttributes}) {
     try {
+        const designSystem = formAttributes.designSystem ?? "lightning";
         let extensionName = fieldInfo.dataType;
         if (extensionName === 'TextArea') extensionName = fieldInfo.extraTypeInfo;
 
-        let extension = EXTENSIONS[cmp.designSystem][extensionName];
+        const extension = EXTENSIONS[designSystem][extensionName];
         if (extension) {
             extendInstance(cmp, extension.prototype);
         }
     } catch (e) {
-        console.log(e.message);
+        console.error('extensions.js extendCtrl', e.message);
     }
 }
 

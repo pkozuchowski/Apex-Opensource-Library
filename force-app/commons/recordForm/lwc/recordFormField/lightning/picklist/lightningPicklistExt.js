@@ -11,7 +11,7 @@ export class LightningPicklistExt extends LightningInputExt {
     recordTypePicklistValues;
     controlledFields;
 
-    connectFieldExt({fieldInfo, objectInfo, recordTypePicklistValues}) {
+    connectFieldExt({objectInfo, recordTypePicklistValues}) {
         super.connectFieldExt(arguments[0]);
         // Identify controlled fields
         this.controlledFields = {};
@@ -54,13 +54,13 @@ export class LightningPicklistExt extends LightningInputExt {
     get picklistOptions() {
         try {
             let options;
-            let rtValues = this.recordTypePicklistValues?.values;
+            const rtValues = this.recordTypePicklistValues?.values;
 
             if (this.options) {
                 options = [...this.options];
 
             } else if (this.controllerName && rtValues) {
-                let controller = this.recordTypePicklistValues.controllerValues[this.controllerValue];
+                const controller = this.recordTypePicklistValues.controllerValues[this.controllerValue];
                 options = rtValues.filter((item) => item.validFor.indexOf(controller) > -1);
 
             } else {

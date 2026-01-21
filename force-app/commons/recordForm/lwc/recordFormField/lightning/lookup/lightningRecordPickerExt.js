@@ -23,4 +23,10 @@ export class LightningReferenceExt extends LightningInputExt {
     getEventValue(event) {
         return {[this.field]: event.detail.recordId};
     }
+
+    get classes() {
+        return {
+            "slds-form-element_stacked": this.formAttributes.density === "comfy"
+        };
+    }
 }

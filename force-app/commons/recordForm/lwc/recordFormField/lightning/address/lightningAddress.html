@@ -1,7 +1,8 @@
 <!-- lightningAddress -->
 <template>
-    <c-record-form-field-output lwc:if={isReadOnly} label={label}>
-        <lightning-formatted-address locale={locale} lwc:spread={attributes}></lightning-formatted-address>
+    <c-record-form-field-output lwc:if={isReadOnly} label={label}
+                                density={formAttributes.density}>
+        <lightning-formatted-address lwc:spread={attributes}></lightning-formatted-address>
     </c-record-form-field-output>
 
     <lightning-input-address lwc:if={isEditMode}

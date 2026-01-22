@@ -31,6 +31,7 @@ function RecordFormComponent(lightningComponent) {
                 this.label = this.label ?? fieldInfo.label;
                 this.fieldLevelHelp = fieldInfo.inlineHelpText;
                 this.controllerName = fieldInfo.controllerName;
+                this.required = this.required ?? fieldInfo.required;
             } catch (e) {
                 console.log('connectField Cmp', fieldInfo, e.message, e.stack);
             }
@@ -89,6 +90,14 @@ function RecordFormComponent(lightningComponent) {
         get inputVariant() {
             return this.variant || (this.formAttributes.density === "comfy" ?
                 "label-stacked" : "label-inline");
+        }
+
+        get formElementClasses() {
+            let density = this.formAttributes.density;
+            return {
+                "slds-form-element_stacked"   : density === "comfy",
+                "slds-form-element_horizontal": density === "compact",
+            };
         }
     };
 }

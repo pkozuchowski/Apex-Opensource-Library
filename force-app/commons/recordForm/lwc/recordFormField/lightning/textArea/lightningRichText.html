@@ -1,5 +1,6 @@
 <template>
-    <c-record-form-field-output lwc:if={isReadOnly} label={label}>
+    <c-record-form-field-output lwc:if={isReadOnly} label={label}
+                                density={formAttributes.density}>
         <lightning-formatted-rich-text value={value}></lightning-formatted-rich-text>
     </c-record-form-field-output>
 
@@ -7,5 +8,6 @@
             lwc:else
             lwc:spread={attributes}
             lwc:ref="input"
+            class={formElementClasses}
             onchange={handleFieldChange}></lightning-input-rich-text>
 </template>

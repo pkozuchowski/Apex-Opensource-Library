@@ -7,11 +7,11 @@ import {
     LightningPhoneExt,
     LightningTextExt,
     LightningTimeExt, LightningUrlExt
-} from "./lightning/input/lightningInputExt";
-import LightningAddressExt from "./lightning/address/lightningAddressExt";
-import {LightningMultiPicklistExt, LightningPicklistExt} from "./lightning/picklist/lightningPicklistExt";
-import {LightningRichTextExt, LightningTextAreaExt} from "./lightning/textArea/lightningTextAreaInputExt";
-import {LightningReferenceExt} from "./lightning/lookup/lightningRecordPickerExt";
+} from "./lightning/input/lightningInput";
+import LightningAddress from "./lightning/address/lightningAddress";
+import {LightningMultiPicklistExt, LightningPicklist} from "./lightning/picklist/lightningPicklist";
+import {LightningRichTextExt, LightningTextAreaExt} from "./lightning/textArea/lightningTextarea";
+import {LightningReferenceExt} from "./lightning/lookup/lightningRecordPicker";
 
 
 const EXTENSIONS = {
@@ -31,9 +31,9 @@ const EXTENSIONS = {
         'PlainTextArea': LightningTextAreaExt,
         'RichTextArea' : LightningRichTextExt,
         'Reference'    : LightningReferenceExt,
-        'Picklist'     : LightningPicklistExt,
+        'Picklist'     : LightningPicklist,
         'MultiPicklist': LightningMultiPicklistExt,
-        'Address'      : LightningAddressExt,
+        'Address'      : LightningAddress,
     }
 }
 

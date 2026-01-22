@@ -1,5 +1,5 @@
 import LightningRecordPicker from './lightningRecordPicker.html';
-import {LightningInputExt} from "../input/lightningInputExt";
+import {LightningInputExt} from "../input/lightningInput";
 
 export class LightningReferenceExt extends LightningInputExt {
     objectApiName;
@@ -24,9 +24,4 @@ export class LightningReferenceExt extends LightningInputExt {
         return {[this.field]: event.detail.recordId};
     }
 
-    get classes() {
-        return {
-            "slds-form-element_stacked": this.formAttributes.density === "comfy"
-        };
-    }
 }

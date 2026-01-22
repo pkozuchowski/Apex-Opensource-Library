@@ -1,8 +1,7 @@
 import lightningAddress from './lightningAddress.html';
 import LOCALE from "@salesforce/i18n/locale";
 
-export default class LightningAddressExt {
-    locale = LOCALE;
+export default class LightningAddress {
 
     connectFieldExt({fieldInfo, objectInfo}) {
         const addressField = this.field;
@@ -29,6 +28,7 @@ export default class LightningAddressExt {
     get attributes() {
         return {
             addressLabel   : this.label,
+            locale         : LOCALE,
             street         : this.getField(this.street?.apiName),
             streetLabel    : this.street?.label,
             city           : this.getField(this.city?.apiName),

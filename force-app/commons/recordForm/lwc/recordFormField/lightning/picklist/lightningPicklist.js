@@ -1,4 +1,4 @@
-import {LightningInputExt} from "../input/lightningInputExt";
+import {LightningInputExt} from "../input/lightningInput";
 import lightningInput from '../input/lightningInput.html';
 import lightningSelect from './lightningSelect.html';
 import lightningDuelingListbox from './lightningDuelingListbox.html';
@@ -7,7 +7,7 @@ import lightningCheckboxGroup from './lightningCheckboxGroup.html';
 
 const OPT_NONE = {label: '--None--', value: ''};
 
-export class LightningPicklistExt extends LightningInputExt {
+export class LightningPicklist extends LightningInputExt {
     recordTypePicklistValues;
     controlledFields;
 
@@ -59,7 +59,7 @@ export class LightningPicklistExt extends LightningInputExt {
             if (this.options) {
                 options = [...this.options];
 
-            } else if (this.controllerName && rtValues) {
+            } else if (this.controllerName) {
                 const controller = this.recordTypePicklistValues.controllerValues[this.controllerValue];
                 options = rtValues.filter((item) => item.validFor.indexOf(controller) > -1);
 
@@ -84,7 +84,7 @@ export class LightningPicklistExt extends LightningInputExt {
 }
 
 
-export class LightningMultiPicklistExt extends LightningPicklistExt {
+export class LightningMultiPicklistExt extends LightningPicklist {
 
     connectFieldExt({fieldInfo, objectInfo, recordTypePicklistValues}) {
         super.connectFieldExt({fieldInfo, objectInfo, recordTypePicklistValues});

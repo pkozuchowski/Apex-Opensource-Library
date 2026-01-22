@@ -54,7 +54,7 @@ export default class RecordFormField extends RecordFormComponent(LightningElemen
     @api validity;
     @api variant;
 
-    @api connectField({}) {
+    @api connectField() {
         try {
             super.connectField(arguments[0]);
             extendCtrl(this, arguments[0]);

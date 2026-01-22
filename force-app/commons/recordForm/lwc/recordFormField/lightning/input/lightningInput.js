@@ -38,9 +38,9 @@ export class LightningInputExt {
 
 export class LightningTextExt extends LightningInputExt {
 
-    connectFieldExt({fieldInfo}) {
-        super.connectFieldExt(arguments[0]);
-        this.maxLength = this.maxLength ?? fieldInfo.length ?? 255;
+    connectFieldExt(data) {
+        super.connectFieldExt(data);
+        this.maxLength = this.maxLength ?? data.fieldInfo.length ?? 255;
     }
 
     get attributes() {

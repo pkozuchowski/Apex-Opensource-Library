@@ -11,8 +11,9 @@ export class LightningPicklist extends LightningInputExt {
     recordTypePicklistValues;
     controlledFields;
 
-    connectFieldExt({objectInfo, recordTypePicklistValues}) {
-        super.connectFieldExt(arguments[0]);
+    connectFieldExt(data) {
+        super.connectFieldExt(data);
+        const {objectInfo, recordTypePicklistValues} = data;
         // Identify controlled fields
         this.controlledFields = {};
         this.recordTypePicklistValues = recordTypePicklistValues[this.field];

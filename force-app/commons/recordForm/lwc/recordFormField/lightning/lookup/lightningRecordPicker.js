@@ -8,9 +8,9 @@ export class LightningReferenceExt extends LightningInputExt {
         return LightningRecordPicker;
     }
 
-    connectFieldExt({fieldInfo}) {
-        super.connectFieldExt(arguments[0]);
-        this.objectApiName = fieldInfo.referenceToInfos[0].apiName;
+    connectFieldExt(data) {
+        super.connectFieldExt(data);
+        this.objectApiName = data.fieldInfo.referenceToInfos[0].apiName;
     }
 
     get attributes() {

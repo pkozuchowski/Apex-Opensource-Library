@@ -93,7 +93,7 @@ function RecordFormComponent(lightningComponent) {
         }
 
         get formElementClasses() {
-            let density = this.formAttributes.density;
+            const density = this.formAttributes.density;
             return {
                 "slds-form-element_stacked"   : density === "comfy",
                 "slds-form-element_horizontal": density === "compact",

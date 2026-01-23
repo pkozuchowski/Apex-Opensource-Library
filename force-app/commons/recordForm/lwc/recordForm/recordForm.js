@@ -11,7 +11,7 @@ export default class RecordForm extends LightningElement {
     @api formClass;
 
     /**Record Type Developer Name*/
-    @api recordType;
+    @api recordTypeName;
 
     /** Map<Field, Label> of label overrides*/
     @api labelOverrides;
@@ -115,9 +115,8 @@ export default class RecordForm extends LightningElement {
     @wire(getObjectInfo, {objectApiName: '$objectApiName'})
     describeObjectInfo({err, data}) {
         if (data) {
-            console.log('this.getObjectInfo', data);
             this.objectInfo = JSON.parse(JSON.stringify(data));
-            this.recordTypeId = getRecordTypeId(this.recordType, data);
+            this.recordTypeId = getRecordTypeId(this.recordTypeName, data);
             overrideFieldLabels(this.labelOverrides, this.objectInfo);
         } else if (err) {
             console.error('Error fetching object info', err);

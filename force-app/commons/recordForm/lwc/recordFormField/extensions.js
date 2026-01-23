@@ -12,6 +12,7 @@ import LightningAddress from "./lightning/address/lightningAddress";
 import {LightningMultiPicklistExt, LightningPicklist} from "./lightning/picklist/lightningPicklist";
 import {LightningRichTextExt, LightningTextAreaExt} from "./lightning/textArea/lightningTextarea";
 import {LightningReferenceExt} from "./lightning/lookup/lightningRecordPicker";
+import {LightningName} from "./lightning/name/lightningName";
 
 
 const EXTENSIONS = {
@@ -34,6 +35,7 @@ const EXTENSIONS = {
         'Picklist'     : LightningPicklist,
         'MultiPicklist': LightningMultiPicklistExt,
         'Address'      : LightningAddress,
+        'PersonName'   : LightningName,
     }
 }
 
@@ -45,6 +47,7 @@ export function extendCtrl(cmp, {fieldInfo, formAttributes}) {
         const designSystem = formAttributes.designSystem ?? "lightning";
         let extensionName = fieldInfo.dataType;
         if (extensionName === 'TextArea') extensionName = fieldInfo.extraTypeInfo;
+        if (fieldInfo?.extraTypeInfo?.indexOf('PersonName') > -1) extensionName = 'PersonName';
 
         const extension = EXTENSIONS[designSystem][extensionName];
         if (extension) {

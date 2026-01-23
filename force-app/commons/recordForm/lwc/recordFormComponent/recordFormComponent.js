@@ -33,7 +33,7 @@ function RecordFormComponent(lightningComponent) {
                 this.controllerName = fieldInfo.controllerName;
                 this.required = this.required ?? fieldInfo.required;
             } catch (e) {
-                console.log('connectField Cmp', fieldInfo, e.message, e.stack);
+                console.error('connectField Cmp', fieldInfo, e.message, e.stack);
             }
         }
 

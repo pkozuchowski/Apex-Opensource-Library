@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
-import {api, LightningElement} from 'lwc';
+import {api, LightningElement, track} from 'lwc';
 import {extendCtrl} from "./extensions";
 import emptyTemplate from './recordFormField.html';
 import {RecordFormComponent} from "c/recordFormComponent";
@@ -8,7 +8,7 @@ import {RecordFormComponent} from "c/recordFormComponent";
 export default class RecordFormField extends RecordFormComponent(LightningElement) {
     // static renderMode = 'light';
     @api field;
-    @api typeAttributes;
+    @api typeAttributes = {};
 
     @api options;
     /*Array of picklist values to present (['A', 'B', 'C'])*/

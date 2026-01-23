@@ -53,7 +53,7 @@ export function getRecordTypeId(recordTypeName, data) {
     if (recordTypeName) {
         const recordTypeInfos = data.recordTypeInfos;
         recordTypeId = Object.values(recordTypeInfos)
-            .find(rti => rti.name === this.recordType)?.recordTypeId;
+            .find(rti => rti.name === recordTypeName)?.recordTypeId;
     }
     return recordTypeId || data.defaultRecordTypeId || MASTER_RECORD_TYPE;
 }

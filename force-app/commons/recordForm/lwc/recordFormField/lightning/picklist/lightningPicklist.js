@@ -78,7 +78,7 @@ export class LightningPicklist extends LightningInputExt {
 
             return options;
         } catch (e) {
-            console.log(e.message);
+            console.error(e.message);
             return [];
         }
     }

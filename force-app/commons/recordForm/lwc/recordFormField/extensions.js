@@ -47,7 +47,7 @@ export function extendCtrl(cmp, {fieldInfo, formAttributes}) {
         const designSystem = formAttributes.designSystem ?? "lightning";
         let extensionName = fieldInfo.dataType;
         if (extensionName === 'TextArea') extensionName = fieldInfo.extraTypeInfo;
-        if (fieldInfo?.extraTypeInfo?.indexOf('PersonName') > -1) extensionName = 'PersonName';
+        if (fieldInfo.apiName === "Name" && formAttributes.isPersonAccount) extensionName = 'PersonName';
 
         const extension = EXTENSIONS[designSystem][extensionName];
         if (extension) {

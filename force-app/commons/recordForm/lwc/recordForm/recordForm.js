@@ -3,7 +3,10 @@
 import {api, LightningElement, track, wire} from 'lwc';
 import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectInfoApi";
 import {createRecord, notifyRecordUpdateAvailable, updateRecord} from 'lightning/uiRecordApi';
-import {getFlatRecord, getRecordTypeId, getUpdatableFields, overrideFieldLabels, validate} from "./recordFormUtils";
+import {getFlatRecord, getUpdatableFields, overrideFieldLabels, validate} from "./recordFormUtils";
+import getRecordType from "@salesforce/apex/RecordFormCtrl.getRecordType";
+
+const MASTER_RECORD_TYPE = "012000000000000AAA";
 
 /**
  * Lightning Web Component form wrapper that handles record wiring, field setup,
@@ -31,9 +34,10 @@ export default class RecordForm extends LightningElement {
 
     @track
     formAttributes = {
-        density     : "comfy",
-        readOnly    : false,
-        designSystem: "lightning"
+        density        : "comfy",
+        readOnly       : false,
+        designSystem   : "lightning",
+        isPersonAccount: false
     }
 
 
@@ -161,14 +165,26 @@ export default class RecordForm extends LightningElement {
     @wire(getObjectInfo, {objectApiName: '$objectApiName'})
     describeObjectInfo({err, data}) {
         if (data) {
-            console.log('describeObjectInfo', data);
             this.objectInfo = JSON.parse(JSON.stringify(data));
-            this.recordTypeId = getRecordTypeId(this.recordTypeName, data);
+            if (!this.recordTypeName) {
+                this.recordTypeId = data.defaultRecordTypeId;
+            }
             overrideFieldLabels(this.labelOverrides, this.objectInfo);
         } else if (err) {
-            console.error('Error fetching object info', err);
+            console.error('Error fetching object info', err.message);
         }
     };
+
+    @wire(getRecordType, {objectApiName: "$objectApiName", developerName: "$recordTypeName"})
+    fetchRecordType({err, data}) {
+        if (data) {
+            this.recordTypeId = data[0].Id;
+            this.formAttributes.isPersonAccount = data[0].IsPersonType;
+        } else if (err) {
+            console.error(`Error fetching record type ${this.objectApiName}.${this.recordTypeName}`, err?.message);
+            this.recordTypeId = MASTER_RECORD_TYPE;
+        }
+    }
 
     @wire(getPicklistValuesByRecordType, {
         objectApiName: "$objectApiName",
@@ -176,12 +192,11 @@ export default class RecordForm extends LightningElement {
     })
     describePicklistValues({err, data}) {
         if (data) {
-            console.log('describePicklistValues', data);
             this.picklistValues = JSON.parse(JSON.stringify(data.picklistFieldValues));
             this.loaded = true;
             this.spinner = false;
         } else if (err) {
-            console.error('Error fetching picklist values', err);
+            console.error('Error fetching picklist values', err.message);
         }
     };
 

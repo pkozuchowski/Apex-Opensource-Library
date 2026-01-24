@@ -276,54 +276,60 @@ Then this component can be used in the form:
 
 ## Record Form
 ### Attributes
-- `object-api-name` - API Name of the object to display.
-- `record-type-name` - Record Type Developer Name to use for picklist values.
-- `record` - Record object to display.
-- `density` - Density of the form – "comfy", "compact".
-- `formClass` - CSS class to apply to the form.
-- `labelOverrides` - Object with field names as keys and custom labels as values.
-- `designSystem` - Design System to use for rendering the form. Defaults to "lightning".
-- `readOnly` - If true, all fields are read-only.
+| Attribute          | Description                                                           |
+|--------------------|-----------------------------------------------------------------------|
+| `object-api-name`  | API Name of the object to display.                                    |
+| `record-type-name` | Record Type's Developer Name to use for picklist values.              |
+| `record`           | Record object to display.                                             |
+| `density`          | Density of the form – "comfy", "compact".                             |
+| `formClass`        | CSS class to apply to the form.                                       |
+| `labelOverrides`   | Object with field names as keys and custom labels as values.          |
+| `designSystem`     | Design System to use for rendering the form. Defaults to "lightning". |
+| `readOnly`         | If true, all fields are read-only.                                    |
 
-### Methods:
-- `submit()` - Creates/Updates the record.
-- `checkValidity()` - Checks validity of all fields.
-- `reportValidity()` - Reports validity of all fields.
-- `reportValidityForField(fieldName)` - Reports validity of a specific field.
-- `checkValidityForField(fieldName)` - Checks validity of a specific field.
-- `setCustomValidityForField(fieldName)` - sets custom validity for a specific field.
-- `reportValidity()` - Reports validity of all fields.
-- `checkValidity()` - Reports validity of all fields.
+### Methods
+| Method                                 | Description                                |
+|----------------------------------------|--------------------------------------------|
+| `submit()`                             | Creates/Updates the record.                |
+| `checkValidity()`                      | Checks validity of all fields.             |
+| `reportValidity()`                     | Reports validity of all fields.            |
+| `reportValidityForField(fieldName)`    | Reports validity of a specific field.      |
+| `checkValidityForField(fieldName)`     | Checks validity of a specific field.       |
+| `setCustomValidityForField(fieldName)` | sets custom validity for a specific field. |
+| `reportValidity()`                     | Reports validity of all fields.            |
+| `checkValidity()`                      | Reports validity of all fields.            |
 
 ## Record Form Component
 
 ### Attributes
-- `field` (`string`) - API name of the field this component represents (e.g. `"Name"`, `"OwnerId"`). Used to read the value from `record` and to build the
-  change payload.
-- `record` (`object`) - Plain record object in shape `{ [fieldApiName]: value }`. The component reads current value from it.
-- `fieldLevelHelp` (`string`) - Help text displayed for the field (typically sourced from the field’s inline help text).
-- `readOnly` (`boolean`) - Forces the component into read-only mode. If not provided, the component can inherit read-only behavior from `formAttributes`.
-- `disabled` (`boolean`) - Disables user interaction with the field (visible, but not editable/interactable).
-- `required` (`boolean`) - Marks the field as required. If not provided, it can default from field metadata.
-- `validity` (`object`) - Validity state for the underlying input. Shape depends on the input implementation used by the field type/extension.
-- `variant` (`string`) - Label layout variant (commonly `"label-inline"` or `"label-stacked"`). If not provided, it can be derived from
-  `formAttributes.density`.
-- `designSystem` (`string`) - Design system selector used to determine rendering behavior (e.g. Lightning vs custom design systems).
-- `formAttributes` (`object`) - Form-level configuration passed down to fields (e.g. `density`, `readOnly`, etc.). Used as defaults when a field-level attribute
-  is not set.
+| Attribute        | Type      | Description                                                                                                                                         |
+|------------------|-----------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `field`          | `string`  | API name of the field this component represents (e.g. `"Name"`, `"OwnerId"`). Used to read the value from `record` and to build the change payload. |
+| `record`         | `object`  | Plain record object in shape `{ [fieldApiName]: value }`. The component reads current value from it. Set by record form.                            |
+| `fieldLevelHelp` | `string`  | Help text displayed for the field (typically sourced from the field's inline help text).                                                            |
+| `readOnly`       | `boolean` | Forces the component into read-only mode. If not provided, the component can inherit read-only behavior from `formAttributes`.                      |
+| `disabled`       | `boolean` | Disables user interaction with the field (visible, but not editable/interactable).                                                                  |
+| `required`       | `boolean` | Marks the field as required. If not provided, it can default from field metadata.                                                                   |
+| `validity`       | `object`  | Validity state for the underlying input. Shape depends on the input implementation used by the field type/extension.                                |
+| `variant`        | `string`  | Label layout variant (commonly `"label-inline"` or `"label-stacked"`). If not provided, it can be derived from `formAttributes.density`.            |
+| `designSystem`   | `string`  | Design system selector used to determine rendering behavior (e.g. Lightning vs custom design systems).                                              |
+| `formAttributes` | `object`  | Form-level configuration passed down to fields (e.g. `density`, `readOnly`, etc.). Used as defaults when a field-level attribute is not set.        |
 
 ### Methods
-- reportValidity()
-- setCustomValidity(message)
-- checkValidity()
-  Same as standard `lightning-input` methods.
-
+| Method                       | Description                                |
+|------------------------------|--------------------------------------------|
+| `reportValidity()`           | Same as standard `lightning-input` method. |
+| `setCustomValidity(message)` | Same as standard `lightning-input` method. |
+| `checkValidity()`            | Same as standard `lightning-input` method. |
 
 ## Record Form Field (extends RecordFormComponent)
 
 ### Attributes
-- All attributes
-  from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-component-reference/guide/lightning-input.html?type=Specifications)
-- `typeAttributes` (`object`) - Additional attributes to apply to the underlying input element.
-- `options` (`array`) - Array of picklist values to present instead of the ones from the field metadata.
-- `optionsFilter` (`array`) - Subset of picklist values to display, from options or record type picklist values.
+All attributes
+from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-component-reference/guide/lightning-input.html?type=Specifications)
+
+| Attribute        | Type     | Description                                                                        |
+|------------------|----------|------------------------------------------------------------------------------------|
+| `typeAttributes` | `object` | Additional attributes to apply to the underlying input element.                    |
+| `options`        | `array`  | Array of picklist values to present instead of the ones from the field metadata.   |
+| `optionsFilter`  | `array`  | Subset of picklist values to display, from options or record type picklist values. |

@@ -39,24 +39,6 @@ export function getUpdatableFields(record = {}, objectInfo = {}, isCreate) {
     return fields;
 }
 
-const MASTER_RECORD_TYPE = "012000000000000AAA";
-
-/**
- * Retrieves the Record Type Id based on the record type name.
- * @param {string} recordTypeName - Developer name of the record type to find
- * @param {Object} data - Object metadata containing recordTypeInfos, defaultRecordTypeId
- * @returns {string} The matching record type Id, or the default record type Id, or the master record type Id
- */
-export function getRecordTypeId(recordTypeName, data) {
-    let recordTypeId;
-
-    if (recordTypeName) {
-        const recordTypeInfos = data.recordTypeInfos;
-        recordTypeId = Object.values(recordTypeInfos)
-            .find(rti => rti.name === recordTypeName)?.recordTypeId;
-    }
-    return recordTypeId || data.defaultRecordTypeId || MASTER_RECORD_TYPE;
-}
 
 /**
  * Overrides field labels in the object metadata with custom labels.

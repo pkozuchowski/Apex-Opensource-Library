@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Piotr Kożuchowski
 import {api, LightningElement, track, wire} from 'lwc';
 import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectInfoApi";
-import {createRecord, notifyRecordUpdateAvailable, updateRecord} from 'lightning/uiRecordApi';
+import {createRecord, getRecord, notifyRecordUpdateAvailable, updateRecord} from 'lightning/uiRecordApi';
 import {getFlatRecord, getUpdatableFields, overrideFieldLabels, validate} from "./recordFormUtils";
 import getRecordType from "@salesforce/apex/RecordFormCtrl.getRecordType";
 
@@ -14,6 +14,7 @@ const MASTER_RECORD_TYPE = "012000000000000AAA";
  */
 export default class RecordForm extends LightningElement {
     /**Object API Name*/
+    @api recordId;
     @api objectApiName;
     @api formClass;
 
@@ -31,6 +32,8 @@ export default class RecordForm extends LightningElement {
     picklistValues;
     recordTypeId;
     _record = {};
+    fieldsToRetrieve;
+    recordIds;
 
     @track
     formAttributes = {
@@ -165,6 +168,7 @@ export default class RecordForm extends LightningElement {
     @wire(getObjectInfo, {objectApiName: '$objectApiName'})
     describeObjectInfo({err, data}) {
         if (data) {
+            console.log('data', data);
             this.objectInfo = JSON.parse(JSON.stringify(data));
             if (!this.recordTypeName) {
                 this.recordTypeId = data.defaultRecordTypeId;
@@ -185,6 +189,43 @@ export default class RecordForm extends LightningElement {
             this.recordTypeId = MASTER_RECORD_TYPE;
         }
     }
+
+    @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: '$fieldsToRetrieve'})
+    fetchRecord({err, data}) {
+        if (data) {
+            this.dispatchEvent(new CustomEvent('change', {
+                detail: {
+                    value: Object.assign(getFlatRecord(data), this.record)
+                }
+            }));
+        } else if (err) {
+            console.error('Error fetching record', err?.message, err);
+        }
+    }
+
+    renderedCallback() {
+        if (this.fields.length > 0 && !this.fieldsToRetrieve) {
+            let fieldsToRetrieve = ['Account.Id'];
+            this.fields.forEach(fieldCmp => {
+                let fieldName = fieldCmp.field;
+
+                const fieldInfo = this.objectInfo.fields[fieldName];
+                if (fieldInfo.compound) {
+                    Object.values(this.objectInfo.fields)
+                        .forEach(compoundField => {
+                            if (compoundField.compoundFieldName === fieldName) {
+                                fieldsToRetrieve.push(`${this.objectApiName}.${compoundField.apiName}`)
+                            }
+                        });
+                } else {
+                    fieldsToRetrieve.push(`${this.objectApiName}.${fieldName}`);
+                }
+            });
+            this.fieldsToRetrieve = fieldsToRetrieve;
+            this.recordIds = this.recordId;
+        }
+    }
+
 
     @wire(getPicklistValuesByRecordType, {
         objectApiName: "$objectApiName",
@@ -207,6 +248,7 @@ export default class RecordForm extends LightningElement {
 
             if (ev.target.connectField) {
                 this.fields.push(ev.target);
+                this.fieldsToRetrieve = null;
                 ev.target.record = this._record;
                 ev.target.formAttributes = this.formAttributes;
                 ev.target.connectField(

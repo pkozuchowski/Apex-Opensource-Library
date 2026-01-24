@@ -1,5 +1,9 @@
 public with sharing class RecordFormCtrl {
 
+    /**
+     * @return List of RecordType matching the given object API name and developer name.
+     */
+    @SuppressWarnings('PMD.ApexSOQLInjection')
     @AuraEnabled(Cacheable=true)
     public static List<RecordType> getRecordType(String objectApiName, String developerName) {
         String query = 'SELECT Id '

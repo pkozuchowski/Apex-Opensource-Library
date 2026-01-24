@@ -12,12 +12,6 @@ export default class Preview extends LightningElement {
     }
     density = "comfy";
 
-    nameAttributes = {
-        Salutation: {
-            required: true
-        }
-    }
-
     condition = false;
     value = '1';
 
@@ -38,23 +32,6 @@ export default class Preview extends LightningElement {
         let reportValidity = this.refs.recordForm.reportValidityForField('Type');
         console.log('reportValidity', JSON.stringify(reportValidity, null, 2));
     }
-
-    doSomething() {
-        this.show = "test"
-    }
-
-    handleChange(ev) {
-        this.value = ev.detail.value;
-    }
-
-    @wire(getObjectInfo, {objectApiName: 'Lead'})
-    describeObjectInfo({err, data}) {
-        if (data) {
-            console.log('this.lead', data);
-        } else if (err) {
-            console.error('Error fetching object info', err);
-        }
-    };
 
     @wire(getRecord, {recordId: '001KM00000KlMXkYAN', layoutTypes: 'Full'})
     getAccount({error, data}) {

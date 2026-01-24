@@ -1,7 +1,8 @@
 <template>
-    <c-record-form-field-output lwc:if={isReadOnly} label={label}
+    <c-record-form-field-output lwc:if={isReadOnly}
+                                label={label}
                                 density={formAttributes.density}>
-        <lightning-formatted-rich-text value={value}></lightning-formatted-rich-text>
+        <lightning-formatted-rich-text value={fieldValue}></lightning-formatted-rich-text>
     </c-record-form-field-output>
 
     <lightning-input-rich-text

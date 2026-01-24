@@ -26,13 +26,16 @@ export default class RecordFormComponent extends LightningElement {
     }
 
     @api
-    connectField({fieldInfo}) {
+    connectField({fieldInfo, objectInfo}) {
         try {
             this.label = this.label ?? fieldInfo.label;
             this.fieldLevelHelp = fieldInfo.inlineHelpText;
             this.controllerName = fieldInfo.controllerName;
             this.required = this.required ?? fieldInfo.required;
-            this.updateable = fieldInfo.updateable;
+            this.updateable = (fieldInfo.updateable || (fieldInfo.compound
+                && Object
+                    .values(objectInfo.fields)
+                    .some(field => field.compoundFieldName === fieldInfo.apiName && field.updateable)));
         } catch (e) {
             console.error('connectField Cmp', fieldInfo, e.message, e.stack);
         }

@@ -1,7 +1,7 @@
 # Record Form
 *Create customizable record forms easily.*
 
-[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/recordForm/lwc)
+[Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/recordForm)
 [Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Lu78IACy)
 [Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Lu78IACy)
 

@@ -280,6 +280,24 @@ nav:
               <!--...-->
               </c-if>
 
+          - path: record-form
+            label: Record Form
+            description: Customizable Record Forms.
+            badge: New
+            lang: html
+            snippet: |
+              <c-record-form
+                object-api-name="Account"
+                record-type-name="PersonAccount"
+                record={account}
+                onchange={onRecordChange}>
+              
+                <c-record-form-field read-only field="OwnerId"></c-record-form-field>
+                <c-record-form-field read-only field="Name"></c-record-form-field>
+                <c-record-form-field field="BillingAddress"></c-record-form-field>
+              </c-record-form>
+
+
   - label: GitHub
     url: https://github.com/pkozuchowski/Apex-Opensource-Library
 

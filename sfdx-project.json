@@ -107,11 +107,19 @@
       "versionNumber": "1.0.0.NEXT",
       "default": false,
       "versionDescription": ""
+    },
+    {
+      "path": "./force-app/commons/recordForm",
+      "package": "Record Form",
+      "versionName": "ver 1.1",
+      "versionNumber": "1.1.1.NEXT",
+      "default": false,
+      "versionDescription": ""
     }
   ],
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "63.0",
+  "sourceApiVersion": "65.0",
   "packageAliases": {
     "Trigger Handler": "0Ho08000000CaS0CAK",
     "Trigger Handler@1.0.1-1": "04t08000000cSiXAAU",
@@ -174,6 +182,10 @@
     "TestDataBuilder@1.0.0-1": "04t08000000ga9dAAA",
     "TestDataBuilder@1.1.0-1": "04tJ6000000LYthIAG",
     "TestDataSuite": "0Ho08000000CaSjCAK",
-    "TestDataSuite@1.0.0-1": "04t08000000ga9iAAA"
+    "TestDataSuite@1.0.0-1": "04t08000000ga9iAAA",
+    "Record Form": "0HoJ60000000043KAA",
+    "Record Form@1.0.0-1": "04tJ6000000Lu6yIAC",
+    "Record Form@1.1.0-1": "04tJ6000000Lu73IAC",
+    "Record Form@1.1.1-1": "04tJ6000000Lu78IAC"
   }
 }

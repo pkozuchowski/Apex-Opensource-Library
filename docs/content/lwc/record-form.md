@@ -2,8 +2,9 @@
 *Create customizable record forms easily.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/recordForm)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Lu7DIAS)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Lu7DIAS)
+[Recipes](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/examples/recordForm)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Lu7IIAS)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Lu7IIAS)
 
 ```bash
 sf project deploy start -d "force-app/commons/recordForm" -o sfdxOrg
@@ -29,6 +30,7 @@ There is also support for custom components and custom design systems other than
 ```html
 
 <c-record-form object-api-name="Account"
+               record-id="001KM00000KlMXkYAN"
                record-type-name="PersonAccount"
                record={account}
                density="compact"
@@ -276,16 +278,17 @@ Then this component can be used in the form:
 
 ## Record Form
 ### Attributes
-| Attribute          | Description                                                           |
-|--------------------|-----------------------------------------------------------------------|
-| `object-api-name`  | API Name of the object to display.                                    |
-| `record-type-name` | Record Type's Developer Name to use for picklist values.              |
-| `record`           | Record object to display.                                             |
-| `density`          | Density of the form – "comfy", "compact".                             |
-| `formClass`        | CSS class to apply to the form.                                       |
-| `labelOverrides`   | Object with field names as keys and custom labels as values.          |
-| `designSystem`     | Design System to use for rendering the form. Defaults to "lightning". |
-| `readOnly`         | If true, all fields are read-only.                                    |
+| Attribute          | Description                                                                            |
+|--------------------|----------------------------------------------------------------------------------------|
+| `object-api-name`  | API Name of the object to display.                                                     |
+| `record-type-name` | Record Type's Developer Name to use for picklist values.                               |
+| `recordId`         | If provided, form will fetch record with fields on the form and fire onchange handler. |
+| `record`           | Record object to display.                                                              |
+| `density`          | Density of the form – "comfy", "compact".                                              |
+| `formClass`        | CSS class to apply to the form.                                                        |
+| `labelOverrides`   | Object with field names as keys and custom labels as values.                           |
+| `designSystem`     | Design System to use for rendering the form. Defaults to "lightning".                  |
+| `readOnly`         | If true, all fields are read-only.                                                     |
 
 ### Methods
 | Method                                 | Description                                |

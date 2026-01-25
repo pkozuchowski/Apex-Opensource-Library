@@ -2,7 +2,7 @@
     <div class="slds-is-relative">
         <lightning-spinner lwc:if={spinner} alternative-text="Loading" size="medium"></lightning-spinner>
 
-        <form lwc:if={loaded} class={formClasses} role="list"
+        <form lwc:if={isLoaded} class={formClasses} role="list"
               onfieldconnected={onFieldConnected}
               onsubmit={submit}>
             <slot></slot>

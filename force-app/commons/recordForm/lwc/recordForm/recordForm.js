@@ -3,7 +3,7 @@
 import {api, LightningElement, track, wire} from 'lwc';
 import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectInfoApi";
 import {createRecord, getRecord, notifyRecordUpdateAvailable, updateRecord} from 'lightning/uiRecordApi';
-import {getFlatRecord, getUpdatableFields, overrideFieldLabels, validate} from "./recordFormUtils";
+import {getFieldsToRetrieve, getFlatRecord, getUpdatableFields, overrideFieldLabels, validate} from "./recordFormUtils";
 import getRecordType from "@salesforce/apex/RecordFormCtrl.getRecordType";
 
 const MASTER_RECORD_TYPE = "012000000000000AAA";
@@ -26,14 +26,12 @@ export default class RecordForm extends LightningElement {
     /**Design system variant used by child fields.*/
     @api designSystem = "lightning";
     fields = [];
-    loaded = false;
     spinner = true;
     objectInfo;
     picklistValues;
     recordTypeId;
     _record = {};
     fieldsToRetrieve;
-    recordIds;
 
     @track
     formAttributes = {
@@ -79,6 +77,16 @@ export default class RecordForm extends LightningElement {
 
     get formClasses() {
         return `slds-form ${this.formClass}`;
+    }
+
+    /**
+     * Form loads successfully when all required components are connected and picklist values are available.
+     * @type {boolean}
+     */
+    get isLoaded() {
+        return this.objectInfo
+            && this.picklistValues
+            && this.record;
     }
 
     /**
@@ -168,7 +176,6 @@ export default class RecordForm extends LightningElement {
     @wire(getObjectInfo, {objectApiName: '$objectApiName'})
     describeObjectInfo({err, data}) {
         if (data) {
-            console.log('data', data);
             this.objectInfo = JSON.parse(JSON.stringify(data));
             if (!this.recordTypeName) {
                 this.recordTypeId = data.defaultRecordTypeId;
@@ -190,43 +197,6 @@ export default class RecordForm extends LightningElement {
         }
     }
 
-    @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: '$fieldsToRetrieve'})
-    fetchRecord({err, data}) {
-        if (data) {
-            this.dispatchEvent(new CustomEvent('change', {
-                detail: {
-                    value: Object.assign(getFlatRecord(data), this.record)
-                }
-            }));
-        } else if (err) {
-            console.error('Error fetching record', err?.message, err);
-        }
-    }
-
-    renderedCallback() {
-        if (this.fields.length > 0 && !this.fieldsToRetrieve) {
-            let fieldsToRetrieve = ['Account.Id'];
-            this.fields.forEach(fieldCmp => {
-                let fieldName = fieldCmp.field;
-
-                const fieldInfo = this.objectInfo.fields[fieldName];
-                if (fieldInfo.compound) {
-                    Object.values(this.objectInfo.fields)
-                        .forEach(compoundField => {
-                            if (compoundField.compoundFieldName === fieldName) {
-                                fieldsToRetrieve.push(`${this.objectApiName}.${compoundField.apiName}`)
-                            }
-                        });
-                } else {
-                    fieldsToRetrieve.push(`${this.objectApiName}.${fieldName}`);
-                }
-            });
-            this.fieldsToRetrieve = fieldsToRetrieve;
-            this.recordIds = this.recordId;
-        }
-    }
-
-
     @wire(getPicklistValuesByRecordType, {
         objectApiName: "$objectApiName",
         recordTypeId : "$recordTypeId",
@@ -234,7 +204,6 @@ export default class RecordForm extends LightningElement {
     describePicklistValues({err, data}) {
         if (data) {
             this.picklistValues = JSON.parse(JSON.stringify(data.picklistFieldValues));
-            this.loaded = true;
             this.spinner = false;
         } else if (err) {
             console.error('Error fetching picklist values', err.message);
@@ -248,12 +217,19 @@ export default class RecordForm extends LightningElement {
 
             if (ev.target.connectField) {
                 this.fields.push(ev.target);
-                this.fieldsToRetrieve = null;
+                const fieldName = ev.target.field;
+                const fieldInfo = this.objectInfo.fields[fieldName];
+
+                this.fieldsToRetrieve = [
+                    ...(this.fieldsToRetrieve ?? []),
+                    ...getFieldsToRetrieve(this.objectInfo, fieldInfo, fieldName)
+                ];
+
                 ev.target.record = this._record;
                 ev.target.formAttributes = this.formAttributes;
                 ev.target.connectField(
                     {
-                        fieldInfo               : this.objectInfo.fields[ev.target.field],
+                        fieldInfo,
                         objectInfo              : this.objectInfo,
                         recordTypePicklistValues: this.picklistValues,
                         formAttributes          : this.formAttributes
@@ -262,6 +238,19 @@ export default class RecordForm extends LightningElement {
             }
         } catch (e) {
             console.error('recordForm.onFieldConnected', e.message);
+        }
+    }
+
+    @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: '$fieldsToRetrieve'})
+    fetchRecord({err, data}) {
+        if (data) {
+            this.dispatchEvent(new CustomEvent('change', {
+                detail: {
+                    value: Object.assign(getFlatRecord(data), this.record)
+                }
+            }));
+        } else if (err) {
+            console.error('Error fetching record', err?.message, err);
         }
     }
 }

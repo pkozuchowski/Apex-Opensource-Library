@@ -71,3 +71,29 @@ export function getFlatRecord(recordRepresentation) {
 
     return flatRecord;
 }
+
+/**
+ * Retrieves the list of fields to fetch for a given field, including compound field components if applicable.
+ * For compound fields (like Address or Name), this function returns both the compound field itself
+ * and all its component fields.
+ * @returns {Array<string>} Array of fully-qualified field names in the format "ObjectApiName.FieldApiName".
+ *   Returns an empty array if field api name is not correct.
+ */
+export function getFieldsToRetrieve(objectInfo, fieldInfo, fieldName) {
+    if (fieldInfo) {
+        const fieldsToRetrieve = [`${objectInfo.apiName}.${fieldName}`];
+
+        if (fieldInfo.compound) {
+            Object.values(objectInfo.fields)
+                .forEach(compoundField => {
+                    if (compoundField.compoundFieldName === fieldName) {
+                        fieldsToRetrieve.push(`${objectInfo.apiName}.${compoundField.apiName}`)
+                    }
+                });
+        }
+        return fieldsToRetrieve
+    } else {
+        console.warn(`Field ${fieldName} not found in object ${this.objectApiName}`);
+        return [];
+    }
+}

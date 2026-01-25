@@ -1,0 +1,25 @@
+{
+    "plugins": [
+        "prettier-plugin-apex-imo",
+        "@prettier/plugin-xml"
+    ],
+    "printWidth": 120,
+    "trailingComma": "none",
+    "tabWidth": 4,
+    "bracketSameLine": true,
+    "xmlWhitespaceSensitivity": "ignore",
+    "overrides": [
+        {
+            "files": "**/lwc/**/*.html",
+            "options": {
+                "parser": "lwc"
+            }
+        },
+        {
+            "files": "*.{cmp,page,component}",
+            "options": {
+                "parser": "html"
+            }
+        }
+    ]
+}

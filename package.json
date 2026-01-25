@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "prettier-plugin-apex-imo": "^0.2.0"
+  },
+  "scripts":{
+    "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,page,trigger}\"",
+    "prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,page,trigger}\""
+  },
+  "dependencies": {
+    "prettier": "^3.8.1"
+  }
+}

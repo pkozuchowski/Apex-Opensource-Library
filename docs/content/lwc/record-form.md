@@ -3,8 +3,8 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/recordForm)
 [Recipes](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/examples/recordForm)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Lu7IIAS)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Lu7IIAS)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LuCOIA0)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LuCOIA0)
 
 ```bash
 sf project deploy start -d "force-app/commons/recordForm" -o sfdxOrg

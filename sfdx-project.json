@@ -112,7 +112,7 @@
       "path": "./force-app/commons/recordForm",
       "package": "Record Form",
       "versionName": "ver 1.2",
-      "versionNumber": "1.2.0.NEXT",
+      "versionNumber": "1.2.1.NEXT",
       "default": false,
       "versionDescription": ""
     }
@@ -185,6 +185,7 @@
     "TestDataSuite@1.0.0-1": "04t08000000ga9iAAA",
     "Record Form": "0HoJ60000000043KAA",
     "Record Form@1.1.2-1": "04tJ6000000Lu7DIAS",
-    "Record Form@1.2.0-1": "04tJ6000000Lu7IIAS"
+    "Record Form@1.2.0-1": "04tJ6000000Lu7IIAS",
+    "Record Form@1.2.1-1": "04tJ6000000LuCOIA0"
   }
 }

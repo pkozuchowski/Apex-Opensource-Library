@@ -72,7 +72,10 @@ export class LightningPicklist extends LightningInputExt {
                 options = options.filter(option => this.optionsFilter.includes(option.value));
             }
 
-            if (!this.multiple) {
+            const hasNoneOption = !this.multiple
+                && this.type !== "radio-group";
+
+            if (hasNoneOption) {
                 options.unshift(OPT_NONE);
             }
 

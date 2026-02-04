@@ -26,6 +26,7 @@
  * Main interface of the Query framework.
  * Use this class to create Queries without concrete selector class, mock queries or construct Query wrapper.
  */
+@SuppressWarnings('PMD')
 @JsonAccess(Serializable='never' Deserializable='never')
 public inherited sharing virtual class Query {
 
@@ -67,24 +68,22 @@ public inherited sharing virtual class Query {
 
     /**
      * Mocks query result using either mockId or client's class name and method.
-     * <pre>
-     *     class AccountQuotingService{
-     *         public void generateQuotes(Set<Id> accountIds){
-     *              List<Account> accs = Query.Accounts.byId(accountIds).getList();
-     *         }
-     *     }
-     *
-     * </pre>
-     *
-     * In unit tests:
-     * <pre>
-     *     Query.mock('AccountQuotingService.generateQuotes', new List<Account>{...});
-     *     // or
-     *     Query.Accounts.mock('AccountQuotingService.generateQuotes', mockedResults);
-     * </pre>
     */
     public static void mock(String mockIdOrClientName, List<SObject> result) {
-        mock(result.getSObjectType(), mockIdOrClientName, result);
+        if (result.getSObjectType() == null) {
+            QueryResults.mock(mockIdOrClientName, result);
+        } else {
+            mock(result.getSObjectType(), mockIdOrClientName, result);
+        }
+    }
+
+    /**
+     * Mocks Aggregated Results using either mockId or client's class name and method.
+     * Important! This is intended to use with QueryObject.getAggregateResult() method,
+     * which returns List<Query.AggregateResult>;
+     */
+    public static void mock(String mockIdOrClientName, List<Query.AggregateResult> result) {
+        QueryResults.mock(Schema.AggregateResult.SObjectType, mockIdOrClientName, result);
     }
 
 
@@ -122,7 +121,7 @@ public inherited sharing virtual class Query {
      */
     public with sharing virtual class AggregateResult {
         private Schema.AggregateResult result;
-        private Map<String, Object> values;
+        private Map<String, Object> values = new Map<String, Object>();
 
         public AggregateResult() {}
 
@@ -135,13 +134,49 @@ public inherited sharing virtual class Query {
         }
 
         public virtual Object get(String fieldName) {
-            return values?.get(fieldName) ?? result.get(fieldName);
+            return values?.get(fieldName) ?? result?.get(fieldName);
         }
 
-        public AggregateResult put(String fieldName, Object value) {
+        public Query.AggregateResult put(String fieldName, Object value) {
             values = values ?? new Map<String, Object>();
             values.put(fieldName, value);
             return this;
+        }
+    }
+
+
+    /**
+     * Use this class to mock subqueries and read-only fields,
+     * such as system fields, formula fields or relationship fields.
+     */
+    public class MockSObject {
+        private SObjectType sObjectType;
+        private Map<String, Object> fields = new Map<String, Object>();
+
+        public MockSObject(SObject record) {
+            this.sObjectType = record.getSObjectType();
+            this.fields = record.getPopulatedFieldsAsMap().clone();
+        }
+
+        public MockSObject put(String fieldName, Object value) {
+            fields.put(fieldName, value);
+            return this;
+        }
+
+        public MockSObject put(String fieldName, List<SObject> value) {
+            fields.put(fieldName, new Map<String, Object>{
+                'done' => true,
+                'size' => value.size(),
+                'records' => value
+            });
+            return this;
+        }
+
+        public SObject build() {
+            return (SObject) JSON.deserialize(
+                JSON.serialize(fields),
+                Type.forName('' + sObjectType)
+            );
         }
     }
 }

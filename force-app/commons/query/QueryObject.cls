@@ -25,6 +25,7 @@
 /**
  * Base class for selectors. Contains query builder and common query methods.
  */
+@SuppressWarnings('PMD')
 @JsonAccess(Serializable='never' Deserializable='never')
 public virtual inherited sharing class QueryObject extends QueryResults {
     protected final QueryConditions conditionFactory = new QueryConditions();

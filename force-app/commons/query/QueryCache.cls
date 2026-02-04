@@ -26,17 +26,16 @@
  * Indexed storage for SObjects which groups records by fields and field values.
  * @see SObjectCacheTest
  */
-@SuppressWarnings('PMD.ApexCRUDViolation, PMD.CognitiveComplexity')
+@SuppressWarnings('PMD')
 public inherited sharing class QueryCache {
     public static final String CACHE_PARTITION = 'local.queries';
-    private static Storage
-        STATIC_STORAGE = new StaticStorage(),
-        SESSION_STORAGE,
-        ORG_STORAGE;
-
-    private static final Map<SObjectType, QueryCache> cacheRegistry = new Map<SObjectType, QueryCache>();
-    private static final Map<SObjectType, Map<String, SObject>> staticMap = new Map<SObjectType, Map<String, SObject>>();
+    private static final Map<SObjectType, QueryCache> REGISTRY = new Map<SObjectType, QueryCache>();
+    private static final Map<SObjectType, Map<String, SObject>> STATIC_CACHE = new Map<SObjectType, Map<String, SObject>>();
     private static final Integer DEFAULT_TTL = Integer.valueOf(QueryCache__mdt.TimeToLive__c.getDescribe().getDefaultValueFormula());
+
+    private static Storage staticStorage = new StaticStorage();
+    private static Storage sessionStorage;
+    private static Storage orgStorage;
 
     private Storage cacheStorage;
     private String initializationQuery;
@@ -49,8 +48,8 @@ public inherited sharing class QueryCache {
      * @return Cache registered for given sObjectType
      */
     public static QueryCache get(SObjectType sObjectType) {
-        if (cacheRegistry.containsKey(sObjectType)) {
-            return cacheRegistry.get(sObjectType);
+        if (REGISTRY.containsKey(sObjectType)) {
+            return REGISTRY.get(sObjectType);
 
         } else {
             String sobjectName = '' + sObjectType;
@@ -64,7 +63,7 @@ public inherited sharing class QueryCache {
             ];
 
             QueryCache cache = config.isEmpty() ? null : new QueryCache(sObjectType, config[0]);
-            cacheRegistry.put(sObjectType, cache);
+            REGISTRY.put(sObjectType, cache);
             return cache;
         }
     }
@@ -72,7 +71,7 @@ public inherited sharing class QueryCache {
     @TestVisible
     private static void mock(SObjectType sObjectType, QueryCache__mdt config) {
         QueryCache cache = new QueryCache(sObjectType, config);
-        cacheRegistry.put(sObjectType, cache);
+        REGISTRY.put(sObjectType, cache);
     }
 
     private QueryCache(SObjectType sObjectType, QueryCache__mdt config) {
@@ -83,7 +82,7 @@ public inherited sharing class QueryCache {
 
         switch on config.Storage__c {
             when 'Transaction' {
-                this.cacheStorage = STATIC_STORAGE;
+                this.cacheStorage = staticStorage;
             }
             when 'Session' {
                 this.cacheStorage = getSessionCacheStorage();
@@ -95,17 +94,17 @@ public inherited sharing class QueryCache {
     }
 
     private static Storage getOrgStorage() {
-        if (ORG_STORAGE == null) {
-            ORG_STORAGE = getPlatformCacheStorage(true);
+        if (orgStorage == null) {
+            orgStorage = getPlatformCacheStorage(true);
         }
-        return ORG_STORAGE;
+        return orgStorage;
     }
 
     private static Storage getSessionCacheStorage() {
-        if (SESSION_STORAGE == null) {
-            SESSION_STORAGE = getPlatformCacheStorage(false);
+        if (sessionStorage == null) {
+            sessionStorage = getPlatformCacheStorage(false);
         }
-        return SESSION_STORAGE;
+        return sessionStorage;
     }
 
     private static Storage getPlatformCacheStorage(Boolean isOrg) {
@@ -127,7 +126,7 @@ public inherited sharing class QueryCache {
                 + ' Platform Cache Partition not available or does not have storage allocated.\n' +
                 'Falling back to static cache.\n' +
                 'Create "queries" platform cache partition or allocate more storage space.');
-            return STATIC_STORAGE;
+            return staticStorage;
         }
     }
 
@@ -144,11 +143,11 @@ public inherited sharing class QueryCache {
     private class StaticStorage implements Storage {
 
         public Map<String, SObject> getSObjectCache(SObjectType sobjectType) {
-            return staticMap.get(sobjectType);
+            return STATIC_CACHE.get(sobjectType);
         }
 
         public void persistCacheMap(SObjectType sobjectType, Map<String, SObject> storageMap) {
-            staticMap.put(sobjectType, storageMap);
+            STATIC_CACHE.put(sobjectType, storageMap);
         }
     }
 

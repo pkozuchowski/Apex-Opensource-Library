@@ -26,28 +26,6 @@ Set<String> externalIDs;
 List<Account> accounts = Query.Accounts.byExternalId(externalIDs).getList();
 ```
 
-## Syntactic sugar
-**Note!**  
-In the following documentation, I'm sometimes using synthetic sugar `Query.Accounts` or similar for clarity.
-This is not part of the framework due to dependencies.
-
-The simplest and safest way to use a query object is by creating a new instance of a query class:
-```apex
-Account[] accounts = new AccountQuery()
-    .byId('')
-    .getList();
-```
-
-Synthetic sugar can be set up in multiple ways by adding `public AccountQuery Accounts { get {return new AccountQuery();} }` to the class of choice.
-Depending on where you put it, it may be query oriented or sObject oriented:
-```apex
-Query.Accounts.byId();
-
-Accounts.query.byId();
-```
-Important consideration is that this shorthand creates a dependency between a container and a query class.
-
-
 ## Extend, Filter, Reduce
 Query Framework assumes that each query may need to be tailored to the specific requirement in a place where it is used:
 * Extend with additional fields, relationships
@@ -169,6 +147,35 @@ Id contactId = contactQuery.getFirstIdOrNull();
 String contactEmail = (String) contactQuery.getFirstFieldOrNull(Contact.Email);
 ```
 
+## Syntactic sugar
+**Note!**  
+In the following documentation, I'm sometimes using synthetic sugar `Query.Accounts` or similar for clarity.
+This is not part of the framework due to dependencies.
+
+The simplest and safest way to use a query object is by creating a new instance of a query class:
+```apex
+Account[] accounts = new AccountQuery()
+    .byId('')
+    .getList();
+```
+
+Synthetic sugar can be set up in multiple ways by adding getter to the class of choice.
+```apex 
+public class Query {
+    public AccountQuery Accounts { get {return new AccountQuery();} }
+}
+``` 
+
+Depending on where you put it, it may be query-oriented or sObject oriented:
+```apex
+Query.Accounts.byId();
+
+Accounts.query.byId();
+```
+An important consideration is that this shorthand creates a dependency between a container and a query class,
+which may be hard to decouple in Unlocked Packages.
+
+
 ---
 # Query Wrapper
 
@@ -221,7 +228,7 @@ The cache is configured in Custom Metadata (QueryCache__mdt):
 Let's consider Profile Cache settings:
 
 | Field          | Value                                   | Description                                                                                          |
-|----------------|-----------------------------------------|------------------------------------------------------------------------------------------------------|
+----------------|-----------------------------------------|------------------------------------------------------------------------------------------------------|
 | SObject__c     | Profile                                 | Qualified API Name (with namespace) for the SOObject.                                                |
 | Active__c      | true                                    | Is Cache Active. Can be turned off quickly if needed.                                                |
 | Storage__c     | Organization                            | Storage — where records should be stored.                                                            |
@@ -267,6 +274,8 @@ Consecutive call with the same query will get all 50 records from the cache and 
 
 ---
 # Mocking
+
+### Mocking Queries
 You can easily mock the query using class and method name where the query was invoked, or by associating query with a mock Id:
 
 If our client code looks like this:
@@ -288,7 +297,9 @@ public with sharing class AccountQuotingService {
 }
 ```
 
-Then, the easiest way to mock it is as follows:
+Then, the easiest way to mock it is by specifying class and method name as "mockId".
+List's SObject parameter (`List<Account>`) is the second part of the mockId,
+which tells the framework which queries should be mocked. This reads as "mock Account query in AccountQuotingService.generateQuotes method".
 ```apex
 @IsTest
 static void myTestMethod() {
@@ -296,7 +307,6 @@ static void myTestMethod() {
         // my mocked query result
     });
 }
-
 ```
 
 It is also possible to use regexp patterns for mocking. The following example will match all Account queries in AccountQuotingService:
@@ -307,6 +317,38 @@ Query.mock('AccountQuotingService.*', new List<Account>{/*...*/});
 This will match all Account queries:
 ```apex
 Query.mock('.*', new List<Account>{/*...*/});
+```
+
+### Namespaced Packages
+Mocking queries in namespaced classes can be done using a class type, which in itself includes the namespace of the class:
+```apex
+@IsTest
+static void myTestMethod() {
+    Query.mock(AccountQuotingService.class, 'generateQuotes', new List<Account>{
+        // my mocked query result
+    });
+}
+```
+
+### Mocking Queries with Subqueries
+Mocking subqueries and read-only fields is not possible with standard SObject constructor, to enable that, framework exposes additional `mockRecords` method and
+uses JSON deserialization to apply values:
+```apex
+static void myTestMethod() {
+    Query.mock('AccountQuotingService.generateQuotes', new List<Account>{
+        (Account)
+            new Query.MockSObject(
+                new Account(
+                    Name = 'Test Account',
+                    Industry = 'Production'
+                ))
+                .put('FormulaField__c', true)
+                .put('Contacts', new List<Contact>{
+                    new Contact(LastName = 'Doe')
+                })
+                .build()
+    });
+}
 ```
 
 ### Mock Ids

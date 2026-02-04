@@ -29,23 +29,46 @@
  * Mockable wrapper for query results
  */
 public virtual class QueryResults {
-    private final static Map<SObjectType, Map<String, Object>> mocks = new Map<SObjectType, Map<String, Object>>();
+    private final static Map<SObjectType, Map<String, Object>> MOCKS
+        = new Map<SObjectType, Map<String, Object>>();
 
     protected Object result;
     protected SObjectType sObjType;
     protected String mockId = '';
     protected AccessType accessType = null;
 
+
     /**
-     * @see Query.mock
+     * Mocks query results for a specific SObjectType and mock identifier.
+     * @param sobjType The SObject type to mock
+     * @param mockIdOrClientName Mock identifier or client class name and method
+     * @param result The mocked query result to return
      */
     public static void mock(SObjectType sobjType, String mockIdOrClientName, Object result) {
-        Map<String, Object> sobjectMocks = QueryResults.mocks.get(sobjType) ?? new Map<String, Object>();
+        Map<String, Object> sobjectMocks = QueryResults.MOCKS.get(sobjType) ?? new Map<String, Object>();
         sobjectMocks.put(mockIdOrClientName, result);
-        QueryResults.mocks.put(sobjType, sobjectMocks);
+        QueryResults.MOCKS.put(sobjType, sobjectMocks);
     }
 
+    /**
+     * Mocks query results for generic SObject lists.
+     * Iterates over records in a list and adds them to the mock for their respective SObject types.
+     */
+    public static void mock(String mockIdOrClientName, List<SObject> records) {
+        for (SObject record : records) {
+            SObjectType sobjType = record.getSObjectType();
+            Map<String, Object> sobjectMocks = QueryResults.MOCKS.get(sobjType) ?? new Map<String, Object>();
+            List<SObject> existingRecords = (List<SObject>) (
+                sobjectMocks.get(mockIdOrClientName)
+                    ?? Type.forName('List<' + sobjType + '>').newInstance());
+            existingRecords.add(record);
 
+            sobjectMocks.put(mockIdOrClientName, existingRecords);
+            QueryResults.MOCKS.put(sobjType, sobjectMocks);
+        }
+    }
+
+    @SuppressWarnings('PMD.EmptyStatementBlock')
     protected QueryResults() {}
 
     public QueryResults(List<SObject> result) {
@@ -208,8 +231,8 @@ public virtual class QueryResults {
     * @return Mocked query results, if sObject was mocked and class that invoked query is mocked.
     */
     protected Object getMock() {
-        if (Test.isRunningTest() && mocks.containsKey(this.sObjType)) {
-            Map<String, Object> sobjectMocks = mocks.get(this.sObjType);
+        if (Test.isRunningTest() && MOCKS.containsKey(this.sObjType)) {
+            Map<String, Object> sobjectMocks = MOCKS.get(this.sObjType);
 
             if (String.isNotBlank(mockId) && sobjectMocks.containsKey(mockId)) {
                 return sobjectMocks.get(mockId);

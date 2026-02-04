@@ -59,7 +59,6 @@ public with sharing class Mock {
                         'records' => value
                     });
                 }
-
             }
         }
 

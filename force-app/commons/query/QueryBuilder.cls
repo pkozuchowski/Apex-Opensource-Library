@@ -25,6 +25,7 @@
 /**
  * Very simple query builder used in Selector layer
  */
+@SuppressWarnings('PMD')
 public inherited sharing class QueryBuilder {
     private Set<String> fields = new Set<String>();
     private Set<String> subqueries = new Set<String>();

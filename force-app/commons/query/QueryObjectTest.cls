@@ -21,6 +21,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
+@SuppressWarnings('PMD')
 @IsTest(IsParallel=true)
 public class QueryObjectTest {
 
@@ -51,7 +52,7 @@ public class QueryObjectTest {
 
     @IsTest
     static void testMockingQuery() {
-        Query.mock(QueryObjectTest.class, 'TestServiceClass.doSomething', new List<User>{
+        Query.mock(TestServiceClass.class, 'doSomething', new List<User>{
             new User(Username = 'test')
         });
 
@@ -61,6 +62,31 @@ public class QueryObjectTest {
         List<User> results = service.users;
         Assert.areEqual(1, results.size());
         Assert.areEqual('test', results.get(0).Username);
+    }
+
+    @IsTest
+    static void testMockingRecords() {
+        Query.mock(QueryObjectTest.TestServiceClass.class, 'doSomething', new List<SObject>{
+            new Query.MockSObject(
+                new User(
+                    Username = 'test'
+                ))
+                .put('ManagedUsers', new List<User>{
+                    new User(Username = 'managedUser1'),
+                    new User(Username = 'managedUser2')
+                })
+                .build()
+        });
+
+        TestServiceClass service = new TestServiceClass();
+        service.doSomething();
+
+        List<User> results = service.users;
+        Assert.areEqual(1, results.size());
+        Assert.areEqual('test', results.get(0).Username);
+        Assert.areEqual(2, results.get(0).ManagedUsers.size());
+        Assert.areEqual('managedUser1', results.get(0).ManagedUsers.get(0).Username);
+        Assert.areEqual('managedUser2', results.get(0).ManagedUsers.get(1).Username);
     }
 
     @IsTest
@@ -692,29 +718,34 @@ public class QueryObjectTest {
 
     @IsTest
     static void testAggregatedResultsMocking() {
-        Query.mock(User.SObjectType, QueryObjectTest.class, 'testAggregatedResultsMocking', new List<Query.AggregateResult>{
-            new Query.AggregateResult(new Map<String, Object>{})
+        Query.mock('QueryObjectTest.testAggregatedResultsMocking', new List<Query.AggregateResult>{
+            new Query.AggregateResult()
                 .put('cnt', 1)
-                .put('name', 'Test'),
+                .put('nme', 'Test'),
 
             new Query.AggregateResult(new Map<String, Object>{
                 'cnt' => 1,
-                'name' => 'Test'
+                'nme' => 'Test'
             })
         });
 
-        List<Query.AggregateResult> results = Query.of(User.SObjectType)
-            .withFields('COUNT(Id) cnt, Profile.Name name')
-            .groupBy('Profile.Name')
+        List<Query.AggregateResult> results = Query.of([
+            SELECT COUNT(Id) cnt, Profile.Name nme
+            FROM User
+            GROUP BY Profile.Name
+        ])
             .getAggregatedResults();
 
         Assert.areEqual(1, results[0].get('cnt'));
-        Assert.areEqual('Test', results[0].get('name'));
+        Assert.areEqual('Test', results[0].get('nme'));
+
+        Assert.areEqual(1, results[1].get('cnt'));
+        Assert.areEqual('Test', results[1].get('nme'));
     }
 
     @IsTest
     static void testQueryOfAggregatedResultsMocking() {
-        Query.mock(AggregateResult.SObjectType, 'test', new List<Query.AggregateResult>{
+        Query.mock('test', new List<Query.AggregateResult>{
             new Query.AggregateResult()
                 .put('cnt', 1)
                 .put('name', 'Test')
@@ -733,6 +764,24 @@ public class QueryObjectTest {
         Assert.areEqual(1, results[0].get('cnt'));
         Assert.areEqual('Test', results[0].get('name'));
         Assert.areEqual(2, results[0].get('myValue'));
+    }
+
+    @IsTest
+    static void testQueryGenericSObject() {
+        Query.mock(QueryObjectTest.class, 'testQueryGenericSObject', new List<SObject>{
+            new Account(Name = 'Test Account'),
+            new Contact(LastName = 'Doe')
+        });
+
+        Test.startTest();
+        List<Account> accounts = Query.of(Account.SObjectType).getList();
+        List<Contact> contacts = Query.of(Contact.SObjectType).getList();
+        List<Opportunity> opportunities = Query.of(Opportunity.SObjectType).getList();
+        Test.stopTest();
+
+        Assert.areEqual(1, accounts.size());
+        Assert.areEqual(1, contacts.size());
+        Assert.areEqual(0, opportunities.size());
     }
 
 

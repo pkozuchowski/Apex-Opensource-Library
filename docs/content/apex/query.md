@@ -439,9 +439,25 @@ In the constructor, we should define default fields (optional) and sObject type 
 ```apex
 public with sharing class AccountQuery extends QueryObject {
     public AccountQuery() {
+        super(AccountQuery);
+    }
+}
+
+
+public with sharing class AccountQuery extends QueryObject {
+    public AccountQuery() {
         super(new List<String>{
             'Id',
             'Name'
+        }, Account.SObjectType);
+    }
+}
+
+
+public with sharing class AccountQuery extends QueryObject {
+    public AccountQuery() {
+        super(new List<SObjectField>{
+            Account.Name
         }, Account.SObjectType);
     }
 }
@@ -486,8 +502,11 @@ Query.of(Account.SObjectType)
 Parent class for all selectors.
 
 ### Constructors
+```apex
 protected QueryObject(SObjectType sObjectType)
-protected QueryObject(List<String> fields, SObjectType sObjectType)
+    protected QueryObject(List<String> fields, SObjectType sObjectType)
+protected QueryObject(List<SObjectField> fields, SObjectType sObjectType)
+```
 
 ### Selecting Fields
 <details>
@@ -518,6 +537,7 @@ Query.Accounts
 
 ```apex
 public QueryObject withFields(String fields);
+public QueryObject withFields(SObjectField fields);
 ```
 Adds given fields to the query.
 
@@ -555,6 +575,22 @@ Query.Accounts
 ```
 </details>
 
+<details>
+	<summary>withStandardFields()</summary>
+
+```apex
+public QueryObject withStandardFields();
+```
+Select standards fields - shorthand for FIELDS(STANDARD). Restricted to 200 records
+
+#### Usage
+```apex
+Query.Accounts
+    .withStandardFields()
+    .getList();
+```
+</details>
+
 
 <details>
 	<summary>withChildren(fields, relationshipName)</summary>
@@ -587,7 +623,7 @@ Query.Accounts
 ```apex
 public QueryObject withChildren(QueryObject subquery, String relationshipName);
 ```
-Adds subquery using another Query instance.
+Adds a subquery using another Query instance.
 
 #### Parameters
 - `subquery` - Subquery instance
@@ -915,10 +951,28 @@ Query.Users
 
 </details>
 
+### Order By
+<details>
+	<summary>orderBy()</summary>
+
+```apex
+QueryObject orderBy(SObjectField field, Boolean ascending, Boolean nullFirst)
+QueryObject orderBy(String field, Boolean ascending, Boolean nullFirst)
+QueryObject orderBy(String orderByClause)
+```
+
+#### Usage
+```apex
+Query.Accounts
+    .orderBy('Owner.Name DESC NULLS LAST')
+    .getList();
+```
+</details>
+
 
 ### Limit / Offset
 <details>
-	<summary>withLimit(limit)</summary>
+	<summary>withLimit()</summary>
 
 ```apex
 public QueryObject withLimit(Integer l);
@@ -939,7 +993,7 @@ Query.Accounts
 
 
 <details>
-	<summary>withOffset(offset)</summary>
+	<summary>withOffset()</summary>
 
 ```apex
 public QueryObject withOffset(Integer o);
@@ -959,6 +1013,24 @@ Query.Accounts
 ```
 </details>
 
+### For View/Reference/Update
+<details>
+	<summary>For View/Reference/Update</summary>
+
+```apex
+public QueryObject forView();
+public QueryObject forReference();
+public QueryObject forUpdate();
+```
+
+#### Usage
+```apex
+Query.Accounts
+    .byName('Test')
+    .forUpdate()
+    .getList();
+```
+</details>
 
 ### Mocking
 <details>
@@ -1029,38 +1101,24 @@ Query.Account
 
 ### Security
 <details>
-	<summary>withSharing()</summary>
+	<summary>User mode and sharing</summary>
 
 ```apex
-public QueryObject withSharing();
+QueryObject asUser();
+QueryObject asUserWithPermissionSetId(Id permissionSetId);
+QueryObject asSystem();
+QueryObject asSystemWithSharing();
+QueryObject asSystemWithoutSharing();
 ```
-Query will be executed in "with sharing" context,returning only those records user has access to.
+By default, query is executed in system mode with inherited sharing.
 
 #### Usage
 ```apex
 Query.Accounts
-    .withSharing()
+    .asSystemWithoutSharing()
     .getList();
 ```
 </details>
-
-
-<details>
-	<summary>withoutSharing()</summary>
-
-```apex
-public QueryObject withoutSharing();
-```
-Query will be executed in "without sharing" context,returning only those records user has access to.
-
-#### Usage
-```apex
-Query.Accounts
-    .withoutSharing()
-    .getList();
-```
-</details>
-
 
 <details>
 	<summary>withFieldAccess(accessType)</summary>
@@ -1070,7 +1128,7 @@ public QueryObject withFieldAccess(AccessType accessType);
 ```
 Enforces Object and Field level security on records.  
 Inaccessible fields are stripped from result and inaccessible objects throws exception.  
-@throws System.NoAccessException No access to entity.
+`@throws System.NoAccessException No access to entity.`
 
 Calls Security.stripInaccessible on the query result.
 

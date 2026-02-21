@@ -658,6 +658,11 @@ public virtual inherited sharing class QueryObject extends QueryResults {
         }
     }
 
+    protected override List<Object> getValues(String field, List<Object> resultSet) {
+        queryBuilder.addField(field);
+        return super.getValues(field, resultSet);
+    }
+
     protected override Object getQueryResult() {
         Boolean doQuery = true;
         Boolean canUseCache = canUseCache();

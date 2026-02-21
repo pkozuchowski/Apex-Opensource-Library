@@ -3,8 +3,8 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/query)
 [Selectors](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LhrkIAC)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LhrkIAC)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Luh4IAC)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Luh4IAC)
 
 ```bash
 sf project deploy start -d force-app/commons/query -o sfdxOrg
@@ -130,12 +130,17 @@ Query result can be reduced to different things:
 //given
 ContactQuery contactQuery = new ContactQuery().byEmail('test@email.com');
 
-List<Contact> contacts = contactQuery.getList();
-Contact c = ContactQuery.getFirst();
-Contact c = ContactQuery.getFirstOrNull(); // Does not throw exception on empty results
+List<Contact> contacts = new ContactQuery().getList();
+Contact c = contactQuery.getFirst();
+Contact c = contactQuery.getFirstOrNull(); // Does not throw exception on empty results
 
 // Return Set of Ids
 Set<Id> contactIds = contactQuery.getIds();
+Set<Id> accountIds = contactQuery.getIds(Contact.AccountId);
+
+Set<String> lastNames = contactQuery.getStrings(Contact.LastName);
+
+Set<Datetime> createdDates = contactQuery.getDatetimes(Contact.CreatedDate);
 
 // Return Map by Contact Id
 Map<Id, Contact> contactById = contactQuery.getMapById();
@@ -150,7 +155,8 @@ String contactEmail = (String) contactQuery.getFirstFieldOrNull(Contact.Email);
 ## Syntactic sugar
 **Note!**  
 In the following documentation, I'm sometimes using synthetic sugar `Query.Accounts` or similar for clarity.
-This is not part of the framework due to dependencies.
+This is not part of the framework because I didn't want to introduce metadata dependencies in Unlocked Packages,
+however you can define your own syntactic sugar in your org.
 
 The simplest and safest way to use a query object is by creating a new instance of a query class:
 ```apex
@@ -163,6 +169,10 @@ Synthetic sugar can be set up in multiple ways by adding getter to the class of 
 ```apex 
 public class Query {
     public AccountQuery Accounts { get {return new AccountQuery();} }
+}
+
+public class Accounts {
+    public AccountQuery query { get {return new AccountQuery();} }
 }
 ``` 
 
@@ -1274,18 +1284,36 @@ public static Id getDefaultOwner() {
 
 
 <details>
-	<summary>getIds()</summary>
+	<summary>Get Values</summary>
 
 ```apex
+public Set<Object> getValues(String field);
+
 public Set<Id> getIds();
+public Set<Id> getIds(SObjectField field);
+public Set<Id> getIds(String field);
+
+public Set<String> getStrings(SObjectField field);
+public Set<String> getStrings(String field);
+
+public Set<Date> getDates(SObjectField field);
+public Set<Date> getDates(String field);
+
+public Set<Datetime> getDatetimes(SObjectField field);
+public Set<Datetime> getDatetimes(String field);
+
+public Set<Integer> getIntegers(SObjectField field);
+public Set<Integer> getIntegers(String field);
+
+public Set<Decimal> getDecimals(SObjectField field);
+public Set<Decimal> getDecimals(String field);
 ```
-Returns Ids of SObjects.
 
 #### Usage
 ```apex
 Set<Id> accountIds = Query.Account
     .byName('Test')
-    .getIds();
+    .getIds(Account.OwnerId);
 ```
 </details>
 

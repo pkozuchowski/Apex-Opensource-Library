@@ -163,13 +163,6 @@ public virtual class QueryResults {
 
 
     /**
-     * @return Ids for SObjects
-     */
-    public Set<Id> getIds() {
-        return getMapById().keySet();
-    }
-
-    /**
      * @return SObject map by Ids
      */
     public Map<Id, SObject> getMapById() {
@@ -190,8 +183,8 @@ public virtual class QueryResults {
      * @return SObject map by unique string
      */
     public Map<String, SObject> getMapByString(String field) {
-        Map<String, SObject> resultMap = (Map<String, SObject>) Type.forName('Map<String,' + sObjType + '>')
-            .newInstance();
+        Map<String, SObject> resultMap = (Map<String, SObject>)
+            Type.forName('Map<String,' + sObjType + '>').newInstance();
 
         List<SObject> records = getList();
         for (Integer i = 0; i < records.size(); i++) {
@@ -201,6 +194,87 @@ public virtual class QueryResults {
         }
 
         return resultMap;
+    }
+
+    /** Returns unique set of values for given field. */
+    public Set<Object> getValues(String field) {
+        return new Set<Object>(getValues(field, new List<Object>()));
+    }
+
+    /**
+     * @return Ids for SObjects
+     */
+    public Set<Id> getIds() {
+        return getMapById().keySet();
+    }
+
+    /** Returns unique set of Ids for given SObjectField. */
+    public Set<Id> getIds(SObjectField field) {
+        return getIds('' + field);
+    }
+
+    /** Returns unique set of Ids for given field name. */
+    public Set<Id> getIds(String field) {
+        return new Set<Id>((List<Id>) getValues(field, new List<Id>()));
+    }
+
+    /** Returns unique set of Strings for given SObjectField. */
+    public Set<String> getStrings(SObjectField field) {
+        return getStrings('' + field);
+    }
+
+    /** Returns unique set of Strings for given field name. */
+    public Set<String> getStrings(String field) {
+        return new Set<String>((List<String>) getValues(field, new List<String>()));
+    }
+
+    /** Returns unique set of Dates for given SObjectField. */
+    public Set<Date> getDates(SObjectField field) {
+        return getDates('' + field);
+    }
+
+    /** Returns unique set of Dates for given field name. */
+    public Set<Date> getDates(String field) {
+        return new Set<Date>((List<Date>) getValues(field, new List<Date>()));
+    }
+
+    /** Returns unique set of Datetimes for given SObjectField. */
+    public Set<Datetime> getDatetimes(SObjectField field) {
+        return getDatetimes('' + field);
+    }
+
+    /** Returns unique set of Datetimes for given field name. */
+    public Set<Datetime> getDatetimes(String field) {
+        return new Set<Datetime>((List<Datetime>) getValues(field, new List<Datetime>()));
+    }
+
+    /** Returns unique set of Integers for given SObjectField. */
+    public Set<Integer> getIntegers(SObjectField field) {
+        return getIntegers('' + field);
+    }
+
+    /** Returns unique set of Integers for given field name. */
+    public Set<Integer> getIntegers(String field) {
+        return new Set<Integer>((List<Integer>) getValues(field, new List<Integer>()));
+    }
+
+    /** Returns unique set of Integers for given SObjectField. */
+    public Set<Decimal> getDecimals(SObjectField field) {
+        return getDecimals('' + field);
+    }
+
+    /** Returns unique set of Decimals for given field name. */
+    public Set<Decimal> getDecimals(String field) {
+        return new Set<Decimal>((List<Decimal>) getValues(field, new List<Decimal>()));
+    }
+
+    protected virtual List<Object> getValues(String field, List<Object> resultSet) {
+        List<SObject> records = getList();
+        for (Integer i = 0; i < records.size(); i++) {
+            SObject record = records[i];
+            resultSet.add(record.get(field));
+        }
+        return resultSet;
     }
 
     protected virtual Object executeQuery() {

@@ -784,6 +784,38 @@ public class QueryObjectTest {
         Assert.areEqual(0, opportunities.size());
     }
 
+    @IsTest
+    static void testGetValuesMethods() {
+        Query.mock(QueryObjectTest.class, 'testGetValuesMethods', new List<SObject>{
+            new Account(Name = 'Test', OwnerId = UserInfo.getUserId(), NumberOfEmployees = 1),
+            new Query.MockSObject(
+                new Account(
+                    Name = 'Test 2',
+                    OwnerId = UserInfo.getUserId(),
+                    BillingLatitude = 0.25,
+                    NumberOfEmployees = 100)
+            )
+                .put('CreatedDate', Datetime.now())
+                .put('LastActivityDate', Date.today())
+                .build()
+        });
+
+        Test.startTest();
+        Set<String> names = Query.of(Account.SObjectType).getStrings(Account.Name);
+        Set<Id> ownerIds = Query.of(Account.SObjectType).getIds(Account.OwnerId);
+        Set<Integer> employees = Query.of(Account.SObjectType).getIntegers(Account.NumberOfEmployees);
+        Set<Date> dates = Query.of(Account.SObjectType).getDates(Account.LastActivityDate);
+        Set<Datetime> datesTimes = Query.of(Account.SObjectType).getDatetimes(Account.CreatedDate);
+        Set<Decimal> decimals = Query.of(Account.SObjectType).getDecimals(Account.BillingLatitude);
+        Test.stopTest();
+
+        Assert.areEqual(new Set<String>{'Test', 'Test 2'}, names);
+        Assert.areEqual(new Set<Id>{UserInfo.getUserId()}, ownerIds);
+        Assert.areEqual(new Set<Integer>{1, 100}, employees);
+        Assert.areEqual(new Set<Date>{null, Date.today()}, dates);
+        Assert.areEqual(2, datesTimes.size());
+        Assert.areEqual(new Set<Decimal>{null, 0.25}, decimals);
+    }
 
     public static void assertEquals(SObject[] expected, SObject[] actual) {
         Assert.areEqual(

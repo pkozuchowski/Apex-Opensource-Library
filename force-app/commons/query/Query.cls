@@ -96,21 +96,6 @@ public inherited sharing virtual class Query {
 
     /**
      * Mocks query result using either mockId or client's class name and method.
-     * <pre>
-     *     class AccountQuotingService{
-     *         public void generateQuotes(Set<Id> accountIds){
-     *              List<Account> accs = Query.Accounts.byId(accountIds).getList();
-     *         }
-     *     }
-     *
-     * </pre>
-     *
-     * In unit tests:
-     * <pre>
-     *     Query.mock(Account.SObjectType, 'AccountQuotingService.generateQuotes', mockedResults);
-     *     // or
-     *     Query.Accounts.mock('AccountQuotingService.generateQuotes', mockedResults);
-     * </pre>
     */
     public static void mock(SObjectType sobjType, String mockIdOrClientName, Object result) {
         QueryResults.mock(sobjType, mockIdOrClientName, result);

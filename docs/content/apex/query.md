@@ -12,6 +12,8 @@ sf project deploy start -d force-app/commons/query -o sfdxOrg
 
 ---
 # Documentation
+
+## Overview of the Query Framework
 Query is an extensible approach for a Selector layer in which every SOQL query is encapsulated in an object.  
 This stands in opposition to more traditional approaches where Selector is a service class with a method for each query.
 The common problem with service-type selectors is the code bloat that shows up for any deviations from the base query.  
@@ -126,6 +128,7 @@ which may be hard to decouple in Unlocked Packages.
 
 ---
 # Query Wrapper
+## Query Wrapper
 
 Sometimes, you don't want to introduce a new query class or use a generic query, but you'd still want to benefit from the Query capabilities.
 This is possible using query wrapper.
@@ -166,6 +169,7 @@ With wrapped queries, you can also benefit from reducer methods:
 
 ---
 # Caching
+## Caching
 The framework provides a mechanism to register cache mechanism for specific sObjects.  
 Once queried, records will be saved to the cache—either static (lives in a static map through the apex transaction), Org or Session Platform Cache.  
 This has to be explicitly enabled for specific sobject types and work only on queries with one WHERE condition by cached field.
@@ -222,8 +226,7 @@ Consecutive call with the same query will get all 50 records from the cache and 
 
 ---
 # Mocking
-
-### Mocking Queries
+## Mocking Queries
 You can easily mock the query using class and method name where the query was invoked, or by associating query with a mock Id:
 
 If our client code looks like this:
@@ -1366,6 +1369,7 @@ Query.Accounts
 ---
 # Issues
 
+## Builder with inheritance
 Query Framework uses Builder with an inheritance pattern, which has one downside that cannot be fixed in Apex at this time:
 - When we use method from super class, we can't call methods from child class anymore.
 
@@ -1430,11 +1434,12 @@ return q.getList();
 
 ---
 # KDDs
+## Key Design Decisions
 
-## String vs sObjectField parameters
+### String vs sObjectField parameters
 The framework will use String field parameters as a baseline parameters and SObjectField tokens as secondary parameters.
 
-### Rationale:
+#### Rationale:
 - It's trivial to turn SObjectFields into string API Name, by using one of the bellow methods:
   ```apex
   '' + Account.Name;

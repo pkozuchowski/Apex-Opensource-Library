@@ -12,7 +12,7 @@
     </values>
     <values>
         <field>Endpoint__c</field>
-        <value xsi:type="xsd:string">.*/search/?q=FIND+%7BAcme%7D</value>
+        <value xsi:type="xsd:string">callout:SF_API/.*/search/?q=FIND+%7BAcme%7D</value>
     </values>
     <values>
         <field>Headers__c</field>

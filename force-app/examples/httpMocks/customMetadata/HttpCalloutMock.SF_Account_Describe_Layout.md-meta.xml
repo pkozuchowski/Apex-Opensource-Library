@@ -12,7 +12,7 @@
     </values>
     <values>
         <field>Endpoint__c</field>
-        <value xsi:type="xsd:string">.*/sobjects/Account/describe/layouts</value>
+        <value xsi:type="xsd:string">callout:SF_API/.*/sobjects/Account/describe/layouts</value>
     </values>
     <values>
         <field>Headers__c</field>

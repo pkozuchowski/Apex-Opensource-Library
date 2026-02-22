@@ -12,7 +12,7 @@
     </values>
     <values>
         <field>Endpoint__c</field>
-        <value xsi:type="xsd:string">.*/query/?q=.*FROM+Account.*</value>
+        <value xsi:type="xsd:string">callout:SF_API/.*/query/?q=callout:SF_API/.*FROM+Accountcallout:SF_API/.*</value>
     </values>
     <values>
         <field>Headers__c</field>

@@ -12,7 +12,7 @@
     </values>
     <values>
         <field>Endpoint__c</field>
-        <value xsi:type="xsd:string">.*/sobjects/Account/deleted/?start={{datetime}}&amp;end={{datetime}}</value>
+        <value xsi:type="xsd:string">callout:SF_API/.*/sobjects/Account/deleted/?start={{datetime}}&amp;end={{datetime}}</value>
     </values>
     <values>
         <field>Headers__c</field>

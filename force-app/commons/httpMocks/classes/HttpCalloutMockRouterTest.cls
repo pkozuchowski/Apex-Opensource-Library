@@ -337,6 +337,26 @@ private class HttpCalloutMockRouterTest {
         Assert.areEqual('Apex Class Response', response.getBody());
     }
 
+    @IsTest
+    static void shouldReplaceStringInBody() {
+        HttpRequest request = new HttpRequest();
+        request.setMethod('GET');
+        request.setEndpoint('https://' + DomainCreator.getOrgMyDomainHostname() +
+            '/services/data/v47.0/query/?q=SELECT+name+from+Account');
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, HttpMocks.config()
+            .replaceInResponse('Test 1', 'Test 3')
+            .replaceInResponse('Test 2', 'Test 4'));
+
+        HttpResponse response = new Http().send(request);
+        Test.stopTest();
+
+
+        Assert.areEqual(200, response.getStatusCode());
+        Assert.areEqual('{"records":["Name":"Test 3"},{"Name":"Test 4"}]}', response.getBody());
+    }
+
     public class TestMock implements HttpCalloutMock {
         public HttpResponse respond(HttpRequest request) {
             HttpResponse res = new HttpResponse();

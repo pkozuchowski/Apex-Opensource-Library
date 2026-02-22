@@ -12,7 +12,7 @@
     </values>
     <values>
         <field>Endpoint__c</field>
-        <value xsi:type="xsd:string">.*/sobjects/Case/{{recordId}}</value>
+        <value xsi:type="xsd:string">callout:SF_API/.*/sobjects/Case/{{recordId}}</value>
     </values>
     <values>
         <field>Headers__c</field>

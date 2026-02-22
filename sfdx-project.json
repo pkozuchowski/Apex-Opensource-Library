@@ -81,10 +81,10 @@
     {
       "path": "./force-app/commons/httpMocks",
       "package": "HttpMockRouter",
-      "versionName": "ver 1.2",
-      "versionNumber": "1.2.0.NEXT",
+      "versionName": "ver 1.3",
+      "versionNumber": "1.3.0.NEXT",
       "default": false,
-      "versionDescription": ""
+      "versionDescription": "Framework now features replaceInResponse method."
     },
     {
       "path": "./force-app/commons/testDataBuilder",
@@ -179,6 +179,7 @@
     "HttpMockRouter@1.1.1-1": "04tJ6000000LWKiIAO",
     "HttpMockRouter@1.1.2-1": "04tJ6000000LdBwIAK",
     "HttpMockRouter@1.2.0-1": "04tJ6000000LeQMIA0",
+    "HttpMockRouter@1.3.0-1": "04tJ6000000Luh9IAC",
     "TestDataBuilder": "0Ho08000000CaSeCAK",
     "TestDataBuilder@1.0.0-1": "04t08000000ga9dAAA",
     "TestDataBuilder@1.1.0-1": "04tJ6000000LYthIAG",

@@ -87,6 +87,13 @@ Test.setMock(HttpCalloutMock.class, HttpMocks.config()
 `SF_REST_Query` mock was replaced, and now it will respond with mock registered under name `SF_REST_Query_Empty`.
 `SF_Account_Get` mock will be replaced by MyMockClass—an implementation of HttpCalloutMock.
 
+## Replacements
+Framework allows replacing parts of the response body or headers with a different string.
+```apex
+Test.setMock(HttpCalloutMock.class, HttpMocks.config()
+    .replaceInResponse('Acme Corporation', 'AI Slop Corporation')
+);
+```
 
 ## Requests and Responses
 You can check issued Http Requests and returned responses using the following methods:
@@ -130,6 +137,7 @@ public interface HttpCalloutChainMock extends HttpCalloutMock {
 | HttpCalloutMockRouter | **overrideMock(String name, HttpCalloutMock mock)**<br/> Replaces mock registered under given name with different mock                                        |
 | HttpCalloutMockRouter | **variable(String name, String regexp)**<br/> Registers regexp variable which will can be referenced in endpoint.                                             |
 | HttpCalloutMockRouter | **variables(Map<String, String> vars)**<br/> Registers regexp variables which will can be referenced in endpoint.                                             |
+| HttpCalloutMockRouter | **replaceInResponse(String target, String replacement)**<br/> Replaces target string in response's body with a replacement.                                   |
 
 ---
 # Custom Metadata

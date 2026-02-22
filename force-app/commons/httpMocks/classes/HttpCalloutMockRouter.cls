@@ -31,6 +31,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     public final static List<HttpRequest> REQUESTS = new List<HttpRequest>();
     public final static List<HttpResponse> RESPONSES = new List<HttpResponse>();
 
+    private Map<String, String> replacements = new Map<String, String>();
     private Map<String, String> variables = new Map<String, String>();
     private Map<String, HttpCalloutChainMock> registeredMocks = new Map<String, HttpCalloutChainMock>();
     private Map<String, HttpCalloutMock> mocksOverrides = new Map<String, HttpCalloutMock>();
@@ -97,6 +98,18 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
         }
     }
 
+    /**
+     * Replaces each substring of a target string in response body
+     * with the specified literal replacement sequence replacement.
+     * @param target Text to replace
+     * @param replacement Replacement
+     * @return
+     */
+    public HttpCalloutMockRouter replaceInResponse(String target, String replacement) {
+        replacements.put(target, replacement);
+        return this;
+    }
+
 
     /**
      * Registers regexp variable which will can be referenced in endpoint:
@@ -133,6 +146,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
             if (mock.handles(request)) {
                 HttpCalloutMock respondent = mocksOverrides.get(name) ?? mock;
                 HttpResponse response = respondent.respond(request);
+                applyReplacements(response);
                 REQUESTS.add(request);
                 RESPONSES.add(response);
 
@@ -172,6 +186,30 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
         return endpointWithVariables;
     }
 
+    private void applyReplacements(HttpResponse response) {
+        String body = response.getBody();
+
+        if (String.isNotBlank(body)) {
+            for (String target : replacements.keySet()) {
+                body = body.replace(target, replacements.get(target));
+            }
+            response.setBody(body);
+        }
+
+        applyReplacementsInHeaders(response);
+    }
+
+    private void applyReplacementsInHeaders(HttpResponse response) {
+        for (String headerKey : response.getHeaderKeys()) {
+            String headerValue = response.getHeader(headerKey);
+            if (String.isNotBlank(headerValue)) {
+                for (String target : replacements.keySet()) {
+                    headerValue = headerValue.replace(target, replacements.get(target));
+                }
+                response.setHeader(headerKey, headerValue);
+            }
+        }
+    }
 
     public class HttpCalloutMockRouterException extends Exception {}
 }

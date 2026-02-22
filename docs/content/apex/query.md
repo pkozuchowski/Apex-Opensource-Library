@@ -45,82 +45,20 @@ List<Contact> contact = new ContactQuery()
     .getList();
 ```
 
-### Define WHERE Clause
-
-Where clause can be combined from methods implemented in ContactQuery and generic methods implemented in QueryObject class.
+### Filter with additional WHERE clauses
 ```apex
-List<Contact> contact = new ContactQuery()
-    .byAccountId(/*...ids*/)
-    .byRecordTypeId(/*Record Type Id*/)
+List<Account> accounts = new AccountQuery()
+    .byOwnerId(myUserId)
+    .byRecordTypeDeveloperName('PersonAccount')
     .getList();
 ```
 
-For very specialized and complex queries, there are multiple ways to define the conditions:
-- Combining field filters and declaring filter logic.
-  Each identifier in the logic string (`{0}`) corresponds to the `byCondition()` method above in the order they were declared.
 ```apex
 new AccountQuery()
     .byName('TestName')
     .byRecordTypeDeveloperName('SMB')
     .byOwnerId(UserInfo.getUserId())
     .withFilterLogic('{0} OR ({1} AND {2})')
-    .getList();
-```
-- Introduce case-specific filtering method in SObject's query class:
-```apex
-class ContactQuery {
-
-    public ContactQuery byMySuperSpecificCondition(String name, String recordTypeName, Id ownerId) {
-        return (ContactQuery) wheres('Name =:name OR (RecordType.DeveloperName = :recordTypeName AND OwnerId = :ownerId)',
-            new Map<String, Object>{
-                'name' => name,
-                'recordTypeName' => recordTypeName,
-                'ownerId' => ownerId
-            });
-    }
-}
-```
-```apex
-Query.Accounts.byMySuperSpecificCondition(
-    'TestName', 'SMB', UserInfo.getUserId()
-).getList();
-```
-You can even mix that with other methods:
-```apex
-Query.Accounts
-    .byMySuperSpecificCondition('TestName', 'SMB', UserInfo.getUserId())
-    .byIsActive(true)
-    .getList();
-```
-
-- Writing WHERE clause directly in client code:
-```apex
-List<String> names = new List<String>();
-List<String> externalIds = new List<String>();
-Id recordTypeId;
-
-Query.Accounts
-    .wheres('Name IN :names OR (RecordTypeId =:rtId AND ExternalID IN :externalIds)', new Map<String, Object>{
-        'names' => names,
-        'rtId' => recordTypeId,
-        'externalIds' => externalIds
-    })
-    .getList();
-```
-
-- Using QueryConditions to build the query:
-```apex
-QueryConditions c = new QueryConditions();
-Query.Accounts
-    .wheres(
-        c.ORs(
-            c.field(Account.Name).equals('TestName'),
-            c.ANDs(
-                c.field('RecordType.DeveloperName').equals('SMB'),
-                c.field(Account.OwnerId).equals(UserInfo.getUserId())
-            )
-        )
-    )
     .getList();
 ```
 
@@ -1537,7 +1475,6 @@ static void myTestMethod() {
 ```apex
 Set<Id> ownerIds = new AccountQuery().getStrings(Account.OwnerId);
 ```
-
 
 ### v2.5 - 2.6
 

@@ -44,3 +44,33 @@ All documentation is available on [Apex Libra site](https://apexlibra.org/?/apex
 
 ### Utilities
 - [Toasts](https://apexlibra.org/?/lwc/toasts)
+
+## ✨️ Contributors
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification.
+Contributions of any kind welcome!
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/pkozuchowski"><img src="https://avatars.githubusercontent.com/u/4470967?v=4?s=100" width="100px;" alt="Piotr Kożuchowski"/><br /><sub><b>Piotr Kożuchowski</b></sub></a><br /><a href="https://github.com/pkozuchowski/Apex-Opensource-Library/commits?author=pkozuchowski" title="Code">💻</a> <a href="https://github.com/pkozuchowski/Apex-Opensource-Library/commits?author=pkozuchowski" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://1sync.co/"><img src="https://avatars.githubusercontent.com/u/17165950?v=4?s=100" width="100px;" alt="Justin"/><br /><sub><b>Justin</b></sub></a><br /><a href="https://github.com/pkozuchowski/Apex-Opensource-Library/commits?author=jawills" title="Code">💻</a> <a href="https://github.com/pkozuchowski/Apex-Opensource-Library/commits?author=jawills" title="Documentation">📖</a> <a href="#maintenance-jawills" title="Maintenance">🚧</a> <a href="#talk-jawills" title="Talks">📢</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ivorocha90"><img src="https://avatars.githubusercontent.com/u/1574458?v=4?s=100" width="100px;" alt="Ivo Rocha"/><br /><sub><b>Ivo Rocha</b></sub></a><br /><a href="https://github.com/pkozuchowski/Apex-Opensource-Library/issues?q=author%3Aivorocha90" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/bohrz"><img src="https://avatars.githubusercontent.com/u/26806169?v=4?s=100" width="100px;" alt="bohrz"/><br /><sub><b>bohrz</b></sub></a><br /><a href="https://github.com/pkozuchowski/Apex-Opensource-Library/issues?q=author%3Abohrz" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/TrangOul"><img src="https://avatars.githubusercontent.com/u/5629046?v=4?s=100" width="100px;" alt="Marek Madejski"/><br /><sub><b>Marek Madejski</b></sub></a><br /><a href="#ideas-TrangOul" title="Ideas, Planning, & Feedback">🤔</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://medium.com/@r.kurchenko"><img src="https://avatars.githubusercontent.com/u/29373749?v=4?s=100" width="100px;" alt="Ruslan Kurchenko"/><br /><sub><b>Ruslan Kurchenko</b></sub></a><br /><a href="#ideas-ruslan-kurchenko" title="Ideas, Planning, & Feedback">🤔</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/costonb"><img src="https://avatars.githubusercontent.com/u/307059?v=4?s=100" width="100px;" alt="Brandon Coston"/><br /><sub><b>Brandon Coston</b></sub></a><br /><a href="https://github.com/pkozuchowski/Apex-Opensource-Library/issues?q=author%3Acostonb" title="Bug reports">🐛</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/scolladon"><img src="https://avatars.githubusercontent.com/u/522422?v=4?s=100" width="100px;" alt="Sebastien"/><br /><sub><b>Sebastien</b></sub></a><br /><a href="https://github.com/pkozuchowski/Apex-Opensource-Library/commits?author=scolladon" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://xn.pinkhamster.net/"><img src="https://avatars.githubusercontent.com/u/387035?v=4?s=100" width="100px;" alt="Christian G. Warden"/><br /><sub><b>Christian G. Warden</b></sub></a><br /><a href="https://github.com/pkozuchowski/Apex-Opensource-Library/commits?author=cwarden" title="Code">💻</a> <a href="https://github.com/pkozuchowski/Apex-Opensource-Library/issues?q=author%3Acwarden" title="Bug reports">🐛</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->

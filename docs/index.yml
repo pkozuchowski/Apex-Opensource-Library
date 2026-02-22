@@ -101,7 +101,6 @@ nav:
           - path: database-service
             label: Database Service
             description: Issue and mock DMLs with configurable sharing and user mode.
-            badge: Updated v2.3
             snippet: |
               new DatabaseService()
                 .withoutSharing()
@@ -110,7 +109,7 @@ nav:
           - path: query
             label: Query Framework
             description: Flexible Selector Layer with Record Caching mechanism.
-            badge: Updated v2.6
+            badge: Updated v2.7
             snippet: |
               List<Contact> contact = Query.Contacts
                 .byAccountId(accountIds)

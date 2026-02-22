@@ -1284,7 +1284,7 @@ public static Id getDefaultOwner() {
 
 
 <details>
-	<summary>Get Values</summary>
+	<summary>Get Field Values</summary>
 
 ```apex
 public Set<Object> getValues(String field);
@@ -1513,6 +1513,32 @@ The framework will use String field parameters as a baseline parameters and SObj
 
 ---
 # Change Log
+### v2.7
+- Added Query.SObjectMock class to mock record's readonly field
+```apex
+static void myTestMethod() {
+    Query.mock('AccountQuotingService.generateQuotes', new List<Account>{
+        (Account) new Query.MockSObject(
+            new Account(
+                Name = 'Test Account',
+                Industry = 'Production'
+            ))
+            .put('FormulaField__c', true)
+            .put('Contacts', new List<Contact>{
+                new Contact(LastName = 'Doe')
+            })
+            .build()
+    });
+}
+```
+
+- Added [getValues()](/apex/query/specification#reducers) methods for common field types
+
+```apex
+Set<Id> ownerIds = new AccountQuery().getStrings(Account.OwnerId);
+```
+
+
 ### v2.5 - 2.6
 
 

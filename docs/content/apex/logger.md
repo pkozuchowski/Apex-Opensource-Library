@@ -2,6 +2,9 @@
 *Easy to use, easy to expand Logging Framework with all inbuilt settings, reports, permission set and batch for clearing old logs.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/logger)
+[Dependency](/apex/runtime)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LuhEIAS)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LuhEIAS)
 
 ```bash
 sf project deploy start \
@@ -16,12 +19,14 @@ sf project deploy start \
 Call `Logger.info()`, `Logger.warn()`, or `Logger.error()` static method depending
 on severity of the event.
 
-This method takes instance of Log, which is used to build a variety of logs, tailored to specific needs.  
+This method takes the instance of Log, which is used to build a variety of logs, tailored to specific needs.  
 Log can be constructed from plain string message, exception, HTTP callout or Rest Webservice inbound call
-and further expanded with methods to save additional data - referenceId, parameter or execution time metric.
+and further expanded with methods to save additional data – referenceId, parameter or execution time metric.
 
 Logs are created through Platform Event, which allows easy logging in-between HTTP callouts
 or when a transaction fails.
+
+Logging actions are available also in Flows and LWC components.
 
 ## Examples
 
@@ -30,16 +35,16 @@ or when a transaction fails.
 ```apex
 public with sharing class SomeCtrl {
 
-	@AuraEnabled
-	public static void doSomething() {
-		try {
-			SomeService.doBusinessLogic();
+    @AuraEnabled
+    public static void doSomething() {
+        try {
+            SomeService.doBusinessLogic();
 
-		} catch (Exception ex) {
-			Logger.error(ex);
-			throw new AuraHandledException(ex.getMessage());
-		}
-	}
+        } catch (Exception ex) {
+            Logger.error(ex);
+            throw new AuraHandledException(ex.getMessage());
+        }
+    }
 }
 ```
 
@@ -69,46 +74,46 @@ Logger.error(new Log(RestContext.request, RestContext.response));
 
 ```apex
 public with sharing class SomeCtrl {
-	private static Datetime startTime = Datetime.now();
+    private static Datetime startTime = Datetime.now();
 
-	@AuraEnabled
-	public static void updateAccount(Id accountId) {
-		try {
-			SomeService.doBusinessLogic(accountId);
+    @AuraEnabled
+    public static void updateAccount(Id accountId) {
+        try {
+            SomeService.doBusinessLogic(accountId);
 
-		} catch (Exception ex) {
-			Logger.error(new Log(ex)
-				.withReferenceId(accountId)
-				.withTimeMetric(startTime));
-			throw new AuraHandledException(ex.getMessage());
-		}
-	}
+        } catch (Exception ex) {
+            Logger.error(new Log(ex)
+                .withInput('accountId', accountId)
+                .withReferenceId(accountId)
+                .withTimeMetric(startTime));
+            throw new AuraHandledException(ex.getMessage());
+        }
+    }
 }
 ```
-
 
 ---
 # API
 
 ```apex
 public class Logger {
-	public static void info(Log log) {}
-	public static void warn(Log log) {}
-	public static void error(Log log) {}
-	public static void log(LoggingLevel loggingLevel, Log log) {}
+    public static void info(Log log) {}
+    public static void warn(Log log) {}
+    public static void error(Log log) {}
+    public static void log(LoggingLevel loggingLevel, Log log) {}
 }
 
 public class Log {
-	public Log(String message) {}
-	public Log(Exception ex) {}
-	public Log(HttpRequest request, HttpResponse response) {}
-	public Log(RestRequest request, RestResponse response) {}
-	public Log(LoggingEvent__e log) {}
+    public Log(String message) {}
+    public Log(Exception ex) {}
+    public Log(HttpRequest request, HttpResponse response) {}
+    public Log(RestRequest request, RestResponse response) {}
+    public Log(LoggingEvent__e log) {}
 
-	public Log withReferenceId(String referenceId) {}
-	public Log withParameter(String param, Object value) {}
-	public Log withParameters(Map<String, Object> parameters) {}
-	public Log withTimeMetric(Long timeMs) {}
-	public Log withTimeMetric(Datetime startTime) {}
+    public Log withReferenceId(String referenceId) {}
+    public Log withParameter(String param, Object value) {}
+    public Log withParameters(Map<String, Object> parameters) {}
+    public Log withTimeMetric(Long timeMs) {}
+    public Log withTimeMetric(Datetime startTime) {}
 }
 ```

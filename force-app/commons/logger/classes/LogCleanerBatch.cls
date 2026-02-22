@@ -27,7 +27,8 @@
  */
 public without sharing class LogCleanerBatch implements Database.Batchable<SObject>, Schedulable {
     @TestVisible
-    private static String SCHEDULE_JOB_NAME = 'Log Cleaner Batch';
+    private final static String SCHEDULE_JOB_NAME = 'Log Cleaner Batch'
+        + (Test.isRunningTest() ? '_TEST' : '');
 
     /**
      * Schedules batch to run daily at 2 am.
@@ -58,6 +59,7 @@ public without sharing class LogCleanerBatch implements Database.Batchable<SObje
         delete logs;
     }
 
+    @SuppressWarnings('PMD.EmptyStatementBlock')
     public void finish(Database.BatchableContext bc) {
     }
 }

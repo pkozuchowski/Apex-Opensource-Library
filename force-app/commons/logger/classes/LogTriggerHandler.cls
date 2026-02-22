@@ -29,6 +29,7 @@ public with sharing class LogTriggerHandler {
         SELECT Pattern__c
         FROM LoggerDataMaskPattern__mdt
         WHERE Active__c = TRUE
+        WITH SYSTEM_MODE
     ];
 
     public void insertLogs(List<LoggingEvent__e> events) {
@@ -48,7 +49,7 @@ public with sharing class LogTriggerHandler {
             ));
         }
 
-        insert logs;
+        insert as system logs;
     }
 
     private String getSanitizedString(String value) {

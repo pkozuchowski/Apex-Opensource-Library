@@ -26,6 +26,7 @@
 /**
  * Formats objects into org-uniform String representation
  */
+@SuppressWarnings('PMD.CognitiveComplexity')
 public with sharing class LogStringifier {
 
     /**
@@ -239,5 +240,6 @@ public with sharing class LogStringifier {
         return String.join(lines, '\n').trim();
     }
 
+    @SuppressWarnings('PMD.EmptyStatementBlock')
     private LogStringifier() {}
 }

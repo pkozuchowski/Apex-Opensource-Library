@@ -87,5 +87,6 @@ public with sharing class Logger {
         EventBus.publish(log);
     }
 
+    @SuppressWarnings('PMD.EmptyStatementBlock')
     private Logger() {}
 }

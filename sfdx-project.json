@@ -115,6 +115,20 @@
       "versionNumber": "1.2.1.NEXT",
       "default": false,
       "versionDescription": ""
+    },
+    {
+      "path": "./force-app/commons/logger",
+      "package": "Logger",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "default": false,
+      "versionDescription": "Simple Logging framework for Apex, Flows and LWCs",
+      "dependencies": [
+        {
+          "package": "Libra Shared",
+          "versionNumber": "1.0.0.LATEST"
+        }
+      ]
     }
   ],
   "namespace": "",
@@ -188,6 +202,8 @@
     "Record Form": "0HoJ60000000043KAA",
     "Record Form@1.1.2-1": "04tJ6000000Lu7DIAS",
     "Record Form@1.2.0-1": "04tJ6000000Lu7IIAS",
-    "Record Form@1.2.1-1": "04tJ6000000LuCOIA0"
+    "Record Form@1.2.1-1": "04tJ6000000LuCOIA0",
+    "Logger": "0HoJ60000000048KAA",
+    "Logger@1.0.0-1": "04tJ6000000LuhEIAS"
   }
 }

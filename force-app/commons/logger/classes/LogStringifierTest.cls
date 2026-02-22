@@ -22,6 +22,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
 */
+@SuppressWarnings('PMD.ApexAssertionsShouldIncludeMessage')
 @IsTest(IsParallel=true)
 private class LogStringifierTest {
 
@@ -37,14 +38,14 @@ private class LogStringifierTest {
             }
         } catch (Exception ex) {
             String[] str = LogStringifier.toString(ex).split('\n');
-            System.assertEquals(str[0], 'System.CalloutException: Script-thrown exception');
-            System.assert(str[1].contains('LogStringifierTest.testStringifyException: line '));
-            System.assertEquals(str[3], 'Caused by');
-            System.assertEquals(str[4], 'System.CalloutException: test');
-            System.assert(str[5].contains('LogStringifierTest.testStringifyException:'));
+            Assert.areEqual(str[0], 'System.CalloutException: Script-thrown exception');
+            Assert.isTrue(str[1].contains('LogStringifierTest.testStringifyException: line '));
+            Assert.areEqual(str[3], 'Caused by');
+            Assert.areEqual(str[4], 'System.CalloutException: test');
+            Assert.isTrue(str[5].contains('LogStringifierTest.testStringifyException:'));
         }
         Exception ex2 = null;
-        System.assertEquals(LogStringifier.toString(ex2), '');
+        Assert.areEqual(LogStringifier.toString(ex2), '');
     }
 
     @IsTest
@@ -56,7 +57,7 @@ private class LogStringifierTest {
         request.setHeader('Content-Type', 'application/json');
         request.setBody('{"Name":"Test Account}');
 
-        System.assertEquals(
+        Assert.areEqual(
             'POST /services/data/v20.0/sobjects/Account/\n'
                 + 'Host: yourInstance.salesforce.com\n'
                 + 'Content-Type: application/json\n'
@@ -65,7 +66,7 @@ private class LogStringifierTest {
             LogStringifier.toString(request)
         );
         request = null;
-        System.assertEquals(LogStringifier.toString(request), '');
+        Assert.areEqual(LogStringifier.toString(request), '');
     }
 
     @IsTest
@@ -75,15 +76,16 @@ private class LogStringifierTest {
         response.setStatusCode(200);
         response.setBody('success');
 
-        System.assertEquals(
+        Assert.areEqual(
             '200 OK\n\n' +
                 'success',
             LogStringifier.toString(response)
         );
         response = null;
-        System.assertEquals(LogStringifier.toString(response), '');
+        Assert.areEqual(LogStringifier.toString(response), '');
     }
 
+    @SuppressWarnings('PMD.AvoidHardcodingId')
     @IsTest
     static void testStringifyRESTRequest() {
         RestRequest request = new RestRequest();
@@ -94,7 +96,7 @@ private class LogStringifierTest {
         request.addHeader('Content-Type', 'application/json');
         request.requestBody = Blob.valueOf('request body');
 
-        System.assertEquals('POST /services/data/v20.0/sobjects/Account/\n' +
+        Assert.areEqual('POST /services/data/v20.0/sobjects/Account/\n' +
             '\t?id=001000000000000\n' +
             '\t&checkonly=true\n' +
             'Host: ' + Url.getOrgDomainUrl().getHost() + '\n' +
@@ -105,7 +107,7 @@ private class LogStringifierTest {
             LogStringifier.toString(request)
         );
         request = null;
-        System.assertEquals(LogStringifier.toString(request), '');
+        Assert.areEqual(LogStringifier.toString(request), '');
     }
 
     @IsTest
@@ -115,22 +117,22 @@ private class LogStringifierTest {
         response.responseBody = Blob.valueOf('success');
         response.headers.put('Content-Type', 'application/json');
 
-        System.assertEquals('200\n'
+        Assert.areEqual('200\n'
             + 'Content-Type: application/json\n'
             + '\n'
             + 'success',
             LogStringifier.toString(response)
         );
         response = null;
-        System.assertEquals(LogStringifier.toString(response), '');
+        Assert.areEqual(LogStringifier.toString(response), '');
     }
 
     @IsTest
     static void testStringifyBlob() {
         Blob b = Blob.valueOf('test');
 
-        System.assertEquals('test', LogStringifier.toString(b));
+        Assert.areEqual('test', LogStringifier.toString(b));
         b = null;
-        System.assertEquals(LogStringifier.toString(b), '');
+        Assert.areEqual(LogStringifier.toString(b), '');
     }
 }

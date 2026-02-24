@@ -1,55 +1,31 @@
-/*
- * *
- *  MIT License
- *
- *  Copyright (c) 2023 Piotr Kożuchowski
- *
- *  Permission is hereby granted, free of charge, to any person obtaining a copy
- *  of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *  copies of the Software, and to permit persons to whom the Software is
- *  furnished to do so, subject to the following conditions:
- *
- *  The above copyright notice and this permission notice shall be included in all
- *  copies or substantial portions of the Software.
- *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
- * /
- * *
- *  Please find newest source code at https://github.com/pkozuchowski/Apex-Opensource-Library
- * /
- */
+/**
+* SPDX-License-Identifier: MIT
+* Copyright 2023 Piotr Kożuchowski
+* apexlibra.org
+*/
 
+/**
+ * Configuration class for managing HTTP callout mocks defined in custom metadata.
+ * Provides access to HttpCalloutMock__mdt records for testing HTTP integrations.
+ */
 public with sharing class HttpMocksConfig {
     private static Map<String, HttpCalloutMock__mdt> mocks = HttpCalloutMock__mdt.getAll();
-    private static Map<String, String> variables = new Map<String, String>();
     private static Boolean isMocked = false;
 
-
-    static {
-        for (HttpCalloutMockVariable__mdt var : HttpCalloutMockVariable__mdt.getAll().values()) {
-            variables.put(var.DeveloperName, var.Pattern__c);
-        }
-    }
-
     /**
-     * @return Map of Variables - Pattern by DeveloperName
+     * Returns all configured HTTP callout mock metadata records.
+     * @return List of all HttpCalloutMock__mdt records
      */
-    public static Map<String, String> getVariables() {
-        return variables;
-    }
-
     public static List<HttpCalloutMock__mdt> getMocks() {
         return mocks.values();
     }
 
+    /**
+     * Retrieves a specific HTTP callout mock by developer name.
+     * If the Response__c field exceeds 255 characters, queries the full record to avoid Salesforce's text truncation.
+     * @param developerName The developer name of the HttpCalloutMock__mdt record
+     * @return The HttpCalloutMock__mdt record with complete response data
+     */
     public static HttpCalloutMock__mdt getResponse(String developerName) {
         HttpCalloutMock__mdt mock = mocks.get(developerName);
 
@@ -69,6 +45,9 @@ public with sharing class HttpMocksConfig {
         }
     }
 
+    /**
+     * Mocks custom metadata records in tests.
+     */
     @TestVisible static void mock(List<HttpCalloutMock__mdt> mocks) {
         Map<String, HttpCalloutMock__mdt> mocksMap = new Map<String, HttpCalloutMock__mdt>();
         for (HttpCalloutMock__mdt mock : mocks) {
@@ -76,9 +55,5 @@ public with sharing class HttpMocksConfig {
         }
         HttpMocksConfig.mocks = mocksMap;
         HttpMocksConfig.isMocked = true;
-    }
-
-    @TestVisible static void mockVariables(Map<String, String> variables) {
-        HttpMocksConfig.variables.putAll(variables);
     }
 }

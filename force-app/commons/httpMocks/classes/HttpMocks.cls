@@ -42,10 +42,18 @@ public virtual with sharing class HttpMocks {
     }
 
     /**
+     * @return Http Mock Builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+
+    /**
      * Creates JSON response mock
      */
     public static HttpCalloutMock json(Integer statusCode, String status, Object jsonObject) {
-        return new SimpleMock(statusCode, status, JSON.serialize(jsonObject));
+        return new Builder(statusCode, status, JSON.serialize(jsonObject));
     }
 
     /**
@@ -64,7 +72,7 @@ public virtual with sharing class HttpMocks {
      * Creates Http response from plain text
      */
     public static HttpCalloutMock text(Integer statusCode, String status, String body) {
-        return new SimpleMock(statusCode, status, body);
+        return new Builder(statusCode, status, body);
     }
 
 
@@ -92,16 +100,39 @@ public virtual with sharing class HttpMocks {
     }
 
 
-    private class SimpleMock implements HttpCalloutMock {
+    public class Builder implements HttpCalloutMock {
         private HttpResponse response = new HttpResponse();
+
+        private Builder() {}
 
         /**
          * Creates Http mock which responds with given status and body.
          */
-        private SimpleMock(Integer statusCode, String status, String body) {
+        private Builder(Integer statusCode, String status, String body) {
             this.response.setStatusCode(statusCode);
             this.response.setStatus(status);
             this.response.setBody(body == null ? '' : body);
+        }
+
+        public Builder status(Integer statusCode, String status) {
+            this.response.setStatusCode(statusCode);
+            this.response.setStatus(status);
+            return this;
+        }
+
+        public Builder header(String key, String value) {
+            this.response.setHeader(key, value);
+            return this;
+        }
+
+        public Builder body(String body) {
+            this.response.setBody(body);
+            return this;
+        }
+
+        public Builder json(Object toSerialize) {
+            this.response.setBody(JSON.serialize(toSerialize));
+            return this;
         }
 
         public HttpResponse respond(HttpRequest request) {

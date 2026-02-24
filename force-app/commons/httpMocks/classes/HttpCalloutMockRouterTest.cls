@@ -36,24 +36,36 @@ private class HttpCalloutMockRouterTest {
     private class SalesforceRestAPIMocks extends HttpCalloutMockRouter {
 
         public SalesforceRestAPIMocks() {
-            variables(new Map<String, String>{
-                'endpoint' => 'https://yourInstance.salesforce.com/services/data/v\\d+.0',
-                'id' => '([0-9a-zA-Z]{15,18})'
-            });
+            mock('Query',
+                'GET', 'callout:SF_API/query/?q=.*',
+                HttpMocks.staticResource(200, 'OK', 'StaticResourceWithResponse'));
 
-            mock('Query', 'GET', '{{endpoint}}/query/?q=.*', HttpMocks.staticResource(200, 'OK', 'StaticResourceWithResponse'));
-            mock('Create Account', 'POST', '{{endpoint}}/sobjects/Account/', HttpMocks.json(201, 'Created', new CreateRecordResult(true)));
-            mock('Get Account', 'GET', '{{endpoint}}/sobjects/Account/{{id}}', HttpMocks.json(200, 'OK', new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME)));
-            mock('Delete Account', 'DELETE', '{{endpoint}}/sobjects/Account/{{id}}', HttpMocks.text(204, 'No Content', ''));
-            mock('Delete Account', 'DELETE', '{{endpoint}}/sobjects/Account/{{id}}', HttpMocks.text(204, 'No Content', ''));
+            mock('Create Account',
+                'POST', 'callout:SF_API/sobjects/Account/',
+                HttpMocks.builder()
+                    .status(201, 'Created')
+                    .json(new CreateRecordResult(true)));
+
+            mock('Get Account',
+                'GET', 'callout:SF_API/sobjects/Account/.*',
+                HttpMocks.builder()
+                    .status(200, 'OK')
+                    .json(new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME)));
+
+            mock('Delete Account',
+                'DELETE', 'callout:SF_API/sobjects/Account/.*',
+                HttpMocks.text(204, 'No Content', ''));
+
+            mock('Delete Account',
+                'DELETE', 'callout:SF_API/sobjects/Account/.*',
+                HttpMocks.text(204, 'No Content', ''));
         }
     }
 
     private class AzureMocks extends HttpCalloutMockRouter {
         public AzureMocks() {
-            variable('endpoint', 'https://aws.com/amazing/services');
-
-            mock('Get Account', 'GET', '{{endpoint}}/Account',
+            mock('Get Account',
+                'GET', 'callout:AWS/Account',
                 HttpMocks.text(200, 'OK', '{"name":"Test"}'));
         }
     }
@@ -79,15 +91,12 @@ private class HttpCalloutMockRouterTest {
     }
 
     static {
-        HttpMocksConfig.mockVariables(new Map<String, String>{
-            'sfRestEndpoint' => 'https://' + DomainCreator.getOrgMyDomainHostname() + '/services'
-        });
         HttpMocksConfig.mock(new List<HttpCalloutMock__mdt>{
             new HttpCalloutMock__mdt(
                 DeveloperName = 'SF_REST_Query',
                 Default__c = true,
                 Methods__c = 'GET',
-                Endpoint__c = '{{sfRestEndpoint}}/data/v\\d+.0/query/.*',
+                Endpoint__c = 'callout:SF_API/query/.*',
                 Response__c = '{"records":["Name":"Test 1"},{"Name":"Test 2"}]}',
                 StatusCode__c = 200,
                 Status__c = 'OK',
@@ -98,7 +107,7 @@ private class HttpCalloutMockRouterTest {
                 DeveloperName = 'SF_REST_Query_Empty',
                 Default__c = false,
                 Methods__c = 'GET',
-                Endpoint__c = '{{sfRestEndpoint}}/data/v\\d+.0/query/.*',
+                Endpoint__c = 'callout:SF_API/query/.*',
                 Response__c = '{"records":[]}',
                 StatusCode__c = 200,
                 Status__c = 'OK'
@@ -121,7 +130,7 @@ private class HttpCalloutMockRouterTest {
     static void testAWSCallout() {
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
-        request.setEndpoint('https://aws.com/amazing/services/Account');
+        request.setEndpoint('callout:AWS/Account');
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, new OrgMocks());
@@ -137,7 +146,7 @@ private class HttpCalloutMockRouterTest {
     static void testSuccessfulCreateAccountCall() {
         HttpRequest request = new HttpRequest();
         request.setMethod('POST');
-        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v47.0/sobjects/Account/');
+        request.setEndpoint('callout:SF_API/sobjects/Account/');
         request.setBody('{"Name":"Test Account}');
 
 
@@ -159,7 +168,7 @@ private class HttpCalloutMockRouterTest {
     static void testErrorCreateAccountCall() {
         HttpRequest request = new HttpRequest();
         request.setMethod('POST');
-        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v47.0/sobjects/Account/');
+        request.setEndpoint('callout:SF_API/sobjects/Account/');
         request.setBody('{"Name":"Test Account}');
 
 
@@ -183,7 +192,7 @@ private class HttpCalloutMockRouterTest {
     static void testGetAccountCall() {
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
-        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v47.0/sobjects/Account/' + ACCOUNT_ID);
+        request.setEndpoint('callout:SF_API/sobjects/Account/' + ACCOUNT_ID);
 
 
         Test.startTest();
@@ -201,7 +210,7 @@ private class HttpCalloutMockRouterTest {
     static void testDeleteAccountCall() {
         HttpRequest request = new HttpRequest();
         request.setMethod('DELETE');
-        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v47.0/sobjects/Account/' + ACCOUNT_ID);
+        request.setEndpoint('callout:SF_API/sobjects/Account/' + ACCOUNT_ID);
 
 
         Test.startTest();
@@ -222,7 +231,7 @@ private class HttpCalloutMockRouterTest {
     static void testUnhandledException() {
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
-        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v47.0/sobjects/User/005D0000001KyEIIA0');
+        request.setEndpoint('callout:SF_API/sobjects/User/005D0000001KyEIIA0');
         Exception ex;
 
 
@@ -249,7 +258,7 @@ private class HttpCalloutMockRouterTest {
     static void testStaticResourceCoverage() {
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
-        request.setEndpoint('https://yourInstance.salesforce.com/services/data/v47.0/sobjects/Account/' + ACCOUNT_ID);
+        request.setEndpoint('callout:SF_API/sobjects/Account/' + ACCOUNT_ID);
 
 
         Test.startTest();
@@ -274,7 +283,7 @@ private class HttpCalloutMockRouterTest {
 
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
-        request.setEndpoint('https://' + DomainCreator.getOrgMyDomainHostname() + '/services/data/v47.0/query/?q=SELECT+name+from+Account');
+        request.setEndpoint('callout:SF_API/query/?q=SELECT+name+from+Account');
 
         HttpResponse response = new Http().send(request);
         Test.stopTest();
@@ -341,8 +350,7 @@ private class HttpCalloutMockRouterTest {
     static void shouldReplaceStringInBody() {
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
-        request.setEndpoint('https://' + DomainCreator.getOrgMyDomainHostname() +
-            '/services/data/v47.0/query/?q=SELECT+name+from+Account');
+        request.setEndpoint('callout:SF_API/query/?q=SELECT+name+from+Account');
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, HttpMocks.config()

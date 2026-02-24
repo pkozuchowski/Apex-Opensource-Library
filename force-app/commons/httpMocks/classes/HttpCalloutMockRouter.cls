@@ -19,20 +19,6 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
 
 
     /**
-     * @return Loads Mocks from custom metadata
-     */
-    public HttpCalloutMockRouter loadConfiguration() {
-        for (HttpCalloutMock__mdt mockMdt : HttpMocksConfig.getMocks()) {
-            if (mockMdt.Default__c) {
-                mock(mockMdt.DeveloperName, mockMdt.Methods__c, mockMdt.Endpoint__c, HttpMocks.config(mockMdt));
-            }
-        }
-
-        return this;
-    }
-
-
-    /**
     * Register HttpCalloutMock for given Http method and endpoint pattern.
     * @param name Unique name of the mock, used to override the default mock in tests
     * @param methods Comma separated list of methods ('GET,POST')
@@ -151,6 +137,36 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
                 }
                 response.setHeader(headerKey, headerValue);
             }
+        }
+    }
+
+
+    /**
+     * Routes HttpCalloutChainMock to given method and endpoint pattern.
+     */
+    public virtual with sharing class HttpMockEndpointMatcher implements HttpCalloutChainMock {
+        private Pattern endpointPattern;
+        private Set<String> methods;
+        private HttpCalloutMock mock;
+
+        /**
+         * @param methods HTTP methods separated by coma ex. "POST,PUT"
+         * @param endpointPattern Regexp pattern for Endpoint
+         * @param mock Mock to respond with.
+         */
+        public HttpMockEndpointMatcher(String methods, String endpointPattern, HttpCalloutMock mock) {
+            this.methods = new Set<String>(methods.toUpperCase().split(','));
+            this.endpointPattern = Pattern.compile(endpointPattern);
+            this.mock = mock;
+        }
+
+        public virtual Boolean handles(HttpRequest request) {
+            return (this.methods.contains('*') || this.methods.contains(request.getMethod().toUpperCase()))
+                && endpointPattern.matcher(request.getEndpoint()).matches();
+        }
+
+        public virtual HttpResponse respond(HttpRequest request) {
+            return mock.respond(request);
         }
     }
 

@@ -3,6 +3,10 @@
     <label>SF_Query_Account</label>
     <protected>false</protected>
     <values>
+        <field>ApexClassNamespace__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
         <field>ApexClass__c</field>
         <value xsi:nil="true"/>
     </values>
@@ -12,7 +16,7 @@
     </values>
     <values>
         <field>Endpoint__c</field>
-        <value xsi:type="xsd:string">callout:SF_API/query/?q=callout:SF_API/FROM+Accountcallout:SF_API/</value>
+        <value xsi:type="xsd:string">callout:SF_API/query/?q=.*</value>
     </values>
     <values>
         <field>Headers__c</field>

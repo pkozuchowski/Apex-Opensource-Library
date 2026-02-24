@@ -73,7 +73,7 @@ private class HttpCalloutMockRouterTest {
     }
 
     static {
-        HttpMocksConfig.mock(new List<HttpCalloutMock__mdt>{
+        HttpMocksConfigRouter.mock(new List<HttpCalloutMock__mdt>{
             new HttpCalloutMock__mdt(
                 DeveloperName = 'SF_REST_Query',
                 Default__c = true,
@@ -305,7 +305,7 @@ private class HttpCalloutMockRouterTest {
 
     @IsTest
     static void shouldRespondWithApexClass() {
-        HttpMocksConfig.mock(new List<HttpCalloutMock__mdt>{
+        HttpMocksConfigRouter.mock(new List<HttpCalloutMock__mdt>{
             new HttpCalloutMock__mdt(
                 DeveloperName = 'SF_REST_Query',
                 Default__c = true,

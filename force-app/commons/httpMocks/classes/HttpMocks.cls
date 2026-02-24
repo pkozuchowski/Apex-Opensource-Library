@@ -24,12 +24,32 @@ public virtual with sharing class HttpMocks {
     }
 
     /**
+     * @return Router with all custom metadata mocks loaded.
+     */
+    public static HttpCalloutMockRouter config() {
+        return new HttpMocksConfigRouter();
+    }
+
+    /**
+     * Responds with status and code defined in HttpCalloutMock__mdt custom metadata
+     */
+    public static HttpCalloutMock config(String customMetadataName) {
+        return new ConfigMock(HttpCalloutMock__mdt.getInstance(customMetadataName));
+    }
+
+    /**
+     * Responds with status and code defined in HttpCalloutMock__mdt custom metadata
+     */
+    public static HttpCalloutMock config(HttpCalloutMock__mdt customMetadata) {
+        return new ConfigMock(customMetadata);
+    }
+
+    /**
      * @return Http Mock Builder
      */
     public static Builder builder() {
         return new Builder();
     }
-
 
     /**
      * Creates JSON response mock
@@ -55,30 +75,6 @@ public virtual with sharing class HttpMocks {
      */
     public static HttpCalloutMock text(Integer statusCode, String status, String body) {
         return new Builder(statusCode, status, body);
-    }
-
-
-    /**
-     * @return Router with all custom metadata mocks loaded.
-     */
-    public static HttpCalloutMockRouter config() {
-        return new HttpCalloutMockRouter()
-            .loadConfiguration();
-    }
-
-
-    /**
-     * Responds with status and code defined in HttpCalloutMock__mdt custom metadata
-     */
-    public static HttpCalloutMock config(String customMetadataName) {
-        return new ConfigMock(HttpCalloutMock__mdt.getInstance(customMetadataName));
-    }
-
-    /**
-     * Responds with status and code defined in HttpCalloutMock__mdt custom metadata
-     */
-    public static HttpCalloutMock config(HttpCalloutMock__mdt customMetadata) {
-        return new ConfigMock(customMetadata);
     }
 
 
@@ -140,11 +136,12 @@ public virtual with sharing class HttpMocks {
             } else if (String.isNotBlank(config.ApexClass__c)) {
                 mock = (HttpCalloutMock) Type.forName(
                     config.ApexClassNamespace__c,
-                    config.ApexClass__c).newInstance();
+                    config.ApexClass__c
+                ).newInstance();
 
             } else {
                 if (String.isNotBlank(config.Response__c)) {
-                    config = HttpMocksConfig.getResponse(config.DeveloperName);
+                    config = getResponse(config.DeveloperName);
                 }
                 mock = text((Integer) config.StatusCode__c, config.Status__c, config.Response__c);
             }
@@ -155,6 +152,31 @@ public virtual with sharing class HttpMocks {
             }
 
             return response;
+        }
+
+        /**
+         * Retrieves a specific HTTP callout mock by developer name.
+         * If the Response__c field exceeds 255 characters, queries the full record to avoid Salesforce's text truncation.
+         * @param developerName The developer name of the HttpCalloutMock__mdt record
+         * @return The HttpCalloutMock__mdt record with complete response data
+         */
+        private HttpCalloutMock__mdt getResponse(String developerName) {
+            Boolean isMocked = String.isBlank(config.Id);
+
+            if (isMocked || config.Response__c.length() < 255) {
+                return config;
+
+            } else {
+                //Salesforce trims long texts to 255
+                return [
+                    SELECT DeveloperName, ApexClass__c, ApexClassNamespace__c,
+                        Status__c, StatusCode__c, Response__c,
+                        StaticResource__c, Headers__c
+                    FROM HttpCalloutMock__mdt
+                    WHERE DeveloperName = :developerName
+                    WITH USER_MODE
+                ];
+            }
         }
 
         private void setHeaders(HttpCalloutMock__mdt mdt, HttpResponse response) {

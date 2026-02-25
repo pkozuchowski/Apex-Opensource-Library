@@ -18,29 +18,21 @@ private class HttpCalloutMockRouterTest {
     private class SalesforceRestAPIMocks extends HttpCalloutMockRouter {
 
         public SalesforceRestAPIMocks() {
-            mock('Query',
-                'GET', 'callout:SF_API/query/?q=.*',
+            mock('Query', 'GET', 'callout:SF_API/query/?q=.*',
                 HttpMocks.staticResource(200, 'OK', 'StaticResourceWithResponse'));
 
-            mock('Create Account',
-                'POST', 'callout:SF_API/sobjects/Account/',
-                HttpMocks.builder()
-                    .status(201, 'Created')
-                    .json(new CreateRecordResult(true)));
+            mock('Create Account', 'POST', 'callout:SF_API/sobjects/Account/',
+                HttpMocks.json(201, 'Created', new CreateRecordResult(true)));
 
-            mock('Get Account',
-                'GET', 'callout:SF_API/sobjects/Account/.*',
-                HttpMocks.builder()
-                    .status(200, 'OK')
-                    .json(new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME)));
+            mock('Get Account', 'GET', 'callout:SF_API/sobjects/Account/.*',
+                HttpMocks.json(200, 'OK',
+                    new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME)));
 
-            mock('Delete Account',
-                'DELETE', 'callout:SF_API/sobjects/Account/.*',
-                HttpMocks.text(204, 'No Content', ''));
+            mock('Delete Account', 'DELETE', 'callout:SF_API/sobjects/Account/.*',
+                HttpMocks.response(204, 'No Content'));
 
-            mock('Delete Account',
-                'DELETE', 'callout:SF_API/sobjects/Account/.*',
-                HttpMocks.text(204, 'No Content', ''));
+            mock('Delete Account', 'DELETE', 'callout:SF_API/sobjects/Account/.*',
+                HttpMocks.response(204, 'No Content'));
         }
     }
 
@@ -48,7 +40,8 @@ private class HttpCalloutMockRouterTest {
         public AzureMocks() {
             mock('Get Account',
                 'GET', 'callout:AWS/Account',
-                HttpMocks.text(200, 'OK', '{"name":"Test"}'));
+                HttpMocks.response(200, 'OK')
+                    .body('{"name":"Test"}'));
         }
     }
 
@@ -246,7 +239,7 @@ private class HttpCalloutMockRouterTest {
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, new OrgMocks()
             .mock('Salesforce API', new SalesforceRestAPIMocks()
-                .overrideMock('Delete Account', HttpMocks.text(401, 'Unauthorized', ''))
+                .overrideMock('Delete Account', HttpMocks.response(401, 'Unauthorized', ''))
                 .overrideMock('Query', HttpMocks.staticResource(200, 'OK', 'OtherStaticResource'))
             ));
 

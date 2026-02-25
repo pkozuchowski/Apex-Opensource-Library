@@ -45,40 +45,62 @@ public virtual with sharing class HttpMocks {
     }
 
     /**
-     * @return Http Mock Builder
+     * Creates a new HttpCalloutMock Builder with the specified HTTP status code and status message.
+     * This is the starting point for building a custom HTTP mock response.
+     * 
+     * @param statusCode The HTTP status code to return (e.g., 200, 404, 500)
+     * @param status The HTTP status message (e.g., 'OK', 'Not Found', 'Internal Server Error')
+     * @return A Builder instance that can be further configured with headers, body, or other response properties
+     * 
+     * @example
+     * HttpCalloutMock mock = HttpMocks.response(200, 'OK')
+     *     .body('{"result": "success"}')
+     *     .header('Content-Type', 'application/json');
      */
-    public static Builder builder() {
-        return new Builder();
+    public static Builder response(Integer statusCode, String status) {
+        return new Builder(statusCode, status);
     }
 
     /**
-     * Creates JSON response mock
+     * Creates a new HttpCalloutMock with the specified HTTP status code, status message, and response body.
+     * This is a convenience method for quickly building a complete HTTP mock response.
+     *
+     * @example
+     * HttpCalloutMock mock = HttpMocks.response(200, 'OK', '{"result": "success"}');
      */
-    public static HttpCalloutMock json(Integer statusCode, String status, Object jsonObject) {
-        return new Builder(statusCode, status, JSON.serialize(jsonObject));
+    public static Builder response(Integer statusCode, String status, String body) {
+        return new Builder(statusCode, status).body(body);
     }
 
     /**
-     * Creates Http response from static resource
+     * Creates a new HttpCalloutMock with the specified HTTP status code, status message, and JSON-serialized response body.
+     * The provided object will be automatically serialized to JSON format.
+     * 
+     * @example
+     * Map<String, Object> data = new Map<String, Object>{'result' => 'success'};
+     * HttpCalloutMock mock = HttpMocks.json(200, 'OK', data);
      */
-    public static HttpCalloutMock staticResource(Integer statusCode, String status, String staticResource) {
-        StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
-        mock.setStatusCode(statusCode);
-        mock.setStatus(status);
-        mock.setStaticResource(staticResource);
-
-        return (HttpCalloutMock) mock;
+    public static Builder json(Integer statusCode, String status, Object toSerialize) {
+        return new Builder(statusCode, status).json(toSerialize);
     }
 
     /**
-     * Creates Http response from plain text
+     * Creates a new HttpCalloutMock with the specified HTTP status code, status message, and response body from a Static Resource.
+     * The response body content will be loaded from the specified Static Resource.
+     * 
+     * @example
+     * HttpCalloutMock mock = HttpMocks.staticResource(200, 'OK', 'MockResponseData');
      */
-    public static HttpCalloutMock text(Integer statusCode, String status, String body) {
-        return new Builder(statusCode, status, body);
+    public static Builder staticResource(Integer statusCode, String status, String staticResource) {
+        return new Builder(statusCode, status).staticResource(staticResource);
     }
 
 
-    public class Builder implements HttpCalloutMock {
+    /**
+     * Builder class for constructing HTTP callout mock responses with fluent API.
+     * Allows step-by-step configuration of status codes, headers, and response bodies.
+     */
+    public virtual class Builder implements HttpCalloutMock {
         private HttpResponse response = new HttpResponse();
 
         private Builder() {}
@@ -86,67 +108,110 @@ public virtual with sharing class HttpMocks {
         /**
          * Creates Http mock which responds with given status and body.
          */
-        private Builder(Integer statusCode, String status, String body) {
+        private Builder(Integer statusCode, String status) {
             this.response.setStatusCode(statusCode);
             this.response.setStatus(status);
-            this.response.setBody(body == null ? '' : body);
         }
 
+        /**
+         * Loads the response body content from a Static Resource.
+         * @param staticResourceName The name of the Static Resource containing the response body
+         */
+        public Builder staticResource(String staticResourceName) {
+            StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
+            mock.setStaticResource(staticResourceName);
+            this.response = mock.respond(null);
+            return this;
+        }
+
+        /**
+         * Sets the HTTP status code and status message for the response.
+         */
         public Builder status(Integer statusCode, String status) {
             this.response.setStatusCode(statusCode);
             this.response.setStatus(status);
             return this;
         }
 
+        /**
+         * Adds a header to the HTTP response.
+         */
         public Builder header(String key, String value) {
             this.response.setHeader(key, value);
             return this;
         }
 
+        /**
+         * Sets the response body content as a string.
+         * @param body The response body content
+         */
         public Builder body(String body) {
             this.response.setBody(body);
             return this;
         }
 
+        /**
+         * Serializes an object to JSON format and sets it as the response body.
+         * @param toSerialize The object to be serialized to JSON
+         */
         public Builder json(Object toSerialize) {
             this.response.setBody(JSON.serialize(toSerialize));
             return this;
         }
 
-        public HttpResponse respond(HttpRequest request) {
+        public virtual HttpResponse respond(HttpRequest request) {
             return response;
         }
     }
 
 
+
+    /**
+     * Mock implementation that uses HttpCalloutMock__mdt custom metadata to configure HTTP responses.
+     * Supports multiple response types: direct body content, static resources, or custom Apex class implementations.
+     */
     @TestVisible
     private virtual class ConfigMock implements HttpCalloutMock {
         private HttpCalloutMock__mdt config;
 
+        /**
+         * Constructs a ConfigMock with the specified custom metadata configuration.
+         * @param config The HttpCalloutMock__mdt record containing the mock response configuration
+         */
         public ConfigMock(HttpCalloutMock__mdt config) {
             this.config = config;
         }
 
+        /**
+         * Generates an HTTP response based on the configuration defined in HttpCalloutMock__mdt.
+         * The response can be sourced from: Response__c field, StaticResource__c, or custom ApexClass__c.
+         * @param request The incoming HTTP request (may be used by custom Apex class implementations)
+         * @return HttpResponse configured according to the custom metadata settings
+         */
         public HttpResponse respond(HttpRequest request) {
-            HttpCalloutMock mock;
+            Builder builder = new Builder();
 
-            if (String.isNotBlank(config.StaticResource__c)) {
-                mock = staticResource((Integer) config.StatusCode__c, config.Status__c, config.StaticResource__c);
+            if (config.StatusCode__c != null) {
+                builder.status((Integer) config.StatusCode__c, config.Status__c);
+            }
+
+
+            if (String.isNotBlank(config.Response__c)) {
+                config = getFullConfig(config.DeveloperName);
+                builder.body(config.Response__c);
+
+            } else if (String.isNotBlank(config.StaticResource__c)) {
+                builder.staticResource(config.StaticResource__c);
 
             } else if (String.isNotBlank(config.ApexClass__c)) {
-                mock = (HttpCalloutMock) Type.forName(
+                HttpCalloutMock mock = (HttpCalloutMock) Type.forName(
                     config.ApexClassNamespace__c,
                     config.ApexClass__c
                 ).newInstance();
-
-            } else {
-                if (String.isNotBlank(config.Response__c)) {
-                    config = getResponse(config.DeveloperName);
-                }
-                mock = text((Integer) config.StatusCode__c, config.Status__c, config.Response__c);
+                builder.response = mock.respond(request);
             }
 
-            HttpResponse response = mock.respond(request);
+            HttpResponse response = builder.respond(request);
             if (String.isNotBlank(config.Headers__c)) {
                 setHeaders(config, response);
             }
@@ -160,7 +225,7 @@ public virtual with sharing class HttpMocks {
          * @param developerName The developer name of the HttpCalloutMock__mdt record
          * @return The HttpCalloutMock__mdt record with complete response data
          */
-        private HttpCalloutMock__mdt getResponse(String developerName) {
+        private HttpCalloutMock__mdt getFullConfig(String developerName) {
             Boolean isMocked = String.isBlank(config.Id);
 
             if (isMocked || config.Response__c.length() < 255) {
@@ -179,6 +244,12 @@ public virtual with sharing class HttpMocks {
             }
         }
 
+        /**
+         * Parses and applies headers from custom metadata to the HTTP response.
+         * Headers should be formatted as "Key: Value" pairs, separated by newlines.
+         * @param mdt The HttpCalloutMock__mdt record containing header configuration
+         * @param response The HttpResponse object to which headers will be added
+         */
         private void setHeaders(HttpCalloutMock__mdt mdt, HttpResponse response) {
             List<String> headers = mdt.Headers__c.split('\n');
 

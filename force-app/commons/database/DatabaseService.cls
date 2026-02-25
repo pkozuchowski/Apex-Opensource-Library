@@ -55,7 +55,7 @@ public inherited sharing virtual class DatabaseService {
      * Constructs DatabaseService with System Inherited Sharing setup and All or None option.
      */
     public DatabaseService() {
-        asSystemWithSharing();
+        asSystem();
         allOrNone(true);
 
         if (Test.isRunningTest()) {

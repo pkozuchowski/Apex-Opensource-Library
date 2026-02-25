@@ -3,8 +3,8 @@
 sharing context in runtime.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/database)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Li8zIAC)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Li8zIAC)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LuptIAC)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LuptIAC)
 
 ```bash
 sf project deploy start -d "force-app/commons/database" -o sfdxOrg
@@ -544,6 +544,9 @@ public class DatabaseUnitOfWork extends DatabaseService {
 
 ---
 # Change Log
+### v2.3.1
+- Fixed DatabaseService running in System with Sharing mode by default, where it should be an Inherited Sharing mode.
+
 ### v2.3
 - Added Invocable Unit of Work action to register DMLs in Flows
 

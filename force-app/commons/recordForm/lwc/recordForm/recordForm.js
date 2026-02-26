@@ -96,7 +96,8 @@ export default class RecordForm extends LightningElement {
      */
     @api
     reportValidityForField(field) {
-        return this.fields.find(cmp => cmp.field === field)?.reportValidity();
+        this.fields.filter(cmp => cmp.field === field)
+            .forEach(cmp => cmp.reportValidity());
     }
 
     /**
@@ -107,7 +108,8 @@ export default class RecordForm extends LightningElement {
      */
     @api
     setCustomValidityForField(field, message) {
-        return this.fields.find(cmp => cmp.field === field)?.setCustomValidity(message);
+        this.fields.filter(cmp => cmp.field === field)
+            .forEach(cmp => cmp.setCustomValidity(message));
     }
 
     /**
@@ -117,7 +119,8 @@ export default class RecordForm extends LightningElement {
      */
     @api
     checkValidityForField(field) {
-        return this.fields.find(cmp => cmp.field === field)?.checkValidity();
+        this.fields.filter(cmp => cmp.field === field)
+            .forEach(cmp => cmp.checkValidity());
     }
 
     /**
@@ -189,11 +192,15 @@ export default class RecordForm extends LightningElement {
     @wire(getRecordType, {objectApiName: "$objectApiName", developerName: "$recordTypeName"})
     fetchRecordType({err, data}) {
         if (data) {
-            this.recordTypeId = data[0].Id;
-            this.formAttributes.isPersonAccount = data[0].IsPersonType;
+            if (data[0]) {
+                this.recordTypeId = data[0].Id;
+                this.formAttributes.isPersonAccount = data[0].IsPersonType;
+            } else {
+                this.recordTypeId = MASTER_RECORD_TYPE;
+                this.formAttributes.isPersonAccount = false;
+            }
         } else if (err) {
             console.error(`Error fetching record type ${this.objectApiName}.${this.recordTypeName}`, err?.message);
-            this.recordTypeId = MASTER_RECORD_TYPE;
         }
     }
 

@@ -112,9 +112,9 @@
       "path": "./force-app/commons/recordForm",
       "package": "Record Form",
       "versionName": "ver 1.2",
-      "versionNumber": "1.2.1.NEXT",
+      "versionNumber": "1.2.2.NEXT",
       "default": false,
-      "versionDescription": ""
+      "versionDescription": "Fixed Record Form field validation issues, when field was repeatedly hidden and displayed."
     },
     {
       "path": "./force-app/commons/logger",
@@ -205,6 +205,7 @@
     "Record Form@1.2.0-1": "04tJ6000000Lu7IIAS",
     "Record Form@1.2.1-1": "04tJ6000000LuCOIA0",
     "Logger": "0HoJ60000000048KAA",
-    "Logger@1.0.0-1": "04tJ6000000LuhEIAS"
+    "Logger@1.0.0-1": "04tJ6000000LuhEIAS",
+    "Record Form@1.2.2-1": "04tJ6000000LupyIAC"
   }
 }

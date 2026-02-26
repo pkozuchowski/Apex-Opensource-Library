@@ -3,7 +3,7 @@ import {getRecord} from 'lightning/uiRecordApi';
 import {getObjectInfo} from "lightning/uiObjectInfoApi";
 
 export default class Preview extends LightningElement {
-    @track account;
+    @track account = {};
     @track opportunity;
     show = "123"
     readOnly = false;
@@ -13,7 +13,6 @@ export default class Preview extends LightningElement {
     density = "comfy";
 
     condition = false;
-    value = '1';
 
     edit() {
         this.readOnly = !this.readOnly;
@@ -29,21 +28,10 @@ export default class Preview extends LightningElement {
     }
 
     reportValidityWebsite() {
-        let reportValidity = this.refs.recordForm.reportValidityForField('Type');
+        let reportValidity = this.refs.recordForm.reportValidityForField('Website');
         console.log('reportValidity', JSON.stringify(reportValidity, null, 2));
     }
 
-    @wire(getRecord, {recordId: '001KM00000KlMXkYAN', layoutTypes: 'Full'})
-    getAccount({error, data}) {
-        if (data) {
-            let record = {};
-            for (let field in data.fields) {
-                record[field] = data.fields[field].value;
-            }
-            record.Id = data.id;
-            this.account = JSON.parse(JSON.stringify(record));
-        }
-    }
 
     onRecordChange(ev) {
         ev.preventDefault();
@@ -54,5 +42,18 @@ export default class Preview extends LightningElement {
         } catch (e) {
             console.log(e, e.message, e.detail);
         }
+    }
+
+    showFields = true;
+
+    showExtraFields() {
+        this.showFields = !this.showFields;
+    }
+
+    handleValidate() {
+        this.refs.recordForm.setCustomValidityForField('Name', 'Invalid value');
+        this.refs.recordForm.setCustomValidityForField('Website', 'Invalid value');
+        this.refs.recordForm.reportValidityForField('Website');
+        this.refs.recordForm.reportValidity();
     }
 }

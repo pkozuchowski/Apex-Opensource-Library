@@ -3,8 +3,8 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/recordForm)
 [Recipes](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/examples/recordForm)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LuCOIA0)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LuCOIA0)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LupyIAC)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LupyIAC)
 
 ```bash
 sf project deploy start -d "force-app/commons/recordForm" -o sfdxOrg
@@ -336,3 +336,10 @@ from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-
 | `typeAttributes` | `object` | Additional attributes to apply to the underlying input element.                    |
 | `options`        | `array`  | Array of picklist values to present instead of the ones from the field metadata.   |
 | `optionsFilter`  | `array`  | Subset of picklist values to display, from options or record type picklist values. |
+
+---
+# Change Log
+
+### 1.2.2
+- Fix: Field validation methods after a field is repeatedly hidden and shown.
+- Fix: Fetch Record Type method when there are no record types except master.

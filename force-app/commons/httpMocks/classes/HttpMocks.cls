@@ -27,21 +27,21 @@ public virtual with sharing class HttpMocks {
      * @return Router with all custom metadata mocks loaded.
      */
     public static HttpCalloutMockRouter config() {
-        return new HttpMocksConfigRouter();
+        return new HttpConfigMocks.ConfigRouter();
     }
 
     /**
      * Responds with status and code defined in HttpCalloutMock__mdt custom metadata
      */
     public static HttpMockBuilder config(String customMetadataName) {
-        return new HttpMockBuilder(new ConfigMock(HttpMocksConfigRouter.getMock(customMetadataName)));
+        return new HttpMockBuilder(new HttpConfigMocks.ConfigMock(customMetadataName));
     }
 
     /**
      * Responds with status and code defined in HttpCalloutMock__mdt custom metadata
      */
     public static HttpMockBuilder config(HttpCalloutMock__mdt customMetadata) {
-        return new HttpMockBuilder(new ConfigMock(customMetadata));
+        return new HttpMockBuilder(new HttpConfigMocks.ConfigMock(customMetadata));
     }
 
     /**
@@ -96,102 +96,5 @@ public virtual with sharing class HttpMocks {
         mock.setStaticResource(staticResource);
 
         return new HttpMockBuilder(mock).status(statusCode, status);
-    }
-
-
-    /**
-     * Mock implementation that uses HttpCalloutMock__mdt custom metadata to configure HTTP responses.
-     * Supports multiple response types: direct body content, static resources, or custom Apex class implementations.
-     */
-    @TestVisible
-    private virtual class ConfigMock implements HttpCalloutMock {
-        private HttpCalloutMock__mdt config;
-
-        /**
-         * Constructs a ConfigMock with the specified custom metadata configuration.
-         * @param config The HttpCalloutMock__mdt record containing the mock response configuration
-         */
-        public ConfigMock(HttpCalloutMock__mdt config) {
-            this.config = config;
-        }
-
-        /**
-         * Generates an HTTP response based on the configuration defined in HttpCalloutMock__mdt.
-         * The response can be sourced from: Response__c field, StaticResource__c, or custom ApexClass__c.
-         * @param request The incoming HTTP request (may be used by custom Apex class implementations)
-         * @return HttpResponse configured according to the custom metadata settings
-         */
-        public HttpResponse respond(HttpRequest request) {
-            HttpResponse response;
-
-            if (String.isNotBlank(config.StaticResource__c)) {
-                StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
-                mock.setStaticResource(config.StaticResource__c);
-                response = mock.respond(request);
-
-            } else if (String.isNotBlank(config.ApexClass__c)) {
-                HttpCalloutMock mock = (HttpCalloutMock) Type.forName(
-                    config.ApexClassNamespace__c,
-                    config.ApexClass__c
-                ).newInstance();
-                response = mock.respond(request);
-
-            } else {
-                config = getFullConfig(config.DeveloperName);
-                response = new HttpResponse();
-                response.setBody(config.Response__c);
-            }
-
-            if (config.StatusCode__c != null) {
-                response.setStatus(config.Status__c);
-                response.setStatusCode((Integer) config.StatusCode__c);
-            }
-
-            if (String.isNotBlank(config.Headers__c)) {
-                setHeaders(config, response);
-            }
-
-            return response;
-        }
-
-        /**
-         * Retrieves a specific HTTP callout mock by developer name.
-         * If the Response__c field exceeds 255 characters, queries the full record to avoid Salesforce's text truncation.
-         * @param developerName The developer name of the HttpCalloutMock__mdt record
-         * @return The HttpCalloutMock__mdt record with complete response data
-         */
-        private HttpCalloutMock__mdt getFullConfig(String developerName) {
-            Boolean isMocked = String.isBlank(config.Id);
-
-            if (isMocked || config.Response__c.length() < 255) {
-                return config;
-
-            } else {
-                //Salesforce trims long texts to 255
-                return [
-                    SELECT DeveloperName, ApexClass__c, ApexClassNamespace__c,
-                        Status__c, StatusCode__c, Response__c,
-                        StaticResource__c, Headers__c
-                    FROM HttpCalloutMock__mdt
-                    WHERE DeveloperName = :developerName
-                    WITH USER_MODE
-                ];
-            }
-        }
-
-        /**
-         * Parses and applies headers from custom metadata to the HTTP response.
-         * Headers should be formatted as "Key: Value" pairs, separated by newlines.
-         * @param mdt The HttpCalloutMock__mdt record containing header configuration
-         * @param response The HttpResponse object to which headers will be added
-         */
-        private void setHeaders(HttpCalloutMock__mdt mdt, HttpResponse response) {
-            List<String> headers = mdt.Headers__c.split('\n');
-
-            for (String keyValue : headers) {
-                List<String> keyValueSplit = keyValue.split(':', 2);
-                response.setHeader(keyValueSplit[0].trim(), keyValueSplit[1].trim());
-            }
-        }
     }
 }

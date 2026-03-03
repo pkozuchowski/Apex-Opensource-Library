@@ -8,6 +8,7 @@ public virtual class HttpMockBuilder implements HttpCalloutMock {
     private Integer statusCode;
     private String status;
     private String body;
+    private Map<String, String> replacements = new Map<String, String>();
 
     public HttpMockBuilder() {}
 
@@ -54,6 +55,18 @@ public virtual class HttpMockBuilder implements HttpCalloutMock {
     }
 
     /**
+     * Replaces each substring of a target string in response body
+     * with the specified literal replacement sequence replacement.
+     * @param target Text to replace
+     * @param replacement Replacement
+     * @return
+     */
+    public HttpMockBuilder replaceInResponse(String target, String replacement) {
+        replacements.put(target, replacement);
+        return this;
+    }
+
+    /**
      * Builds response from applied
      */
     public virtual HttpResponse respond(HttpRequest request) {
@@ -72,6 +85,22 @@ public virtual class HttpMockBuilder implements HttpCalloutMock {
             response.setBody(this.body);
         }
 
+        applyReplacements(response);
+
         return response;
+    }
+
+    /**
+     * Applies substring replacements in body and header.
+     */
+    private void applyReplacements(HttpResponse response) {
+        String body = response.getBody();
+
+        if (String.isNotBlank(body)) {
+            for (String target : replacements.keySet()) {
+                body = body.replace(target, replacements.get(target));
+            }
+            response.setBody(body);
+        }
     }
 }

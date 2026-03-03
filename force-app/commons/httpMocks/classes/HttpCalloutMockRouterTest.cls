@@ -333,13 +333,15 @@ private class HttpCalloutMockRouterTest {
     }
 
     @IsTest
-    static void shouldReplaceStringInBody() {
+    static void shouldMutateResponse() {
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
         request.setEndpoint('callout:SF_API/query?q=SELECT+name+from+Account');
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, HttpMocks.config()
+            .mutate()
+            .status(201, 'Created')
             .replaceInResponse('Test 1', 'Test 3')
             .replaceInResponse('Test 2', 'Test 4'));
 
@@ -347,7 +349,8 @@ private class HttpCalloutMockRouterTest {
         Test.stopTest();
 
 
-        Assert.areEqual(200, response.getStatusCode());
+        Assert.areEqual(201, response.getStatusCode());
+        Assert.areEqual('Created', response.getStatus());
         Assert.areEqual('{"records":["Name":"Test 3"},{"Name":"Test 4"}]}', response.getBody());
     }
 

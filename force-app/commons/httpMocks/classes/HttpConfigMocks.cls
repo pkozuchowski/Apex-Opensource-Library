@@ -34,7 +34,7 @@ public with sharing class HttpConfigMocks {
                         mockMdt.DeveloperName,
                         mockMdt.Methods__c,
                         mockMdt.Endpoint__c,
-                        HttpMocks.config(mockMdt)
+                        new ConfigMock(mockMdt)
                     );
                 }
             }

@@ -311,22 +311,19 @@ private class HttpCalloutMockRouterTest {
 
     @IsTest
     static void shouldRespondWithApexClass() {
-        HttpConfigMocks.mock(new List<HttpCalloutMock__mdt>{
-            new HttpCalloutMock__mdt(
-                DeveloperName = 'SF_REST_Query',
-                Default__c = true,
-                Methods__c = 'GET',
-                Endpoint__c = 'callout:SF_API/query\\?q=.*',
-                ApexClass__c = 'HttpCalloutMockRouterTest.TestMock'
-            )
-        });
-
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
         request.setEndpoint('callout:SF_API/query?q=SELECT+Name+FROM+Account');
 
         Test.startTest();
-        Test.setMock(HttpCalloutMock.class, HttpMocks.config());
+        Test.setMock(HttpCalloutMock.class, HttpMocks.config()
+            .overrideMock('SF_REST_Query', HttpMocks.config(new HttpCalloutMock__mdt(
+                DeveloperName = 'SF_REST_Query',
+                Methods__c = 'GET',
+                Endpoint__c = 'callout:SF_API/query\\?q=.*',
+                Type__c = 'Apex Class',
+                Response__c = 'HttpCalloutMockRouterTest.TestMock'
+            ))));
         HttpResponse response = new Http().send(request);
         Test.stopTest();
 

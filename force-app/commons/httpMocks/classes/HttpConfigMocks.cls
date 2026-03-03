@@ -65,29 +65,29 @@ public with sharing class HttpConfigMocks {
 
         /**
          * Generates an HTTP response based on the configuration defined in HttpCalloutMock__mdt.
-         * The response can be sourced from: Response__c field, StaticResource__c, or custom ApexClass__c.
+         * The response can be sourced from plain body, static resource or apex class.
          * @param request The incoming HTTP request (may be used by custom Apex class implementations)
          * @return HttpResponse configured according to the custom metadata settings
          */
         public HttpResponse respond(HttpRequest request) {
             HttpResponse response;
 
-            if (String.isNotBlank(config.StaticResource__c)) {
-                StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
-                mock.setStaticResource(config.StaticResource__c);
-                response = mock.respond(request);
-
-            } else if (String.isNotBlank(config.ApexClass__c)) {
-                HttpCalloutMock mock = (HttpCalloutMock) Type.forName(
-                    config.ApexClassNamespace__c,
-                    config.ApexClass__c
-                ).newInstance();
-                response = mock.respond(request);
-
-            } else {
-                config = getFullConfig(config.DeveloperName);
-                response = new HttpResponse();
-                response.setBody(config.Response__c);
+            switch on config.Type__c {
+                when 'Static Resource' {
+                    StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
+                    mock.setStaticResource(config.Response__c);
+                    response = mock.respond(request);
+                }
+                when 'Apex Class' {
+                    Type typeForName = Type.forName(config.Response__c);
+                    HttpCalloutMock mock = (HttpCalloutMock) typeForName.newInstance();
+                    response = mock.respond(request);
+                }
+                when else {
+                    config = getFullConfig(config.DeveloperName);
+                    response = new HttpResponse();
+                    response.setBody(config.Response__c);
+                }
             }
 
             if (config.StatusCode__c != null) {
@@ -117,9 +117,8 @@ public with sharing class HttpConfigMocks {
             } else {
                 //Salesforce trims long texts to 255
                 return [
-                    SELECT DeveloperName, ApexClass__c, ApexClassNamespace__c,
-                        Status__c, StatusCode__c, Response__c,
-                        StaticResource__c, Headers__c
+                    SELECT DeveloperName, Status__c, StatusCode__c,
+                        Type__c, Response__c, Headers__c
                     FROM HttpCalloutMock__mdt
                     WHERE DeveloperName = :developerName
                     WITH USER_MODE

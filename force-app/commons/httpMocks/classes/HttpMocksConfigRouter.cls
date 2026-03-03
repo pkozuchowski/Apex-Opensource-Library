@@ -27,6 +27,10 @@ public with sharing class HttpMocksConfigRouter extends HttpCalloutMockRouter {
         }
     }
 
+    public static HttpCalloutMock__mdt getMock(String name) {
+        return mocks.get(name);
+    }
+
     /**
      * Mocks custom metadata records in tests.
      */

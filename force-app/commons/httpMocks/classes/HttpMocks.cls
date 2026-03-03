@@ -33,32 +33,32 @@ public virtual with sharing class HttpMocks {
     /**
      * Responds with status and code defined in HttpCalloutMock__mdt custom metadata
      */
-    public static HttpCalloutMock config(String customMetadataName) {
-        return new ConfigMock(HttpCalloutMock__mdt.getInstance(customMetadataName));
+    public static HttpMockBuilder config(String customMetadataName) {
+        return new HttpMockBuilder(new ConfigMock(HttpMocksConfigRouter.getMock(customMetadataName)));
     }
 
     /**
      * Responds with status and code defined in HttpCalloutMock__mdt custom metadata
      */
-    public static HttpCalloutMock config(HttpCalloutMock__mdt customMetadata) {
-        return new ConfigMock(customMetadata);
+    public static HttpMockBuilder config(HttpCalloutMock__mdt customMetadata) {
+        return new HttpMockBuilder(new ConfigMock(customMetadata));
     }
 
     /**
-     * Creates a new HttpCalloutMock Builder with the specified HTTP status code and status message.
+     * Creates a new HttpCalloutMock HttpMockBuilder with the specified HTTP status code and status message.
      * This is the starting point for building a custom HTTP mock response.
      * 
      * @param statusCode The HTTP status code to return (e.g., 200, 404, 500)
      * @param status The HTTP status message (e.g., 'OK', 'Not Found', 'Internal Server Error')
-     * @return A Builder instance that can be further configured with headers, body, or other response properties
+     * @return A HttpMockBuilder instance that can be further configured with headers, body, or other response properties
      * 
      * @example
      * HttpCalloutMock mock = HttpMocks.response(200, 'OK')
      *     .body('{"result": "success"}')
      *     .header('Content-Type', 'application/json');
      */
-    public static Builder response(Integer statusCode, String status) {
-        return new Builder(statusCode, status);
+    public static HttpMockBuilder response(Integer statusCode, String status) {
+        return new HttpMockBuilder().status(statusCode, status);
     }
 
     /**
@@ -68,8 +68,8 @@ public virtual with sharing class HttpMocks {
      * @example
      * HttpCalloutMock mock = HttpMocks.response(200, 'OK', '{"result": "success"}');
      */
-    public static Builder response(Integer statusCode, String status, String body) {
-        return new Builder(statusCode, status).body(body);
+    public static HttpMockBuilder response(Integer statusCode, String status, String body) {
+        return new HttpMockBuilder().status(statusCode, status).body(body);
     }
 
     /**
@@ -80,8 +80,8 @@ public virtual with sharing class HttpMocks {
      * Map<String, Object> data = new Map<String, Object>{'result' => 'success'};
      * HttpCalloutMock mock = HttpMocks.json(200, 'OK', data);
      */
-    public static Builder json(Integer statusCode, String status, Object toSerialize) {
-        return new Builder(statusCode, status).json(toSerialize);
+    public static HttpMockBuilder json(Integer statusCode, String status, Object toSerialize) {
+        return new HttpMockBuilder().status(statusCode, status).json(toSerialize);
     }
 
     /**
@@ -91,79 +91,12 @@ public virtual with sharing class HttpMocks {
      * @example
      * HttpCalloutMock mock = HttpMocks.staticResource(200, 'OK', 'MockResponseData');
      */
-    public static Builder staticResource(Integer statusCode, String status, String staticResource) {
-        return new Builder(statusCode, status).staticResource(staticResource);
+    public static HttpMockBuilder staticResource(Integer statusCode, String status, String staticResource) {
+        StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
+        mock.setStaticResource(staticResource);
+
+        return new HttpMockBuilder(mock).status(statusCode, status);
     }
-
-
-    /**
-     * Builder class for constructing HTTP callout mock responses with fluent API.
-     * Allows step-by-step configuration of status codes, headers, and response bodies.
-     */
-    public virtual class Builder implements HttpCalloutMock {
-        private HttpResponse response = new HttpResponse();
-
-        private Builder() {}
-
-        /**
-         * Creates Http mock which responds with given status and body.
-         */
-        private Builder(Integer statusCode, String status) {
-            this.response.setStatusCode(statusCode);
-            this.response.setStatus(status);
-        }
-
-        /**
-         * Loads the response body content from a Static Resource.
-         * @param staticResourceName The name of the Static Resource containing the response body
-         */
-        public Builder staticResource(String staticResourceName) {
-            StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
-            mock.setStaticResource(staticResourceName);
-            this.response = mock.respond(null);
-            return this;
-        }
-
-        /**
-         * Sets the HTTP status code and status message for the response.
-         */
-        public Builder status(Integer statusCode, String status) {
-            this.response.setStatusCode(statusCode);
-            this.response.setStatus(status);
-            return this;
-        }
-
-        /**
-         * Adds a header to the HTTP response.
-         */
-        public Builder header(String key, String value) {
-            this.response.setHeader(key, value);
-            return this;
-        }
-
-        /**
-         * Sets the response body content as a string.
-         * @param body The response body content
-         */
-        public Builder body(String body) {
-            this.response.setBody(body);
-            return this;
-        }
-
-        /**
-         * Serializes an object to JSON format and sets it as the response body.
-         * @param toSerialize The object to be serialized to JSON
-         */
-        public Builder json(Object toSerialize) {
-            this.response.setBody(JSON.serialize(toSerialize));
-            return this;
-        }
-
-        public virtual HttpResponse respond(HttpRequest request) {
-            return response;
-        }
-    }
-
 
 
     /**
@@ -189,29 +122,31 @@ public virtual with sharing class HttpMocks {
          * @return HttpResponse configured according to the custom metadata settings
          */
         public HttpResponse respond(HttpRequest request) {
-            Builder builder = new Builder();
+            HttpResponse response;
 
-            if (config.StatusCode__c != null) {
-                builder.status((Integer) config.StatusCode__c, config.Status__c);
-            }
-
-
-            if (String.isNotBlank(config.Response__c)) {
-                config = getFullConfig(config.DeveloperName);
-                builder.body(config.Response__c);
-
-            } else if (String.isNotBlank(config.StaticResource__c)) {
-                builder.staticResource(config.StaticResource__c);
+            if (String.isNotBlank(config.StaticResource__c)) {
+                StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
+                mock.setStaticResource(config.StaticResource__c);
+                response = mock.respond(request);
 
             } else if (String.isNotBlank(config.ApexClass__c)) {
                 HttpCalloutMock mock = (HttpCalloutMock) Type.forName(
                     config.ApexClassNamespace__c,
                     config.ApexClass__c
                 ).newInstance();
-                builder.response = mock.respond(request);
+                response = mock.respond(request);
+
+            } else {
+                config = getFullConfig(config.DeveloperName);
+                response = new HttpResponse();
+                response.setBody(config.Response__c);
             }
 
-            HttpResponse response = builder.respond(request);
+            if (config.StatusCode__c != null) {
+                response.setStatus(config.Status__c);
+                response.setStatusCode((Integer) config.StatusCode__c);
+            }
+
             if (String.isNotBlank(config.Headers__c)) {
                 setHeaders(config, response);
             }

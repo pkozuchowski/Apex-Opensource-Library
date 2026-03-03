@@ -18,7 +18,7 @@ private class HttpCalloutMockRouterTest {
     private class SalesforceRestAPIMocks extends HttpCalloutMockRouter {
 
         public SalesforceRestAPIMocks() {
-            mock('Query', 'GET', 'callout:SF_API/query/?q=.*',
+            mock('Query', 'GET', 'callout:SF_API/query\\?q=.*',
                 HttpMocks.staticResource(200, 'OK', 'StaticResourceWithResponse'));
 
             mock('Create Account', 'POST', 'callout:SF_API/sobjects/Account/',
@@ -71,7 +71,7 @@ private class HttpCalloutMockRouterTest {
                 DeveloperName = 'SF_REST_Query',
                 Default__c = true,
                 Methods__c = 'GET',
-                Endpoint__c = 'callout:SF_API/query/.*',
+                Endpoint__c = 'callout:SF_API/query\\?q=.*',
                 Response__c = '{"records":["Name":"Test 1"},{"Name":"Test 2"}]}',
                 StatusCode__c = 200,
                 Status__c = 'OK',
@@ -82,7 +82,7 @@ private class HttpCalloutMockRouterTest {
                 DeveloperName = 'SF_REST_Query_Empty',
                 Default__c = false,
                 Methods__c = 'GET',
-                Endpoint__c = 'callout:SF_API/query/.*',
+                Endpoint__c = 'callout:SF_API/query\\?q=.*',
                 Response__c = '{"records":[]}',
                 StatusCode__c = 200,
                 Status__c = 'OK'
@@ -131,11 +131,11 @@ private class HttpCalloutMockRouterTest {
         Test.stopTest();
 
 
-        System.assertEquals(201, response.getStatusCode());
-        System.assertEquals('Created', response.getStatus());
+        Assert.areEqual(201, response.getStatusCode());
+        Assert.areEqual('Created', response.getStatus());
 
         CreateRecordResult result = (CreateRecordResult) JSON.deserialize(response.getBody(), CreateRecordResult.class);
-        System.assertEquals(true, result.success);
+        Assert.areEqual(true, result.success);
     }
 
 
@@ -149,17 +149,18 @@ private class HttpCalloutMockRouterTest {
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, new SalesforceRestAPIMocks()
-            .overrideMock('Create Account', HttpMocks.json(401, 'Unauthorized', new List<Error>{
-                new Error('Session expired or invalid', 'INVALID_SESSION_ID')
-            }))
+            .overrideMock('Create Account',
+                HttpMocks.json(401, 'Unauthorized', new List<Error>{
+                    new Error('Session expired or invalid', 'INVALID_SESSION_ID')
+                }))
         );
         HttpResponse response = new Http().send(request);
         Test.stopTest();
 
 
-        System.assertEquals(401, response.getStatusCode());
-        System.assertEquals('Unauthorized', response.getStatus());
-        System.assert(response.getBody().contains('INVALID_SESSION_ID'));
+        Assert.areEqual(401, response.getStatusCode());
+        Assert.areEqual('Unauthorized', response.getStatus());
+        Assert.isTrue(response.getBody().contains('INVALID_SESSION_ID'));
     }
 
 
@@ -176,9 +177,9 @@ private class HttpCalloutMockRouterTest {
         Test.stopTest();
 
 
-        System.assertEquals(200, response.getStatusCode());
-        System.assertEquals('OK', response.getStatus());
-        System.assert(response.getBody().contains('"Name":"' + ACCOUNT_NAME + '"'));
+        Assert.areEqual(200, response.getStatusCode());
+        Assert.areEqual('OK', response.getStatus());
+        Assert.isTrue(response.getBody().contains('"Name":"' + ACCOUNT_NAME + '"'));
     }
 
     @IsTest
@@ -194,8 +195,8 @@ private class HttpCalloutMockRouterTest {
         Test.stopTest();
 
 
-        System.assertEquals(204, response.getStatusCode());
-        System.assertEquals('No Content', response.getStatus());
+        Assert.areEqual(204, response.getStatusCode());
+        Assert.areEqual('No Content', response.getStatus());
     }
 
 
@@ -221,8 +222,8 @@ private class HttpCalloutMockRouterTest {
         Test.stopTest();
 
 
-        System.assertNotEquals(null, ex);
-        System.assert(ex.getMessage().contains('Unhandled request'));
+        Assert.areNotEqual(null, ex);
+        Assert.isTrue(ex.getMessage().contains('Unhandled request'));
     }
 
 
@@ -258,7 +259,7 @@ private class HttpCalloutMockRouterTest {
 
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
-        request.setEndpoint('callout:SF_API/query/?q=SELECT+name+from+Account');
+        request.setEndpoint('callout:SF_API/query?q=SELECT+name+from+Account');
 
         HttpResponse response = new Http().send(request);
         Test.stopTest();
@@ -274,11 +275,11 @@ private class HttpCalloutMockRouterTest {
     static void shouldHandleHeaderWithColons() {
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, HttpMocks.config()
-            .overrideMock('SF_REST_Query', 'SF_REST_Query_Empty'));
+            .overrideMock('SF_REST_Query', 'SF_REST_Query_Redirect'));
 
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
-        request.setEndpoint('https://salesforce.com/api/test');
+        request.setEndpoint('callout:SF_API/query?q=SELECT+Name+FROM+Account');
 
         HttpResponse response = new Http().send(request);
         Test.stopTest();
@@ -292,8 +293,20 @@ private class HttpCalloutMockRouterTest {
         shouldHandleHeaderWithColons();
         Assert.areEqual(1, HttpMocks.getRequests().size());
         Assert.areEqual(1, HttpMocks.getResponses().size());
-        Assert.areEqual('https://salesforce.com/api/test', HttpMocks.getRequests().get(0).getEndpoint());
+        Assert.areEqual(
+            'callout:SF_API/query?q=SELECT+Name+FROM+Account',
+            HttpMocks.getRequests().get(0).getEndpoint());
         Assert.areEqual(301, HttpMocks.getResponses().get(0).getStatusCode());
+    }
+
+    public class TestMock implements HttpCalloutMock {
+        public HttpResponse respond(HttpRequest request) {
+            HttpResponse res = new HttpResponse();
+            res.setStatusCode(200);
+            res.setStatus('OK');
+            res.setBody('Apex Class Response');
+            return res;
+        }
     }
 
     @IsTest
@@ -303,14 +316,14 @@ private class HttpCalloutMockRouterTest {
                 DeveloperName = 'SF_REST_Query',
                 Default__c = true,
                 Methods__c = 'GET',
-                Endpoint__c = '.*/api/test',
+                Endpoint__c = 'callout:SF_API/query\\?q=.*',
                 ApexClass__c = 'HttpCalloutMockRouterTest.TestMock'
             )
         });
 
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
-        request.setEndpoint('https://salesforce.com/api/test');
+        request.setEndpoint('callout:SF_API/query?q=SELECT+Name+FROM+Account');
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, HttpMocks.config());
@@ -318,6 +331,7 @@ private class HttpCalloutMockRouterTest {
         Test.stopTest();
 
         Assert.areEqual(200, response.getStatusCode());
+        Assert.areEqual('OK', response.getStatus());
         Assert.areEqual('Apex Class Response', response.getBody());
     }
 
@@ -325,7 +339,7 @@ private class HttpCalloutMockRouterTest {
     static void shouldReplaceStringInBody() {
         HttpRequest request = new HttpRequest();
         request.setMethod('GET');
-        request.setEndpoint('callout:SF_API/query/?q=SELECT+name+from+Account');
+        request.setEndpoint('callout:SF_API/query?q=SELECT+name+from+Account');
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, HttpMocks.config()
@@ -340,12 +354,25 @@ private class HttpCalloutMockRouterTest {
         Assert.areEqual('{"records":["Name":"Test 3"},{"Name":"Test 4"}]}', response.getBody());
     }
 
-    public class TestMock implements HttpCalloutMock {
-        public HttpResponse respond(HttpRequest request) {
-            HttpResponse res = new HttpResponse();
-            res.setStatusCode(200);
-            res.setBody('Apex Class Response');
-            return res;
-        }
+    @IsTest
+    static void shouldAllowBuildingResponseFromConfig() {
+        HttpRequest request = new HttpRequest();
+        request.setMethod('GET');
+        request.setEndpoint('callout:SF_API/query?q=SELECT+name+from+Account');
+
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, HttpMocks.config()
+            .overrideMock('SF_REST_Query', HttpMocks.config('SF_REST_Query')
+                .header('ApiVersion', 'v1')
+                .status(404, 'Not Found')
+            )
+        );
+        HttpResponse response = new Http().send(request);
+        Test.stopTest();
+
+
+        Assert.areEqual(404, response.getStatusCode());
+        Assert.areEqual('v1', response.getHeader('ApiVersion'));
     }
 }

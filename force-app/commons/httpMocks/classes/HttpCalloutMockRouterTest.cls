@@ -330,7 +330,7 @@ private class HttpCalloutMockRouterTest {
                 Methods__c = 'GET',
                 Endpoint__c = 'callout:SF_API/query\\?q=.*',
                 Type__c = 'Apex Class',
-                Response__c = 'HttpCalloutMockRouterTest.TestMock'
+                Response__c = '' + TestMock.class
             ))));
         HttpResponse response = new Http().send(request);
         Test.stopTest();

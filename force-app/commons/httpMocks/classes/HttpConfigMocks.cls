@@ -79,7 +79,12 @@ public with sharing class HttpConfigMocks {
                     response = mock.respond(request);
                 }
                 when 'Apex Class' {
-                    Type typeForName = Type.forName(config.Response__c);
+                    String[] className = config.Response__c.split('__');
+                    if (className.size() == 1) {
+                        className.add(0, '');
+                    }
+
+                    Type typeForName = Type.forName(className[0], className[1]);
                     HttpCalloutMock mock = (HttpCalloutMock) typeForName.newInstance();
                     response = mock.respond(request);
                 }

@@ -9,6 +9,7 @@ public virtual class HttpMockBuilder implements HttpCalloutMock {
     private String status;
     private String body;
     private Map<String, String> replacements = new Map<String, String>();
+    private Map<String, Object> jsonReplacements = new Map<String, Object>();
 
     public HttpMockBuilder() {}
 
@@ -61,8 +62,20 @@ public virtual class HttpMockBuilder implements HttpCalloutMock {
      * @param replacement Replacement
      * @return
      */
-    public HttpMockBuilder replaceInResponse(String target, String replacement) {
+    public HttpMockBuilder replaceInBody(String target, String replacement) {
         replacements.put(target, replacement);
+        return this;
+    }
+
+    /**
+     * Replaces a JSON node at the specified path with the provided object.
+     * The response body will be deserialized, modified, and serialized back.
+     * @param jsonPath The path to the JSON node to replace (e.g., '.data.records.[0].user.name')
+     * @param replacement The object to replace the node with
+     * @return
+     */
+    public HttpMockBuilder replaceInJSON(String jsonPath, Object replacement) {
+        jsonReplacements.put(jsonPath, replacement);
         return this;
     }
 
@@ -100,7 +113,57 @@ public virtual class HttpMockBuilder implements HttpCalloutMock {
             for (String target : replacements.keySet()) {
                 body = body.replace(target, replacements.get(target));
             }
+
+            if (!jsonReplacements.isEmpty()) {
+                Object jsonBody = JSON.deserializeUntyped(body);
+
+                for (String jsonPath : jsonReplacements.keySet()) {
+                    setValueAtPath(jsonBody, jsonPath, jsonReplacements.get(jsonPath));
+                }
+
+                body = JSON.serialize(jsonBody);
+            }
+
             response.setBody(body);
+        }
+    }
+
+    /**
+     * Sets a value at the specified JSON path in the provided map.
+     * @param jsonMap The JSON map to modify
+     * @param path The path to the node (e.g., '.data.users.[0].name')
+     * @param value The value to set at the path
+     */
+    private void setValueAtPath(Object jsonBody, String path, Object value) {
+        List<String> keys = path.split('\\.');
+        Object current = jsonBody;
+
+        for (Integer i = 0; i < keys.size(); i++) {
+            String key = keys[i].trim();
+            Boolean isLast = i == keys.size() - 1;
+
+            if (String.isNotBlank(key)) {
+                // Handle array index notation like 'items[0]'
+                if (key.contains('[') && key.contains(']')) {
+                    Integer arrayIndex = Integer.valueOf(key.substringBetween('[', ']'));
+                    List<Object> items = (List<Object>) current;
+
+                    if (isLast) {
+                        items[arrayIndex] = value;
+                    } else {
+                        current = items[arrayIndex];
+                    }
+
+                } else {
+                    Map<String, Object> item = (Map<String, Object>) current;
+
+                    if (isLast) {
+                        item.put(key, value);
+                    } else {
+                        current = item.get(key);
+                    }
+                }
+            }
         }
     }
 }

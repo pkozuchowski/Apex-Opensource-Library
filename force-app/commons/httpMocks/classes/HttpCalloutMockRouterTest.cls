@@ -72,7 +72,12 @@ private class HttpCalloutMockRouterTest {
                 Default__c = true,
                 Methods__c = 'GET',
                 Endpoint__c = 'callout:SF_API/query\\?q=.*',
-                Response__c = '{"records":["Name":"Test 1"},{"Name":"Test 2"}]}',
+                Response__c = '{ "totalSize": 2, ' +
+                    '"done": true, ' +
+                    '"records": [' +
+                    '{"Name": "Test 1"}, ' +
+                    '{"Name": "Test 2"}] }',
+
                 StatusCode__c = 200,
                 Status__c = 'OK',
                 Headers__c = 'Header1:Value1\n' +
@@ -266,7 +271,10 @@ private class HttpCalloutMockRouterTest {
 
 
         Assert.areEqual(200, response.getStatusCode());
-        Assert.areEqual('{"records":["Name":"Test 1"},{"Name":"Test 2"}]}', response.getBody());
+        Assert.areEqual(
+            '{ "totalSize": 2, "done": true, "records": [{"Name": "Test 1"}, {"Name": "Test 2"}] }',
+            response.getBody()
+        );
         Assert.areEqual('Value1', response.getHeader('Header1'));
         Assert.areEqual('Value2', response.getHeader('Header2'));
     }
@@ -340,10 +348,10 @@ private class HttpCalloutMockRouterTest {
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, HttpMocks.config()
-            .mutate()
+            .mutateResponse()
             .status(201, 'Created')
-            .replaceInResponse('Test 1', 'Test 3')
-            .replaceInResponse('Test 2', 'Test 4'));
+            .replaceInBody('Test 1', 'Test 3')
+            .replaceInBody('Test 2', 'Test 4'));
 
         HttpResponse response = new Http().send(request);
         Test.stopTest();
@@ -351,7 +359,7 @@ private class HttpCalloutMockRouterTest {
 
         Assert.areEqual(201, response.getStatusCode());
         Assert.areEqual('Created', response.getStatus());
-        Assert.areEqual('{"records":["Name":"Test 3"},{"Name":"Test 4"}]}', response.getBody());
+        Assert.areEqual('{ "totalSize": 2, "done": true, "records": [{"Name": "Test 3"}, {"Name": "Test 4"}] }', response.getBody());
     }
 
     @IsTest
@@ -374,5 +382,32 @@ private class HttpCalloutMockRouterTest {
 
         Assert.areEqual(404, response.getStatusCode());
         Assert.areEqual('v1', response.getHeader('ApiVersion'));
+    }
+
+    @IsTest
+    static void shouldReplaceJSONPartsByPath() {
+        HttpRequest request = new HttpRequest();
+        request.setMethod('GET');
+        request.setEndpoint('callout:SF_API/query?q=SELECT+name+from+Account');
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, HttpMocks.config()
+            .mutateResponse()
+            .replaceInBody('','')
+            .replaceInJSON('.totalSize', 1)
+            .replaceInJSON('.done', false)
+            .replaceInJSON('.records.[0].Name', 'Replacement')
+        );
+        HttpResponse response = new Http().send(request);
+        Test.stopTest();
+
+        System.debug(response.getBody());
+        Map<String, Object> responseJson = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
+        List<Object> items = (List<Object>) responseJson.get('records');
+        Map<String, Object> item = (Map<String, Object>) items[0];
+
+        Assert.areEqual(1, responseJson.get('totalSize'));
+        Assert.areEqual(false, responseJson.get('done'));
+        Assert.areEqual('Replacement', item.get('Name'));
     }
 }

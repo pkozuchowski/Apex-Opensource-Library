@@ -66,7 +66,7 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     /**
      * Mutates output Http Response with changes set on the builder.
      */
-    public HttpMockBuilder mutate() {
+    public HttpMockBuilder mutateResponse() {
         return new HttpMockBuilder(this);
     }
 

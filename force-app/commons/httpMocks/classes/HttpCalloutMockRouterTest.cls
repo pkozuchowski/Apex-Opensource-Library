@@ -19,29 +19,30 @@ private class HttpCalloutMockRouterTest {
 
         public SalesforceRestAPIMocks() {
             mock('Query', 'GET', 'callout:SF_API/query\\?q=.*',
-                HttpMocks.staticResource(200, 'OK', 'StaticResourceWithResponse'));
+                HttpMocks.staticResource(200, 'OK', 'StaticResourceWithResponse')
+            );
 
             mock('Create Account', 'POST', 'callout:SF_API/sobjects/Account/',
-                HttpMocks.json(201, 'Created', new CreateRecordResult(true)));
+                HttpMocks.json(201, 'Created', new CreateRecordResult(true))
+            );
 
             mock('Get Account', 'GET', 'callout:SF_API/sobjects/Account/.*',
                 HttpMocks.json(200, 'OK',
-                    new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME)));
+                    new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME))
+            );
 
             mock('Delete Account', 'DELETE', 'callout:SF_API/sobjects/Account/.*',
-                HttpMocks.response(204, 'No Content'));
-
-            mock('Delete Account', 'DELETE', 'callout:SF_API/sobjects/Account/.*',
-                HttpMocks.response(204, 'No Content'));
+                HttpMocks.response(204, 'No Content')
+            );
         }
     }
 
     private class AzureMocks extends HttpCalloutMockRouter {
         public AzureMocks() {
-            mock('Get Account',
-                'GET', 'callout:AWS/Account',
+            mock('Get Account', 'GET', 'callout:AWS/Account',
                 HttpMocks.response(200, 'OK')
-                    .body('{"name":"Test"}'));
+                    .body('{"name":"Test"}')
+            );
         }
     }
 

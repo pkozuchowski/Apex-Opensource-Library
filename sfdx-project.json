@@ -133,7 +133,7 @@
   ],
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "65.0",
+  "sourceApiVersion": "66.0",
   "packageAliases": {
     "Trigger Handler": "0Ho08000000CaS0CAK",
     "Trigger Handler@1.0.1-1": "04t08000000cSiXAAU",

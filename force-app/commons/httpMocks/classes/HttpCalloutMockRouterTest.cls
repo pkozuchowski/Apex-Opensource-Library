@@ -371,10 +371,7 @@ private class HttpCalloutMockRouterTest {
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, HttpMocks.config()
-            .overrideMock('SF_REST_Query', HttpMocks.config('SF_REST_Query')
-                .header('ApiVersion', 'v1')
-                .status(404, 'Not Found')
-            )
+            .overrideMock('SF_REST_Query', 'SF_REST_Query_Empty')
         );
         HttpResponse response = new Http().send(request);
         Test.stopTest();
@@ -393,7 +390,7 @@ private class HttpCalloutMockRouterTest {
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, HttpMocks.config()
             .mutateResponse()
-            .replaceInBody('','')
+            .replaceInBody('', '')
             .replaceInJSON('.totalSize', 1)
             .replaceInJSON('.done', false)
             .replaceInJSON('.records.[0].Name', 'Replacement')

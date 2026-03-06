@@ -12,8 +12,8 @@ public with sharing class HttpConfigMocks {
     private static Map<String, HttpCalloutMock__mdt> mocks = HttpCalloutMock__mdt.getAll();
 
     /**
-     * Mocks custom metadata records in tests.
-     */
+         * Mocks custom metadata records in tests.
+         */
     @TestVisible static void mock(List<HttpCalloutMock__mdt> mocks) {
         Map<String, HttpCalloutMock__mdt> mocksMap = new Map<String, HttpCalloutMock__mdt>();
         for (HttpCalloutMock__mdt mock : mocks) {
@@ -45,14 +45,14 @@ public with sharing class HttpConfigMocks {
     * Mock implementation that uses HttpCalloutMock__mdt custom metadata to configure HTTP responses.
     * Supports multiple response types: direct body content, static resources, or custom Apex class implementations.
     */
-    public virtual class ConfigMock implements HttpCalloutMock {
+    public virtual class ConfigMock extends HttpCalloutMockRouter.HttpMockEndpointMatcher {
         private HttpCalloutMock__mdt config;
 
         /**
          * Constructs a ConfigMock with the specified custom metadata configuration.
          */
         public ConfigMock(String customMetadataName) {
-            this.config = mocks.get(customMetadataName);
+            this(mocks.get(customMetadataName));
         }
 
         /**
@@ -60,6 +60,7 @@ public with sharing class HttpConfigMocks {
          * @param config The HttpCalloutMock__mdt record containing the mock response configuration
          */
         public ConfigMock(HttpCalloutMock__mdt config) {
+            super(config.Methods__c, config.Endpoint__c, config.MatchingHeader__c, null);
             this.config = config;
         }
 

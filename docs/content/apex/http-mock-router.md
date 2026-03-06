@@ -2,8 +2,8 @@
 *Configuration-driven, endpoint pattern-based router for Http Mocks.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/httpMocks)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LeQMIA0)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LeQMIA0)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04td2000000L9jRAAS)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04td2000000L9jRAAS)
 
 ```bash
 sf project deploy start -d force-app/commons/httpMocks -o sfdxOrg
@@ -38,7 +38,9 @@ public class SalesforceRestAPIMocks extends HttpCalloutMockRouter {
         );
 
         mock('Get Account', 'GET', 'callout:SF_API/sobjects/Account/.*',
-            HttpMocks.json(200, 'OK', new Account(Id = ACCOUNT_ID, Name = ACCOUNT_NAME))
+            HttpMocks.response(200, 'OK')
+                .header('X-API-Version', 'v1')
+                .body('{"success":true}')
         );
     }
 }
@@ -292,7 +294,6 @@ Convenience factory for creating HTTP mocks and accessing recorded requests/resp
 | `HttpCalloutMockRouter overrideMock(String name, HttpCalloutMock mock)`                                 | Replaces a named registered mock with another `HttpCalloutMock`. Throws if the named mock is not registered.                                           |
 | `HttpMockBuilder mutateResponse()`                                                                      | Creates a response builder layered on top of this router, allowing post-processing of routed responses.                                                |
 | `HttpResponse respond(HttpRequest request)`                                                             | Finds the first registered mock that can handle the request, invokes it, stores request/response, and returns the response. Throws if no mock matches. |
-| `virtual Boolean handles(HttpRequest request)`                                                          | Returns `true` if any registered child mock can handle the request.                                                                                    |
 
 ### HttpMockBuilder
 Fluent builder for constructing or mutating HTTP mock responses. Can operate standalone or wrap another `HttpCalloutMock`.
@@ -315,7 +316,7 @@ Fluent builder for constructing or mutating HTTP mock responses. Can operate sta
 - Removed Http Callout Mock Variable metadata from the package
 - Added fluent response builder
 - Added Mutation API
-- Added Body and JSON replacements mutations
+- Added Body and JSON replacements mutations.
 
 ### v1.2
 - Added apex class namespace to custom metadata class and updated API versions

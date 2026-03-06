@@ -85,13 +85,13 @@ private class HttpCalloutMockRouterTest {
                     'Header2:Value2'
             ),
             new HttpCalloutMock__mdt(
-                DeveloperName = 'SF_REST_Query_Empty',
+                DeveloperName = 'SF_REST_Not_Found',
                 Default__c = false,
                 Methods__c = 'GET',
                 Endpoint__c = 'callout:SF_API/query\\?q=.*',
-                Response__c = '{"records":[]}',
-                StatusCode__c = 200,
-                Status__c = 'OK'
+                Response__c = '',
+                StatusCode__c = 404,
+                Status__c = 'Not Found'
             ),
             new HttpCalloutMock__mdt(
                 DeveloperName = 'SF_REST_Query_Redirect',
@@ -372,14 +372,14 @@ private class HttpCalloutMockRouterTest {
 
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, HttpMocks.config()
-            .overrideMock('SF_REST_Query', 'SF_REST_Query_Empty')
+            .overrideMock('SF_REST_Query', 'SF_REST_Not_Found')
         );
         HttpResponse response = new Http().send(request);
         Test.stopTest();
 
 
         Assert.areEqual(404, response.getStatusCode());
-        Assert.areEqual('v1', response.getHeader('ApiVersion'));
+        Assert.areEqual('Not Found', response.getStatus());
     }
 
     @IsTest
@@ -391,6 +391,7 @@ private class HttpCalloutMockRouterTest {
         Test.startTest();
         Test.setMock(HttpCalloutMock.class, HttpMocks.config()
             .mutateResponse()
+            .header('apiVersion', 'v1')
             .replaceInBody('', '')
             .replaceInJSON('.totalSize', 1)
             .replaceInJSON('.done', false)
@@ -407,5 +408,57 @@ private class HttpCalloutMockRouterTest {
         Assert.areEqual(1, responseJson.get('totalSize'));
         Assert.areEqual(false, responseJson.get('done'));
         Assert.areEqual('Replacement', item.get('Name'));
+        Assert.areEqual('v1', response.getHeader('apiVersion'));
+    }
+
+    @IsTest
+    static void shouldThrowExceptionOnUnhandledRequest() {
+        try {
+            HttpRequest request = new HttpRequest();
+            request.setMethod('GET');
+            request.setEndpoint('callout:SF_API/none');
+
+
+            Test.startTest();
+            Test.setMock(HttpCalloutMock.class, HttpMocks.config()
+                .overrideMock('SF_REST_Query', 'SF_REST_Not_Found')
+            );
+            new Http().send(request);
+            Test.stopTest();
+
+            Assert.fail();
+        } catch (Exception e) {
+            Assert.isInstanceOfType(e, HttpCalloutMockRouter.HttpCalloutMockRouterException.class);
+        }
+    }
+
+    @IsTest
+    static void shouldUseStaticResourceMock() {
+        try {
+            HttpConfigMocks.mock(new List<HttpCalloutMock__mdt>{
+                new HttpCalloutMock__mdt(
+                    DeveloperName = 'SF_REST_StaticResource',
+                    Default__c = true,
+                    Methods__c = 'GET',
+                    Endpoint__c = 'callout:SF_API/static_resource',
+                    Type__c = 'Static Resource',
+                    Response__c = 'TEST_shouldUseStaticResourceMock',
+                    StatusCode__c = 200,
+                    Status__c = 'OK'
+                )
+            });
+
+            HttpRequest request = new HttpRequest();
+            request.setMethod('GET');
+            request.setEndpoint('callout:SF_API/static_resource');
+
+            Test.startTest();
+            Test.setMock(HttpCalloutMock.class, HttpMocks.config());
+            new Http().send(request);
+            Test.stopTest();
+
+        } catch (Exception e) {
+            Assert.isInstanceOfType(e, NullPointerException.class);
+        }
     }
 }

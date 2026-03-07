@@ -34,6 +34,7 @@ public with sharing class HttpConfigMocks {
                         mockMdt.DeveloperName,
                         mockMdt.Methods__c,
                         mockMdt.Endpoint__c,
+                        mockMdt.MatchingHeader__c,
                         new ConfigMock(mockMdt)
                     );
                 }
@@ -45,7 +46,7 @@ public with sharing class HttpConfigMocks {
     * Mock implementation that uses HttpCalloutMock__mdt custom metadata to configure HTTP responses.
     * Supports multiple response types: direct body content, static resources, or custom Apex class implementations.
     */
-    public virtual class ConfigMock extends HttpCalloutMockRouter.HttpMockEndpointMatcher {
+    public virtual class ConfigMock implements HttpCalloutMock{
         private HttpCalloutMock__mdt config;
 
         /**
@@ -60,7 +61,6 @@ public with sharing class HttpConfigMocks {
          * @param config The HttpCalloutMock__mdt record containing the mock response configuration
          */
         public ConfigMock(HttpCalloutMock__mdt config) {
-            super(config.Methods__c, config.Endpoint__c, config.MatchingHeader__c, null);
             this.config = config;
         }
 
@@ -92,7 +92,7 @@ public with sharing class HttpConfigMocks {
                 when else {
                     config = getFullConfig(config.DeveloperName);
                     response = new HttpResponse();
-                    response.setBody(config.Response__c);
+                    response.setBody(config.Response__c ?? '');
                 }
             }
 
@@ -124,7 +124,7 @@ public with sharing class HttpConfigMocks {
                 //Salesforce trims long texts to 255
                 return [
                     SELECT DeveloperName, Status__c, StatusCode__c,
-                        Type__c, Response__c, Headers__c
+                        MatchingHeader__c, Type__c, Response__c, Headers__c
                     FROM HttpCalloutMock__mdt
                     WHERE DeveloperName = :developerName
                     WITH USER_MODE

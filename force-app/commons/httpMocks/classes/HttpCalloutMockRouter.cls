@@ -24,8 +24,23 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     * @param endpointPattern Regexp pattern for endpoint
     * @param mock Mock to respond with
     * */
+    @SuppressWarnings('PMD.ExcessiveParameterList')
     public HttpCalloutMockRouter mock(String name, String methods, String endpointPattern, HttpCalloutMock mock) {
-        return mock(name, new HttpMockEndpointMatcher(methods, endpointPattern, mock));
+        return mock(name, methods, endpointPattern, '', mock);
+    }
+
+    /**
+    * Register HttpCalloutMock for given Http method and endpoint pattern.
+    * @param name Unique name of the mock, used to override the default mock in tests
+    * @param methods Comma separated list of methods ('GET,POST')
+    * @param endpointPattern Regexp pattern for endpoint
+    * @param matchingHeader Header to match against - can be left null or have 'Header: Value' format.
+    * @param mock Mock to respond with
+    * */
+    @SuppressWarnings('PMD.ExcessiveParameterList')
+    public HttpCalloutMockRouter mock(String name, String methods, String endpointPattern, String matchingHeader,
+        HttpCalloutMock mock) {
+        return mock(name, new HttpMockEndpointMatcher(methods, endpointPattern, matchingHeader, mock));
     }
 
     /**

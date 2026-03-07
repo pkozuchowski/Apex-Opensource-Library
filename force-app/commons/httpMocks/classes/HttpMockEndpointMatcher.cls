@@ -10,7 +10,7 @@
 public virtual with sharing class HttpMockEndpointMatcher implements HttpCalloutChainMock {
     private Pattern endpointPattern;
     private Set<String> methods;
-    private Map<String, String> matchingHeaders = new Map<String, String>();
+    private String matchingHeader;
     private HttpCalloutMock mock;
 
     /**
@@ -30,7 +30,7 @@ public virtual with sharing class HttpMockEndpointMatcher implements HttpCallout
         this.methods = new Set<String>(methods.toUpperCase().split(','));
         this.endpointPattern = Pattern.compile(endpointPattern);
         this.mock = mock;
-        this.matchingHeaders = matchingHeaders;
+        this.matchingHeader = matchingHeader;
     }
 
     public virtual Boolean handles(HttpRequest request) {
@@ -44,14 +44,13 @@ public virtual with sharing class HttpMockEndpointMatcher implements HttpCallout
     }
 
     private Boolean hasMatchingHeaders(HttpRequest request) {
-        if (!matchingHeaders.isEmpty()) {
-            Integer matchingHeaderCount = 0;
-            for (String expectedHeader : matchingHeaders.keySet()) {
-                if (request.getHeader(expectedHeader) == matchingHeaders.get(expectedHeader)) {
-                    matchingHeaderCount++;
-                }
-            }
-            return matchingHeaderCount == matchingHeaders.size();
+        if (String.isNotBlank(matchingHeader)) {
+            List<String> header = matchingHeader.split(':', 2);
+            String headerKey = header[0].trim();
+            String headerValue = header[1].trim();
+
+            return request.getHeader(headerKey) == headerValue
+                || (String.isBlank(headerValue) && request.getHeader(headerKey) == null);
         }
         return true;
     }

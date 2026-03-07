@@ -253,6 +253,7 @@ private class HttpCalloutMockRouterTest {
         try {
             new Http().send(request);
         } catch (Exception e) {
+            Assert.isInstanceOfType(e, NullPointerException.class);
         }
         Test.stopTest();
     }
@@ -400,7 +401,6 @@ private class HttpCalloutMockRouterTest {
         HttpResponse response = new Http().send(request);
         Test.stopTest();
 
-        System.debug(response.getBody());
         Map<String, Object> responseJson = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
         List<Object> items = (List<Object>) responseJson.get('records');
         Map<String, Object> item = (Map<String, Object>) items[0];
@@ -460,5 +460,45 @@ private class HttpCalloutMockRouterTest {
         } catch (Exception e) {
             Assert.isInstanceOfType(e, NullPointerException.class);
         }
+    }
+
+    @IsTest
+    static void shouldRouteBasedOnHeader() {
+        HttpConfigMocks.mock(new List<HttpCalloutMock__mdt>{
+            new HttpCalloutMock__mdt(
+                DeveloperName = 'SF_REST_Header_1',
+                Default__c = true,
+                Methods__c = 'GET',
+                Endpoint__c = 'callout:SF_API/header',
+                MatchingHeader__c = 'apiVersion:',
+                StatusCode__c = 200,
+                Status__c = 'OK'
+            ),
+            new HttpCalloutMock__mdt(
+                DeveloperName = 'SF_REST_Header_2',
+                Default__c = true,
+                Methods__c = 'GET',
+                Endpoint__c = 'callout:SF_API/header',
+                MatchingHeader__c = 'apiVersion: v1',
+                StatusCode__c = 201,
+                Status__c = 'Created'
+            )
+        });
+
+        HttpRequest request = new HttpRequest();
+        request.setMethod('GET');
+        request.setEndpoint('callout:SF_API/header');
+
+        Test.startTest();
+        Test.setMock(HttpCalloutMock.class, HttpMocks.config());
+        HttpResponse response1 = new Http().send(request);
+
+        request.setHeader('apiVersion', 'v1');
+        HttpResponse response2 = new Http().send(request);
+        Test.stopTest();
+
+
+        Assert.areEqual(200, response1.getStatusCode());
+        Assert.areEqual(201, response2.getStatusCode());
     }
 }

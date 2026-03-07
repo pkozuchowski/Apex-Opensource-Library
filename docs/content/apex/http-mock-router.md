@@ -14,7 +14,9 @@ sf project deploy start -d force-app/commons/httpMocks -o sfdxOrg
 The **HTTP Callout Mock Router** is a configuration-driven test framework that makes HTTP callout mocking
 predictable, scalable, and maintainable by routing HTTP requests to the correct mock based on:
 - **HTTP Method** – (`GET/POST/PUT/PATCH/DELETE or *`)
-- **Endpoint pattern** – (regex)
+- **Endpoint pattern** – (regex) Matches against the `HttpRequest.getEndpoint()` value.
+- **Matching Header** – (Optional) Matches against the value of a specific header. Useful when there integration bus is routing requests to different endpoints
+  based on the value of a header. This sometimes happens when the header indicates an API version.
 
 Mocks can be defined in custom metadata or programmatically in Apex and can be overridden and mutated as needed.
 
@@ -170,6 +172,7 @@ Key fields (what you typically fill in):
 - **Default__c**: whether it loads automatically as a default route
 - **Methods__c**: e.g. `"GET"` or `"GET,POST"` or `"*"`
 - **Endpoint__c**: regex pattern to match against `HttpRequest.getEndpoint()`
+- **MatchingHeader__c**: Optional header to match against. Format - `"Header: Value"`. Can be also blank: `"Header:"`.
 - **StatusCode__c** / **Status__c**
 - **Type__c**: one of:
     - `Plain Body`

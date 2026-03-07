@@ -502,6 +502,7 @@ Replaces a JSON node at a path after deserializing the response body.
 - Added fluent response builder
 - Added Mutation API
 - Added Body and JSON replacements mutations.
+- Added Header Matching
 
 ### v1.2
 - Added apex class namespace to custom metadata class and updated API versions

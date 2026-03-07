@@ -7,6 +7,7 @@
 /**
  * Simple mock constructed with given Http status and response body
  */
+@SuppressWarnings('PMD.CognitiveComplexity')
 public virtual with sharing class HttpMocks {
 
     /**

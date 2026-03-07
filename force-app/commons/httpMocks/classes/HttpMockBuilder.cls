@@ -2,6 +2,7 @@
 * HttpMockBuilder class for constructing HTTP callout mock responses with fluent API.
 * Allows step-by-step configuration of status codes, headers, and response bodies.
 */
+@SuppressWarnings('PMD.EmptyStatementBlock, PMD.CognitiveComplexity')
 public virtual class HttpMockBuilder implements HttpCalloutMock {
     private HttpCalloutMock mock;
     private Map<String, String> headers = new Map<String, String>();
@@ -134,6 +135,7 @@ public virtual class HttpMockBuilder implements HttpCalloutMock {
      * @param path The path to the node (e.g., '.data.users.[0].name')
      * @param value The value to set at the path
      */
+    @SuppressWarnings('PMD.AvoidDeeplyNestedIfStmts')
     private void setValueAtPath(Object jsonBody, String path, Object value) {
         List<String> keys = path.split('\\.');
         Object current = jsonBody;

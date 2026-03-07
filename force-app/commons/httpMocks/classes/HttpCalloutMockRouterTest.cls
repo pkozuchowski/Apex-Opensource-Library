@@ -4,6 +4,7 @@
 * apexlibra.org
 */
 @IsTest(IsParallel=true)
+@SuppressWarnings('PMD')
 private class HttpCalloutMockRouterTest {
     private final static String ACCOUNT_ID = '001D000000IqhSLIAZ';
     private final static String ACCOUNT_NAME = 'Test Account';

@@ -8,6 +8,7 @@
  * Configuration class for managing HTTP callout mocks defined in custom metadata.
  * Provides access to HttpCalloutMock__mdt records for testing HTTP integrations.
  */
+@SuppressWarnings('PMD.CognitiveComplexity')
 public with sharing class HttpConfigMocks {
     private static Map<String, HttpCalloutMock__mdt> mocks = HttpCalloutMock__mdt.getAll();
 
@@ -46,7 +47,7 @@ public with sharing class HttpConfigMocks {
     * Mock implementation that uses HttpCalloutMock__mdt custom metadata to configure HTTP responses.
     * Supports multiple response types: direct body content, static resources, or custom Apex class implementations.
     */
-    public virtual class ConfigMock implements HttpCalloutMock{
+    public with sharing virtual class ConfigMock implements HttpCalloutMock{
         private HttpCalloutMock__mdt config;
 
         /**

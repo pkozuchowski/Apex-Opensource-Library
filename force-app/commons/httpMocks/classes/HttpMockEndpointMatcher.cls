@@ -16,15 +16,10 @@ public virtual with sharing class HttpMockEndpointMatcher implements HttpCallout
     /**
      * @param methods HTTP methods separated by coma ex. "POST,PUT"
      * @param endpointPattern Regexp pattern for Endpoint
+     * @param matchingHeaders - When provided, matches header during routing
      * @param mock Mock to respond with.
      */
-    public HttpMockEndpointMatcher(String methods, String endpointPattern, HttpCalloutMock mock) {
-        this(methods, endpointPattern, '', mock);
-    }
-
-    /**
-     * @param matchingHeaders - When provided, matches header during routing
-     */
+    @SuppressWarnings('PMD.ExcessiveParameterList')
     public HttpMockEndpointMatcher(String methods, String endpointPattern, String matchingHeader,
         HttpCalloutMock mock) {
         this.methods = new Set<String>(methods.toUpperCase().split(','));

@@ -12,6 +12,7 @@ public interface HttpCalloutChainMock extends HttpCalloutMock {
 
     /**
      * This method checks if incoming request should be handled by this mock class.
+     * @return True, if mock can handle request.
      */
     Boolean handles(HttpRequest request);
 }

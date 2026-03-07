@@ -1,25 +1,7 @@
 /**
-* MIT License
-*
-* Copyright (c) 2018 Piotr Kożuchowski
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
+* SPDX-License-Identifier: MIT
+* Copyright 2018 Piotr Kożuchowski
+* apexlibra.org
 */
 
 /**
@@ -31,26 +13,8 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     public final static List<HttpRequest> REQUESTS = new List<HttpRequest>();
     public final static List<HttpResponse> RESPONSES = new List<HttpResponse>();
 
-    private Map<String, String> replacements = new Map<String, String>();
-    private Map<String, String> variables = new Map<String, String>();
     private Map<String, HttpCalloutChainMock> registeredMocks = new Map<String, HttpCalloutChainMock>();
     private Map<String, HttpCalloutMock> mocksOverrides = new Map<String, HttpCalloutMock>();
-
-
-    /**
-     * @return Loads Mocks from custom metadata
-     */
-    public HttpCalloutMockRouter loadConfiguration() {
-        variables(HttpMocksConfig.getVariables());
-
-        for (HttpCalloutMock__mdt mockMdt : HttpMocksConfig.getMocks()) {
-            if (mockMdt.Default__c) {
-                mock(mockMdt.DeveloperName, mockMdt.Methods__c, mockMdt.Endpoint__c, HttpMocks.config(mockMdt));
-            }
-        }
-
-        return this;
-    }
 
 
     /**
@@ -60,8 +24,23 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
     * @param endpointPattern Regexp pattern for endpoint
     * @param mock Mock to respond with
     * */
+    @SuppressWarnings('PMD.ExcessiveParameterList')
     public HttpCalloutMockRouter mock(String name, String methods, String endpointPattern, HttpCalloutMock mock) {
-        return mock(name, new HttpMockEndpointMatcher(methods, replaceVariables(endpointPattern), mock));
+        return mock(name, methods, endpointPattern, '', mock);
+    }
+
+    /**
+    * Register HttpCalloutMock for given Http method and endpoint pattern.
+    * @param name Unique name of the mock, used to override the default mock in tests
+    * @param methods Comma separated list of methods ('GET,POST')
+    * @param endpointPattern Regexp pattern for endpoint
+    * @param matchingHeader Header to match against - can be left null or have 'Header: Value' format.
+    * @param mock Mock to respond with
+    * */
+    @SuppressWarnings('PMD.ExcessiveParameterList')
+    public HttpCalloutMockRouter mock(String name, String methods, String endpointPattern, String matchingHeader,
+        HttpCalloutMock mock) {
+        return mock(name, new HttpMockEndpointMatcher(methods, endpointPattern, matchingHeader, mock));
     }
 
     /**
@@ -98,39 +77,12 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
         }
     }
 
-    /**
-     * Replaces each substring of a target string in response body
-     * with the specified literal replacement sequence replacement.
-     * @param target Text to replace
-     * @param replacement Replacement
-     * @return
-     */
-    public HttpCalloutMockRouter replaceInResponse(String target, String replacement) {
-        replacements.put(target, replacement);
-        return this;
-    }
-
 
     /**
-     * Registers regexp variable which will can be referenced in endpoint:
-     * <pre>
-     * router.variable('endpoint', 'https://api.sf.com/rest'); // Regexp for API endpoint
-     * router.variable('id', '([a-z0-9]{32}') // Regexp for external id
-     *
-     * router.registerStaticResourceMock('GET','{{endpoint}}/accounts/{{id}}', 200, 'OK', 'Mock_GetAccountResource');
-     * </pre>
-     *
-     * @param name Unique name of the mock, used to override the default mock in tests
-     * @param regexp Regexp of the variable
+     * Mutates output Http Response with changes set on the builder.
      */
-    public HttpCalloutMockRouter variable(String name, String regexp) {
-        variables.put(name, regexp);
-        return this;
-    }
-
-    public HttpCalloutMockRouter variables(Map<String, String> vars) {
-        variables.putAll(vars);
-        return this;
+    public HttpMockBuilder mutateResponse() {
+        return new HttpMockBuilder(this);
     }
 
 
@@ -146,7 +98,6 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
             if (mock.handles(request)) {
                 HttpCalloutMock respondent = mocksOverrides.get(name) ?? mock;
                 HttpResponse response = respondent.respond(request);
-                applyReplacements(response);
                 REQUESTS.add(request);
                 RESPONSES.add(response);
 
@@ -171,45 +122,6 @@ public virtual class HttpCalloutMockRouter implements HttpCalloutChainMock {
         return false;
     }
 
-
-    /**
-     * Replaces expression variables in endpoint
-     */
-    private String replaceVariables(String endpoint) {
-        String endpointWithVariables = endpoint;
-
-        for (String expressionName : variables.keySet()) {
-            String variable = '{{' + expressionName + '}}';
-            endpointWithVariables = endpointWithVariables.replace(variable, variables.get(expressionName));
-        }
-
-        return endpointWithVariables;
-    }
-
-    private void applyReplacements(HttpResponse response) {
-        String body = response.getBody();
-
-        if (String.isNotBlank(body)) {
-            for (String target : replacements.keySet()) {
-                body = body.replace(target, replacements.get(target));
-            }
-            response.setBody(body);
-        }
-
-        applyReplacementsInHeaders(response);
-    }
-
-    private void applyReplacementsInHeaders(HttpResponse response) {
-        for (String headerKey : response.getHeaderKeys()) {
-            String headerValue = response.getHeader(headerKey);
-            if (String.isNotBlank(headerValue)) {
-                for (String target : replacements.keySet()) {
-                    headerValue = headerValue.replace(target, replacements.get(target));
-                }
-                response.setHeader(headerKey, headerValue);
-            }
-        }
-    }
 
     public class HttpCalloutMockRouterException extends Exception {}
 }

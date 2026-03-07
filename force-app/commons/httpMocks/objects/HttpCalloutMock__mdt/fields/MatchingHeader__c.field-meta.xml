@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>StaticResource__c</fullName>
+    <fullName>MatchingHeader__c</fullName>
     <externalId>false</externalId>
     <fieldManageability>SubscriberControlled</fieldManageability>
-    <inlineHelpText>Alternative ot Response__c. If this is provided with Static Resource name, it&apos;s body will be used as response.</inlineHelpText>
-    <label>Static Resource</label>
+    <inlineHelpText>Routes response based on the value of this request header. Format - &quot;Header: Value&quot;</inlineHelpText>
+    <label>Matching Header</label>
     <length>255</length>
     <required>false</required>
     <type>Text</type>

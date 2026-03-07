@@ -137,6 +137,7 @@ nav:
             label: Http Mock Router
             description: Configuration-driven, endpoint pattern-based router for Http Mocks.
             image: "/img/http-router.jpg"
+            badge: Updated v2.1
             snippet: |
               Test.setMock(HttpCalloutMock.class, HttpMocks.config());
 

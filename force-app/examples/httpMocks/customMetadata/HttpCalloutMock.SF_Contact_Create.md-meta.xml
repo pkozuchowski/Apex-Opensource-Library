@@ -3,16 +3,12 @@
     <label>SF_Contact_Create</label>
     <protected>false</protected>
     <values>
-        <field>ApexClass__c</field>
-        <value xsi:nil="true"/>
-    </values>
-    <values>
         <field>Default__c</field>
         <value xsi:type="xsd:boolean">true</value>
     </values>
     <values>
         <field>Endpoint__c</field>
-        <value xsi:type="xsd:string">callout:SF_API/.*/sobjects/Contact</value>
+        <value xsi:type="xsd:string">callout:SF_API/sobjects/Contact</value>
     </values>
     <values>
         <field>Headers__c</field>
@@ -27,15 +23,15 @@
         <value xsi:type="xsd:string">{ &quot;id&quot;: &quot;0035g00000h1xyzAAA&quot;, &quot;success&quot;: true, &quot;errors&quot;: [] }</value>
     </values>
     <values>
-        <field>StaticResource__c</field>
-        <value xsi:nil="true"/>
-    </values>
-    <values>
         <field>StatusCode__c</field>
         <value xsi:type="xsd:double">201.0</value>
     </values>
     <values>
         <field>Status__c</field>
         <value xsi:type="xsd:string">Created</value>
+    </values>
+    <values>
+        <field>Type__c</field>
+        <value xsi:type="xsd:string">Plain Body</value>
     </values>
 </CustomMetadata>

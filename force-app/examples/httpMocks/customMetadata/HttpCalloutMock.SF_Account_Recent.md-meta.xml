@@ -3,16 +3,12 @@
     <label>SF_Account_Recent</label>
     <protected>false</protected>
     <values>
-        <field>ApexClass__c</field>
-        <value xsi:nil="true"/>
-    </values>
-    <values>
         <field>Default__c</field>
         <value xsi:type="xsd:boolean">true</value>
     </values>
     <values>
         <field>Endpoint__c</field>
-        <value xsi:type="xsd:string">callout:SF_API/.*/sobjects/Account/recent</value>
+        <value xsi:type="xsd:string">callout:SF_API/sobjects/Account/recent</value>
     </values>
     <values>
         <field>Headers__c</field>
@@ -27,15 +23,15 @@
         <value xsi:type="xsd:string">{ &quot;recentItems&quot;: [{&quot;Id&quot;: &quot;0015g00000h1abcAAA&quot;, &quot;Name&quot;: &quot;Acme Corporation&quot;}] }</value>
     </values>
     <values>
-        <field>StaticResource__c</field>
-        <value xsi:nil="true"/>
-    </values>
-    <values>
         <field>StatusCode__c</field>
         <value xsi:type="xsd:double">200.0</value>
     </values>
     <values>
         <field>Status__c</field>
         <value xsi:type="xsd:string">OK</value>
+    </values>
+    <values>
+        <field>Type__c</field>
+        <value xsi:type="xsd:string">Plain Body</value>
     </values>
 </CustomMetadata>

@@ -1,52 +1,52 @@
 /**
-* MIT License
-*
-* Copyright (c) 2019 Piotr Kożuchowski
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
+* SPDX-License-Identifier: MIT
+* Copyright 2018 Piotr Kożuchowski
+* apexlibra.org
 */
 
 /**
- * Routes HttpCalloutChainMock to given method and endpoint pattern.
- */
+* Routes HttpCalloutChainMock to given method and endpoint pattern.
+*/
 public virtual with sharing class HttpMockEndpointMatcher implements HttpCalloutChainMock {
     private Pattern endpointPattern;
     private Set<String> methods;
+    private String matchingHeader;
     private HttpCalloutMock mock;
 
     /**
      * @param methods HTTP methods separated by coma ex. "POST,PUT"
      * @param endpointPattern Regexp pattern for Endpoint
+     * @param matchingHeaders - When provided, matches header during routing
      * @param mock Mock to respond with.
      */
-    public HttpMockEndpointMatcher(String methods, String endpointPattern, HttpCalloutMock mock) {
+    @SuppressWarnings('PMD.ExcessiveParameterList')
+    public HttpMockEndpointMatcher(String methods, String endpointPattern, String matchingHeader,
+        HttpCalloutMock mock) {
         this.methods = new Set<String>(methods.toUpperCase().split(','));
         this.endpointPattern = Pattern.compile(endpointPattern);
         this.mock = mock;
+        this.matchingHeader = matchingHeader;
     }
 
     public virtual Boolean handles(HttpRequest request) {
         return (this.methods.contains('*') || this.methods.contains(request.getMethod().toUpperCase()))
-                && endpointPattern.matcher(request.getEndpoint()).matches();
+            && endpointPattern.matcher(request.getEndpoint()).matches()
+            && hasMatchingHeaders(request);
     }
 
     public virtual HttpResponse respond(HttpRequest request) {
         return mock.respond(request);
+    }
+
+    private Boolean hasMatchingHeaders(HttpRequest request) {
+        if (String.isNotBlank(matchingHeader)) {
+            List<String> header = matchingHeader.split(':', 2);
+            String headerKey = header[0].trim();
+            String headerValue = header[1].trim();
+
+            return request.getHeader(headerKey) == headerValue
+                || (String.isBlank(headerValue) && request.getHeader(headerKey) == null);
+        }
+        return true;
     }
 }

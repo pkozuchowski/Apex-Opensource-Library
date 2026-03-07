@@ -266,51 +266,233 @@ Result: tests become **short**, **consistent**, and **easy to review**.
 ---
 # Specification
 
-### HttpCalloutChainMock (interface)
+## HttpCalloutChainMock
+Extension of the standard `HttpCalloutMock` interface, with the additional `handles(HttpRequest request)` method.
+This is used in a **Chain of Responsibility** design pattern to check whether the mock should handle the request.
 
-| Signature                              | Description                                                                                                                                                                                              |
-|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Boolean handles(HttpRequest request)` | Determines whether the mock should handle the incoming HTTP request. Extends the standard `HttpCalloutMock` contract, so implementations also provide `respond(HttpRequest)` via the platform interface. |
+##### ➡️ handles(HttpRequest request)
+Determines whether the mock should handle the incoming HTTP request.
+Extends the standard `HttpCalloutMock` interface.
 
-### HttpMocks
+**Returns:** `Boolean` True if the mock should handle the request.
+
+
+## HttpMocks
 Convenience factory for creating HTTP mocks and accessing recorded requests/responses.
 
-| Signature                                                                                         | Description                                                                               |
-|---------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
-| `static List<HttpRequest> getRequests()`                                                          | Returns all handled requests recorded by the router.                                      |
-| `static List<HttpResponse> getResponses()`                                                        | Returns all responses recorded by the router.                                             |
-| `static HttpCalloutMockRouter config()`                                                           | Creates a router populated from default custom metadata mocks.                            |
-| `static HttpMockBuilder config(String customMetadataName)`                                        | Creates a builder backed by a specific metadata-defined mock, selected by developer name. |
-| `static HttpMockBuilder config(HttpCalloutMock__mdt customMetadata)`                              | Creates a builder backed by a provided metadata mock record.                              |
-| `static HttpMockBuilder response(Integer statusCode, String status)`                              | Creates a builder with the specified status only.                                         |
-| `static HttpMockBuilder response(Integer statusCode, String status, String body)`                 | Creates a builder with the specified status and raw body.                                 |
-| `static HttpMockBuilder json(Integer statusCode, String status, Object toSerialize)`              | Creates a builder with the specified status and JSON-serialized body.                     |
-| `static HttpMockBuilder staticResource(Integer statusCode, String status, String staticResource)` | Creates a builder backed by a `StaticResourceCalloutMock`.                                |
+##### ➡️ static getRequests()
+**Returns:** `List<HttpRequest>` – All handled requests recorded by the framework.
 
-### HttpCalloutMockRouter
 
-| Signature                                                                                               | Description                                                                                                                                            |
-|---------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `HttpCalloutMockRouter mock(String name, String methods, String endpointPattern, HttpCalloutMock mock)` | Registers a mock for a given HTTP method list and endpoint regex. Internally wraps it in an endpoint matcher.                                          |
-| `HttpCalloutMockRouter mock(String name, HttpCalloutChainMock handler)`                                 | Registers a chain-aware mock handler under a unique name.                                                                                              |
-| `HttpCalloutMockRouter overrideMock(String name, String overrideMetadataName)`                          | Replaces a named registered mock with one loaded from custom metadata.                                                                                 |
-| `HttpCalloutMockRouter overrideMock(String name, HttpCalloutMock mock)`                                 | Replaces a named registered mock with another `HttpCalloutMock`. Throws if the named mock is not registered.                                           |
-| `HttpMockBuilder mutateResponse()`                                                                      | Creates a response builder layered on top of this router, allowing post-processing of routed responses.                                                |
-| `HttpResponse respond(HttpRequest request)`                                                             | Finds the first registered mock that can handle the request, invokes it, stores request/response, and returns the response. Throws if no mock matches. |
+##### ➡️ static getResponses()
+**Returns:** `List<HttpResponse>` – All responses recorded by the framework.
 
-### HttpMockBuilder
+
+##### ➡️ static config()
+Creates a router populated from default custom metadata mocks.
+
+**Returns:** `HttpCalloutMockRouter` – Config based router.
+
+
+##### ➡️ static config(String customMetadataName)
+Creates a mock from a specific metadata-defined mock, selected by developer name.
+
+**Parameters:**
+- `customMetadataName` – Developer name of the metadata-defined mock
+
+**Returns:** `HttpMockBuilder`
+
+
+##### ➡️ static config(HttpCalloutMock__mdt customMetadata)
+Creates a mock from a specific metadata-defined mock record.
+
+**Parameters:**
+- `customMetadata` – Metadata mock record
+
+**Returns:** `HttpMockBuilder`
+
+
+##### ➡️ static response(Integer statusCode, String status)
+Creates a mock builder with the specified status only. Can be further customized through fluent builder.
+
+**Parameters:**
+- `statusCode` – HTTP status code
+- `status` – HTTP status text
+
+**Returns:** `HttpMockBuilder`
+
+
+##### ➡️ static response(Integer statusCode, String status, String body)
+Shorthand method for mocking response with plain text body. Can be further customized through fluent builder.
+
+**Parameters:**
+- `statusCode` – HTTP status code
+- `status` – HTTP status text
+- `body` – Raw response body
+
+**Returns:** `HttpMockBuilder`
+
+
+##### ➡️ static json(Integer statusCode, String status, Object toSerialize)
+Shorthand method for mocking response with JSON body. Can be further customized through fluent builder.
+
+**Parameters:**
+- `statusCode` – HTTP status code
+- `status` – HTTP status text
+- `toSerialize` – Object to serialize as JSON
+
+**Returns:** `HttpMockBuilder`
+
+
+##### ➡️ static staticResource(Integer statusCode, String status, String staticResource)
+Shorthand method for mocking response with Static Resource body. Can be further customized through fluent builder.
+
+**Parameters:**
+- `statusCode` – HTTP status code
+- `status` – HTTP status text
+- `staticResource` – Name of the static resource
+
+**Returns:** `HttpMockBuilder`
+
+
+
+## HttpCalloutMockRouter
+Mock Router for registering and routing HTTP callout mocks based on endpoint patterns, methods, and headers.
+
+##### ➡️ mock(String name, String methods, String endpointPattern, HttpCalloutMock mock)
+Registers a mock for a given HTTP method list and endpoint regex. Internally wraps it in an endpoint matcher.
+
+**Parameters:**
+- `name` – Unique name for the mock
+- `methods` – Comma-separated HTTP methods or `*` for all
+- `endpointPattern` – Regex pattern to match against endpoint
+- `mock` – The mock to register
+
+**Returns:** `HttpCalloutMockRouter` – The router instance for chaining.
+
+
+##### ➡️ mock(String name, HttpCalloutChainMock handler)
+Registers a chain-aware mock handler under a unique name.
+
+**Parameters:**
+- `name` – Unique name for the mock
+- `handler` – The chain-aware mock handler
+
+**Returns:** `HttpCalloutMockRouter` – The router instance for chaining.
+
+
+##### ➡️ overrideMock(String name, String overrideMetadataName)
+Replaces a named registered mock with one loaded from custom metadata. Throws exception if the named mock is not registered.
+
+**Parameters:**
+- `name` – Name of the mock to override
+- `overrideMetadataName` – Developer name of the metadata mock to use
+
+**Returns:** `HttpCalloutMockRouter` – The router instance for chaining.
+
+
+##### ➡️ overrideMock(String name, HttpCalloutMock mock)
+Replaces a named registered mock with another `HttpCalloutMock`. Throws exception if the named mock is not registered.
+
+**Parameters:**
+- `name` – Name of the mock to override
+- `mock` – The new mock to use
+
+**Returns:** `HttpCalloutMockRouter` – The router instance for chaining
+
+
+##### ➡️ mutateResponse()
+Creates a response builder layered on top of this router, allowing post-processing of resulting responses.
+
+**Returns:** `HttpMockBuilder` – Builder for mutating responses
+
+
+##### ➡️ respond(HttpRequest request)
+Finds the first registered mock that can handle the request, invokes it, stores request/response, and returns the response.
+Throws exception if no mock matches.
+
+**Parameters:**
+- `request` – The HTTP request to handle
+
+**Returns:** `HttpResponse` – The mock response
+
+
+
+## HttpMockBuilder
 Fluent builder for constructing or mutating HTTP mock responses. Can operate standalone or wrap another `HttpCalloutMock`.
 
-| Signature                                                            | Description                                                           |
-|----------------------------------------------------------------------|-----------------------------------------------------------------------|
-| `HttpMockBuilder()`                                                  | Creates an empty builder.                                             |
-| `HttpMockBuilder(HttpCalloutMock mock)`                              | Creates a builder that decorates an existing mock.                    |
-| `HttpMockBuilder status(Integer statusCode, String status)`          | Sets the HTTP status code and status text.                            |
-| `HttpMockBuilder header(String key, String value)`                   | Adds or replaces a response header.                                   |
-| `HttpMockBuilder body(String body)`                                  | Sets the raw response body.                                           |
-| `HttpMockBuilder json(Object toSerialize)`                           | Serializes an object to JSON and uses it as the response body.        |
-| `HttpMockBuilder replaceInBody(String target, String replacement)`   | Registers a plain string replacement to apply to the response body.   |
-| `HttpMockBuilder replaceInJSON(String jsonPath, Object replacement)` | Replaces a JSON node at a path after deserializing the response body. |
+##### ➡️ HttpMockBuilder()
+Creates an empty builder.
+
+**Returns:** `HttpMockBuilder` – New builder instance
+
+
+##### ➡️ HttpMockBuilder(HttpCalloutMock mock)
+Creates a mock builder that decorates an existing mock.
+
+**Parameters:**
+- `mock` – Existing mock to decorate
+
+**Returns:** `HttpMockBuilder` – New builder instance
+
+
+##### ➡️ status(Integer statusCode, String status)
+Sets the HTTP status code and status text.
+
+**Parameters:**
+- `statusCode` – HTTP status code
+- `status` – HTTP status text
+
+**Returns:** `HttpMockBuilder` – The builder instance for chaining
+
+
+##### ➡️ header(String key, String value)
+Adds or replaces a response header.
+
+**Parameters:**
+- `key` – Header name
+- `value` – Header value
+
+**Returns:** `HttpMockBuilder` – The builder instance for chaining
+
+
+##### ➡️ body(String body)
+Sets the raw response body.
+
+**Parameters:**
+- `body` – Raw response body
+
+**Returns:** `HttpMockBuilder` – The builder instance for chaining
+
+
+##### ➡️ json(Object toSerialize)
+Serializes an object to JSON and uses it as the response body.
+
+**Parameters:**
+- `toSerialize` – Object to serialize as JSON
+
+**Returns:** `HttpMockBuilder` – The builder instance for chaining
+
+
+##### ➡️ replaceInBody(String target, String replacement)
+Registers a plain string replacement to apply to the response body.
+
+**Parameters:**
+- `target` – String to find in body
+- `replacement` – String to replace with
+
+**Returns:** `HttpMockBuilder` – The builder instance for chaining
+
+
+##### ➡️ replaceInJSON(String jsonPath, Object replacement)
+Replaces a JSON node at a path after deserializing the response body.
+
+**Parameters:**
+- `jsonPath` – JSON path to the node. Examples – `".records.[0].Name"`, `".[0].Name"`
+- `replacement` – New value for the node. This can be any object we can serialize to JSON.
+
+**Returns:** `HttpMockBuilder` – The builder instance for chaining
+
 
 ---
 # Change Log

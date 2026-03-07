@@ -2,8 +2,8 @@
 *Configuration-driven, endpoint pattern-based router for Http Mocks.*
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/httpMocks)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04td2000000L9jRAAS)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04td2000000L9jRAAS)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04td2000000LAE5AAO)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04td2000000LAE5AAO)
 
 ```bash
 sf project deploy start -d force-app/commons/httpMocks -o sfdxOrg

@@ -81,8 +81,8 @@
     {
       "path": "./force-app/commons/httpMocks",
       "package": "HttpMockRouter",
-      "versionName": "ver 2.0",
-      "versionNumber": "2.0.1.NEXT",
+      "versionName": "ver 2.1",
+      "versionNumber": "2.1.0.NEXT",
       "default": false,
       "versionDescription": "New iteration of the HTTP Mock Router. Refactored and extended with Mutation API."
     },
@@ -196,6 +196,7 @@
     "HttpMockRouter@1.2.0-1": "04tJ6000000LeQMIA0",
     "HttpMockRouter@1.3.0-1": "04tJ6000000Luh9IAC",
     "HttpMockRouter@2.0.1-1": "04td2000000L9jRAAS",
+    "HttpMockRouter@2.1.0-1": "04td2000000LAE5AAO",
     "TestDataBuilder": "0Ho08000000CaSeCAK",
     "TestDataBuilder@1.0.0-1": "04t08000000ga9dAAA",
     "TestDataBuilder@1.1.0-1": "04tJ6000000LYthIAG",

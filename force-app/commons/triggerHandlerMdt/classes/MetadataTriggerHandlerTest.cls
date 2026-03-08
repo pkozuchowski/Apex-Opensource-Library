@@ -15,7 +15,7 @@ public class MetadataTriggerHandlerTest {
         new Account(Id = '001000000000002', Name = 'Test 3', BillingCountry = COUNTRY_USA)
     };
 
-    public class AccountShippingCountryFiller implements TriggerAction {
+    public class AccountShippingCountryFiller implements TriggerHandler.Action {
         public void execute(List<Account> records, TriggerContext ctx) {
             for (Account acc : records) {
                 if (ctx.isNew() && String.isBlank(acc.ShippingCountry)) {
@@ -25,26 +25,26 @@ public class MetadataTriggerHandlerTest {
         }
     }
 
-    public class AccountPopulateFields implements TriggerAction {
+    public class AccountPopulateFields implements TriggerHandler.Action {
         public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
     }
 
-    public class AccountValidate implements TriggerAction {
+    public class AccountValidate implements TriggerHandler.Action {
         public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
     }
 
-    public class AccountLinkContacts implements TriggerAction {
+    public class AccountLinkContacts implements TriggerHandler.Action {
         public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
     }
 
-    public class AccountPreventMoreThanOneContact implements TriggerAction {
+    public class AccountPreventMoreThanOneContact implements TriggerHandler.Action {
         public void execute(List<SObject> triggerNew, TriggerContext ctx) {}
     }
 
     /**
      * Example of TriggerAction class which can be parametrized through custom metadata.
      */
-    public class ParameterizableAction implements TriggerAction {
+    public class ParameterizableAction implements TriggerHandler.Action {
         private String parameterName;
 
         public void execute(List<SObject> records, TriggerContext ctx) {

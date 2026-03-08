@@ -38,16 +38,16 @@ public class TriggerHandlerTest {
             ctx.setSharedState(new SharedAccountData(triggerNew));
         }
 
-        public override List<TriggerAction> beforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
-            return new List<TriggerAction>{
+        public override List<TriggerHandler.Action> beforeUpdate(List<SObject> triggerNew, TriggerContext tc) {
+            return new List<TriggerHandler.Action>{
                 new TestAccountAddressPopulator()
             };
         }
 
-        protected override List<TriggerAction> afterUpdate(List<SObject> triggerNew, TriggerContext ctx) {
+        protected override List<TriggerHandler.Action> afterUpdate(List<SObject> triggerNew, TriggerContext ctx) {
             Assert.isNotNull(ctx.getSharedState());
 
-            return new List<TriggerAction>{
+            return new List<TriggerHandler.Action>{
                 new TestContactUpdater()
             };
         }
@@ -59,14 +59,14 @@ public class TriggerHandlerTest {
             ctx.setSharedState(123);
         }
 
-        public override List<TriggerAction> beforeUpdate(List<SObject> triggerNew, TriggerContext ctx) {
+        public override List<TriggerHandler.Action> beforeUpdate(List<SObject> triggerNew, TriggerContext ctx) {
             Assert.areEqual(123, ctx.getSharedState());
-            return new List<TriggerAction>{};
+            return new List<TriggerHandler.Action>{};
         }
 
-        protected override List<TriggerAction> afterUpdate(List<SObject> triggerNew, TriggerContext ctx) {
+        protected override List<TriggerHandler.Action> afterUpdate(List<SObject> triggerNew, TriggerContext ctx) {
             Assert.areEqual(123, ctx.getSharedState());
-            return new List<TriggerAction>{};
+            return new List<TriggerHandler.Action>{};
         }
     }
 
@@ -74,7 +74,7 @@ public class TriggerHandlerTest {
     /**
      * Emulation of Trigger logic class
      */
-    public class TestAccountAddressPopulator implements TriggerAction {
+    public class TestAccountAddressPopulator implements TriggerHandler.Action {
         public void execute(List<Account> records, TriggerContext ctx) {
             for (Account acc : (Account[]) records) {
                 if (String.isBlank(acc.BillingCountry)) {
@@ -94,7 +94,7 @@ public class TriggerHandlerTest {
         }
     }
 
-    public class TestContactUpdater implements TriggerAction {
+    public class TestContactUpdater implements TriggerHandler.Action {
         public void execute(List<SObject> records, TriggerContext ctx) {
             SharedAccountData sharedData = (SharedAccountData) ctx.getSharedState();
             Assert.isNotNull(sharedData);
@@ -337,7 +337,7 @@ public class TriggerHandlerTest {
         }
     }
 
-    public class TestTriggerExceptionHandler implements TriggerExceptionHandler {
+    public class TestTriggerExceptionHandler implements TriggerHandler.ExceptionHandler {
         public Exception handledException;
 
         public void onException(List<SObject> records, TriggerContext ctx, Exception ex) {
@@ -345,15 +345,15 @@ public class TriggerHandlerTest {
         }
     }
 
-    public class TestFailingAction implements TriggerAction {
+    public class TestFailingAction implements TriggerHandler.Action {
         public void execute(List<SObject> records, TriggerContext ctx) {
-            throw new DmlException('Simulated exception in TriggerAction');
+            throw new DmlException('Simulated exception in TriggerHandler.Action');
         }
     }
 
     public class TestFailingHandler extends TriggerHandler {
-        public override List<TriggerAction> afterUpdate(List<SObject> triggerNew, TriggerContext tc) {
-            return new List<TriggerAction>{
+        public override List<TriggerHandler.Action> afterUpdate(List<SObject> triggerNew, TriggerContext tc) {
+            return new List<TriggerHandler.Action>{
                 new TestFailingAction()
             };
         }
@@ -373,7 +373,7 @@ public class TriggerHandlerTest {
         };
         TriggerContext tc = new TriggerContext(TriggerOperation.AFTER_UPDATE, accounts, accounts);
         TestTriggerExceptionHandler testExHandler = new TestTriggerExceptionHandler();
-        TriggerHandler.exceptionHandlers = new List<TriggerExceptionHandler>{testExHandler};
+        TriggerHandler.exceptionHandlers = new List<TriggerHandler.ExceptionHandler>{testExHandler};
 
         Test.startTest();
         try {
@@ -386,7 +386,7 @@ public class TriggerHandlerTest {
 
 
         Assert.isNotNull(testExHandler.handledException);
-        Assert.areEqual('Simulated exception in TriggerAction', testExHandler.handledException.getMessage());
+        Assert.areEqual('Simulated exception in TriggerHandler.Action', testExHandler.handledException.getMessage());
     }
 
     @IsTest

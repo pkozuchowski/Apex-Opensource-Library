@@ -34,7 +34,7 @@ public virtual with sharing class MetadataTriggerHandler extends TriggerHandler 
      * Executes metadata defined trigger actions for non-standard operation types (init, finalize)
      */
     private void execute(String type, List<SObject> triggerNew, TriggerContext ctx) {
-        List<TriggerAction> triggerActions = getMetadataActions(ctx, type);
+        List<TriggerHandler.Action> triggerActions = getMetadataActions(ctx, type);
         executeActions(triggerActions, triggerNew, ctx);
     }
 
@@ -42,7 +42,7 @@ public virtual with sharing class MetadataTriggerHandler extends TriggerHandler 
      * Overrides TriggerHandler method to ignore actions returned from beforeInsert, afterInsert etc.
      * Instead retrieves trigger actions for the current operation type from custom metadata.
      */
-    protected override List<TriggerAction> getActions(TriggerContext ctx) {
+    protected override List<TriggerHandler.Action> getActions(TriggerContext ctx) {
         return getMetadataActions(ctx, ctx.operationType.name());
     }
 
@@ -53,8 +53,8 @@ public virtual with sharing class MetadataTriggerHandler extends TriggerHandler 
      * @param operationType Operation type name: INITIALIZE, BEFORE_INSERT, AFTER_INSERT, etc.
      * @return List of trigger action instances that should be executed for this trigger operation
      */
-    private List<TriggerAction> getMetadataActions(TriggerContext ctx, String operationType) {
-        List<TriggerAction> classes = new List<TriggerAction>();
+    private List<TriggerHandler.Action> getMetadataActions(TriggerContext ctx, String operationType) {
+        List<TriggerHandler.Action> classes = new List<TriggerHandler.Action>();
         TriggerSetting__mdt[] triggerSettings = getTriggerSettings(ctx, operationType);
 
         for (Integer i = 0; i < triggerSettings.size(); i++) {
@@ -64,7 +64,7 @@ public virtual with sharing class MetadataTriggerHandler extends TriggerHandler 
                 List<TriggerAction__mdt> actions = getTriggerActions(setting);
 
                 for (Integer j = 0; j < actions.size(); j++) {
-                    TriggerAction action = getActionInstance(actions[j]);
+                    TriggerHandler.Action action = getActionInstance(actions[j]);
                     if (action != null) {
                         classes.add(action);
                     }
@@ -107,11 +107,11 @@ public virtual with sharing class MetadataTriggerHandler extends TriggerHandler 
     /**
      * Creates instance of TriggerAction defined in custom metadata and returns it.
      */
-    private TriggerAction getActionInstance(TriggerAction__mdt actionMdt) {
+    private TriggerHandler.Action getActionInstance(TriggerAction__mdt actionMdt) {
         try {
             if (isPermitted(actionMdt.BypassPermission__c, actionMdt.RequiredPermission__c)) {
                 Type actionClass = Type.forName(actionMdt.NamespacePrefix, actionMdt.ApexClass__c);
-                return (TriggerAction) JSON.deserialize(actionMdt.Parameters__c ?? '{}', actionClass);
+                return (TriggerHandler.Action) JSON.deserialize(actionMdt.Parameters__c ?? '{}', actionClass);
             }
             return null;
         } catch (Exception ex) {

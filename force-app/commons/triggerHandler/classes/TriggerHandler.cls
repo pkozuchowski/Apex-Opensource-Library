@@ -24,7 +24,40 @@ public virtual inherited sharing class TriggerHandler {
     private static Map<Integer, Object> sharedStates = new Map<Integer, Object>();
 
     @TestVisible
-    private static List<TriggerExceptionHandler> exceptionHandlers;
+    private static List<ExceptionHandler> exceptionHandlers;
+
+    /**
+     * Interface for implementing reusable trigger logic that can be executed by TriggerHandler.
+     *
+     * Classes implementing this interface encapsulate specific business logic that should be executed
+     * during trigger execution. This promotes modularity and reusability of trigger logic across
+     * different trigger contexts and SObject types.
+     */
+    public virtual interface Action {
+
+        /**
+         * Execute the action against the provided records and trigger context.
+         *
+         * @param records the list of SObject records currently being processed
+         *                   by the trigger (may be the "new" values for insert/update)
+         * @param ctx the {@link TriggerContext} containing trigger metadata, old/new
+         *            maps and execution state
+         */
+        void execute(List<SObject> records, TriggerContext ctx);
+    }
+
+
+    /**
+     * Interface for handling exceptions that occur during trigger processing.
+     * Implement this interface to define custom behavior when exceptions are thrown
+     * in trigger handlers.
+     *
+     * Framework will query all implementations of this interface and invoke the
+     * onException method when an exception occurs.
+     */
+    public interface ExceptionHandler {
+        void onException(List<SObject> records, TriggerContext ctx, Exception ex);
+    }
 
     /**
      * Initialization method called at the start of trigger processing.
@@ -43,8 +76,8 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute before insert
      */
-    protected virtual List<TriggerAction> beforeInsert(List<SObject> triggerNew, TriggerContext ctx) {
-        return new List<TriggerAction>();
+    protected virtual List<Action> beforeInsert(List<SObject> triggerNew, TriggerContext ctx) {
+        return new List<Action>();
     }
 
     /**
@@ -55,8 +88,8 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute after insert
      */
-    protected virtual List<TriggerAction> afterInsert(List<SObject> triggerNew, TriggerContext ctx) {
-        return new List<TriggerAction>();
+    protected virtual List<Action> afterInsert(List<SObject> triggerNew, TriggerContext ctx) {
+        return new List<Action>();
     }
 
     /**
@@ -67,8 +100,8 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute before update
      */
-    protected virtual List<TriggerAction> beforeUpdate(List<SObject> triggerNew, TriggerContext ctx) {
-        return new List<TriggerAction>();
+    protected virtual List<Action> beforeUpdate(List<SObject> triggerNew, TriggerContext ctx) {
+        return new List<Action>();
     }
 
     /**
@@ -79,8 +112,8 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute after update
      */
-    protected virtual List<TriggerAction> afterUpdate(List<SObject> triggerNew, TriggerContext ctx) {
-        return new List<TriggerAction>();
+    protected virtual List<Action> afterUpdate(List<SObject> triggerNew, TriggerContext ctx) {
+        return new List<Action>();
     }
 
     /**
@@ -91,8 +124,8 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute before delete
      */
-    protected virtual List<TriggerAction> beforeDelete(List<SObject> triggerOld, TriggerContext ctx) {
-        return new List<TriggerAction>();
+    protected virtual List<Action> beforeDelete(List<SObject> triggerOld, TriggerContext ctx) {
+        return new List<Action>();
     }
 
     /**
@@ -103,8 +136,8 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute after delete
      */
-    protected virtual List<TriggerAction> afterDelete(List<SObject> triggerOld, TriggerContext ctx) {
-        return new List<TriggerAction>();
+    protected virtual List<Action> afterDelete(List<SObject> triggerOld, TriggerContext ctx) {
+        return new List<Action>();
     }
 
     /**
@@ -115,8 +148,8 @@ public virtual inherited sharing class TriggerHandler {
      *
      * @return List of actions to execute after undelete
      */
-    protected virtual List<TriggerAction> afterUndelete(List<SObject> triggerNew, TriggerContext ctx) {
-        return new List<TriggerAction>();
+    protected virtual List<Action> afterUndelete(List<SObject> triggerNew, TriggerContext ctx) {
+        return new List<Action>();
     }
 
     /**
@@ -169,7 +202,7 @@ public virtual inherited sharing class TriggerHandler {
                     ctx.setSharedState(sharedStates.get(stackDepth));
                 }
 
-                List<TriggerAction> triggerActions = getActions(ctx);
+                List<Action> triggerActions = getActions(ctx);
                 executeActions(triggerActions, records, ctx);
 
                 if (ctx.isAfter) {
@@ -193,7 +226,7 @@ public virtual inherited sharing class TriggerHandler {
     }
 
     /** Returns list of Trigger Actions to be executed for given Trigger Context */
-    protected virtual List<TriggerAction> getActions(TriggerContext ctx) {
+    protected virtual List<Action> getActions(TriggerContext ctx) {
         List<SObject> records = ctx.getRecords();
 
         switch on ctx.operationType {
@@ -219,12 +252,12 @@ public virtual inherited sharing class TriggerHandler {
                 return afterUndelete(records, ctx);
             }
         }
-        return new List<TriggerAction>();
+        return new List<Action>();
     }
 
-    protected void executeActions(List<TriggerAction> triggerActions, List<SObject> records, TriggerContext ctx) {
+    protected void executeActions(List<Action> triggerActions, List<SObject> records, TriggerContext ctx) {
         for (Integer i = 0; i < triggerActions.size(); i++) {
-            TriggerAction action = triggerActions[i];
+            Action action = triggerActions[i];
             String actionName = getActionName(action);
 
             if (TriggerSettings.isActionEnabled(actionName)) {
@@ -236,28 +269,28 @@ public virtual inherited sharing class TriggerHandler {
 
     /** Invokes all registered Trigger Exception Handlers */
     private void handleException(List<SObject> records, TriggerContext ctx, Exception ex) {
-        for (TriggerExceptionHandler handler : getExceptionHandlers()) {
+        for (ExceptionHandler handler : getExceptionHandlers()) {
             handler?.onException(records, ctx, ex);
         }
     }
 
     /**
-     * Returns a list of initialized TriggerExceptionHandlers for handling exceptions during trigger execution.
+     * Returns a list of initialized TriggerHandler.ExceptionHandlers for handling exceptions during trigger execution.
      *
-     * This method queries for and initializes concrete implementations of the TriggerExceptionHandler
+     * This method queries for and initializes concrete implementations of the TriggerHandler.ExceptionHandler
      * interface. The handlers are cached after first initialization to avoid repeated queries.
      *
-     * @return List of initialized TriggerExceptionHandler instances
+     * @return List of initialized TriggerHandler.ExceptionHandler instances
      */
-    private List<TriggerExceptionHandler> getExceptionHandlers() {
+    private List<ExceptionHandler> getExceptionHandlers() {
         if (exceptionHandlers != null) {
             return exceptionHandlers;
         } else {
-            exceptionHandlers = new List<TriggerExceptionHandler>();
+            exceptionHandlers = new List<ExceptionHandler>();
             List<ApexTypeImplementor> handlers = [
                 SELECT ClassName
                 FROM ApexTypeImplementor
-                WHERE InterfaceName = 'TriggerExceptionHandler'
+                WHERE InterfaceName = 'TriggerHandler.ExceptionHandler'
                 AND IsConcrete = TRUE
                 WITH SYSTEM_MODE
             ];
@@ -265,9 +298,9 @@ public virtual inherited sharing class TriggerHandler {
             for (ApexTypeImplementor implementor : handlers) {
                 try {
                     Type handlerType = Type.forName(implementor.ClassName);
-                    exceptionHandlers.add((TriggerExceptionHandler) handlerType?.newInstance());
+                    exceptionHandlers.add((ExceptionHandler) handlerType?.newInstance());
                 } catch (Exception e) {
-                    System.debug(LoggingLevel.ERROR, 'Failed to initialize TriggerExceptionHandler');
+                    System.debug(LoggingLevel.ERROR, 'Failed to initialize TriggerHandler.ExceptionHandler');
                     System.debug(LoggingLevel.ERROR, e);
                 }
             }

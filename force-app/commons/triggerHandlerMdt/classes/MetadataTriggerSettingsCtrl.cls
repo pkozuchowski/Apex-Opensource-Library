@@ -104,14 +104,18 @@ public with sharing class MetadataTriggerSettingsCtrl {
      */
     private void initClasses() {
         for (ApexTypeImplementor imp : [
-            SELECT ApexClassId, ClassName
+            SELECT ApexClassId, ClassName, ClassNamespacePrefix
             FROM ApexTypeImplementor
-            WHERE IsConcrete = TRUE AND InterfaceName = 'TriggerAction'
+            WHERE IsConcrete = TRUE AND InterfaceName = 'TriggerHandler.Action'
             WITH SYSTEM_MODE
         ]) {
             if (!imp.ClassName.containsIgnoreCase('Test') || Test.isRunningTest()) {
-                links.put(imp.ClassName, imp.ApexClassId);
-                classOptsMap.put(imp.ClassName, new SelectOption(imp.ClassName, imp.ClassName));
+                String fullyQualifiedName = String.isNotBlank(imp.ClassNamespacePrefix)
+                    ? imp.ClassNamespacePrefix + '_' + imp.ClassName
+                    : imp.ClassName;
+
+                links.put(fullyQualifiedName, imp.ApexClassId);
+                classOptsMap.put(fullyQualifiedName, new SelectOption(fullyQualifiedName, fullyQualifiedName));
             }
         }
         this.classOpts = new List<SelectOption>{

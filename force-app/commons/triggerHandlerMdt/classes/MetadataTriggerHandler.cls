@@ -110,7 +110,12 @@ public virtual with sharing class MetadataTriggerHandler extends TriggerHandler 
     private TriggerHandler.Action getActionInstance(TriggerAction__mdt actionMdt) {
         try {
             if (isPermitted(actionMdt.BypassPermission__c, actionMdt.RequiredPermission__c)) {
-                Type actionClass = Type.forName(actionMdt.NamespacePrefix, actionMdt.ApexClass__c);
+                String[] className = actionMdt.ApexClass__c.split('__');
+                if (className.size() == 1) {
+                    className.add(0, '');
+                }
+
+                Type actionClass = Type.forName(className[0], className[1]);
                 return (TriggerHandler.Action) JSON.deserialize(actionMdt.Parameters__c ?? '{}', actionClass);
             }
             return null;

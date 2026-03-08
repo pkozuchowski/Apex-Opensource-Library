@@ -93,10 +93,10 @@
                     <apex:column>
                         <apex:facet name="header">
                             <apex:outputPanel>
-                                <span>Active</span>
                                 <apex:inputCheckbox label="Active"
                                                     rendered="{!op.edit}"
                                                     onchange="copyActiveValue(this.checked, '{!$Component.actions.table}');"/>
+                                <span>Active</span>
                             </apex:outputPanel>
                         </apex:facet>
                         <apex:outputField value="{!item.Active__c}" rendered="{!NOT(op.edit)}"/>

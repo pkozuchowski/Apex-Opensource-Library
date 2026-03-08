@@ -1,0 +1,13 @@
+<template>
+    <!--Two inputs to switch flawlessly between read-only and editable modes
+    when LWC does not support type changes-->
+    <lightning-input lwc:if={isReadOnly}
+                     lwc:ref="input"
+                     lwc:spread={attributes}
+                     class={classes}></lightning-input>
+    <lightning-input lwc:else
+                     lwc:ref="input"
+                     lwc:spread={attributes}
+                     class={classes}
+                     onchange={handleFieldChange}></lightning-input>
+</template>

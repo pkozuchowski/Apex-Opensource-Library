@@ -445,7 +445,7 @@ private class CalloutTest {
 
 
         Long elapsedTime = System.currentTimeMillis() - startTime;
-        Assert.isTrue(elapsedTime > sleepMs);
+        Assert.isTrue(elapsedTime >= sleepMs);
     }
 
     private class CalloutExceptionMock implements HttpCalloutMock {

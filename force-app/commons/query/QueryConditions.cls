@@ -37,6 +37,7 @@
  *     .getList();
  * </pre>
  */
+@SuppressWarnings('PMD')
 public with sharing class QueryConditions {
     private static final String SEPARATOR_OR = ' OR ';
     private static final String SEPARATOR_AND = ' AND ';
@@ -228,6 +229,7 @@ public with sharing class QueryConditions {
     /**
      * Provides interface for building field WHERE clause.
      */
+    @SuppressWarnings('PMD.OverrideBothEqualsAndHashcode')
     public class FieldExprFactory {
         private String field;
 

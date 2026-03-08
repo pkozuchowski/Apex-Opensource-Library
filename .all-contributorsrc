@@ -1,0 +1,97 @@
+{
+  "projectName": "Apex-Opensource-Library",
+  "projectOwner": "pkozuchowski",
+  "files": [
+    "README.md"
+  ],
+  "repoType": "github",
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "pkozuchowski",
+      "name": "Piotr Kożuchowski",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4470967?v=4",
+      "profile": "https://github.com/pkozuchowski",
+      "contributions": [
+        "code",
+        "doc"
+      ]
+    },
+    {
+      "login": "jawills",
+      "name": "Justin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17165950?v=4",
+      "profile": "https://1sync.co/",
+      "contributions": [
+        "code",
+        "doc",
+        "maintenance",
+        "talk"
+      ]
+    },
+    {
+      "login": "ivorocha90",
+      "name": "Ivo Rocha",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1574458?v=4",
+      "profile": "https://github.com/ivorocha90",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "bohrz",
+      "name": "bohrz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/26806169?v=4",
+      "profile": "https://github.com/bohrz",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "TrangOul",
+      "name": "Marek Madejski",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5629046?v=4",
+      "profile": "https://github.com/TrangOul",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "ruslan-kurchenko",
+      "name": "Ruslan Kurchenko",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29373749?v=4",
+      "profile": "https://medium.com/@r.kurchenko",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "costonb",
+      "name": "Brandon Coston",
+      "avatar_url": "https://avatars.githubusercontent.com/u/307059?v=4",
+      "profile": "https://github.com/costonb",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "scolladon",
+      "name": "Sebastien",
+      "avatar_url": "https://avatars.githubusercontent.com/u/522422?v=4",
+      "profile": "https://github.com/scolladon",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "cwarden",
+      "name": "Christian G. Warden",
+      "avatar_url": "https://avatars.githubusercontent.com/u/387035?v=4",
+      "profile": "http://xn.pinkhamster.net/",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    }
+  ]
+}

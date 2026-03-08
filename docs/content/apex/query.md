@@ -3,8 +3,8 @@
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/query)
 [Selectors](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/queries)
-[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LhrkIAC)
-[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000LhrkIAC)
+[Install In Sandbox](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Luh4IAC)
+[Install In Production](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tJ6000000Luh4IAC)
 
 ```bash
 sf project deploy start -d force-app/commons/query -o sfdxOrg
@@ -12,6 +12,8 @@ sf project deploy start -d force-app/commons/query -o sfdxOrg
 
 ---
 # Documentation
+
+## Overview of the Query Framework
 Query is an extensible approach for a Selector layer in which every SOQL query is encapsulated in an object.  
 This stands in opposition to more traditional approaches where Selector is a service class with a method for each query.
 The common problem with service-type selectors is the code bloat that shows up for any deviations from the base query.  
@@ -25,28 +27,6 @@ Set<String> externalIDs;
 
 List<Account> accounts = Query.Accounts.byExternalId(externalIDs).getList();
 ```
-
-## Syntactic sugar
-**Note!**  
-In the following documentation, I'm sometimes using synthetic sugar `Query.Accounts` or similar for clarity.
-This is not part of the framework due to dependencies.
-
-The simplest and safest way to use a query object is by creating a new instance of a query class:
-```apex
-Account[] accounts = new AccountQuery()
-    .byId('')
-    .getList();
-```
-
-Synthetic sugar can be set up in multiple ways by adding `public AccountQuery Accounts { get {return new AccountQuery();} }` to the class of choice.
-Depending on where you put it, it may be query oriented or sObject oriented:
-```apex
-Query.Accounts.byId();
-
-Accounts.query.byId();
-```
-Important consideration is that this shorthand creates a dependency between a container and a query class.
-
 
 ## Extend, Filter, Reduce
 Query Framework assumes that each query may need to be tailored to the specific requirement in a place where it is used:
@@ -67,82 +47,20 @@ List<Contact> contact = new ContactQuery()
     .getList();
 ```
 
-### Define WHERE Clause
-
-Where clause can be combined from methods implemented in ContactQuery and generic methods implemented in QueryObject class.
+### Filter with additional WHERE clauses
 ```apex
-List<Contact> contact = new ContactQuery()
-    .byAccountId(/*...ids*/)
-    .byRecordTypeId(/*Record Type Id*/)
+List<Account> accounts = new AccountQuery()
+    .byOwnerId(myUserId)
+    .byRecordTypeDeveloperName('PersonAccount')
     .getList();
 ```
 
-For very specialized and complex queries, there are multiple ways to define the conditions:
-- Combining field filters and declaring filter logic.
-  Each identifier in the logic string (`{0}`) corresponds to the `byCondition()` method above in the order they were declared.
 ```apex
 new AccountQuery()
     .byName('TestName')
     .byRecordTypeDeveloperName('SMB')
     .byOwnerId(UserInfo.getUserId())
     .withFilterLogic('{0} OR ({1} AND {2})')
-    .getList();
-```
-- Introduce case-specific filtering method in SObject's query class:
-```apex
-class ContactQuery {
-
-    public ContactQuery byMySuperSpecificCondition(String name, String recordTypeName, Id ownerId) {
-        return (ContactQuery) wheres('Name =:name OR (RecordType.DeveloperName = :recordTypeName AND OwnerId = :ownerId)',
-            new Map<String, Object>{
-                'name' => name,
-                'recordTypeName' => recordTypeName,
-                'ownerId' => ownerId
-            });
-    }
-}
-```
-```apex
-Query.Accounts.byMySuperSpecificCondition(
-    'TestName', 'SMB', UserInfo.getUserId()
-).getList();
-```
-You can even mix that with other methods:
-```apex
-Query.Accounts
-    .byMySuperSpecificCondition('TestName', 'SMB', UserInfo.getUserId())
-    .byIsActive(true)
-    .getList();
-```
-
-- Writing WHERE clause directly in client code:
-```apex
-List<String> names = new List<String>();
-List<String> externalIds = new List<String>();
-Id recordTypeId;
-
-Query.Accounts
-    .wheres('Name IN :names OR (RecordTypeId =:rtId AND ExternalID IN :externalIds)', new Map<String, Object>{
-        'names' => names,
-        'rtId' => recordTypeId,
-        'externalIds' => externalIds
-    })
-    .getList();
-```
-
-- Using QueryConditions to build the query:
-```apex
-QueryConditions c = new QueryConditions();
-Query.Accounts
-    .wheres(
-        c.ORs(
-            c.field(Account.Name).equals('TestName'),
-            c.ANDs(
-                c.field('RecordType.DeveloperName').equals('SMB'),
-                c.field(Account.OwnerId).equals(UserInfo.getUserId())
-            )
-        )
-    )
     .getList();
 ```
 
@@ -152,12 +70,17 @@ Query result can be reduced to different things:
 //given
 ContactQuery contactQuery = new ContactQuery().byEmail('test@email.com');
 
-List<Contact> contacts = contactQuery.getList();
-Contact c = ContactQuery.getFirst();
-Contact c = ContactQuery.getFirstOrNull(); // Does not throw exception on empty results
+List<Contact> contacts = new ContactQuery().getList();
+Contact c = contactQuery.getFirst();
+Contact c = contactQuery.getFirstOrNull(); // Does not throw exception on empty results
 
 // Return Set of Ids
 Set<Id> contactIds = contactQuery.getIds();
+Set<Id> accountIds = contactQuery.getIds(Contact.AccountId);
+
+Set<String> lastNames = contactQuery.getStrings(Contact.LastName);
+
+Set<Datetime> createdDates = contactQuery.getDatetimes(Contact.CreatedDate);
 
 // Return Map by Contact Id
 Map<Id, Contact> contactById = contactQuery.getMapById();
@@ -169,8 +92,43 @@ Id contactId = contactQuery.getFirstIdOrNull();
 String contactEmail = (String) contactQuery.getFirstFieldOrNull(Contact.Email);
 ```
 
+## Syntactic sugar
+**Note!**  
+In the following documentation, I'm sometimes using synthetic sugar `Query.Accounts` or similar for clarity.
+This is not part of the framework because I didn't want to introduce metadata dependencies in Unlocked Packages,
+however you can define your own syntactic sugar in your org.
+
+The simplest and safest way to use a query object is by creating a new instance of a query class:
+```apex
+Account[] accounts = new AccountQuery()
+    .byId('')
+    .getList();
+```
+
+Synthetic sugar can be set up in multiple ways by adding getter to the class of choice.
+```apex 
+public class Query {
+    public AccountQuery Accounts { get {return new AccountQuery();} }
+}
+
+public class Accounts {
+    public AccountQuery query { get {return new AccountQuery();} }
+}
+``` 
+
+Depending on where you put it, it may be query-oriented or sObject oriented:
+```apex
+Query.Accounts.byId();
+
+Accounts.query.byId();
+```
+An important consideration is that this shorthand creates a dependency between a container and a query class,
+which may be hard to decouple in Unlocked Packages.
+
+
 ---
 # Query Wrapper
+## Query Wrapper
 
 Sometimes, you don't want to introduce a new query class or use a generic query, but you'd still want to benefit from the Query capabilities.
 This is possible using query wrapper.
@@ -211,6 +169,7 @@ With wrapped queries, you can also benefit from reducer methods:
 
 ---
 # Caching
+## Caching
 The framework provides a mechanism to register cache mechanism for specific sObjects.  
 Once queried, records will be saved to the cache—either static (lives in a static map through the apex transaction), Org or Session Platform Cache.  
 This has to be explicitly enabled for specific sobject types and work only on queries with one WHERE condition by cached field.
@@ -221,7 +180,7 @@ The cache is configured in Custom Metadata (QueryCache__mdt):
 Let's consider Profile Cache settings:
 
 | Field          | Value                                   | Description                                                                                          |
-|----------------|-----------------------------------------|------------------------------------------------------------------------------------------------------|
+----------------|-----------------------------------------|------------------------------------------------------------------------------------------------------|
 | SObject__c     | Profile                                 | Qualified API Name (with namespace) for the SOObject.                                                |
 | Active__c      | true                                    | Is Cache Active. Can be turned off quickly if needed.                                                |
 | Storage__c     | Organization                            | Storage — where records should be stored.                                                            |
@@ -267,6 +226,7 @@ Consecutive call with the same query will get all 50 records from the cache and 
 
 ---
 # Mocking
+## Mocking Queries
 You can easily mock the query using class and method name where the query was invoked, or by associating query with a mock Id:
 
 If our client code looks like this:
@@ -288,7 +248,9 @@ public with sharing class AccountQuotingService {
 }
 ```
 
-Then, the easiest way to mock it is as follows:
+Then, the easiest way to mock it is by specifying class and method name as "mockId".
+List's SObject parameter (`List<Account>`) is the second part of the mockId,
+which tells the framework which queries should be mocked. This reads as "mock Account query in AccountQuotingService.generateQuotes method".
 ```apex
 @IsTest
 static void myTestMethod() {
@@ -296,7 +258,6 @@ static void myTestMethod() {
         // my mocked query result
     });
 }
-
 ```
 
 It is also possible to use regexp patterns for mocking. The following example will match all Account queries in AccountQuotingService:
@@ -307,6 +268,38 @@ Query.mock('AccountQuotingService.*', new List<Account>{/*...*/});
 This will match all Account queries:
 ```apex
 Query.mock('.*', new List<Account>{/*...*/});
+```
+
+### Namespaced Packages
+Mocking queries in namespaced classes can be done using a class type, which in itself includes the namespace of the class:
+```apex
+@IsTest
+static void myTestMethod() {
+    Query.mock(AccountQuotingService.class, 'generateQuotes', new List<Account>{
+        // my mocked query result
+    });
+}
+```
+
+### Mocking Queries with Subqueries
+Mocking subqueries and read-only fields is not possible with standard SObject constructor, to enable that, framework exposes additional `mockRecords` method and
+uses JSON deserialization to apply values:
+```apex
+static void myTestMethod() {
+    Query.mock('AccountQuotingService.generateQuotes', new List<Account>{
+        (Account)
+            new Query.MockSObject(
+                new Account(
+                    Name = 'Test Account',
+                    Industry = 'Production'
+                ))
+                .put('FormulaField__c', true)
+                .put('Contacts', new List<Contact>{
+                    new Contact(LastName = 'Doe')
+                })
+                .build()
+    });
+}
 ```
 
 ### Mock Ids
@@ -397,9 +390,25 @@ In the constructor, we should define default fields (optional) and sObject type 
 ```apex
 public with sharing class AccountQuery extends QueryObject {
     public AccountQuery() {
+        super(AccountQuery);
+    }
+}
+
+
+public with sharing class AccountQuery extends QueryObject {
+    public AccountQuery() {
         super(new List<String>{
             'Id',
             'Name'
+        }, Account.SObjectType);
+    }
+}
+
+
+public with sharing class AccountQuery extends QueryObject {
+    public AccountQuery() {
+        super(new List<SObjectField>{
+            Account.Name
         }, Account.SObjectType);
     }
 }
@@ -444,8 +453,11 @@ Query.of(Account.SObjectType)
 Parent class for all selectors.
 
 ### Constructors
+```apex
 protected QueryObject(SObjectType sObjectType)
-protected QueryObject(List<String> fields, SObjectType sObjectType)
+    protected QueryObject(List<String> fields, SObjectType sObjectType)
+protected QueryObject(List<SObjectField> fields, SObjectType sObjectType)
+```
 
 ### Selecting Fields
 <details>
@@ -476,6 +488,7 @@ Query.Accounts
 
 ```apex
 public QueryObject withFields(String fields);
+public QueryObject withFields(SObjectField fields);
 ```
 Adds given fields to the query.
 
@@ -513,6 +526,22 @@ Query.Accounts
 ```
 </details>
 
+<details>
+	<summary>withStandardFields()</summary>
+
+```apex
+public QueryObject withStandardFields();
+```
+Select standards fields - shorthand for FIELDS(STANDARD). Restricted to 200 records
+
+#### Usage
+```apex
+Query.Accounts
+    .withStandardFields()
+    .getList();
+```
+</details>
+
 
 <details>
 	<summary>withChildren(fields, relationshipName)</summary>
@@ -545,7 +574,7 @@ Query.Accounts
 ```apex
 public QueryObject withChildren(QueryObject subquery, String relationshipName);
 ```
-Adds subquery using another Query instance.
+Adds a subquery using another Query instance.
 
 #### Parameters
 - `subquery` - Subquery instance
@@ -873,10 +902,28 @@ Query.Users
 
 </details>
 
+### Order By
+<details>
+	<summary>orderBy()</summary>
+
+```apex
+QueryObject orderBy(SObjectField field, Boolean ascending, Boolean nullFirst)
+QueryObject orderBy(String field, Boolean ascending, Boolean nullFirst)
+QueryObject orderBy(String orderByClause)
+```
+
+#### Usage
+```apex
+Query.Accounts
+    .orderBy('Owner.Name DESC NULLS LAST')
+    .getList();
+```
+</details>
+
 
 ### Limit / Offset
 <details>
-	<summary>withLimit(limit)</summary>
+	<summary>withLimit()</summary>
 
 ```apex
 public QueryObject withLimit(Integer l);
@@ -897,7 +944,7 @@ Query.Accounts
 
 
 <details>
-	<summary>withOffset(offset)</summary>
+	<summary>withOffset()</summary>
 
 ```apex
 public QueryObject withOffset(Integer o);
@@ -917,6 +964,24 @@ Query.Accounts
 ```
 </details>
 
+### For View/Reference/Update
+<details>
+	<summary>For View/Reference/Update</summary>
+
+```apex
+public QueryObject forView();
+public QueryObject forReference();
+public QueryObject forUpdate();
+```
+
+#### Usage
+```apex
+Query.Accounts
+    .byName('Test')
+    .forUpdate()
+    .getList();
+```
+</details>
 
 ### Mocking
 <details>
@@ -987,38 +1052,24 @@ Query.Account
 
 ### Security
 <details>
-	<summary>withSharing()</summary>
+	<summary>User mode and sharing</summary>
 
 ```apex
-public QueryObject withSharing();
+QueryObject asUser();
+QueryObject asUserWithPermissionSetId(Id permissionSetId);
+QueryObject asSystem();
+QueryObject asSystemWithSharing();
+QueryObject asSystemWithoutSharing();
 ```
-Query will be executed in "with sharing" context,returning only those records user has access to.
+By default, query is executed in system mode with inherited sharing.
 
 #### Usage
 ```apex
 Query.Accounts
-    .withSharing()
+    .asSystemWithoutSharing()
     .getList();
 ```
 </details>
-
-
-<details>
-	<summary>withoutSharing()</summary>
-
-```apex
-public QueryObject withoutSharing();
-```
-Query will be executed in "without sharing" context,returning only those records user has access to.
-
-#### Usage
-```apex
-Query.Accounts
-    .withoutSharing()
-    .getList();
-```
-</details>
-
 
 <details>
 	<summary>withFieldAccess(accessType)</summary>
@@ -1028,7 +1079,7 @@ public QueryObject withFieldAccess(AccessType accessType);
 ```
 Enforces Object and Field level security on records.  
 Inaccessible fields are stripped from result and inaccessible objects throws exception.  
-@throws System.NoAccessException No access to entity.
+`@throws System.NoAccessException No access to entity.`
 
 Calls Security.stripInaccessible on the query result.
 
@@ -1174,18 +1225,36 @@ public static Id getDefaultOwner() {
 
 
 <details>
-	<summary>getIds()</summary>
+	<summary>Get Field Values</summary>
 
 ```apex
+public Set<Object> getValues(String field);
+
 public Set<Id> getIds();
+public Set<Id> getIds(SObjectField field);
+public Set<Id> getIds(String field);
+
+public Set<String> getStrings(SObjectField field);
+public Set<String> getStrings(String field);
+
+public Set<Date> getDates(SObjectField field);
+public Set<Date> getDates(String field);
+
+public Set<Datetime> getDatetimes(SObjectField field);
+public Set<Datetime> getDatetimes(String field);
+
+public Set<Integer> getIntegers(SObjectField field);
+public Set<Integer> getIntegers(String field);
+
+public Set<Decimal> getDecimals(SObjectField field);
+public Set<Decimal> getDecimals(String field);
 ```
-Returns Ids of SObjects.
 
 #### Usage
 ```apex
 Set<Id> accountIds = Query.Account
     .byName('Test')
-    .getIds();
+    .getIds(Account.OwnerId);
 ```
 </details>
 
@@ -1300,6 +1369,7 @@ Query.Accounts
 ---
 # Issues
 
+## Builder with inheritance
 Query Framework uses Builder with an inheritance pattern, which has one downside that cannot be fixed in Apex at this time:
 - When we use method from super class, we can't call methods from child class anymore.
 
@@ -1364,11 +1434,12 @@ return q.getList();
 
 ---
 # KDDs
+## Key Design Decisions
 
-## String vs sObjectField parameters
+### String vs sObjectField parameters
 The framework will use String field parameters as a baseline parameters and SObjectField tokens as secondary parameters.
 
-### Rationale:
+#### Rationale:
 - It's trivial to turn SObjectFields into string API Name, by using one of the bellow methods:
   ```apex
   '' + Account.Name;
@@ -1385,6 +1456,31 @@ The framework will use String field parameters as a baseline parameters and SObj
 
 ---
 # Change Log
+### v2.7
+- Added Query.SObjectMock class to mock record's readonly field
+```apex
+static void myTestMethod() {
+    Query.mock('AccountQuotingService.generateQuotes', new List<Account>{
+        (Account) new Query.MockSObject(
+            new Account(
+                Name = 'Test Account',
+                Industry = 'Production'
+            ))
+            .put('FormulaField__c', true)
+            .put('Contacts', new List<Contact>{
+                new Contact(LastName = 'Doe')
+            })
+            .build()
+    });
+}
+```
+
+- Added [getValues()](/apex/query/specification#reducers) methods for common field types
+
+```apex
+Set<Id> ownerIds = new AccountQuery().getStrings(Account.OwnerId);
+```
+
 ### v2.5 - 2.6
 
 

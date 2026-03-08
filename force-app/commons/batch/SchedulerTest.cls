@@ -86,7 +86,7 @@ private class SchedulerTest {
             now.year(),
             now.month(),
             now.day(),
-            now.minute() > 30 ? (now.hour() + 1) : now.hour(),
+            now.minute() >= 30 ? (now.hour() + 1) : now.hour(),
             30,
             0
         );

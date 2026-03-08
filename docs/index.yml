@@ -4,25 +4,6 @@ news:
     label: 2024.07.18
 
 nav:
-  - label: News
-    defaults:
-      iconName: standard:news
-      language: apex
-    path: news
-    groups:
-      - label: News
-        items:
-          - path: 25_02_15
-            label: 2025.02.15 - Callout 1.3
-          - path: 25_01_06
-            label: 2025.01.06 - Database Service 2.0
-          - path: 24_11_10
-            label: 2024.11.10 - Http Mock Router 1.1
-          - path: 24_08_12
-            label: 2024.08.12 - Query 2.1.0
-          - path: 24_07_18
-            label: 2024.07.18 - Query 2.0.1
-
   - label: Apex
     path: apex
     defaults:
@@ -101,7 +82,6 @@ nav:
           - path: database-service
             label: Database Service
             description: Issue and mock DMLs with configurable sharing and user mode.
-            badge: Updated v2.3
             snippet: |
               new DatabaseService()
                 .withoutSharing()
@@ -110,7 +90,7 @@ nav:
           - path: query
             label: Query Framework
             description: Flexible Selector Layer with Record Caching mechanism.
-            badge: Updated v2.6
+            badge: Updated v2.7
             snippet: |
               List<Contact> contact = Query.Contacts
                 .byAccountId(accountIds)
@@ -138,6 +118,7 @@ nav:
             label: Http Mock Router
             description: Configuration-driven, endpoint pattern-based router for Http Mocks.
             image: "/img/http-router.jpg"
+            badge: Updated v2.1
             snippet: |
               Test.setMock(HttpCalloutMock.class, HttpMocks.config());
 
@@ -280,11 +261,32 @@ nav:
               <!--...-->
               </c-if>
 
+          - path: record-form
+            label: Record Form
+            description: Customizable Record Forms.
+            badge: New
+            lang: html
+            snippet: |
+              <c-record-form
+                object-api-name="Account"
+                record-type-name="PersonAccount"
+                record={account}
+                onchange={onRecordChange}>
+              
+                <c-record-form-field read-only field="OwnerId"></c-record-form-field>
+                <c-record-form-field read-only field="Name"></c-record-form-field>
+                <c-record-form-field field="BillingAddress"></c-record-form-field>
+              </c-record-form>
+
+
   - label: GitHub
     url: https://github.com/pkozuchowski/Apex-Opensource-Library
 
   - label: Issues
     url: https://github.com/pkozuchowski/Apex-Opensource-Library/issues
+
+  - label: Contributors
+    url: https://github.com/pkozuchowski/Apex-Opensource-Library?tab=readme-ov-file#%EF%B8%8F-contributors
 
   - label: LinkedIn
     url: https://www.linkedin.com/in/piotr-ko%C5%BCuchowski-ba8931a2

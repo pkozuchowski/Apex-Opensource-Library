@@ -15,18 +15,25 @@ sf project deploy start \
 
 ---
 # Documentation
-Callout class is a building block for constructing outbound integrations, where each callout should go through similar flow
-of authorization, error handling and response handling.
+## Overview of Callout Framework
 
-## Example
+Callout framework standardizes **how your org performs HTTP integrations** by wrapping `HttpRequest/HttpResponse` in a small orchestration layer that is:
 
-Consider an example of integration with external webservices where a few different endpoints are used:
-- searching orders
-    - fetching order details
-    - creating new order
+- **Composable** (plug in behavior via handlers),
+- **Predictable** (consistent success/error handling),
+- **Extensible** (API-specific subclasses),
+- **Test-friendly** (works cleanly with `HttpCalloutMock`),
+- **Operational** (supports retries, logging hooks, rich exceptions, and metadata like duration / related record).
 
-All calls to the API should have streamlined workflow - callouts should be authorized, logged with appropriate logging level, retried on timeout.    
-To implement this configuration, we could derive a new class from Callout class and configure it as follows:
+At a high level, you build a `Callout`, configure the request (method/endpoint/headers/body/params), optionally declare what type you expect back, and then
+execute it.
+
+The framework runs:
+1. **Before-callout handlers** (e.g., auth header injection)
+2. The actual HTTP callout
+3. **After-callout handlers** (e.g., retry, translate errors to typed exceptions, return JSON, logging)
+
+### Example
 ```apex
 public class AcmeApiCallout extends Callout {
     private AcmeAPIAuthHandler authorizationHandler = new AcmeAPIAuthHandler();
@@ -60,334 +67,311 @@ public class AcmeApiCallout extends Callout {
 }
 ```
 
+#### Explanation
 Let's break this down:
-- Before Callout:
-    1. Runs custom authorization handler once. This is example class that would generate Oauth token for us if Named Credential can't be used.  
-       It's just an example of custom handler, it's not necessary to write any in most cases.
+- **Before Callout:**
+    1. Runs custom authorization handler once. This is example class that would generate Oauth token for us if Named Credential can't be used. It's just an
+       example of a custom handler, it's not necessary to write any in most cases.
 
 
-- After Callout:
+- **After Callout:**
     1. If response returned 401 Unauthorized, run authorization handler again
-    1. Retry callout once again with new authorization token
-    1. On timeout, retry once again
-    1. Slot named "beforeValidation" - this does nothing, but can be used for injecting handlers later in this place
-    1. If any CalloutException was thrown, creates log record with ERROR severity
-    1. If any CalloutException was thrown, throws CalloutResponseException
-    1. If webservice responded with error codes (400-599), creates log record with ERROR severity
-    1. If webservice responded error code, throws CalloutResponseException
-    1. If webservice responded with success code, log callout with INFO severity
-    1. If webservice responded with success code, deserialize response body to given apex type.
+    2. Retry callout once again with new authorization token
+    3. On timeout, retry once again
+    4. Slot named "beforeValidation" - this does nothing, but can be used for injecting handlers later in this place
+    5. If any CalloutException was thrown, creates log record with ERROR severity
+    6. If any CalloutException was thrown, throws CalloutResponseException
+    7. If webservice responded with error codes (400-599), creates log record with ERROR severity
+    8. If webservice responded error code, throws CalloutResponseException
+    9. If webservice responded with success code, log callout with INFO severity
+    10. If webservice responded with success code, deserialize response body to given apex type.
 
-## Usage in API class
-The callout class can then be used in methods which expose particular endpoints.
+## Key Concepts
+
+### Callout (the orchestrator)
+A `Callout` instance owns:
+
+- A `HttpRequest` being built
+- The last `HttpResponse` (if any)
+- The last `CalloutException` (if the platform threw one)
+- `metadata` such as:
+    - `duration` (ms)
+    - `relatedId` (record correlation)
+    - `logName` (human-friendly identifier)
+- Two handler pipelines:
+    - `onBeforeCallout()`
+    - `onAfterCallout()`
+
+It also exposes two convenience objects:
+
+- `match` — a catalog of conditions (`CalloutConditions`)
+- `action` — a catalog of handler factories (`CalloutHandlers`)
+
+### Conditions (CalloutConditions)
+Conditions decide *when* a handler should run, based on the callout state (response, status code, exception, body content, etc.).
+
+Typical conditions include:
+
+- HTTP status checks:
+    - `onSuccess()` → 2xx
+    - `onUnauthorized()` → 401
+    - `onRateLimit()` → 429
+    - `onNotFound()` → 404
+    - `onAnyErrorCode()` → 4xx–5xx
+    - `onTimeout()` → matches timeout exception and/or 408/504
+- Exception checks:
+    - `onException()` / `onException('...exact message...')`
+- Body checks:
+    - `onRegexMatch('...')`
+    - `onContains('...')`
+    - `onDeserializableTo(SomeType.class)` → “is the body shaped like X?”
+
+### Handlers (CalloutHandlers and Callout.Handler)
+Handlers define *what to do* when a condition matches. A handler is simply:
+
+- Input: the current `Callout`
+- Output: `Object` (usually `null`, but can short-circuit execution by returning a value)
+
+Common actions provided:
+
+- `retry(n)` → re-executes the callout up to *n* times when matched
+- `sleep(ms)` → pauses execution (useful for 429 backoff)
+- `throwEx([message])` → throws a `CalloutResponseException` with the response attached
+- `throwResponseEx(SomeExceptionType.class)` → deserialize error JSON into a typed exception and throw it
+- `returnJSON(SomeType.class)` → deserialize success body and return it
+- `returns(anyValue)` → return a fixed value (e.g., “return empty list on 404”)
+- `replaceAll(regex, substitution)` → mutate response body before subsequent steps (handy for odd JSON keys)
+
+> Logging is intentionally a hook: there’s a `logCallout(level)` handler stub meant to be wired to *your* logger implementation.
+
+### Handler list orchestration (CalloutHandlersList)
+Handlers are stored in an ordered list and executed in sequence. Features:
+
+- **Named handlers**: `add('name', condition, handler)` so you can `remove()` or `replace()`
+- **Slots**: `slot('beforeValidation')` creates an insertion point
+- **Inject into slots**: `addToSlot('beforeValidation', ...)` to push a handler *into the middle* of a pre-built pipeline
+- **Locking**: the list is “locked” at first execution to avoid surprises if modified while iterating
+
+This makes it easy to define a “default integration policy” and then tweak behavior per endpoint call.
+
+
+## Why use this framework? (Problems it solves)
+
+### Consistency across integrations
+Instead of each team writing bespoke patterns for:
+- status handling,
+- retries,
+- error parsing,
+- logging/correlation,
+- response deserialization,
+
+…you standardize it with a shared callout pipeline.
+
+### Separation of concerns
+- “How to call Acme API” lives in a subclass and its handlers.
+- “What this method returns to business logic” lives in a small, readable API method.
+- Error handling is declarative (“on 400 → throw typed exception”).
+
+### Safer operations
+- Centralizes retry logic and allows targeted retry rules (401/timeout/rate-limit).
+- Captures duration and correlation IDs for observability.
+
+### Easier testing
+You can test behavior by returning different HTTP status codes/bodies and verifying:
+- correct retries,
+- correct return values,
+- correct exceptions,
+- correct headers (auth handler ran).
+
+## Recommended Use-Cases
+
+### Use-case A: Build an “API client” class (clean boundary)
+Create a class like `PaymentsApi`, `ErpApi`, `KycApi` where each method constructs a callout and returns typed data. Consumers never touch raw `Http`.
+
+### Use-case B: Centralized retry + backoff policies
+- Retry on 401 (token expired, refresh flow may be in a before-handler)
+- Retry on timeouts (408/504 or “Read timed out”)
+- Sleep on 429 and reattempt
+
+### Use-case C: Typed error handling for downstream callers
+Map error payloads into a typed `CalloutResponseException` subclass so callers can catch specific exceptions and react (e.g., show user-friendly message vs.
+fail silently).
+
+### Use-case D: Normalize “weird JSON”
+Some APIs return invalid Apex field names (e.g., keys with dots). Use `replaceAll()` before deserialization.
+
+### Use-case E: Correlate callouts to records / business transactions
+Set `relatedId` (or other metadata) so logs can link back to a specific record or process run.
+
+---
+# Usage Patterns & Examples
+## Usage Patterns & Examples
+
+### Example 1: The simplest “GET + return JSON”
 ```apex
- public class AcmeCustomerAPI {
+public with sharing class WeatherApi {
+    public class ForecastDto {
+        public String city;
+        public Decimal temperatureC;
+    }
 
-    public List<Customer> getCustomers(List<String> accountIds) {
-        Callout c = new AcmeApiCallout();
+    public static ForecastDto getForecast(String city) {
+        Callout c = new Callout();
         c.setMethod('GET');
-        c.setEndpoint('callout:MyCredential/api/Customer');
-        c.setParam('id', accountIds, true);
-        c.setResponseType(List<Customer>.class);
-        c.onAfterCallout()
-            .addToSlot('beforeValidation',
-                c.match.onNotFound(), c.action.returns(new List<Customer>())
-            );
+        c.setEndpoint('callout:Weather_NC/forecast');
+        c.setParam('city', city, true);
+        c.setResponseType(ForecastDto.class);
 
-        return (List<Customer>) c.execute();
-    }
-
-    public Customer updateCustomer(Customer customer) {
-        Callout c = new AcmeApiCallout();
-        c.setMethod('POST');
-        c.setEndpoint('callout:MyCredential/api/Customer');
-        c.setBodyJSON(account);
-        c.setResponseType(Account.class);
-        return (Account) c.execute();
+        return (ForecastDto) c.execute();
     }
 }
 ```
-In the above example, **slot** functionality was utilized to return an empty list when webservice responds with 404 Not Found.  
-There's no limit on how many handlers can be added to the slot.
 
+### Example 2: API-specific subclass (default policy once, reused everywhere)
+Create one subclass per remote system to define the “house rules”:
+- auth before-callout
+- retries on transient failures
+- throw exceptions on non-2xx
+- return JSON on 2xx
 
-## Named Handlers
-In real life, there may be exceptions to the common flow - Endpoints that do not require an authorization step, Endpoint that return NOT FOUND error code when
-we'd expect an empty array, and so on. We can change the flow using Named Handlers and Slots.
-
-Each handler pair can be given developer name, which can be later used to remove or replace the handler.  
-Consider the following setup:
-
-```apex | API-specific Callout configuration
-public class AcmeApiCallout extends Callout {
-    private AcmeAPIAuthHandler authorizationHandler = new AcmeAPIAuthHandler();
+```apex
+public with sharing class AcmeCallout extends Callout {
+    private class AuthHandler implements Callout.Handler {
+        public Object handle(Callout c) {
+            c.setHeader('Authorization', 'Bearer ' + '<token-placeholder>');
+            return null;
+        }
+    }
 
     protected override void setupHandlers() {
+        onBeforeCallout()
+            .add(match.once(), new AuthHandler());
+
         onAfterCallout()
-            .add('authorize', match.onUnauthorized(), authorizationHandler)
-            .add('authorizeRetry', match.onUnauthorized(), action.retry(1))
-            .add('timeoutRetry', match.onTimeout(), action.retry(1))
-            .add(match.onSuccess(), action.logCallout(LoggingLevel.INFO))
-            .add(match.onSuccess(), action.returnJSON(responseType));
-    }
-}
-```
-
-In one of the calls, we will remove an `authorizeRetry` step and replace retry with logging action. We will also retry on timeout 5 times instead of once.
-```apex | Client Code
- public class AcmeCustomerAPI {
-
-    public List<Customer> getCustomers(List<String> accountIds) {
-        Callout c = new AcmeApiCallout();
-        c.onAfterCallout()
-            .remove('authorize')
-            .replace('authorizeRetry', c.action.logCallout(LoggingLevel.ERROR))
-            .replace('timeoutRetry', c.action.retry(5));
-
-        return (List<Customer>) c.execute();
-    }
-}
-```
-
-## Slots
-List of handlers can be defined with a slot - placeholder in which we can later add any number of additional steps:
-
-```apex | API-specific Callout configuration
-public class AcmeApiCallout extends Callout {
-    private AcmeAPIAuthHandler authorizationHandler = new AcmeAPIAuthHandler();
-
-    protected override void setupHandlers() {
-        onAfterCallout()
-            .slot('beforeValidation')
-            .add(match.onAnyErrorCode(), action.logCallout(LoggingLevel.ERROR))
+            .add(match.onUnauthorized(), action.retry(1))
+            .add(match.onTimeout(), action.retry(1))
             .add(match.onAnyErrorCode(), action.throwEx())
             .add(match.onSuccess(), action.returnJSON(responseType));
     }
 }
 ```
 
-Add handler to the slot which does following:
-- IF Webservice returned `404 NOT FOUND`
-    - THEN return an empty list and stop execution
-```apex
- public class AcmeCustomerAPI {
+### Example 3: “Return empty list on 404” without changing global policy
+Slots let you inject special-case behavior between the shared rules.
 
-    public List<Customer> getCustomers(List<String> accountIds) {
-        Callout c = new AcmeApiCallout();
+```apex
+public with sharing class AcmeAccountsApi {
+    public static List<Account> findAccounts(List<String> ids) {
+        Callout c = new AcmeCallout();
+        c.setMethod('GET');
+        c.setEndpoint('callout:Acme_NC/api/accounts');
+        c.setParams(new Map<String, Object>{'id' => ids}, true);
+        c.setResponseType(List<Account>.class);
+
         c.onAfterCallout()
-            .addToSlot('beforeValidation',
-                c.match.onNotFound(), c.action.returns(new List<Customer>())
-            );
+            .addToSlot('beforeValidation', c.match.onNotFound(), c.action.returns(new List<Account>()));
 
-        return (List<Customer>) c.execute();
+        return (List<Account>) c.execute();
     }
 }
 ```
 
-## Metadata
-If you need to save additional information about the callout, you can use `setMetadata` and `getMetadta` methods -
-this can be useful for logging purposes.
+### Example 4: Typed error exception (deserialize error JSON, throw it)
+Use when you want to catch specific error fields.
 
 ```apex
-    public List<Customer> getCustomers(List<String> accountIds) {
-    Callout c = new AcmeApiCallout();
-    c.setMetadata('context', 'getCustomers');
-    c.setMetadata('accountIds', accountIds);
-
-    return (List<Customer>) c.execute();
-}
-```
-
----
-# Extensions
-
-## Custom Matchers and Handlers
-Callout Framework can be easily extended by implementing two interfaces for matching and handling callouts:
-
-```apex | Condition | Generic Condition interface is used to check if Callout satisfies the condition for associated action.
-public interface Condition {
-    Boolean isTrue(Object item);
-}
-```
-
-```apex | Callout.Handler | Represents action to perform.
-public interface Handler {
-    Object handle(Callout c);
-}
-```
-
-The Framework works as follows – when callout is executed():
-1. Iterate through pairs of Condition-Handler
-    1. If the Condition returns true:
-        1. Execute Handler and check return value:
-            1. If `null` - continue iteration over actions.
-            1. If not null - return this immediately as response from callout `execute` method.
-            1. If throws exception, breaks the code execution - this exception has to be handled in client code.
-
-Callout has two lists of handlers – one executed before and one after the callout.
-
-## Examples
-
-```apex | Example of Condition class
-/**
- * Matches Response body that contains substring
- */
-private class SubstringMatcher implements Condition {
-    private String substring;
-
-    private SubstringMatcher(String substring) {
-        this.substring = substring;
-    }
-
-    public Boolean isTrue(Object item) {
-        Callout c = (Callout) item;
-
-        return c.getResponse()?.getBody()?.containsIgnoreCase(substring) == true;
-    }
-}
-```
-
-```apex | Example of Handler class
-private class RetryHandler implements Callout.Handler {
-    private Integer attempt = 0, maxAttempts;
-
-    public RetryHandler(Integer howManyTimes) {
-        maxAttempts = howManyTimes;
-    }
-
-    public Object handle(Callout c) {
-        if (attempt < maxAttempts) {
-            attempt++;
-            return c.execute();
-        }
-
-        return null;
-    }
-}
-```
-
----
-# Interfaces
-
-## Callout
-<details>
-	<summary>Methods</summary>
-
-| Method                                                                | Description                                                                          |
-|-----------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| `void setMethod(String method)`                                       | Sets Http Request's Method                                                           |
-| `void setEndpoint(String endpoint)`                                   | Sets Http Request's Endpoint                                                         |
-| `void setTimeout(Integer timeout)`                                    | Sets Http Request's Timeout value                                                    |
-| `void setHeader(String header, String value)`                         | Sets Http Request's Header                                                           |
-| `void setHeaders(Map<String, String> headersMap)`                     | Sets Http Request's headers `(Map<Header, Value>)`                                   |
-| `void setBody(String body)`                                           | Sets plain text body                                                                 |
-| `void setBodyJSON(Object o, Boolean suppressNulls)`                   | Serializes object and sets as body                                                   |
-| `void setLogName(String logName)`                                     | Sets Log's name - by default this is Method + Endpoint                               |
-| `void setParams(Map<String, Object> params, Boolean urlEncode)`       | Set URL query parameters                                                             |
-| `void setParam(String name, Object value, Boolean urlEncode)`         | Set URL query parameter                                                              |
-| `void setParams(String name, List<Object> values, Boolean urlEncode)` | Set URL query list parameter                                                         |
-| `void setResponseType(Type apexType)`                                 | If provided, response will be deserialized to this type and returned from execute(); |
-| `HttpResponse getResponse()`                                          | returns HttpResponse                                                                 |
-| `HttpRequest getRequest()`                                            | returns HttpRequest                                                                  |
-| `Object getCalloutException()`                                        | returns Callout Exception from the latest execution                                  |
-
-</details>
-
-## CalloutHandlersList
-<details>
-	<summary>Methods</summary>
-
-| Method                                                                                        | Description                                                     |
-|-----------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| `CalloutHandlersList add(Condition matcher, Callout.Handler handler);`                        | Adds new handler to the list                                    |
-| `CalloutHandlersList add(String name, Condition matcher, Callout.Handler handler);`           | Adds new handler with unique name                               |
-| `CalloutHandlersList addToSlot(String slotName, Condition matcher, Callout.Handler handler);` | Adds handler to the slot                                        |
-| `CalloutHandlersList slot(String slotName);`                                                  | Creates slot with given name                                    |
-| `CalloutHandlersList remove(String name);`                                                    | Removes handler with given name                                 |
-| `CalloutHandlersList replace(String name, Callout.Handler handler);`                          | Replaces handler under given name, while matcher stays the same |
-| `CalloutHandlersList clear();`                                                                | Clears list of handlers                                         |
-</details>
-
-
-## Condition
-```apex | Condition
-public interface Condition {
-    Boolean isTrue(Object item);
-}
-```
-
-## Callout.Handler
-```apex | Callout.Handler
-public interface Handler {
-    Object handle(Callout c);
-}
-```
-
----
-# Trivia
-- It's not required to extend Callout class. It can be used as is or configured without inheritance:
-```apex
-public Callout getAcmeCallout() {
-    Callout c = new Callout();
-    c.onBeforeCallout()
-        .add(c.match.once(), authorizationHandler);
-
-    c.onAfterCallout()
-        .add(c.match.onUnauthorized(), authorizationHandler)
-        .add(c.match.onUnauthorized(), c.action.retry(1))
-        .add(c.match.onTimeout(), c.action.retry(1))
-        .slot('beforeValidation')
-        .add(c.match.onAnyErrorCode(), c.action.logCallout(LoggingLevel.ERROR))
-        .add(c.match.onAnyErrorCode(), c.action.throwEx())
-        .add(c.match.onSuccess(), c.action.logCallout(LoggingLevel.INFO))
-        .add(c.match.onSuccess(), c.action.returnJSON(responseType));
-
-    return c;
-}
-```
-
-- Callout has some handlers implemented by default:
-```apex | Default Handlers
-onAfterCallout()
-    .add(match.onUnauthorized(), action.retry(1))
-    .add(match.onTimeout(), action.retry(1))
-    .slot('beforeValidation')
-    .add(match.onException(), action.logCallout(LoggingLevel.ERROR))
-    .add(match.onException(), action.throwEx())
-    .add(match.onAnyErrorCode(), action.logCallout(LoggingLevel.ERROR))
-    .add(match.onAnyErrorCode(), action.throwEx())
-    .add(match.onSuccess(), action.logCallout(LoggingLevel.INFO))
-    .add(match.onSuccess(), action.returnJSON(responseType));
-```
-- Client code can remove or replace particular handlers. Name can be added to the handler, which then can be used to remove/replace.
-
----
-# Change Log
-
-### Ver. 1.3
-- Added new methods to set additional information about Callout for logging purposes:
-    - `setMetadata(String key, Object value)`
-    - `getMetadata(String key)`
-    - `setRela
-
-### Ver. 1.2
-* QoL for throwing exceptions based on Http response:
-```apex
-    private class UpdateErrorException extends CalloutResponseException {
+public with sharing class AcmeError extends CalloutResponseException {
     public String errorCode;
     public String errorMessage;
 
     public override String getMessage(HttpResponse response) {
-        UpdateErrorException ex = (UpdateErrorException) JSON.deserialize(
-            response.getBody(),
-            UpdateErrorException.class
-        );
-        this.errorCode = ex.errorCode;
-        this.errorMessage = ex.errorMessage;
+        AcmeError parsed = (AcmeError) JSON.deserialize(response.getBody(), AcmeError.class);
+        this.errorCode = parsed.errorCode;
+        this.errorMessage = parsed.errorMessage;
         return errorMessage;
     }
 }
+
+public with sharing class AcmeUpdateApi {
+    public static Account update(Account a) {
+        Callout c = new AcmeCallout();
+        c.setMethod('POST');
+        c.setEndpoint('callout:Acme_NC/api/accounts/' + a.Id);
+        c.setBodyJSON(a, true);
+        c.setResponseType(Account.class);
+
+        c.onAfterCallout()
+            .add(c.match.onBadRequest(), c.action.throwResponseEx(AcmeError.class));
+
+        return (Account) c.execute();
+    }
+}
 ```
+
+### Example 5: Normalize response JSON before parsing
+Useful for keys like `"odata.error"` that don’t map to Apex fields cleanly.
+
+```apex
+public with sharing class OdataErrorResponse extends CalloutResponseException {
+    public OdataError odata_error;
+    public class OdataError {
+        public String code;
+        public Map<String, String> message;
+    }
+}
+
+public with sharing class OdataClient {
+    public static void run() {
+        Callout c = new Callout();
+        c.setMethod('GET');
+        c.setEndpoint('callout:OData_NC/some/resource');
+
+        c.onAfterCallout()
+            .clear()
+            .add(c.match.onContains('"odata.error"'), c.action.replaceAll('"odata\\.error"', '"odata_error"'))
+            .add(c.match.onDeserializableTo(OdataErrorResponse.class), c.action.throwResponseEx(OdataErrorResponse.class));
+
+        c.execute(); // will throw typed exception when error payload matches
+    }
+}
+```
+
+---
+# Operational Guidance
+## Operational Guidance
+
+### Handler ordering matters
+A common best-practice sequence for `onAfterCallout()`:
+
+1. **Retry rules** (401, timeout, maybe 429 with sleep)
+2. **Normalization / response massaging** (replaceAll)
+3. **Business exceptions** (throw typed exceptions on known client errors)
+4. **Generic exception on any 4xx/5xx**
+5. **Logging**
+6. **Return JSON** (only on success)
+
+### Avoid infinite retry loops
+Retries are explicit (`retry(1)`, `retry(2)`, etc.). Keep them small and targeted.
+
+### Prefer Named Credentials
+Endpoints like `callout:YourNamedCredential/...` keep auth and host configuration out of code and simplify deployments.
+
+### Use metadata for correlation
+Set:
+- `setRelatedId(recordId)` to tie callouts to a record
+- `setLogName('MeaningfulName')` to make logs searchable/consistent
+- `setMetadata(String key, Object value)` for any other metadata
+
+## Quick “How do I adopt this in my repo/org?”
+
+1. Create one subclass per external system (e.g., `SapCallout`, `StripeCallout`).
+2. Standardize before and after-callout policy (retry/transforms/error/return/log).
+3. Expose small “client” classes (e.g., `SapOrdersApi`) that return typed DTOs.
+4. Add tests per endpoint behavior using `HttpCalloutMock`.
+
+---
+# Change Log
+## Change Log
 
 ### Ver. 1.1.1
 * Added sleep(Integer ms) handler

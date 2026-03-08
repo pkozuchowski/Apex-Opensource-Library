@@ -94,7 +94,9 @@ public with sharing class Log {
      * Saves called method parameter.
      */
     public Log withInput(String param, Object value) {
-        this.inputs.put(param, value);
+        if (String.isNotBlank(param)) {
+            this.inputs.put(param, value);
+        }
         return this;
     }
 
@@ -110,10 +112,6 @@ public with sharing class Log {
         return withInputs(new List<Object>{param1, param2, param3});
     }
 
-    public Log withInputs(Object param1, Object param2, Object param3, Object param4) {
-        return withInputs(new List<Object>{param1, param2, param3, param4});
-    }
-
     public Log withInputs(List<Object> params) {
         for (Integer i = 0; i < params.size(); i++) {
             withInput('' + i, params[i]);
@@ -125,7 +123,9 @@ public with sharing class Log {
      * Saves parameters of the logged method.
      */
     public Log withInputs(Map<String, Object> parameters) {
-        this.inputs.putAll(parameters);
+        if (parameters != null) {
+            this.inputs.putAll(parameters);
+        }
         return this;
     }
 

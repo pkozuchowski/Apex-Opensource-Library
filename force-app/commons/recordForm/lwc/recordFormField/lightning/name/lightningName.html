@@ -1,0 +1,18 @@
+<template>
+    <!--TODO: Implement other Name fields enabled in User Interface settings -->
+    <lightning-input
+            lwc:if={isReadOnly}
+            label={label}
+            type="text"
+            read-only="true"
+            class="slds-form-element_readonly"
+            variant={inputVariant}
+            required={typeAttributes.salutationRequired}
+            value={nameValue}></lightning-input>
+
+    <div lwc:else onchange={handleFieldChange}>
+        <lightning-select lwc:spread={salutationAttributes}></lightning-select>
+        <lightning-input lwc:spread={firstNameAttributes}></lightning-input>
+        <lightning-input lwc:spread={lastNameAttributes}></lightning-input>
+    </div>
+</template>

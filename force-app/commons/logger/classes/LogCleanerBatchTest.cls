@@ -22,9 +22,10 @@
 * SOFTWARE.
 */
 
+@SuppressWarnings('PMD.ApexAssertionsShouldIncludeMessage')
 @IsTest
 private class LogCleanerBatchTest {
-    private static Integer BATCH_SIZE = 200;
+    private final static Integer BATCH_SIZE = 200;
 
     @TestSetup
     static void testSetup() {
@@ -68,9 +69,13 @@ private class LogCleanerBatchTest {
         Test.stopTest();
 
 
-        System.assertEquals(0, [SELECT COUNT() FROM Log__c WHERE CreatedDate < :Date.today().addDays(-7) AND Severity__c = 'INFO']);
-        System.assertEquals(0, [SELECT COUNT() FROM Log__c WHERE CreatedDate < :Date.today().addDays(-21) AND Severity__c = 'WARN']);
-        System.assertEquals(0, [SELECT COUNT() FROM Log__c WHERE CreatedDate < :Date.today().addDays(-60) AND Severity__c = 'ERROR']);
+        Assert.areEqual(0, getLogCount('INFO', -7));
+        Assert.areEqual(0, getLogCount('WARN', -21));
+        Assert.areEqual(0, getLogCount('ERROR', -60));
+    }
+
+    private static Integer getLogCount(String severity, Integer daysOffset) {
+        return [SELECT COUNT() FROM Log__c WHERE CreatedDate < :Date.today().addDays(daysOffset) AND Severity__c = :severity];
     }
 
 
@@ -81,6 +86,6 @@ private class LogCleanerBatchTest {
         Test.stopTest();
 
 
-        System.assertEquals(1, [SELECT COUNT() FROM CronJobDetail WHERE Name = :LogCleanerBatch.SCHEDULE_JOB_NAME]);
+        Assert.areEqual(1, [SELECT COUNT() FROM CronJobDetail WHERE Name = :LogCleanerBatch.SCHEDULE_JOB_NAME]);
     }
 }

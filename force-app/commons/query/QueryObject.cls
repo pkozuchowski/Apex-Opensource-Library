@@ -25,6 +25,7 @@
 /**
  * Base class for selectors. Contains query builder and common query methods.
  */
+@SuppressWarnings('PMD')
 @JsonAccess(Serializable='never' Deserializable='never')
 public virtual inherited sharing class QueryObject extends QueryResults {
     protected final QueryConditions conditionFactory = new QueryConditions();
@@ -655,6 +656,11 @@ public virtual inherited sharing class QueryObject extends QueryResults {
         } else {
             return (Integer) mock;
         }
+    }
+
+    protected override List<Object> getValues(String field, List<Object> resultSet) {
+        queryBuilder.addField(field);
+        return super.getValues(field, resultSet);
     }
 
     protected override Object getQueryResult() {

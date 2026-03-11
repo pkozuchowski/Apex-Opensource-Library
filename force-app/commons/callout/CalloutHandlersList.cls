@@ -127,6 +127,10 @@ public with sharing class CalloutHandlersList {
                 Object handlerResponse = handler.handle(c);
 
                 if (handlerResponse != null) {
+
+                    if (handlerResponse instanceof CalloutHandlers.Nil) {
+                        return null;
+                    }
                     return handlerResponse;
                 }
             }

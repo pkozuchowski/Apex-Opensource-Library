@@ -65,7 +65,9 @@ public inherited sharing class TriggerSettings {
     public static void disableTriggerHandler(Type triggerHandlerType) {
         if (TriggerHandler.class.isAssignableFrom(triggerHandlerType)) {
             String name = triggerHandlerType.getName();
-            name = name.contains('.') ? name.substringAfter('.') : name;
+            while (name.contains('.')) {
+                name = name.contains('.') ? name.substringAfter('.') : name;
+            }
             disabledTriggerHandlers.add(name);
         }
     }
@@ -76,7 +78,9 @@ public inherited sharing class TriggerSettings {
     public static void enableTriggerHandler(Type triggerHandlerType) {
         if (TriggerHandler.class.isAssignableFrom(triggerHandlerType)) {
             String name = triggerHandlerType.getName();
-            name = name.contains('.') ? name.substringAfter('.') : name;
+            while (name.contains('.')) {
+                name = name.contains('.') ? name.substringAfter('.') : name;
+            }
             disabledTriggerHandlers.remove(name);
         }
     }

@@ -30,8 +30,7 @@ public virtual inherited sharing class TriggerHandler {
      * Interface for implementing reusable trigger logic that can be executed by TriggerHandler.
      *
      * Classes implementing this interface encapsulate specific business logic that should be executed
-     * during trigger execution. This promotes modularity and reusability of trigger logic across
-     * different trigger contexts and SObject types.
+     * during trigger execution.
      */
     public virtual interface Action {
 
@@ -50,7 +49,7 @@ public virtual inherited sharing class TriggerHandler {
     /**
      * Interface for handling exceptions that occur during trigger processing.
      * Implement this interface to define custom behavior when exceptions are thrown
-     * in trigger handlers.
+     * in trigger handlers, for example error logging.
      *
      * Framework will query all implementations of this interface and invoke the
      * onException method when an exception occurs.
@@ -59,96 +58,73 @@ public virtual inherited sharing class TriggerHandler {
         void onException(List<SObject> records, TriggerContext ctx, Exception ex);
     }
 
+
     /**
-     * Initialization method called at the start of trigger processing.
-     *
-     * Default implementation does nothing. Override in subclasses to set up
-     * any necessary state or perform pre-processing before other lifecycle
-     * methods are invoked.
+     * Main entry point to execute the trigger handler. Runs the handler using the default trigger context.
+     * This method delegates to the run(TriggerContext) method with a newly created context.
+     */
+    public void run() {
+        run(getTriggerContext());
+    }
+
+    /**
+     * Initialization method called at the start of trigger processing for each batch (200 records) in the trigger.
      */
     protected virtual void initialize(List<SObject> triggerNew, TriggerContext ctx) {}
 
     /**
      * Called before records are inserted (before insert).
-     *
-     * Default implementation does nothing. Override in subclasses to apply
-     * validation or initialization logic before insert.
-     *
      * @return List of actions to execute before insert
      */
-    protected virtual List<Action> beforeInsert(List<SObject> triggerNew, TriggerContext ctx) {
+    protected virtual List<Action> beforeInsert() {
         return new List<Action>();
     }
 
     /**
      * Called after records are inserted (after insert).
-     *
-     * Default implementation does nothing. Override to perform post-insert
-     * processing such as related updates or async work.
-     *
      * @return List of actions to execute after insert
      */
-    protected virtual List<Action> afterInsert(List<SObject> triggerNew, TriggerContext ctx) {
+    protected virtual List<Action> afterInsert() {
         return new List<Action>();
     }
 
     /**
      * Called before records are updated (before update).
-     *
-     * Default implementation does nothing. Override to validate or modify
-     * records prior to update.
-     *
      * @return List of actions to execute before update
      */
-    protected virtual List<Action> beforeUpdate(List<SObject> triggerNew, TriggerContext ctx) {
+    protected virtual List<Action> beforeUpdate() {
         return new List<Action>();
     }
 
     /**
      * Called after records are updated (after update).
-     *
-     * Default implementation does nothing. Override to perform post-update
-     * processing such as recalculations or notifications.
-     *
      * @return List of actions to execute after update
      */
-    protected virtual List<Action> afterUpdate(List<SObject> triggerNew, TriggerContext ctx) {
+    protected virtual List<Action> afterUpdate() {
         return new List<Action>();
     }
 
     /**
      * Called before records are deleted (before delete).
-     *
-     * Default implementation does nothing. Override to enforce deletion
-     * prevention logic or related cleanup preparations.
-     *
      * @return List of actions to execute before delete
      */
-    protected virtual List<Action> beforeDelete(List<SObject> triggerOld, TriggerContext ctx) {
+    protected virtual List<Action> beforeDelete() {
         return new List<Action>();
     }
 
     /**
      * Called after records are deleted (after delete).
-     *
-     * Default implementation does nothing. Override to perform cascading
-     * cleanup, audit logging, or other post-delete actions.
-     *
      * @return List of actions to execute after delete
      */
-    protected virtual List<Action> afterDelete(List<SObject> triggerOld, TriggerContext ctx) {
+    protected virtual List<Action> afterDelete() {
         return new List<Action>();
     }
 
     /**
      * Called after records are undeleted (after undelete).
-     *
-     * Default implementation does nothing. Override to restore related state
-     * or re-evaluate business rules after undelete.
-     *
      * @return List of actions to execute after undelete
      */
-    protected virtual List<Action> afterUndelete(List<SObject> triggerNew, TriggerContext ctx) {
+    protected virtual List<Action> afterUndelete() {
         return new List<Action>();
     }
 
@@ -172,14 +148,6 @@ public virtual inherited sharing class TriggerHandler {
      */
     protected virtual void finalize(List<SObject> triggerNew, TriggerContext ctx) {}
 
-
-    /**
-     * Main entry point to execute the trigger handler. Runs the handler using the default trigger context.
-     * This method delegates to the run(TriggerContext) method with a newly created context.
-     */
-    public void run() {
-        run(getTriggerContext());
-    }
 
     /**
      * @return the trigger context for this handler. Protected method that can be overridden
@@ -227,34 +195,35 @@ public virtual inherited sharing class TriggerHandler {
 
     /** Returns list of Trigger Actions to be executed for given Trigger Context */
     protected virtual List<Action> getActions(TriggerContext ctx) {
-        List<SObject> records = ctx.getRecords();
-
         switch on ctx.operationType {
             when BEFORE_INSERT {
-                return beforeInsert(records, ctx);
+                return beforeInsert();
             }
             when BEFORE_UPDATE {
-                return beforeUpdate(records, ctx);
+                return beforeUpdate();
             }
             when BEFORE_DELETE {
-                return beforeDelete(records, ctx);
+                return beforeDelete();
             }
             when AFTER_INSERT {
-                return afterInsert(records, ctx);
+                return afterInsert();
             }
             when AFTER_UPDATE {
-                return afterUpdate(records, ctx);
+                return afterUpdate();
             }
             when AFTER_DELETE {
-                return afterDelete(records, ctx);
+                return afterDelete();
             }
             when AFTER_UNDELETE {
-                return afterUndelete(records, ctx);
+                return afterUndelete();
             }
         }
         return new List<Action>();
     }
 
+    /**
+     * Executes Trigger Actions
+     */
     protected void executeActions(List<Action> triggerActions, List<SObject> records, TriggerContext ctx) {
         for (Integer i = 0; i < triggerActions.size(); i++) {
             Action action = triggerActions[i];

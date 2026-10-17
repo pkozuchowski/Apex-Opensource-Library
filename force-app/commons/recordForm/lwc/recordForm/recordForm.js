@@ -57,7 +57,9 @@ export default class RecordForm extends LightningElement {
     picklistValues;
     recordTypeId;
     _record = {};
-    fieldsToRetrieve;
+    _fieldsToRetrieve = [];
+    _derivedFields = [];
+    optionalFields = [];
 
     @track
     formAttributes = {
@@ -97,6 +99,20 @@ export default class RecordForm extends LightningElement {
 
     set isPersonAccount(value) {this.formAttributes.isPersonAccount = value;}
 
+    /**
+     * Extra fields to retrieve from the record in addition to the fields rendered by
+     * child field components. Accepts short field names (qualified with `objectApiName`)
+     * or fully qualified names, e.g. `["Industry", "Account.AnnualRevenue"]`.
+     * @type {Array<string>}
+     */
+    @api
+    get fieldsToRetrieve() {return this._fieldsToRetrieve;}
+
+    set fieldsToRetrieve(value) {
+        this._fieldsToRetrieve = typeof value === 'string' ?
+            value.split(',') : value ?? [];
+        this.recalculateOptionalFields();
+    }
 
     /**
      * Plain record object keyed by field API name.
@@ -110,6 +126,13 @@ export default class RecordForm extends LightningElement {
     setValues(property, value) {
         this[`_${property}`] = value;
         this.fields.forEach(field => field[property] = value);
+    }
+
+    recalculateOptionalFields() {
+        const extraFields = this._fieldsToRetrieve.map(
+            field => field.includes('.') ? field : `${this.objectApiName}.${field}`
+        );
+        this.optionalFields = [...new Set([...extraFields, ...this._derivedFields])];
     }
 
     get formClasses() {
@@ -251,12 +274,12 @@ export default class RecordForm extends LightningElement {
         objectApiName: "$objectApiName",
         recordTypeId : "$recordTypeId",
     })
-    describePicklistValues({err, data}) {
+    describePicklistValues({error, data}) {
         if (data) {
             this.picklistValues = JSON.parse(JSON.stringify(data.picklistFieldValues));
             this.spinner = false;
-        } else if (err) {
-            console.error('Error fetching picklist values', err.message);
+        } else if (error) {
+            console.error('Error fetching picklist values', error.message);
         }
     };
 
@@ -270,10 +293,11 @@ export default class RecordForm extends LightningElement {
                 const fieldName = ev.target.field;
                 const fieldInfo = this.objectInfo.fields[fieldName];
 
-                this.fieldsToRetrieve = [
-                    ...(this.fieldsToRetrieve ?? []),
+                this._derivedFields = [
+                    ...this._derivedFields,
                     ...getFieldsToRetrieve(this.objectInfo, fieldInfo, fieldName)
                 ];
+                this.recalculateOptionalFields();
 
                 ev.target.record = this._record;
                 ev.target.formAttributes = this.formAttributes;
@@ -291,7 +315,7 @@ export default class RecordForm extends LightningElement {
         }
     }
 
-    @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: '$fieldsToRetrieve'})
+    @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: '$optionalFields'})
     fetchRecord({err, data}) {
         if (data) {
             if (data.recordTypeId) {

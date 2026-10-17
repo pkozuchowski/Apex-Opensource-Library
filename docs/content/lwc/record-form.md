@@ -32,6 +32,8 @@ There is also support for custom components and custom design systems other than
 <c-record-form object-api-name="Account"
                record-id="001KM00000KlMXkYAN"
                record-type-name="PersonAccount"
+               is-person-account
+               fields-to-retrieve={fieldsToRetrieve}
                record={account}
                density="compact"
                onchange={onRecordChange}>
@@ -50,6 +52,7 @@ There is also support for custom components and custom design systems other than
 ```js
 export default class MyAccountForm extends LightningElement {
     @track account = {};
+    fieldsToRetrieve = ["Industry", "AnnualRevenue"];
 
     onRecordChange(ev) {
         Object.assign(this.account, ev.detail.value);
@@ -90,8 +93,17 @@ export default class MyAccountForm extends LightningElement {
 - URL
 
 ## Record Type Support
-Record Form supports `"record-type"` attribute, which accepts Record Type's Developer Name. When specified, the form uses the record type to determine picklist
-values, otherwise it uses the default record type.
+Record Form supports `"record-type-name"` attribute, which accepts the Record Type's Developer Name. When specified, the form resolves the matching
+Record Type Id via a GraphQL query (`lightning/graphql`) and uses it to determine picklist values, otherwise it uses the default record type.
+
+Note: the GraphQL `where` filter doesn't support filtering `RecordType` by `SobjectType`, so the query matches by `DeveloperName` only and then
+filters the results client-side to the ones belonging to `object-api-name`. If a Record Type Id for the record itself is already known (the form was
+given a `recordId` and the record has loaded), that Id takes precedence over the name-based lookup.
+
+## Person Accounts
+Record Form does not auto-detect Person Accounts, since the `IsPersonAccount`/`IsPersonType` fields are only queryable when Person Accounts are enabled in
+the org, and are not exposed by the UI API. Instead, pass the `is-person-account` attribute explicitly when displaying a Person Account record, so that the
+`Name` field renders as a compound Person Name (Salutation/FirstName/LastName) field.
 
 
 ## Validation
@@ -281,7 +293,7 @@ Then this component can be used in the form:
 | Attribute          | Description                                                                            |
 |--------------------|----------------------------------------------------------------------------------------|
 | `object-api-name`  | API Name of the object to display.                                                     |
-| `record-type-name` | Record Type's Developer Name to use for picklist values.                               |
+| `record-type-name` | Record Type's Developer Name to use for picklist values, resolved via a GraphQL query.                |
 | `recordId`         | If provided, form will fetch record with fields on the form and fire onchange handler. |
 | `record`           | Record object to display.                                                              |
 | `density`          | Density of the form – "comfy", "compact".                                              |
@@ -289,6 +301,8 @@ Then this component can be used in the form:
 | `labelOverrides`   | Object with field names as keys and custom labels as values.                           |
 | `designSystem`     | Design System to use for rendering the form. Defaults to "lightning".                  |
 | `readOnly`         | If true, all fields are read-only.                                                     |
+| `isPersonAccount`  | If true, the `Name` field renders as a compound Person Name field. Not auto-detected, see [Person Accounts](#person-accounts). |
+| `fieldsToRetrieve` | Extra fields to retrieve from the record, besides the ones rendered by child field components. |
 
 ### Methods
 | Method                                 | Description                                |
@@ -339,6 +353,13 @@ from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-
 
 ---
 # Change Log
+
+### 1.3.0
+- Added: `fieldsToRetrieve` attribute to retrieve extra fields besides the ones rendered by child field components.
+- Changed: `isPersonAccount` is now a plain attribute set by the consumer, instead of being auto-detected.
+- Changed: once a record with a `recordId` has loaded, its actual Record Type Id overrides the name/default-resolved one.
+- Removed: `RecordFormCtrl` Apex class. Record Type resolution by developer name now uses a GraphQL query (`lightning/graphql`) instead of a SOQL
+  query via Apex - see [Record Type Support](#record-type-support).
 
 ### 1.2.2
 - Fix: Field validation methods after a field is repeatedly hidden and shown.

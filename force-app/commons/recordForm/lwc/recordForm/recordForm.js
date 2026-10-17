@@ -4,9 +4,35 @@ import {api, LightningElement, track, wire} from 'lwc';
 import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectInfoApi";
 import {createRecord, getRecord, notifyRecordUpdateAvailable, updateRecord} from 'lightning/uiRecordApi';
 import {getFieldsToRetrieve, getFlatRecord, getUpdatableFields, overrideFieldLabels, validate} from "./recordFormUtils";
-import getRecordType from "@salesforce/apex/RecordFormCtrl.getRecordType";
+
+
+import {gql, graphql} from 'lightning/graphql';
+// Use bellow for offline capabilities
+// import {gql, graphql} from 'lightning/uiGraphQLApi';
 
 const MASTER_RECORD_TYPE = "012000000000000AAA";
+// SObjectType filter is not supported
+const RECORD_TYPE_QUERY = gql`
+    query getRecordType($developerName: String) {
+        uiapi {
+            query {
+                RecordType(
+                    where: {
+                        DeveloperName: {eq: $developerName}
+                    }
+                ) {
+                    edges {
+                        node {
+                            Id,
+                            DeveloperName {value}
+                            SobjectType {value}
+                        }
+                    }
+                }
+            }
+        }
+    }
+`;
 
 /**
  * Lightning Web Component form wrapper that handles record wiring, field setup,
@@ -60,6 +86,17 @@ export default class RecordForm extends LightningElement {
     get density() {return this.formAttributes.density;}
 
     set density(value) {this.formAttributes.density = value;}
+
+    /**
+     * Whether the record is a Person Account. Controls whether the `Name` field renders
+     * as a compound Person Name (Salutation/FirstName/LastName) field.
+     * @type {boolean}
+     */
+    @api
+    get isPersonAccount() {return this.formAttributes.isPersonAccount;}
+
+    set isPersonAccount(value) {this.formAttributes.isPersonAccount = value;}
+
 
     /**
      * Plain record object keyed by field API name.
@@ -189,19 +226,25 @@ export default class RecordForm extends LightningElement {
         }
     };
 
-    @wire(getRecordType, {objectApiName: "$objectApiName", developerName: "$recordTypeName"})
-    fetchRecordType({err, data}) {
+    @wire(graphql, {
+        query    : RECORD_TYPE_QUERY,
+        variables: '$recordTypeVariables'
+    })
+    fetchRecordType({data, errors}) {
         if (data) {
-            if (data[0]) {
-                this.recordTypeId = data[0].Id;
-                this.formAttributes.isPersonAccount = data[0].IsPersonType;
-            } else {
-                this.recordTypeId = MASTER_RECORD_TYPE;
-                this.formAttributes.isPersonAccount = false;
-            }
-        } else if (err) {
-            console.error(`Error fetching record type ${this.objectApiName}.${this.recordTypeName}`, err?.message);
+            const recordType = data.uiapi.query.RecordType.edges.find(
+                rt => rt.node.SobjectType.value === this.objectApiName
+            );
+            this.recordTypeId = recordType?.node?.Id ?? MASTER_RECORD_TYPE;
+        } else if (errors) {
+            console.log(`Error fetching record type ${this.objectApiName}.${this.recordTypeName}`, errors);
         }
+    }
+
+    get recordTypeVariables() {
+        return this.recordTypeName ?
+            {developerName: this.recordTypeName}
+            : undefined;
     }
 
     @wire(getPicklistValuesByRecordType, {
@@ -251,6 +294,10 @@ export default class RecordForm extends LightningElement {
     @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: '$fieldsToRetrieve'})
     fetchRecord({err, data}) {
         if (data) {
+            if (data.recordTypeId) {
+                this.recordTypeId = data.recordTypeId;
+            }
+
             this.dispatchEvent(new CustomEvent('change', {
                 detail: {
                     value: Object.assign(getFlatRecord(data), this.record)

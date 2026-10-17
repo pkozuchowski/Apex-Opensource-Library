@@ -57,9 +57,9 @@ export default class RecordForm extends LightningElement {
     picklistValues;
     recordTypeId;
     _record = {};
-    _fieldsToRetrieve = [];
+    _optionalFields = [];
     _derivedFields = [];
-    optionalFields = [];
+    computedOptionalFields = [];
 
     @track
     formAttributes = {
@@ -106,10 +106,10 @@ export default class RecordForm extends LightningElement {
      * @type {Array<string>}
      */
     @api
-    get fieldsToRetrieve() {return this._fieldsToRetrieve;}
+    get optionalFields() {return this._optionalFields;}
 
-    set fieldsToRetrieve(value) {
-        this._fieldsToRetrieve = typeof value === 'string' ?
+    set optionalFields(value) {
+        this._optionalFields = typeof value === 'string' ?
             value.split(',') : value ?? [];
         this.recalculateOptionalFields();
     }
@@ -129,10 +129,10 @@ export default class RecordForm extends LightningElement {
     }
 
     recalculateOptionalFields() {
-        const extraFields = this._fieldsToRetrieve.map(
+        const extraFields = this._optionalFields.map(
             field => field.includes('.') ? field : `${this.objectApiName}.${field}`
         );
-        this.optionalFields = [...new Set([...extraFields, ...this._derivedFields])];
+        this.computedOptionalFields = [...new Set([...extraFields, ...this._derivedFields])];
     }
 
     get formClasses() {
@@ -315,7 +315,7 @@ export default class RecordForm extends LightningElement {
         }
     }
 
-    @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: '$optionalFields'})
+    @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: '$computedOptionalFields'})
     fetchRecord({err, data}) {
         if (data) {
             if (data.recordTypeId) {

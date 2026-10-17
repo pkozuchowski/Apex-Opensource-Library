@@ -33,7 +33,7 @@ There is also support for custom components and custom design systems other than
                record-id="001KM00000KlMXkYAN"
                record-type-name="PersonAccount"
                is-person-account
-               fields-to-retrieve={fieldsToRetrieve}
+               optional-fields={optionalFields}
                record={account}
                density="compact"
                onchange={onRecordChange}>
@@ -52,7 +52,7 @@ There is also support for custom components and custom design systems other than
 ```js
 export default class MyAccountForm extends LightningElement {
     @track account = {};
-    fieldsToRetrieve = ["Industry", "AnnualRevenue"];
+    optionalFields = ["Industry", "AnnualRevenue"];
 
     onRecordChange(ev) {
         Object.assign(this.account, ev.detail.value);
@@ -302,7 +302,7 @@ Then this component can be used in the form:
 | `designSystem`     | Design System to use for rendering the form. Defaults to "lightning".                  |
 | `readOnly`         | If true, all fields are read-only.                                                     |
 | `isPersonAccount`  | If true, the `Name` field renders as a compound Person Name field. Not auto-detected, see [Person Accounts](#person-accounts). |
-| `fieldsToRetrieve` | Extra fields to retrieve from the record, besides the ones rendered by child field components. |
+| `optionalFields`   | Extra fields to retrieve from the record, besides the ones rendered by child field components. |
 
 ### Methods
 | Method                                 | Description                                |
@@ -355,7 +355,7 @@ from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-
 # Change Log
 
 ### 1.3.0
-- Added: `fieldsToRetrieve` attribute to retrieve extra fields besides the ones rendered by child field components.
+- Added: `optionalFields` attribute to retrieve extra fields besides the ones rendered by child field components.
 - Changed: `isPersonAccount` is now a plain attribute set by the consumer, instead of being auto-detected.
 - Changed: once a record with a `recordId` has loaded, its actual Record Type Id overrides the name/default-resolved one.
 - Removed: `RecordFormCtrl` Apex class. Record Type resolution by developer name now uses a GraphQL query (`lightning/graphql`) instead of a SOQL

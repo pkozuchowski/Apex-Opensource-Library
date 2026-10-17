@@ -237,15 +237,15 @@ export default class RecordForm extends LightningElement {
     }
 
     @wire(getObjectInfo, {objectApiName: '$objectApiName'})
-    describeObjectInfo({err, data}) {
+    describeObjectInfo({error, data}) {
         if (data) {
             this.objectInfo = JSON.parse(JSON.stringify(data));
             if (!this.recordTypeName) {
                 this.recordTypeId = data.defaultRecordTypeId;
             }
             overrideFieldLabels(this.labelOverrides, this.objectInfo);
-        } else if (err) {
-            console.error('Error fetching object info', err.message);
+        } else if (error) {
+            console.error('Error fetching object info', error.message);
         }
     };
 
@@ -316,7 +316,7 @@ export default class RecordForm extends LightningElement {
     }
 
     @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: '$computedOptionalFields'})
-    fetchRecord({err, data}) {
+    fetchRecord({error, data}) {
         if (data) {
             if (data.recordTypeId) {
                 this.recordTypeId = data.recordTypeId;
@@ -327,8 +327,8 @@ export default class RecordForm extends LightningElement {
                     value: Object.assign(getFlatRecord(data), this.record)
                 }
             }));
-        } else if (err) {
-            console.error('Error fetching record', err?.message, err);
+        } else if (error) {
+            console.error('Error fetching record', error?.message, error);
         }
     }
 }

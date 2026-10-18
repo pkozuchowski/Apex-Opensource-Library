@@ -61,6 +61,9 @@ export default class RecordForm extends LightningElement {
     _derivedFields = [];
     computedOptionalFields = [];
 
+    /**Hides the Cancel/Save footer, which is shown by default.*/
+    @api hideFooter = false;
+
     @track
     formAttributes = {
         density        : "comfy",
@@ -111,7 +114,7 @@ export default class RecordForm extends LightningElement {
 
     set inlineEdit(value) {this.formAttributes.inlineEdit = value;}
 
-/**
+    /**
      * Current edit mode of the form. When `inlineEdit` is on, this starts false
      * (pencil icons shown) and can be set to true to switch the whole form into
      * edit mode, either by clicking a pencil icon or programmatically.
@@ -160,6 +163,16 @@ export default class RecordForm extends LightningElement {
 
     get formClasses() {
         return `slds-form ${this.formClass}`;
+    }
+
+    /**
+     * Whether the Cancel/Save footer should be rendered. Always shown for a plain
+     * always-editable form; when `inlineEdit` is on, only once the form has actually
+     * switched into edit mode.
+     * @type {boolean}
+     */
+    get showFormFooter() {
+        return !this.hideFooter && (!this.formAttributes.inlineEdit || this.formAttributes.editMode);
     }
 
     /**

@@ -36,6 +36,7 @@ There is also support for custom components and custom design systems other than
                optional-fields={optionalFields}
                record={account}
                density="compact"
+               inline-edit
                onchange={onRecordChange}>
 
     <c-record-form-field read-only field="OwnerId"></c-record-form-field>
@@ -45,7 +46,6 @@ There is also support for custom components and custom design systems other than
 
     <c-record-form-field field="MyMultipicklist__c" type="checkbox-group"></c-record-form-field>
     <c-record-form-field field="MyPicklist__c" type="radio-group"></c-record-form-field>
-    <lightning-button type="submit" label="Submit"></lightning-button>
 </c-record-form>
 ```
 
@@ -137,6 +137,24 @@ Form can be submitted by calling `submit()` method on the form component or by u
 
 Submit uses uiApi to create or update the createable/updateable fields on the record.
 On successful submitting, the form emits a change event with the updated/created record or throws an error.
+
+## Cancel/Save Footer
+By default, Record Form renders a standard docked footer with Cancel and Save buttons, similar to the standard Salesforce record
+layout footer. Set `hide-footer` to hide it (e.g. if you provide your own `lightning-button type="submit"` instead).
+
+- **Save** calls `submit()`.
+- **Cancel** reverts fields to the previous values.
+
+
+## Inline Edit
+Setting `inline-edit` adds a pencil icon on each field. Clicking any one pencil icon switches the **whole form** to
+edit mode at once - fields don't each track their own edit state.
+
+The form's current mode is exposed as the `editMode` attribute, which can also be set programmatically, e.g. from an external "Edit" button:
+```js
+this.refs.recordForm.editMode = true;
+```
+After a successful `submit()`, the form automatically switches back to view mode.
 
 ## Field Anatomy and Extensions
 
@@ -303,6 +321,9 @@ Then this component can be used in the form:
 | `readOnly`         | If true, all fields are read-only.                                                     |
 | `isPersonAccount`  | If true, the `Name` field renders as a compound Person Name field. Not auto-detected, see [Person Accounts](#person-accounts). |
 | `optionalFields`   | Extra fields to retrieve from the record, besides the ones rendered by child field components. |
+| `inlineEdit`       | If true, editable fields start in read mode with a pencil icon; clicking any one of them switches the whole form to edit mode. |
+| `editMode`         | Current edit mode of the form (see [Inline Edit](#inline-edit)). Can be read or set programmatically. |
+| `hideFooter`       | If true, hides the default Cancel/Save footer (see [Cancel/Save Footer](#cancelsave-footer)). |
 
 ### Methods
 | Method                                 | Description                                |
@@ -356,6 +377,10 @@ from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-
 
 ### 1.3.0
 - Added: `optionalFields` attribute to retrieve extra fields besides the ones rendered by child field components.
+- Added: `inlineEdit` attribute - editable fields show a pencil icon in read mode; clicking any one of them switches the whole form to edit
+  mode. Saving still happens via the form's `submit()`.
+- Added: `editMode` attribute to read or set the form's current edit mode programmatically.
+- Added: Cancel/Save footer, shown by default; hide it with `hideFooter`. Cancel reverts fields to the last record loaded from the server.
 - Changed: `isPersonAccount` is now a plain attribute set by the consumer, instead of being auto-detected.
 - Changed: once a record with a `recordId` has loaded, its actual Record Type Id overrides the name/default-resolved one.
 - Removed: `RecordFormCtrl` Apex class. Record Type resolution by developer name now uses a GraphQL query (`lightning/graphql`) instead of a SOQL

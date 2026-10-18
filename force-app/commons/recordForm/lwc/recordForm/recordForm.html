@@ -4,8 +4,12 @@
 
         <form lwc:if={isLoaded} class={formClasses} role="list"
               onfieldconnected={onFieldConnected}
+              onedit={onFieldEdit}
+              oncancel={handleFooterCancel}
+              onsave={handleFooterSave}
               onsubmit={submit}>
             <slot></slot>
+            <c-record-form-footer lwc:if={showFormFooter}></c-record-form-footer>
         </form>
     </div>
 </template>

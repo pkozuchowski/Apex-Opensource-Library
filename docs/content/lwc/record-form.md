@@ -464,6 +464,7 @@ handled by Record Form itself; not meant to be used outside of a `c-record-form`
 - Added: `isDirty()` method to check whether the record has changed since edit mode was last entered.
 - Added: Escape keyboard shortcuts for Cancel while in edit mode.
 - Added: confirmation dialog before discarding unsaved changes on Cancel (via `lightning/confirm`); disable with `disableConfirmDiscard`.
+- Added: an error toast when saving fails, including messages from UI API record-level and field-level errors.
 - Changed: `isPersonAccount` is now a plain attribute set by the consumer, instead of being auto-detected.
 - Changed: once a record with a `recordId` has loaded, its actual Record Type Id overrides the name/default-resolved one.
 - Removed: the form-level `readOnly` attribute - it was equivalent to `editMode={false}` with `inlineEdit={false}` and no way to flip it.
@@ -481,6 +482,8 @@ handled by Record Form itself; not meant to be used outside of a `c-record-form`
 - Fix: per-field `designSystem` attribute had no effect (only the form-level one was ever read).
 - Fix: `getUpdatableFields()` sent `Id: undefined` as part of the `createRecord()` payload.
 - Fix: changing `objectApiName` on a live instance didn't re-qualify `optionalFields`.
+- Fix: rapid repeated Save clicks could start multiple concurrent save requests.
+- Fix: dynamically removed fields could remain registered and participate in validation.
 
 ### 1.2.2
 - Fix: Field validation methods after a field is repeatedly hidden and shown.

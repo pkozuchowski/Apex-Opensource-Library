@@ -15,6 +15,7 @@ import {gql, graphql} from "lightning/graphql";
 // Use bellow for offline capabilities
 // import {gql, graphql} from 'lightning/uiGraphQLApi';
 import LightningConfirm from "lightning/confirm";
+import Toast from "lightning/toast";
 
 const MASTER_RECORD_TYPE = "012000000000000AAA";
 // SObjectType filter is not supported
@@ -39,6 +40,34 @@ const RECORD_TYPE_QUERY = gql`
         }
     }
 `;
+
+function getErrorMessage(error) {
+    const messages = [];
+    const addMessage = (message) => {
+        if (typeof message === "string" && message.trim() && !messages.includes(message.trim())) {
+            messages.push(message.trim());
+        }
+    };
+    const body = error?.body;
+
+    if (typeof body === "string") {
+        addMessage(body);
+    } else if (Array.isArray(body)) {
+        body.forEach((item) => addMessage(item?.message));
+    } else if (body && typeof body === "object") {
+        addMessage(body.message);
+        (body.pageErrors ?? []).forEach((item) => addMessage(item?.message));
+
+        const output = body.output;
+        (output?.errors ?? []).forEach((item) => addMessage(item?.message));
+        Object.values(output?.fieldErrors ?? {}).forEach((fieldErrors) =>
+            fieldErrors.forEach((item) => addMessage(item?.message))
+        );
+    }
+
+    addMessage(error?.message);
+    return messages.join("; ") || "An unexpected error occurred while saving the record.";
+}
 
 /**
  * Lightning Web Component form wrapper that handles record wiring, field setup,
@@ -333,6 +362,14 @@ export default class RecordForm extends LightningElement {
             return flatRecord;
         } catch (err) {
             console.error(err?.message ?? err);
+            Toast.show(
+                {
+                    label  : "Save failed",
+                    message: getErrorMessage(err),
+                    variant: "error"
+                },
+                this
+            );
             throw err;
         } finally {
             this.spinner = false;

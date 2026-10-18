@@ -6,11 +6,21 @@ import { getObjectInfo, getPicklistValuesByRecordType } from "lightning/uiObject
 import { getRecord, createRecord, notifyRecordUpdateAvailable } from "lightning/uiRecordApi";
 import { graphql } from "lightning/graphql";
 import LightningConfirm from "lightning/confirm";
+import Toast from "lightning/toast";
 
 jest.mock("lightning/confirm", () => ({
     __esModule: true,
     default: { open: jest.fn() }
 }));
+
+jest.mock(
+    "lightning/toast",
+    () => ({
+        __esModule: true,
+        default: { show: jest.fn() }
+    }),
+    { virtual: true }
+);
 
 const RECORD_ID = "001xx000003DGb2AAG";
 
@@ -386,6 +396,40 @@ describe("c-record-form", () => {
             expect(createRecord).toHaveBeenCalled();
             expect(notifyRecordUpdateAvailable).toHaveBeenCalled();
             expect(element.editMode).toBe(false);
+        });
+
+        it("shows UI API save errors in a toast and preserves the rejected promise", async () => {
+            const error = {
+                body: {
+                    message: "Unable to save record",
+                    output: {
+                        errors: [{ message: "Insufficient access" }],
+                        fieldErrors: {
+                            Name: [{ message: "Name is required" }]
+                        }
+                    }
+                }
+            };
+            createRecord.mockRejectedValueOnce(error);
+            const element = createRecordForm({ recordId: undefined, editMode: true });
+            loadForm();
+            await Promise.resolve();
+            element.record = { Name: "New" };
+
+            const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+            try {
+                await expect(element.submit()).rejects.toBe(error);
+                expect(Toast.show).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        label: "Save failed",
+                        message: "Unable to save record; Insufficient access; Name is required",
+                        variant: "error"
+                    }),
+                    expect.any(RecordForm)
+                );
+            } finally {
+                consoleError.mockRestore();
+            }
         });
 
         it("ignores rapid repeated Save clicks while the first save is pending", async () => {

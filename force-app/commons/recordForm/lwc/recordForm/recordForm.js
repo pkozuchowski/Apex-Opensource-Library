@@ -16,15 +16,6 @@ import {gql, graphql} from "lightning/graphql";
 // import {gql, graphql} from 'lightning/uiGraphQLApi';
 import LightningConfirm from "lightning/confirm";
 
-const MULTILINE_OR_COMPLEX_TAGS = [
-    "LIGHTNING-INPUT-ADDRESS",
-    "LIGHTNING-TEXTAREA",
-    "LIGHTNING-INPUT-RICH-TEXT",
-    "LIGHTNING-RECORD-PICKER",
-    "LIGHTNING-SELECT",
-    "LIGHTNING-DUAL-LISTBOX"
-];
-
 const MASTER_RECORD_TYPE = "012000000000000AAA";
 // SObjectType filter is not supported
 const RECORD_TYPE_QUERY = gql`
@@ -391,14 +382,15 @@ export default class RecordForm extends LightningElement {
     fetchRecord({error, data}) {
         if (data) {
             if (data.recordTypeId) {
-                this._recordTypeIdFromRecord = true;    
+                this._recordTypeIdFromRecord = true;
                 this.recordTypeId = data.recordTypeId;
             }
 
+            const flatRecord = Object.assign(getFlatRecord(data), this.record);
             this.dispatchEvent(
                 new CustomEvent("change", {
                     detail: {
-                        value: Object.assign(getFlatRecord(data), this.record)
+                        value: flatRecord
                     }
                 })
             );
@@ -480,6 +472,7 @@ export default class RecordForm extends LightningElement {
             );
         }
         this.formAttributes.editMode = false;
+        this._editModeSnapshot = undefined;
     }
 
     async handleKeyDown(ev) {
@@ -489,9 +482,6 @@ export default class RecordForm extends LightningElement {
         if (ev.key === "Escape") {
             ev.preventDefault();
             await this.cancelEdit();
-        } else if (ev.key === "Enter" && !MULTILINE_OR_COMPLEX_TAGS.includes(ev.target?.tagName)) {
-            ev.preventDefault();
-            await this.submit();
         }
     }
 }

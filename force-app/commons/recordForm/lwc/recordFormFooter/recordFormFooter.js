@@ -21,8 +21,8 @@ export default class RecordFormFooter extends LightningElement {
 
     get classes() {
         return {
-            'slds-docked-form-footer': this.docked,
-            'slds-text-align_center' : true
+            "slds-docked-form-footer": this.docked,
+            "slds-text-align_center" : true
         }
     }
 }

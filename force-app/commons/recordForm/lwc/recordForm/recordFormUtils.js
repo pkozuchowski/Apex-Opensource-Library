@@ -21,9 +21,10 @@ export function validate(fields, validationFn) {
  * @param {Object} record - The record object containing field values (default: empty object)
  * @param {Object} objectInfo - Object metadata containing field definitions (default: empty object)
  * @param {boolean} isCreate - Flag indicating if this is a create operation (true) or update operation (false)
+ * @param {boolean} isPersonAccount - Flag indicating if this is a Person Account (true) or not (false)
  * @returns {Object} Object containing only the fields that are createable/updateable, plus the Id field
  */
-export function getUpdatableFields(record = {}, objectInfo = {}, isCreate) {
+export function getUpdatableFields(record = {}, objectInfo = {}, isCreate, isPersonAccount) {
     const fields = {};
 
     Object.keys(record).forEach((fieldName) => {
@@ -35,6 +36,10 @@ export function getUpdatableFields(record = {}, objectInfo = {}, isCreate) {
         }
     });
     fields.Id = record.Id;
+
+    if (isPersonAccount) {
+        delete fields.Name;
+    }
 
     return fields;
 }

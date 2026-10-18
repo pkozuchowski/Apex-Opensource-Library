@@ -293,7 +293,7 @@ export default class RecordForm extends LightningElement {
         this.spinner = true;
         try {
             const isCreate = !this.record?.Id;
-            const fieldsToUpdate = getUpdatableFields(this.record, this.objectInfo, isCreate);
+            const fieldsToUpdate = getUpdatableFields(this.record, this.objectInfo, isCreate, this.isPersonAccount);
 
             const recordInput = {
                 fields: fieldsToUpdate,
@@ -309,7 +309,7 @@ export default class RecordForm extends LightningElement {
                     detail: {value: flatRecord}
                 })
             );
-            notifyRecordUpdateAvailable([{recordId: result.id}]);
+            await notifyRecordUpdateAvailable([{recordId: result.id}]);
             this.formAttributes.editMode = false;
 
             return flatRecord;
@@ -366,6 +366,25 @@ export default class RecordForm extends LightningElement {
         }
     }
 
+    @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields"})
+    fetchRecord({error, data}) {
+        if (data) {
+            if (data.recordTypeId) {
+                this.recordTypeId = data.recordTypeId;
+            }
+
+            this.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: {
+                        value: Object.assign(getFlatRecord(data), this.record)
+                    }
+                })
+            );
+        } else if (error) {
+            console.error("Error fetching record", error?.message, error);
+        }
+    }
+
     onFieldConnected(ev) {
         try {
             ev.preventDefault();
@@ -409,10 +428,10 @@ export default class RecordForm extends LightningElement {
         await this.cancelEdit();
     }
 
-    handleFooterSave(ev) {
+    async handleFooterSave(ev) {
         ev.preventDefault();
         ev.stopPropagation();
-        this.submit();
+        await this.submit();
     }
 
     /**
@@ -442,35 +461,16 @@ export default class RecordForm extends LightningElement {
         this.formAttributes.editMode = false;
     }
 
-    handleKeyDown(ev) {
+    async handleKeyDown(ev) {
         if (!this.formAttributes.editMode) {
             return;
         }
         if (ev.key === "Escape") {
             ev.preventDefault();
-            this.cancelEdit();
+            await this.cancelEdit();
         } else if (ev.key === "Enter" && !MULTILINE_OR_COMPLEX_TAGS.includes(ev.target?.tagName)) {
             ev.preventDefault();
-            this.submit();
-        }
-    }
-
-    @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields"})
-    fetchRecord({error, data}) {
-        if (data) {
-            if (data.recordTypeId) {
-                this.recordTypeId = data.recordTypeId;
-            }
-
-            this.dispatchEvent(
-                new CustomEvent("change", {
-                    detail: {
-                        value: Object.assign(getFlatRecord(data), this.record)
-                    }
-                })
-            );
-        } else if (error) {
-            console.error("Error fetching record", error?.message, error);
+            await this.submit();
         }
     }
 }

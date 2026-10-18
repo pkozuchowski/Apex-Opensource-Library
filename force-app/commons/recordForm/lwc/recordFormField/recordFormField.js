@@ -14,6 +14,13 @@ export default class RecordFormField extends RecordFormComponent {
     /*Array of picklist values to present (['A', 'B', 'C'])*/
     @api optionsFilter;
 
+    /**
+     * For a polymorphic lookup (e.g. OwnerId -> User or Group), forces the record
+     * picker to search/display this object API name instead of guessing from the
+     * field's (unordered) list of reference-to objects.
+     */
+    @api lookupObject;
+
     /*Lightning Input Properties*/
     @api autocomplete;
     @api dateStyle;

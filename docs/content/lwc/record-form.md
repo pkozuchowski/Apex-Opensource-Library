@@ -403,6 +403,7 @@ from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-
 | `typeAttributes` | `object` | Additional attributes to apply to the underlying input element.                    |
 | `options`        | `array`  | Array of picklist values to present instead of the ones from the field metadata.   |
 | `optionsFilter`  | `array`  | Subset of picklist values to display, from options or record type picklist values. |
+| `lookupObject`   | `string` | For a polymorphic lookup (e.g. `OwnerId` -> `User` or `Group`), forces the record picker to search/display this object API name. Without it, the choice is resolved deterministically (alphabetically) from the field's reference-to objects, which may not be the one you want. |
 
 ## Record Form Footer
 The default content of the form's `footer` slot - see [Cancel/Save Footer](#cancelsave-footer). Dispatches bubbling `cancel`/`save` events,
@@ -431,6 +432,8 @@ handled by Record Form itself; not meant to be used outside of a `c-record-form`
 - Added: Cancel/Save footer (`c-record-form-footer`), rendered into an overrideable `footer` slot, shown by default whenever the form is in
   edit mode. Hide it with `hideFooter`, or override the `footer` slot entirely. Button labels are configurable via `cancelLabel`/`saveLabel`
   on `c-record-form-footer`, defaulting to "Cancel"/"Save". Cancel reverts fields to their values from when edit mode was last entered.
+- Added: `lookupObject` attribute on `c-record-form-field` to force the object type for a polymorphic lookup (e.g. `OwnerId`), instead of
+  relying on the field's unordered `referenceToInfos` list; the un-overridden fallback is now also resolved deterministically.
 - Changed: `isPersonAccount` is now a plain attribute set by the consumer, instead of being auto-detected.
 - Changed: once a record with a `recordId` has loaded, its actual Record Type Id overrides the name/default-resolved one.
 - Removed: the form-level `readOnly` attribute - it was equivalent to `editMode={false}` with `inlineEdit={false}` and no way to flip it.

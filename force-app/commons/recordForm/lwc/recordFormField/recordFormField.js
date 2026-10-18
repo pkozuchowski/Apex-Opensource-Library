@@ -21,6 +21,13 @@ export default class RecordFormField extends RecordFormComponent {
      */
     @api lookupObject;
 
+    /**
+     * For a lookup field, restricts the record picker's search results. Passed
+     * straight through to `lightning-record-picker`'s `filter` attribute, e.g.
+     * `{criteria: [{fieldPath: 'IsActive', operator: 'eq', value: true}]}`.
+     */
+    @api lookupFilter;
+
     /*Lightning Input Properties*/
     @api autocomplete;
     @api dateStyle;

@@ -14,6 +14,16 @@ import {
 import { gql, graphql } from "lightning/graphql";
 // Use bellow for offline capabilities
 // import {gql, graphql} from 'lightning/uiGraphQLApi';
+import LightningConfirm from "lightning/confirm";
+
+const MULTILINE_OR_COMPLEX_TAGS = [
+    "LIGHTNING-INPUT-ADDRESS",
+    "LIGHTNING-TEXTAREA",
+    "LIGHTNING-INPUT-RICH-TEXT",
+    "LIGHTNING-RECORD-PICKER",
+    "LIGHTNING-COMBOBOX",
+    "LIGHTNING-DUAL-LISTBOX"
+];
 
 const MASTER_RECORD_TYPE = "012000000000000AAA";
 // SObjectType filter is not supported
@@ -68,6 +78,9 @@ export default class RecordForm extends LightningElement {
 
     /**Hides the Cancel/Save footer, which is shown by default.*/
     @api hideFooter = false;
+
+    /**Skips the "discard unsaved changes?" confirmation dialog on Cancel.*/
+    @api disableConfirmDiscard = false;
 
     @track
     formAttributes = {
@@ -250,6 +263,24 @@ export default class RecordForm extends LightningElement {
     }
 
     /**
+     * Whether the record has changed since edit mode was last entered.
+     * Returns false if edit mode was never entered (nothing to compare against).
+     * @returns {boolean}
+     */
+    @api isDirty() {
+        if (!this._editModeSnapshot) {
+            return false;
+        }
+        const keys = new Set([...Object.keys(this._editModeSnapshot), ...Object.keys(this._record)]);
+        for (const key of keys) {
+            if (this._editModeSnapshot[key] !== this._record[key]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Submit the form by creating or updating the record.
      * Dispatches a `change` event with `detail.value` containing the flat record.
      * @param {Event} ev Optional submit event to cancel.
@@ -370,9 +401,35 @@ export default class RecordForm extends LightningElement {
         this.editMode = true;
     }
 
-    handleFooterCancel(ev) {
+    async handleFooterCancel(ev) {
         ev.preventDefault();
         ev.stopPropagation();
+        await this.cancelEdit();
+    }
+
+    handleFooterSave(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        this.submit();
+    }
+
+    /**
+     * Reverts fields to their edit-mode-entry values and exits edit mode. If dirty
+     * and `disableConfirmDiscard` is not set, asks for confirmation first.
+     * @returns {Promise<void>}
+     */
+    async cancelEdit() {
+        if (!this.disableConfirmDiscard && this.isDirty()) {
+            const confirmed = await LightningConfirm.open({
+                label: "Discard Changes?",
+                message: "You have unsaved changes. Are you sure you want to discard them?",
+                theme: "warning"
+            });
+            if (!confirmed) {
+                return;
+            }
+        }
+
         if (this._editModeSnapshot) {
             this.dispatchEvent(
                 new CustomEvent("change", {
@@ -383,10 +440,17 @@ export default class RecordForm extends LightningElement {
         this.formAttributes.editMode = false;
     }
 
-    handleFooterSave(ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        this.submit();
+    handleKeyDown(ev) {
+        if (!this.formAttributes.editMode) {
+            return;
+        }
+        if (ev.key === "Escape") {
+            ev.preventDefault();
+            this.cancelEdit();
+        } else if (ev.key === "Enter" && !MULTILINE_OR_COMPLEX_TAGS.includes(ev.target?.tagName)) {
+            ev.preventDefault();
+            this.submit();
+        }
     }
 
     @wire(getRecord, { recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields" })

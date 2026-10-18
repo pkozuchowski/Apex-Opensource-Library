@@ -4,6 +4,12 @@ import { createElement } from "lwc";
 import RecordForm from "c/recordForm";
 import { getObjectInfo, getPicklistValuesByRecordType } from "lightning/uiObjectInfoApi";
 import { getRecord, createRecord, notifyRecordUpdateAvailable } from "lightning/uiRecordApi";
+import LightningConfirm from "lightning/confirm";
+
+jest.mock("lightning/confirm", () => ({
+    __esModule: true,
+    default: { open: jest.fn() }
+}));
 
 const RECORD_ID = "001xx000003DGb2AAG";
 
@@ -107,6 +113,24 @@ describe("c-record-form", () => {
         });
     });
 
+    describe("isDirty()", () => {
+        it("is false when edit mode was never entered", () => {
+            const element = createRecordForm();
+            expect(element.isDirty()).toBe(false);
+        });
+
+        it("is false right after entering edit mode, true once a field changes", () => {
+            const element = createRecordForm();
+            element.record = { Id: RECORD_ID, Name: "Original" };
+            element.editMode = true;
+
+            expect(element.isDirty()).toBe(false);
+
+            element.record = { Id: RECORD_ID, Name: "Changed" };
+            expect(element.isDirty()).toBe(true);
+        });
+    });
+
     describe("Cancel/Save footer visibility", () => {
         it("is hidden when hideFooter is true", async () => {
             const element = createRecordForm({ hideFooter: true });
@@ -139,7 +163,8 @@ describe("c-record-form", () => {
     });
 
     describe("Cancel/Save footer actions", () => {
-        it("Cancel reverts fields to their state when edit mode was entered, not to the latest edits", async () => {
+        it("Cancel reverts fields to their edit-mode-entry state when confirmed, not to the latest edits", async () => {
+            LightningConfirm.open.mockResolvedValue(true);
             const element = createRecordForm({ editMode: false });
             loadForm();
             await Promise.resolve();
@@ -157,11 +182,67 @@ describe("c-record-form", () => {
 
             const footer = element.shadowRoot.querySelector("c-record-form-footer");
             footer.dispatchEvent(new CustomEvent("cancel", { bubbles: true, composed: true }));
+            await flushPromises();
 
+            expect(LightningConfirm.open).toHaveBeenCalled();
             expect(element.editMode).toBe(false);
             expect(changeHandler).toHaveBeenCalledWith(
                 expect.objectContaining({ detail: { value: { Id: RECORD_ID, Name: "Before edit" } } })
             );
+        });
+
+        it("Cancel keeps editing when the discard confirmation is declined", async () => {
+            LightningConfirm.open.mockResolvedValue(false);
+            const element = createRecordForm({ editMode: false });
+            loadForm();
+            await Promise.resolve();
+
+            element.record = { Id: RECORD_ID, Name: "Before edit" };
+            element.editMode = true;
+            await Promise.resolve();
+            element.record = { Id: RECORD_ID, Name: "Typed but unsaved" };
+
+            const footer = element.shadowRoot.querySelector("c-record-form-footer");
+            footer.dispatchEvent(new CustomEvent("cancel", { bubbles: true, composed: true }));
+            await flushPromises();
+
+            expect(element.editMode).toBe(true);
+            expect(element.record).toEqual({ Id: RECORD_ID, Name: "Typed but unsaved" });
+        });
+
+        it("Cancel skips the confirmation entirely when disableConfirmDiscard is set", async () => {
+            const element = createRecordForm({ editMode: false, disableConfirmDiscard: true });
+            loadForm();
+            await Promise.resolve();
+
+            element.record = { Id: RECORD_ID, Name: "Before edit" };
+            element.editMode = true;
+            await Promise.resolve();
+            element.record = { Id: RECORD_ID, Name: "Typed but unsaved" };
+
+            const footer = element.shadowRoot.querySelector("c-record-form-footer");
+            footer.dispatchEvent(new CustomEvent("cancel", { bubbles: true, composed: true }));
+            await flushPromises();
+
+            expect(LightningConfirm.open).not.toHaveBeenCalled();
+            expect(element.editMode).toBe(false);
+        });
+
+        it("Cancel skips the confirmation when nothing changed (not dirty)", async () => {
+            const element = createRecordForm({ editMode: false });
+            loadForm();
+            await Promise.resolve();
+
+            element.record = { Id: RECORD_ID, Name: "Unchanged" };
+            element.editMode = true;
+            await Promise.resolve();
+
+            const footer = element.shadowRoot.querySelector("c-record-form-footer");
+            footer.dispatchEvent(new CustomEvent("cancel", { bubbles: true, composed: true }));
+            await flushPromises();
+
+            expect(LightningConfirm.open).not.toHaveBeenCalled();
+            expect(element.editMode).toBe(false);
         });
 
         it("Save calls submit() and exits edit mode once the record is created", async () => {
@@ -180,6 +261,74 @@ describe("c-record-form", () => {
             expect(createRecord).toHaveBeenCalled();
             expect(notifyRecordUpdateAvailable).toHaveBeenCalled();
             expect(element.editMode).toBe(false);
+        });
+    });
+
+    describe("Keyboard shortcuts", () => {
+        function dispatchKey(form, key, targetTagName) {
+            const event = new KeyboardEvent("keydown", { key, bubbles: true, composed: true, cancelable: true });
+            if (targetTagName) {
+                Object.defineProperty(event, "target", { value: { tagName: targetTagName } });
+            }
+            form.dispatchEvent(event);
+        }
+
+        it("Escape cancels edit mode (with confirmation, since dirty)", async () => {
+            LightningConfirm.open.mockResolvedValue(true);
+            const element = createRecordForm({ editMode: false });
+            loadForm();
+            await Promise.resolve();
+
+            element.record = { Id: RECORD_ID, Name: "Before edit" };
+            element.editMode = true;
+            await Promise.resolve();
+            element.record = { Id: RECORD_ID, Name: "Typed but unsaved" };
+
+            const form = element.shadowRoot.querySelector("form");
+            dispatchKey(form, "Escape");
+            await flushPromises();
+
+            expect(LightningConfirm.open).toHaveBeenCalled();
+            expect(element.editMode).toBe(false);
+        });
+
+        it("does nothing when not in edit mode", async () => {
+            const element = createRecordForm({ editMode: false });
+            loadForm();
+            await Promise.resolve();
+
+            const form = element.shadowRoot.querySelector("form");
+            dispatchKey(form, "Escape");
+            await flushPromises();
+
+            expect(LightningConfirm.open).not.toHaveBeenCalled();
+        });
+
+        it("Enter submits the form", async () => {
+            createRecord.mockResolvedValueOnce({ id: RECORD_ID, fields: { Name: { value: "New" } } });
+            const element = createRecordForm({ recordId: undefined, editMode: true });
+            loadForm();
+            await Promise.resolve();
+            element.record = { Name: "New" };
+
+            const form = element.shadowRoot.querySelector("form");
+            dispatchKey(form, "Enter", "LIGHTNING-INPUT");
+            await flushPromises();
+
+            expect(createRecord).toHaveBeenCalled();
+        });
+
+        it("Enter is ignored inside a textarea/rich-text/record-picker/combobox/dual-listbox", async () => {
+            const element = createRecordForm({ recordId: undefined, editMode: true });
+            loadForm();
+            await Promise.resolve();
+            element.record = { Name: "New" };
+
+            const form = element.shadowRoot.querySelector("form");
+            dispatchKey(form, "Enter", "LIGHTNING-TEXTAREA");
+            await flushPromises();
+
+            expect(createRecord).not.toHaveBeenCalled();
         });
     });
 });

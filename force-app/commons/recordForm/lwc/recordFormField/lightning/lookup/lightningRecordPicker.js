@@ -25,7 +25,8 @@ export class LightningReferenceExt extends LightningInputExt {
     get attributes() {
         return {
             ...super.attributes,
-            disabled: this.disabled || this.isReadOnly
+            disabled: this.disabled || this.isReadOnly,
+            filter: this.lookupFilter
         };
     }
 

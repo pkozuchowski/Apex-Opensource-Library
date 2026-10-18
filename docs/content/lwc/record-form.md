@@ -163,7 +163,22 @@ if you provide your own `lightning-button type="submit"` instead).
 - **Save** calls `submit()`.
 - **Cancel** reverts fields to their values from when edit mode was last entered (not to the latest unsaved edits, and not necessarily to the
   record as last loaded from the server - if the record was already edited and saved once in the same session, Cancel on a later edit only
-  reverts that later edit).
+  reverts that later edit). If there are unsaved changes, it first asks for confirmation - see below.
+
+### Checking for unsaved changes
+`isDirty()` compares the current record against its state from when edit mode was last entered, and returns `false` if edit mode was never
+entered:
+```js
+if (this.refs.recordForm.isDirty()) {
+    // warn before navigating away, disable a "Next" button, etc.
+}
+```
+
+### Confirming before discarding changes
+Clicking Cancel (or pressing Escape - see [Keyboard Shortcuts](#keyboard-shortcuts)) while `isDirty()` is true opens a
+[`lightning/confirm`](https://developer.salesforce.com/docs/platform/lwc/guide/reference-lightning-confirm.html) dialog asking the user to
+confirm discarding their changes; declining leaves the form in edit mode with the changes intact. Set `disable-confirm-discard` to skip this
+and always discard silently, matching the pre-confirmation behavior.
 
 ### Customizing the footer
 The button labels default to "Cancel" and "Save" and can be overridden on the default footer itself, by slotting in your own
@@ -188,6 +203,13 @@ completely different layout:
 Note: content you provide for the `footer` slot replaces the default footer entirely, including its `editMode`/`hideFooter` visibility logic -
 when overriding the slot, you're responsible for showing/hiding your own markup (e.g. by binding its visibility to the same property you pass
 as `edit-mode`).
+
+## Keyboard Shortcuts
+While the form is in edit mode:
+- **Escape** triggers the same action as clicking Cancel (including the discard confirmation, unless `disable-confirm-discard` is set).
+- **Enter** triggers the same action as clicking Save (calls `submit()`), *except* when focus is in a `lightning-textarea`,
+  `lightning-input-rich-text`, `lightning-record-picker`, `lightning-combobox` or `lightning-dual-listbox` - where Enter already has its own
+  meaning (insert a newline, pick a highlighted option, etc.) and is left alone.
 
 ## Field Anatomy and Extensions
 
@@ -356,6 +378,7 @@ Then this component can be used in the form:
 | `inlineEdit`       | Defaults to true. Adds a pencil icon to editable fields while the form is in view mode. See [Inline Edit](#inline-edit). |
 | `editMode`         | Current edit mode of the form, defaults to false. See [Edit Mode](#edit-mode). Can be read or set programmatically. |
 | `hideFooter`       | If true, hides the default Cancel/Save footer (see [Cancel/Save Footer](#cancelsave-footer)). |
+| `disableConfirmDiscard` | If true, skips the "discard unsaved changes?" confirmation on Cancel. See [Confirming before discarding changes](#confirming-before-discarding-changes). |
 
 ### Methods
 | Method                                 | Description                                |
@@ -368,6 +391,7 @@ Then this component can be used in the form:
 | `setCustomValidityForField(fieldName)` | sets custom validity for a specific field. |
 | `reportValidity()`                     | Reports validity of all fields.            |
 | `checkValidity()`                      | Reports validity of all fields.            |
+| `isDirty()`                             | True if the record changed since edit mode was last entered. See [Checking for unsaved changes](#checking-for-unsaved-changes). |
 
 ## Record Form Component
 
@@ -404,6 +428,7 @@ from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-
 | `options`        | `array`  | Array of picklist values to present instead of the ones from the field metadata.   |
 | `optionsFilter`  | `array`  | Subset of picklist values to display, from options or record type picklist values. |
 | `lookupObject`   | `string` | For a polymorphic lookup (e.g. `OwnerId` -> `User` or `Group`), forces the record picker to search/display this object API name. Without it, the choice is resolved deterministically (alphabetically) from the field's reference-to objects, which may not be the one you want. |
+| `lookupFilter`   | `object` | For a lookup field, restricts the record picker's search results. Passed straight through to `lightning-record-picker`'s `filter` attribute. |
 
 ## Record Form Footer
 The default content of the form's `footer` slot - see [Cancel/Save Footer](#cancelsave-footer). Dispatches bubbling `cancel`/`save` events,
@@ -434,6 +459,10 @@ handled by Record Form itself; not meant to be used outside of a `c-record-form`
   on `c-record-form-footer`, defaulting to "Cancel"/"Save". Cancel reverts fields to their values from when edit mode was last entered.
 - Added: `lookupObject` attribute on `c-record-form-field` to force the object type for a polymorphic lookup (e.g. `OwnerId`), instead of
   relying on the field's unordered `referenceToInfos` list; the un-overridden fallback is now also resolved deterministically.
+- Added: `lookupFilter` attribute on `c-record-form-field`, passed through to `lightning-record-picker`'s `filter` attribute.
+- Added: `isDirty()` method to check whether the record has changed since edit mode was last entered.
+- Added: Escape/Enter keyboard shortcuts for Cancel/Save while in edit mode.
+- Added: confirmation dialog before discarding unsaved changes on Cancel (via `lightning/confirm`); disable with `disableConfirmDiscard`.
 - Changed: `isPersonAccount` is now a plain attribute set by the consumer, instead of being auto-detected.
 - Changed: once a record with a `recordId` has loaded, its actual Record Type Id overrides the name/default-resolved one.
 - Removed: the form-level `readOnly` attribute - it was equivalent to `editMode={false}` with `inlineEdit={false}` and no way to flip it.

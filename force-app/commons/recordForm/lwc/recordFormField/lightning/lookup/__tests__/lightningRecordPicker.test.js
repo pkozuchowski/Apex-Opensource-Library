@@ -26,3 +26,20 @@ describe("LightningReferenceExt.connectFieldExt", () => {
         expect(cmp.objectApiName).toBe("User");
     });
 });
+
+describe("LightningReferenceExt.attributes", () => {
+    it("passes lookupFilter through as the record picker's filter attribute", () => {
+        const cmp = Object.create(LightningReferenceExt.prototype);
+        cmp.label = "Owner"; // short-circuits LightningInputExt.attributes' `this.label || this.fieldInfo.label`
+        cmp.lookupFilter = { criteria: [{ fieldPath: "IsActive", operator: "eq", value: true }] };
+
+        expect(cmp.attributes.filter).toBe(cmp.lookupFilter);
+    });
+
+    it("leaves filter undefined when lookupFilter is not set", () => {
+        const cmp = Object.create(LightningReferenceExt.prototype);
+        cmp.label = "Owner";
+
+        expect(cmp.attributes.filter).toBeUndefined();
+    });
+});

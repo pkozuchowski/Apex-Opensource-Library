@@ -78,8 +78,16 @@ describe('c-record-form', () => {
     });
 
     describe('edit mode', () => {
-        it('defaults to false and can be switched programmatically from outside', () => {
-            const element = createRecordForm({inlineEdit: true});
+        it('defaults to true, independently of inlineEdit', () => {
+            const element = createRecordForm();
+            expect(element.editMode).toBe(true);
+
+            const withInlineEdit = createRecordForm({inlineEdit: true});
+            expect(withInlineEdit.editMode).toBe(true);
+        });
+
+        it('can be set to false upfront (e.g. alongside inlineEdit) to start the form in view mode', () => {
+            const element = createRecordForm({inlineEdit: true, editMode: false});
 
             expect(element.editMode).toBe(false);
             element.editMode = true;
@@ -87,7 +95,7 @@ describe('c-record-form', () => {
         });
 
         it('switches on when a field dispatches a bubbling edit event (pencil click)', async () => {
-            const element = createRecordForm({inlineEdit: true});
+            const element = createRecordForm({inlineEdit: true, editMode: false});
             loadForm();
             await Promise.resolve();
 
@@ -112,7 +120,7 @@ describe('c-record-form', () => {
             expect(element.shadowRoot.querySelector('c-record-form-footer')).toBeNull();
         });
 
-        it('is shown immediately when inlineEdit is off', async () => {
+        it('is shown immediately by default, regardless of inlineEdit', async () => {
             const element = createRecordForm();
             loadForm();
             await Promise.resolve();
@@ -120,8 +128,8 @@ describe('c-record-form', () => {
             expect(element.shadowRoot.querySelector('c-record-form-footer')).not.toBeNull();
         });
 
-        it('stays hidden until editMode is switched on when inlineEdit is on', async () => {
-            const element = createRecordForm({inlineEdit: true});
+        it('stays hidden until editMode is switched on, when started in view mode', async () => {
+            const element = createRecordForm({inlineEdit: true, editMode: false});
             loadForm();
             await Promise.resolve();
 
@@ -135,18 +143,18 @@ describe('c-record-form', () => {
     });
 
     describe('Cancel/Save footer actions', () => {
-        it('Cancel reverts fields to the last loaded record and exits edit mode', async () => {
-            const element = createRecordForm({inlineEdit: true});
+        it('Cancel reverts fields to their state when edit mode was entered, not to the latest edits', async () => {
+            const element = createRecordForm({editMode: false});
             loadForm();
-            getRecord.emit({
-                id          : RECORD_ID,
-                recordTypeId: '012000000000000AAA',
-                fields      : {Name: {value: 'Original'}}
-            });
             await Promise.resolve();
 
-            element.editMode = true;
+            element.record = {Id: RECORD_ID, Name: 'Before edit'};
+            element.editMode = true; // snapshot taken here: {Id, Name: 'Before edit'}
             await Promise.resolve();
+
+            // Simulate the user typing into a field after entering edit mode - the
+            // consumer's onchange handler would merge this into the bound record.
+            element.record = {Id: RECORD_ID, Name: 'Typed but unsaved'};
 
             const changeHandler = jest.fn();
             element.addEventListener('change', changeHandler);
@@ -156,18 +164,17 @@ describe('c-record-form', () => {
 
             expect(element.editMode).toBe(false);
             expect(changeHandler).toHaveBeenCalledWith(
-                expect.objectContaining({detail: {value: {Name: 'Original', Id: RECORD_ID}}})
+                expect.objectContaining({detail: {value: {Id: RECORD_ID, Name: 'Before edit'}}})
             );
         });
 
         it('Save calls submit() and exits edit mode once the record is created', async () => {
             createRecord.mockResolvedValueOnce({id: RECORD_ID, fields: {Name: {value: 'New'}}});
-            const element = createRecordForm({inlineEdit: true, recordId: undefined});
+            const element = createRecordForm({recordId: undefined});
             loadForm();
             await Promise.resolve();
 
             element.record = {Name: 'New'};
-            element.editMode = true;
             await Promise.resolve();
 
             const footer = element.shadowRoot.querySelector('c-record-form-footer');

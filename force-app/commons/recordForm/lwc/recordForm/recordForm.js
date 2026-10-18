@@ -71,7 +71,7 @@ export default class RecordForm extends LightningElement {
         designSystem   : "lightning",
         isPersonAccount: false,
         inlineEdit     : false,
-        editMode       : false
+        editMode       : true
     }
 
 
@@ -115,15 +115,21 @@ export default class RecordForm extends LightningElement {
     set inlineEdit(value) {this.formAttributes.inlineEdit = value;}
 
     /**
-     * Current edit mode of the form. When `inlineEdit` is on, this starts false
-     * (pencil icons shown) and can be set to true to switch the whole form into
-     * edit mode, either by clicking a pencil icon or programmatically.
+     * Current edit mode of the form, independent of `inlineEdit`. Defaults to true
+     * (editable), and can be set to false (e.g. alongside `inlineEdit`) to start the
+     * form in view mode. Can be switched programmatically from outside the form, by
+     * clicking a pencil icon (when `inlineEdit` is on), or via the Cancel/Save footer.
      * @type {boolean}
      */
     @api
     get editMode() {return this.formAttributes.editMode;}
 
-    set editMode(value) {this.formAttributes.editMode = value;}
+    set editMode(value) {
+        if (value && !this.formAttributes.editMode) {
+            this._editModeSnapshot = {...this._record};
+        }
+        this.formAttributes.editMode = value;
+    }
 
     /**
      * Extra fields to retrieve from the record in addition to the fields rendered by
@@ -166,13 +172,12 @@ export default class RecordForm extends LightningElement {
     }
 
     /**
-     * Whether the Cancel/Save footer should be rendered. Always shown for a plain
-     * always-editable form; when `inlineEdit` is on, only once the form has actually
-     * switched into edit mode.
+     * Whether the Cancel/Save footer should be rendered - shown whenever the form is
+     * in edit mode.
      * @type {boolean}
      */
     get showFormFooter() {
-        return !this.hideFooter && (!this.formAttributes.inlineEdit || this.formAttributes.editMode);
+        return !this.hideFooter && this.formAttributes.editMode;
     }
 
     /**
@@ -355,15 +360,15 @@ export default class RecordForm extends LightningElement {
     onFieldEdit(ev) {
         ev.preventDefault();
         ev.stopPropagation();
-        this.formAttributes.editMode = true;
+        this.editMode = true;
     }
 
     handleFooterCancel(ev) {
         ev.preventDefault();
         ev.stopPropagation();
-        if (this._pristineRecord) {
+        if (this._editModeSnapshot) {
             this.dispatchEvent(new CustomEvent('change', {
-                detail: {value: {...this._pristineRecord}}
+                detail: {value: {...this._editModeSnapshot}}
             }));
         }
         this.formAttributes.editMode = false;
@@ -382,7 +387,6 @@ export default class RecordForm extends LightningElement {
                 this.recordTypeId = data.recordTypeId;
             }
 
-            this._pristineRecord = getFlatRecord(data);
             this.dispatchEvent(new CustomEvent('change', {
                 detail: {
                     value: Object.assign(getFlatRecord(data), this.record)

@@ -77,7 +77,7 @@ export default class RecordFormComponent extends LightningElement {
 
     get isReadOnly() {
         return this.formAttributes.readOnly || this.readOnly || !this.updateable
-            || (this.formAttributes.inlineEdit && !this.formAttributes.editMode);
+            || !this.formAttributes.editMode;
     }
 
     get showInlineEditTrigger() {

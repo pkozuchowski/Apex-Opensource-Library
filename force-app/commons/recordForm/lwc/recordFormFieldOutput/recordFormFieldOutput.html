@@ -5,9 +5,14 @@
             <span>{label}</span>
         </div>
         <div class="slds-form-element__control">
-            <span class="slds-form-element__static slds-grow">
-                <slot></slot>
-            </span>
+            <div class="slds-grid slds-grid_vertical-align-end">
+                <span class="slds-form-element__static slds-grow output">
+                    <slot></slot>
+                </span>
+                <c-record-form-field-edit-trigger
+                        lwc:if={showEditTrigger} label={label}>
+                </c-record-form-field-edit-trigger>
+            </div>
         </div>
     </div>
 </template>

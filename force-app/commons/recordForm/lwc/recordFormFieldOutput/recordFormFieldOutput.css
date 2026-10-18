@@ -1,0 +1,6 @@
+/*Fix for Lookup borders*/
+:host .output {
+    --slds-s-input-color-background-disabled: transparent;
+    --slds-s-input-color-border-disabled: transparent;
+    --slds-g-color-border-1: transparent;
+}

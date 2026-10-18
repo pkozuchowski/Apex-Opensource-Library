@@ -1,10 +1,11 @@
 <template>
-    <c-record-form-field-output lwc:if={isReadOnly} label={label} density={formAttributes.density}>
+    <c-record-form-field-output
+        lwc:if={isReadOnly}
+        label={label}
+        density={formAttributes.density}
+        show-edit-trigger={showInlineEditTrigger}
+    >
         <lightning-formatted-rich-text value={fieldValue}></lightning-formatted-rich-text>
-        <c-record-form-field-edit-trigger
-            lwc:if={showInlineEditTrigger}
-            label={label}
-        ></c-record-form-field-edit-trigger>
     </c-record-form-field-output>
 
     <lightning-input-rich-text

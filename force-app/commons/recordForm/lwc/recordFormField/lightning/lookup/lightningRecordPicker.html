@@ -1,9 +1,26 @@
 <template>
+    <c-record-form-field-output
+            lwc:if={isReadOnly}
+            label={label}
+            density={formAttributes.density}
+            show-edit-trigger={showInlineEditTrigger}
+    >
+        <lightning-record-picker
+                class="slds-m-bottom_none"
+                object-api-name={objectApiName}
+                value={attributes.value}
+                variant="label-hidden"
+                label={label}
+                disabled
+        ></lightning-record-picker>
+    </c-record-form-field-output>
+
     <lightning-record-picker
-        lwc:spread={attributes}
-        lwc:ref="input"
-        class={formElementClasses}
-        object-api-name={objectApiName}
-        onchange={handleFieldChange}
+            lwc:else
+            lwc:spread={attributes}
+            lwc:ref="input"
+            class={formElementClasses}
+            object-api-name={objectApiName}
+            onchange={handleFieldChange}
     ></lightning-record-picker>
 </template>

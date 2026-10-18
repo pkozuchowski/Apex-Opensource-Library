@@ -6,6 +6,7 @@ import { api, LightningElement } from "lwc";
 export default class RecordFormFieldOutput extends LightningElement {
     @api label;
     @api density;
+    @api showEditTrigger = false;
 
     get classes() {
         return {

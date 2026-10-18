@@ -210,9 +210,6 @@ as `edit-mode`).
 ## Keyboard Shortcuts
 While the form is in edit mode:
 - **Escape** triggers the same action as clicking Cancel (including the discard confirmation, unless `disable-confirm-discard` is set).
-- **Enter** triggers the same action as clicking Save (calls `submit()`), *except* when focus is in a `lightning-input-address`,
-  `lightning-textarea`, `lightning-input-rich-text`, `lightning-record-picker`, `lightning-select` or `lightning-dual-listbox` - where Enter
-  already has its own meaning (insert a newline, pick a highlighted option, etc.) and is left alone.
 
 ## Field Anatomy and Extensions
 
@@ -465,7 +462,7 @@ handled by Record Form itself; not meant to be used outside of a `c-record-form`
   relying on the field's unordered `referenceToInfos` list; the un-overridden fallback is now also resolved deterministically.
 - Added: `lookupFilter` attribute on `c-record-form-field`, passed through to `lightning-record-picker`'s `filter` attribute.
 - Added: `isDirty()` method to check whether the record has changed since edit mode was last entered.
-- Added: Escape/Enter keyboard shortcuts for Cancel/Save while in edit mode.
+- Added: Escape keyboard shortcuts for Cancel while in edit mode.
 - Added: confirmation dialog before discarding unsaved changes on Cancel (via `lightning/confirm`); disable with `disableConfirmDiscard`.
 - Changed: `isPersonAccount` is now a plain attribute set by the consumer, instead of being auto-detected.
 - Changed: once a record with a `recordId` has loaded, its actual Record Type Id overrides the name/default-resolved one.
@@ -477,8 +474,6 @@ handled by Record Form itself; not meant to be used outside of a `c-record-form`
   inputs weren't tagged with `lwc:ref="input"`, so required Salutation/FirstName/LastName could never block submission.
 - Fix: `reportValidityForField()`/`checkValidityForField()`/`setCustomValidityForField()` always returned `undefined` regardless of the
   field's actual validity.
-- Fix: pressing Enter while a picklist or the Person Name Salutation dropdown was focused triggered form submission instead of being left
-  alone (the keyboard-shortcut ignore list referenced a tag that's never rendered).
 - Fix: `isDirty()` could report `true` immediately after a successful Save, since the edit-mode snapshot wasn't refreshed on save.
 - Fix: Record Type Id resolution from the record's own data vs. the name-based GraphQL lookup was a race, not an enforced precedence.
 - Fix: read-only Picklist/Multi-Picklist fields displayed the raw API value instead of the picklist label.

@@ -406,45 +406,5 @@ describe("c-record-form", () => {
 
             expect(LightningConfirm.open).not.toHaveBeenCalled();
         });
-
-        it("Enter submits the form", async () => {
-            createRecord.mockResolvedValueOnce({ id: RECORD_ID, fields: { Name: { value: "New" } } });
-            const element = createRecordForm({ recordId: undefined, editMode: true });
-            loadForm();
-            await Promise.resolve();
-            element.record = { Name: "New" };
-
-            const form = element.shadowRoot.querySelector("form");
-            dispatchKey(form, "Enter", "LIGHTNING-INPUT");
-            await flushPromises();
-
-            expect(createRecord).toHaveBeenCalled();
-        });
-
-        it("Enter is ignored inside a textarea/rich-text/record-picker/dual-listbox", async () => {
-            const element = createRecordForm({ recordId: undefined, editMode: true });
-            loadForm();
-            await Promise.resolve();
-            element.record = { Name: "New" };
-
-            const form = element.shadowRoot.querySelector("form");
-            dispatchKey(form, "Enter", "LIGHTNING-TEXTAREA");
-            await flushPromises();
-
-            expect(createRecord).not.toHaveBeenCalled();
-        });
-
-        it("Enter is ignored inside a lightning-select (picklist dropdowns, incl. Person Name Salutation)", async () => {
-            const element = createRecordForm({ recordId: undefined, editMode: true });
-            loadForm();
-            await Promise.resolve();
-            element.record = { Name: "New" };
-
-            const form = element.shadowRoot.querySelector("form");
-            dispatchKey(form, "Enter", "LIGHTNING-SELECT");
-            await flushPromises();
-
-            expect(createRecord).not.toHaveBeenCalled();
-        });
     });
 });

@@ -176,7 +176,7 @@ export default class RecordForm extends LightningElement {
     }
 
     /**
-     * Plain record object keyed by field API name.
+     * Plain record object keyed by the field API name.
      * @type {Object}
      */
     @api

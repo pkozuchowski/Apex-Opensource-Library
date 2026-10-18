@@ -70,8 +70,8 @@ export default class RecordForm extends LightningElement {
         readOnly       : false,
         designSystem   : "lightning",
         isPersonAccount: false,
-        inlineEdit     : false,
-        editMode       : true
+        inlineEdit     : true,
+        editMode       : false
     }
 
 
@@ -105,8 +105,8 @@ export default class RecordForm extends LightningElement {
     set isPersonAccount(value) {this.formAttributes.isPersonAccount = value;}
 
     /**
-     * When true, editable fields start in read mode with a pencil icon; clicking it
-     * switches that field into edit mode.
+     * When true (the default), editable fields show a pencil icon while the form is
+     * in view mode; clicking it switches the whole form into edit mode.
      * @type {boolean}
      */
     @api
@@ -115,10 +115,11 @@ export default class RecordForm extends LightningElement {
     set inlineEdit(value) {this.formAttributes.inlineEdit = value;}
 
     /**
-     * Current edit mode of the form, independent of `inlineEdit`. Defaults to true
-     * (editable), and can be set to false (e.g. alongside `inlineEdit`) to start the
-     * form in view mode. Can be switched programmatically from outside the form, by
-     * clicking a pencil icon (when `inlineEdit` is on), or via the Cancel/Save footer.
+     * Current edit mode of the form, independent of `inlineEdit`. Defaults to false
+     * (view mode); set to true (e.g. if you don't want `inlineEdit`'s pencil icons)
+     * to start the form already editable. Can be switched programmatically from
+     * outside the form, by clicking a pencil icon (when `inlineEdit` is on), or via
+     * the Cancel/Save footer.
      * @type {boolean}
      */
     @api

@@ -78,24 +78,22 @@ describe('c-record-form', () => {
     });
 
     describe('edit mode', () => {
-        it('defaults to true, independently of inlineEdit', () => {
+        it('defaults to inlineEdit=true, editMode=false (view mode with pencil icons)', () => {
             const element = createRecordForm();
-            expect(element.editMode).toBe(true);
-
-            const withInlineEdit = createRecordForm({inlineEdit: true});
-            expect(withInlineEdit.editMode).toBe(true);
+            expect(element.inlineEdit).toBe(true);
+            expect(element.editMode).toBe(false);
         });
 
-        it('can be set to false upfront (e.g. alongside inlineEdit) to start the form in view mode', () => {
-            const element = createRecordForm({inlineEdit: true, editMode: false});
+        it('can be set to true upfront (e.g. to skip inlineEdit/pencil icons) to start the form editable', () => {
+            const element = createRecordForm({editMode: true});
 
-            expect(element.editMode).toBe(false);
-            element.editMode = true;
             expect(element.editMode).toBe(true);
+            element.editMode = false;
+            expect(element.editMode).toBe(false);
         });
 
         it('switches on when a field dispatches a bubbling edit event (pencil click)', async () => {
-            const element = createRecordForm({inlineEdit: true, editMode: false});
+            const element = createRecordForm();
             loadForm();
             await Promise.resolve();
 
@@ -120,22 +118,22 @@ describe('c-record-form', () => {
             expect(element.shadowRoot.querySelector('c-record-form-footer')).toBeNull();
         });
 
-        it('is shown immediately by default, regardless of inlineEdit', async () => {
+        it('is hidden by default (view mode) and appears once editMode is switched on', async () => {
             const element = createRecordForm();
-            loadForm();
-            await Promise.resolve();
-
-            expect(element.shadowRoot.querySelector('c-record-form-footer')).not.toBeNull();
-        });
-
-        it('stays hidden until editMode is switched on, when started in view mode', async () => {
-            const element = createRecordForm({inlineEdit: true, editMode: false});
             loadForm();
             await Promise.resolve();
 
             expect(element.shadowRoot.querySelector('c-record-form-footer')).toBeNull();
 
             element.editMode = true;
+            await Promise.resolve();
+
+            expect(element.shadowRoot.querySelector('c-record-form-footer')).not.toBeNull();
+        });
+
+        it('is shown immediately when editMode is set true upfront', async () => {
+            const element = createRecordForm({editMode: true});
+            loadForm();
             await Promise.resolve();
 
             expect(element.shadowRoot.querySelector('c-record-form-footer')).not.toBeNull();
@@ -170,7 +168,7 @@ describe('c-record-form', () => {
 
         it('Save calls submit() and exits edit mode once the record is created', async () => {
             createRecord.mockResolvedValueOnce({id: RECORD_ID, fields: {Name: {value: 'New'}}});
-            const element = createRecordForm({recordId: undefined});
+            const element = createRecordForm({recordId: undefined, editMode: true});
             loadForm();
             await Promise.resolve();
 

@@ -36,8 +36,6 @@ There is also support for custom components and custom design systems other than
                optional-fields={optionalFields}
                record={account}
                density="compact"
-               inline-edit
-               edit-mode={editMode}
                onchange={onRecordChange}>
 
     <c-record-form-field read-only field="OwnerId"></c-record-form-field>
@@ -49,12 +47,12 @@ There is also support for custom components and custom design systems other than
     <c-record-form-field field="MyPicklist__c" type="radio-group"></c-record-form-field>
 </c-record-form>
 ```
+By default the form above opens in view mode with pencil icons (`inlineEdit`/`editMode` defaults - see [Edit Mode](#edit-mode)).
 
 ```js
 export default class MyAccountForm extends LightningElement {
     @track account = {};
     optionalFields = ["Industry", "AnnualRevenue"];
-    editMode = false; // paired with inline-edit, start the form in view mode
 
     onRecordChange(ev) {
         Object.assign(this.account, ev.detail.value);
@@ -141,20 +139,20 @@ Submit uses uiApi to create or update the createable/updateable fields on the re
 On successful submitting, the form emits a change event with the updated/created record or throws an error.
 
 ## Edit Mode
-The form's current mode is exposed as the `editMode` attribute, defaulting to `true` (editable) - independently of `inlineEdit`. It can be:
-- Set declaratively up front, e.g. `edit-mode={false}` to start the form in view mode.
+The form's current mode is exposed as the `editMode` attribute, defaulting to `false` (view mode) - independently of `inlineEdit`. It can be:
+- Set declaratively up front, e.g. `edit-mode={true}` to start the form already editable.
 - Set programmatically from outside the form, e.g. from an external "Edit" button: `this.refs.recordForm.editMode = true;`
-- Switched on by clicking a pencil icon, when `inlineEdit` is also on (see below).
+- Switched on by clicking a pencil icon, when `inlineEdit` is also on (the default - see below).
 - Switched off automatically after a successful `submit()`, or by clicking Cancel on the footer.
 
 ## Inline Edit
-Setting `inline-edit` adds a pencil icon to every editable field while the form is in view mode (`editMode` is `false`). Clicking any one
-pencil icon switches the **whole form** to edit mode at once - fields don't each track their own edit state.
+`inlineEdit` defaults to `true`: editable fields show a pencil icon while the form is in view mode (`editMode` is `false`, also the default).
+Clicking any one pencil icon switches the **whole form** to edit mode at once - fields don't each track their own edit state.
 
-`inlineEdit` only controls the pencil icon affordance - it doesn't by itself put the form in view mode. To get the typical "view first, pencil
-to edit" experience, pair it with `edit-mode={false}`:
+`inlineEdit` only controls the pencil icon affordance - it doesn't by itself put the form in view mode (that's `editMode`'s job, and it's
+already `false` by default). To get the older "plain, always editable, no pencils" behavior instead, disable both:
 ```html
-<c-record-form object-api-name="Account" record-id={recordId} record={account} inline-edit edit-mode={false} onchange={onRecordChange}>
+<c-record-form object-api-name="Account" record-id={recordId} record={account} inline-edit={false} edit-mode={true} onchange={onRecordChange}>
 ```
 
 ## Cancel/Save Footer
@@ -332,8 +330,8 @@ Then this component can be used in the form:
 | `readOnly`         | If true, all fields are read-only.                                                     |
 | `isPersonAccount`  | If true, the `Name` field renders as a compound Person Name field. Not auto-detected, see [Person Accounts](#person-accounts). |
 | `optionalFields`   | Extra fields to retrieve from the record, besides the ones rendered by child field components. |
-| `inlineEdit`       | If true, adds a pencil icon to editable fields while the form is in view mode. See [Inline Edit](#inline-edit). |
-| `editMode`         | Current edit mode of the form, defaults to true. See [Edit Mode](#edit-mode). Can be read or set programmatically. |
+| `inlineEdit`       | Defaults to true. Adds a pencil icon to editable fields while the form is in view mode. See [Inline Edit](#inline-edit). |
+| `editMode`         | Current edit mode of the form, defaults to false. See [Edit Mode](#edit-mode). Can be read or set programmatically. |
 | `hideFooter`       | If true, hides the default Cancel/Save footer (see [Cancel/Save Footer](#cancelsave-footer)). |
 
 ### Methods
@@ -388,8 +386,9 @@ from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-
 
 ### 1.3.0
 - Added: `optionalFields` attribute to retrieve extra fields besides the ones rendered by child field components.
-- Added: `editMode` attribute (defaults to true) to read or set the form's current edit mode programmatically, independently of `inlineEdit`.
-- Added: `inlineEdit` attribute - adds a pencil icon to editable fields while in view mode; clicking one switches the whole form to edit mode.
+- Added: `editMode` attribute (defaults to false) to read or set the form's current edit mode programmatically, independently of `inlineEdit`.
+- Added: `inlineEdit` attribute (defaults to true) - adds a pencil icon to editable fields while in view mode; clicking one switches the whole
+  form to edit mode.
 - Added: Cancel/Save footer, shown by default whenever the form is in edit mode; hide it with `hideFooter`. Cancel reverts fields to their
   values from when edit mode was last entered.
 - Changed: `isPersonAccount` is now a plain attribute set by the consumer, instead of being auto-detected.

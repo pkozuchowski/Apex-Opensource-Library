@@ -21,7 +21,7 @@ const MULTILINE_OR_COMPLEX_TAGS = [
     "LIGHTNING-TEXTAREA",
     "LIGHTNING-INPUT-RICH-TEXT",
     "LIGHTNING-RECORD-PICKER",
-    "LIGHTNING-COMBOBOX",
+    "LIGHTNING-SELECT",
     "LIGHTNING-DUAL-LISTBOX"
 ];
 
@@ -56,7 +56,6 @@ const RECORD_TYPE_QUERY = gql`
 export default class RecordForm extends LightningElement {
     /**Object API Name*/
     @api recordId;
-    @api objectApiName;
     @api formClass;
 
     /**Record Type Developer Name*/
@@ -92,6 +91,20 @@ export default class RecordForm extends LightningElement {
     };
 
     /**
+     * API Name of the object to display.
+     * @type {string}
+     */
+    @api
+    get objectApiName() {
+        return this._objectApiName;
+    }
+
+    set objectApiName(value) {
+        this._objectApiName = value;
+        this.recalculateOptionalFields();
+    }
+
+    /**
      * Form density variant.
      * Accepted values: comfy, compact.
      * @type {string}
@@ -116,7 +129,6 @@ export default class RecordForm extends LightningElement {
     }
 
     set isPersonAccount(value) {
-        console.log('value', value);
         this.formAttributes.isPersonAccount = value;
     }
 
@@ -223,7 +235,7 @@ export default class RecordForm extends LightningElement {
      */
     @api
     reportValidityForField(field) {
-        return this.fields.filter((cmp) => cmp.field === field).forEach((cmp) => cmp.reportValidity());
+        return this.fields.find((cmp) => cmp.field === field)?.reportValidity();
     }
 
     /**
@@ -234,7 +246,7 @@ export default class RecordForm extends LightningElement {
      */
     @api
     setCustomValidityForField(field, message) {
-        return this.fields.filter((cmp) => cmp.field === field).forEach((cmp) => cmp.setCustomValidity(message));
+        this.fields.find((cmp) => cmp.field === field)?.setCustomValidity(message);
     }
 
     /**
@@ -244,7 +256,7 @@ export default class RecordForm extends LightningElement {
      */
     @api
     checkValidityForField(field) {
-        this.fields.filter((cmp) => cmp.field === field).forEach((cmp) => cmp.checkValidity());
+        return this.fields.find((cmp) => cmp.field === field)?.checkValidity();
     }
 
     /**
@@ -311,6 +323,7 @@ export default class RecordForm extends LightningElement {
             );
             await notifyRecordUpdateAvailable([{recordId: result.id}]);
             this.formAttributes.editMode = false;
+            this._editModeSnapshot = undefined;
 
             return flatRecord;
         } catch (err) {
@@ -340,12 +353,15 @@ export default class RecordForm extends LightningElement {
     })
     fetchRecordType({data, errors}) {
         if (data) {
+            if (this._recordTypeIdFromRecord) {
+                return; // the record's own Record Type Id takes precedence - see fetchRecord
+            }
             const recordType = data.uiapi.query.RecordType.edges.find(
                 (rt) => rt.node.SobjectType.value === this.objectApiName
             );
             this.recordTypeId = recordType?.node?.Id ?? MASTER_RECORD_TYPE;
         } else if (errors) {
-            console.log(`Error fetching record type ${this.objectApiName}.${this.recordTypeName}`, errors);
+            console.error(`Error fetching record type ${this.objectApiName}.${this.recordTypeName}`, errors);
         }
     }
 
@@ -370,6 +386,7 @@ export default class RecordForm extends LightningElement {
     fetchRecord({error, data}) {
         if (data) {
             if (data.recordTypeId) {
+                this._recordTypeIdFromRecord = true;    
                 this.recordTypeId = data.recordTypeId;
             }
 
@@ -412,7 +429,6 @@ export default class RecordForm extends LightningElement {
             }
         } catch (e) {
             console.error("recordForm.onFieldConnected", ev.target.field, e.message, e.stack);
-            // console.log('onFieldConnected.objectInfo', JSON.stringify(this.objectInfo, null, 2));
         }
     }
 

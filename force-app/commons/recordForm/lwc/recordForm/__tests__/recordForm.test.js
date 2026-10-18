@@ -4,6 +4,7 @@ import { createElement } from "lwc";
 import RecordForm from "c/recordForm";
 import { getObjectInfo, getPicklistValuesByRecordType } from "lightning/uiObjectInfoApi";
 import { getRecord, createRecord, notifyRecordUpdateAvailable } from "lightning/uiRecordApi";
+import { graphql } from "lightning/graphql";
 import LightningConfirm from "lightning/confirm";
 
 jest.mock("lightning/confirm", () => ({
@@ -36,6 +37,25 @@ function createRecordForm(props = {}) {
 function loadForm() {
     getObjectInfo.emit(OBJECT_INFO);
     getPicklistValuesByRecordType.emit(PICKLIST_VALUES);
+}
+
+// `fieldconnected` bubbles from deep inside a slotted field in real usage, but
+// dispatching it directly on the `<form>` (where `onfieldconnected` is bound) and
+// faking `target` sidesteps jsdom's incomplete shadow/slot composed-event support
+// (see the `edit`/keyboard tests below, which use the same technique).
+function connectFakeField(form, fieldApiName, overrides = {}) {
+    const fakeField = {
+        field: fieldApiName,
+        connectField: jest.fn(),
+        reportValidity: jest.fn(() => true),
+        checkValidity: jest.fn(() => true),
+        setCustomValidity: jest.fn(),
+        ...overrides
+    };
+    const event = new CustomEvent("fieldconnected", { bubbles: true, composed: true, cancelable: true });
+    Object.defineProperty(event, "target", { value: fakeField });
+    form.dispatchEvent(event);
+    return fakeField;
 }
 
 describe("c-record-form", () => {
@@ -128,6 +148,89 @@ describe("c-record-form", () => {
 
             element.record = { Id: RECORD_ID, Name: "Changed" };
             expect(element.isDirty()).toBe(true);
+        });
+
+        it("is false after a successful Save, not stale from the pre-edit snapshot", async () => {
+            createRecord.mockResolvedValueOnce({ id: RECORD_ID, fields: { Name: { value: "New" } } });
+            const element = createRecordForm({ recordId: undefined, editMode: true });
+            loadForm();
+            await Promise.resolve();
+
+            element.record = { Name: "New" };
+            await element.submit();
+
+            expect(element.isDirty()).toBe(false);
+        });
+    });
+
+    describe("single-field validity methods", () => {
+        it("reportValidityForField/checkValidityForField return the field's actual validity", async () => {
+            const element = createRecordForm();
+            loadForm();
+            await Promise.resolve();
+
+            const form = element.shadowRoot.querySelector("form");
+            const field = connectFakeField(form, "Name", {
+                reportValidity: jest.fn(() => false),
+                checkValidity: jest.fn(() => false)
+            });
+
+            expect(element.reportValidityForField("Name")).toBe(false);
+            expect(field.reportValidity).toHaveBeenCalledTimes(1);
+            expect(element.checkValidityForField("Name")).toBe(false);
+            expect(field.checkValidity).toHaveBeenCalledTimes(1);
+        });
+
+        it("reportValidityForField/checkValidityForField return undefined for an unconnected field", async () => {
+            const element = createRecordForm();
+            loadForm();
+            await Promise.resolve();
+
+            expect(element.reportValidityForField("DoesNotExist")).toBeUndefined();
+            expect(element.checkValidityForField("DoesNotExist")).toBeUndefined();
+        });
+
+        it("setCustomValidityForField forwards the message to the matching field", async () => {
+            const element = createRecordForm();
+            loadForm();
+            await Promise.resolve();
+
+            const form = element.shadowRoot.querySelector("form");
+            const field = connectFakeField(form, "Name");
+
+            element.setCustomValidityForField("Name", "Invalid value");
+            expect(field.setCustomValidity).toHaveBeenCalledWith("Invalid value");
+        });
+    });
+
+    describe("Record Type Id resolution", () => {
+        it("the record's own Record Type Id takes precedence over the name-based GraphQL lookup, regardless of wire order", async () => {
+            const element = createRecordForm({ recordTypeName: "Enterprise" });
+            loadForm();
+            await Promise.resolve();
+
+            // The record's own getRecord wire resolves first, with its true Record Type Id.
+            getRecord.emit({
+                id: RECORD_ID,
+                recordTypeId: "012000000000001AAA",
+                fields: { Name: { value: "Acme" } }
+            });
+            await Promise.resolve();
+
+            // The GraphQL name-based lookup resolves afterward (the two wires are
+            // independent/unordered) - it must NOT clobber the already-known value.
+            graphql.emit({
+                uiapi: {
+                    query: {
+                        RecordType: {
+                            edges: [{ node: { Id: "012000000000002AAA", SobjectType: { value: "Account" } } }]
+                        }
+                    }
+                }
+            });
+            await Promise.resolve();
+
+            expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000001AAA");
         });
     });
 
@@ -318,7 +421,7 @@ describe("c-record-form", () => {
             expect(createRecord).toHaveBeenCalled();
         });
 
-        it("Enter is ignored inside a textarea/rich-text/record-picker/combobox/dual-listbox", async () => {
+        it("Enter is ignored inside a textarea/rich-text/record-picker/dual-listbox", async () => {
             const element = createRecordForm({ recordId: undefined, editMode: true });
             loadForm();
             await Promise.resolve();
@@ -326,6 +429,19 @@ describe("c-record-form", () => {
 
             const form = element.shadowRoot.querySelector("form");
             dispatchKey(form, "Enter", "LIGHTNING-TEXTAREA");
+            await flushPromises();
+
+            expect(createRecord).not.toHaveBeenCalled();
+        });
+
+        it("Enter is ignored inside a lightning-select (picklist dropdowns, incl. Person Name Salutation)", async () => {
+            const element = createRecordForm({ recordId: undefined, editMode: true });
+            loadForm();
+            await Promise.resolve();
+            element.record = { Name: "New" };
+
+            const form = element.shadowRoot.querySelector("form");
+            dispatchKey(form, "Enter", "LIGHTNING-SELECT");
             await flushPromises();
 
             expect(createRecord).not.toHaveBeenCalled();

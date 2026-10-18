@@ -116,7 +116,7 @@ Each record-form-field supports the standard validation methods of `lightning-in
 Additionally, Record Form has a number of methods which can be used in validation:
 - `reportValidityForField(fieldName)` - reports validity of a specific field.
 - `checkValidityForField(fieldName)` - checks validity of a specific field.
-- `setCustomValidityForField(fieldName)` - sets custom validity for a specific field.
+- `setCustomValidityForField(fieldName, message)` - sets custom validity for a specific field.
 
 Bulk Methods:
 - `reportValidity()` - reports validity of all fields.
@@ -207,9 +207,9 @@ as `edit-mode`).
 ## Keyboard Shortcuts
 While the form is in edit mode:
 - **Escape** triggers the same action as clicking Cancel (including the discard confirmation, unless `disable-confirm-discard` is set).
-- **Enter** triggers the same action as clicking Save (calls `submit()`), *except* when focus is in a `lightning-textarea`,
-  `lightning-input-rich-text`, `lightning-record-picker`, `lightning-combobox` or `lightning-dual-listbox` - where Enter already has its own
-  meaning (insert a newline, pick a highlighted option, etc.) and is left alone.
+- **Enter** triggers the same action as clicking Save (calls `submit()`), *except* when focus is in a `lightning-input-address`,
+  `lightning-textarea`, `lightning-input-rich-text`, `lightning-record-picker`, `lightning-select` or `lightning-dual-listbox` - where Enter
+  already has its own meaning (insert a newline, pick a highlighted option, etc.) and is left alone.
 
 ## Field Anatomy and Extensions
 
@@ -388,7 +388,7 @@ Then this component can be used in the form:
 | `reportValidity()`                     | Reports validity of all fields.            |
 | `reportValidityForField(fieldName)`    | Reports validity of a specific field.      |
 | `checkValidityForField(fieldName)`     | Checks validity of a specific field.       |
-| `setCustomValidityForField(fieldName)` | sets custom validity for a specific field. |
+| `setCustomValidityForField(fieldName, message)` | sets custom validity for a specific field. |
 | `reportValidity()`                     | Reports validity of all fields.            |
 | `checkValidity()`                      | Reports validity of all fields.            |
 | `isDirty()`                             | True if the record changed since edit mode was last entered. See [Checking for unsaved changes](#checking-for-unsaved-changes). |
@@ -469,6 +469,19 @@ handled by Record Form itself; not meant to be used outside of a `c-record-form`
   The field-level `read-only` attribute on `c-record-form-field` is unaffected.
 - Removed: `RecordFormCtrl` Apex class. Record Type resolution by developer name now uses a GraphQL query (`lightning/graphql`) instead of a SOQL
   query via Apex - see [Record Type Support](#record-type-support).
+- Fix: Person Name field validation (`reportValidity()`/`checkValidity()`/`setCustomValidity()`) was a no-op - the Salutation/FirstName/LastName
+  inputs weren't tagged with `lwc:ref="input"`, so required Salutation/FirstName/LastName could never block submission.
+- Fix: `reportValidityForField()`/`checkValidityForField()`/`setCustomValidityForField()` always returned `undefined` regardless of the
+  field's actual validity.
+- Fix: pressing Enter while a picklist or the Person Name Salutation dropdown was focused triggered form submission instead of being left
+  alone (the keyboard-shortcut ignore list referenced a tag that's never rendered).
+- Fix: `isDirty()` could report `true` immediately after a successful Save, since the edit-mode snapshot wasn't refreshed on save.
+- Fix: Record Type Id resolution from the record's own data vs. the name-based GraphQL lookup was a race, not an enforced precedence.
+- Fix: read-only Picklist/Multi-Picklist fields displayed the raw API value instead of the picklist label.
+- Fix: `disabled`/`required`/`fieldLevelHelp` weren't forwarded to Address and Person Name fields.
+- Fix: per-field `designSystem` attribute had no effect (only the form-level one was ever read).
+- Fix: `getUpdatableFields()` sent `Id: undefined` as part of the `createRecord()` payload.
+- Fix: changing `objectApiName` on a live instance didn't re-qualify `optionalFields`.
 
 ### 1.2.2
 - Fix: Field validation methods after a field is repeatedly hidden and shown.

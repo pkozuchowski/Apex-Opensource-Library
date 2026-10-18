@@ -39,10 +39,21 @@ export class LightningPicklist extends LightningInputExt {
     get attributes() {
         return {
             ...super.attributes,
-            value: this.fieldValue || "",
+            value: this.isReadOnly ? this.picklistLabel : this.fieldValue || "",
             options: this.picklistOptions,
             size: this.size
         };
+    }
+
+    /**
+     * Label for the current value, for read-only display - looked up from the full,
+     * unfiltered record type picklist values (not `picklistOptions`, which may be
+     * narrowed by `options`/`optionsFilter` and so might not contain the current value).
+     * Falls back to the raw value if no matching option is found.
+     */
+    get picklistLabel() {
+        const option = this.recordTypePicklistValues?.values?.find((opt) => opt.value === this.fieldValue);
+        return option?.label ?? this.fieldValue ?? "";
     }
 
     getEventValue(event) {
@@ -105,10 +116,20 @@ export class LightningMultiPicklistExt extends LightningPicklist {
             ...super.attributes,
             multiple: true,
             options: this.picklistOptions,
-            value: this.isReadOnly ? this.fieldValue : this.fieldValue?.split(";") || [],
+            value: this.isReadOnly ? this.picklistLabel : this.fieldValue?.split(";") || [],
             sourceLabel: "Available",
             selectedLabel: "Selected"
         };
+    }
+
+    /**
+     * Comma-separated labels for the currently selected values, for read-only display.
+     * @override
+     */
+    get picklistLabel() {
+        const optionsByValue = new Map((this.recordTypePicklistValues?.values ?? []).map((opt) => [opt.value, opt.label]));
+        const values = this.fieldValue ? this.fieldValue.split(";") : [];
+        return values.map((value) => optionsByValue.get(value) ?? value).join(", ");
     }
 
     getEventValue(event) {

@@ -44,7 +44,7 @@ const EXTENSIONS = {
  */
 export function extendCtrl(cmp, { fieldInfo, formAttributes }) {
     try {
-        const designSystem = formAttributes.designSystem ?? "lightning";
+        const designSystem = cmp.designSystem ?? formAttributes.designSystem ?? "lightning";
         let extensionName = fieldInfo.dataType;
         if (extensionName === "TextArea") extensionName = fieldInfo.extraTypeInfo;
         if (fieldInfo.apiName === "Name" && formAttributes.isPersonAccount) extensionName = "PersonName";

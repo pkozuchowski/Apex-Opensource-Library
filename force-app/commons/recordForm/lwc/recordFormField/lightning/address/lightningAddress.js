@@ -39,6 +39,9 @@ export default class LightningAddress {
             province: this.getField(this.province?.apiName),
             provinceLabel: this.province?.label,
             variant: this.inputVariant,
+            disabled: this.disabled,
+            required: this.required,
+            fieldLevelHelp: this.fieldLevelHelp,
             ...this.typeAttributes
         };
     }

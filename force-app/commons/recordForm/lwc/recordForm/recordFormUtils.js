@@ -28,14 +28,17 @@ export function getUpdatableFields(record = {}, objectInfo = {}, isCreate, isPer
     const fields = {};
 
     Object.keys(record).forEach((fieldName) => {
-        const info = objectInfo.fields[fieldName];
+        const info = objectInfo.fields?.[fieldName];
         if (!info) return;
 
         if ((isCreate && info.createable) || (!isCreate && info.updateable)) {
             fields[fieldName] = record[fieldName];
         }
     });
-    fields.Id = record.Id;
+
+    if (!isCreate) {
+        fields.Id = record.Id;
+    }
 
     if (isPersonAccount) {
         delete fields.Name;
@@ -53,7 +56,9 @@ export function getUpdatableFields(record = {}, objectInfo = {}, isCreate, isPer
 export function overrideFieldLabels(labelOverrides, objectInfo) {
     if (labelOverrides) {
         for (const field in labelOverrides) {
-            objectInfo.fields[field].label = labelOverrides[field];
+            if (objectInfo.fields[field]) {
+                objectInfo.fields[field].label = labelOverrides[field];
+            }
         }
     }
     return objectInfo;

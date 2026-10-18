@@ -27,6 +27,8 @@ export class LightningName {
             value: this.salutationValue,
             variant: this.inputVariant,
             options: this.salutationOptions,
+            disabled: this.disabled,
+            fieldLevelHelp: this.fieldLevelHelp,
             ...this.typeAttributes.Salutation
         };
     }
@@ -37,6 +39,9 @@ export class LightningName {
             label: this.firstName.label,
             value: this.firstNameValue,
             variant: this.inputVariant,
+            disabled: this.disabled,
+            required: this.required,
+            fieldLevelHelp: this.fieldLevelHelp,
             ...this.typeAttributes.FirstName
         };
     }
@@ -47,6 +52,9 @@ export class LightningName {
             label: this.lastName.label,
             value: this.lastNameValue,
             variant: this.inputVariant,
+            disabled: this.disabled,
+            required: this.required,
+            fieldLevelHelp: this.fieldLevelHelp,
             ...this.typeAttributes.LastName
         };
     }
@@ -70,5 +78,30 @@ export class LightningName {
     getEventValue(event) {
         const field = event.target.name;
         return { [field]: event.detail.value };
+    }
+
+    /**
+     * Person Name renders as three separate inputs (no single compound element to
+     * ref), so the base `reportValidity`/`checkValidity`/`setCustomValidity`
+     * (which operate on a single `this.refs.input`) must be overridden here to
+     * aggregate across all three.
+     */
+    reportValidity() {
+        const salutationValid = this.refs.salutation?.reportValidity?.() ?? true;
+        const firstNameValid = this.refs.firstName?.reportValidity?.() ?? true;
+        const lastNameValid = this.refs.lastName?.reportValidity?.() ?? true;
+        return salutationValid && firstNameValid && lastNameValid;
+    }
+
+    checkValidity() {
+        const salutationValid = this.refs.salutation?.checkValidity?.() ?? true;
+        const firstNameValid = this.refs.firstName?.checkValidity?.() ?? true;
+        const lastNameValid = this.refs.lastName?.checkValidity?.() ?? true;
+        return salutationValid && firstNameValid && lastNameValid;
+    }
+
+    setCustomValidity(message) {
+        this.refs.firstName?.setCustomValidity?.(message);
+        this.refs.lastName?.setCustomValidity?.(message);
     }
 }

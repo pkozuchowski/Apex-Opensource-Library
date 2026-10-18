@@ -9,8 +9,8 @@
     </c-record-form-field-output>
 
     <div lwc:else onchange={handleFieldChange}>
-        <lightning-select lwc:spread={salutationAttributes}></lightning-select>
-        <lightning-input lwc:spread={firstNameAttributes}></lightning-input>
-        <lightning-input lwc:spread={lastNameAttributes}></lightning-input>
+        <lightning-select lwc:ref="salutation" lwc:spread={salutationAttributes}></lightning-select>
+        <lightning-input lwc:ref="firstName" lwc:spread={firstNameAttributes}></lightning-input>
+        <lightning-input lwc:ref="lastName" lwc:spread={lastNameAttributes}></lightning-input>
     </div>
 </template>

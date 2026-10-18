@@ -7,7 +7,7 @@
  *   - fields: {Object} Map of field names to their individual validation status
  */
 export function validate(fields, validationFn) {
-    const result = { valid: true, fields: {} };
+    const result = {valid: true, fields: {}};
     fields.forEach((component) => {
         const validity = validationFn(component);
         result.valid = result.valid && (validity ?? true);
@@ -78,20 +78,24 @@ export function getFlatRecord(recordRepresentation) {
  * @returns {Array<string>} Array of fully-qualified field names in the format "ObjectApiName.FieldApiName".
  *   Returns an empty array if field api name is not correct.
  */
-export function getFieldsToRetrieve(objectInfo, fieldInfo, fieldName) {
+export function getFieldsToRetrieve(objectInfo, fieldInfo, fieldName, isPersonAccount) {
     if (fieldInfo) {
         const fieldsToRetrieve = [`${objectInfo.apiName}.${fieldName}`];
 
         if (fieldInfo.compound) {
-            Object.values(objectInfo.fields).forEach((compoundField) => {
-                if (compoundField.compoundFieldName === fieldName) {
-                    fieldsToRetrieve.push(`${objectInfo.apiName}.${compoundField.apiName}`);
-                }
-            });
+            if (fieldInfo.extraTypeInfo === "SwitchablePersonName" && !isPersonAccount) {
+                //Do nothing
+            } else {
+                Object.values(objectInfo.fields).forEach((compoundField) => {
+                    if (compoundField.compoundFieldName === fieldName) {
+                        fieldsToRetrieve.push(`${objectInfo.apiName}.${compoundField.apiName}`);
+                    }
+                });
+            }
         }
         return fieldsToRetrieve;
     } else {
-        console.warn(`Field ${fieldName} not found in object ${this.objectApiName}`);
+        console.warn(`Field ${fieldName} not found in object ${objectInfo.apiName}`);
         return [];
     }
 }

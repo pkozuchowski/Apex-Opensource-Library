@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
-import { api, LightningElement, track, wire } from "lwc";
-import { getObjectInfo, getPicklistValuesByRecordType } from "lightning/uiObjectInfoApi";
-import { createRecord, getRecord, notifyRecordUpdateAvailable, updateRecord } from "lightning/uiRecordApi";
+import {api, LightningElement, track, wire} from "lwc";
+import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectInfoApi";
+import {createRecord, getRecord, notifyRecordUpdateAvailable, updateRecord} from "lightning/uiRecordApi";
 import {
     getFieldsToRetrieve,
     getFlatRecord,
@@ -11,7 +11,7 @@ import {
     validate
 } from "./recordFormUtils";
 
-import { gql, graphql } from "lightning/graphql";
+import {gql, graphql} from "lightning/graphql";
 // Use bellow for offline capabilities
 // import {gql, graphql} from 'lightning/uiGraphQLApi';
 import LightningConfirm from "lightning/confirm";
@@ -84,11 +84,11 @@ export default class RecordForm extends LightningElement {
 
     @track
     formAttributes = {
-        density: "comfy",
-        designSystem: "lightning",
+        density        : "comfy",
+        designSystem   : "lightning",
         isPersonAccount: false,
-        inlineEdit: true,
-        editMode: false
+        inlineEdit     : true,
+        editMode       : false
     };
 
     /**
@@ -116,6 +116,7 @@ export default class RecordForm extends LightningElement {
     }
 
     set isPersonAccount(value) {
+        console.log('value', value);
         this.formAttributes.isPersonAccount = value;
     }
 
@@ -148,7 +149,7 @@ export default class RecordForm extends LightningElement {
 
     set editMode(value) {
         if (value && !this.formAttributes.editMode) {
-            this._editModeSnapshot = { ...this._record };
+            this._editModeSnapshot = {...this._record};
         }
         this.formAttributes.editMode = value;
     }
@@ -296,7 +297,7 @@ export default class RecordForm extends LightningElement {
 
             const recordInput = {
                 fields: fieldsToUpdate,
-                ...(isCreate ? { apiName: this.objectApiName } : {})
+                ...(isCreate ? {apiName: this.objectApiName} : {})
             };
 
             const action = isCreate ? createRecord : updateRecord;
@@ -305,10 +306,10 @@ export default class RecordForm extends LightningElement {
 
             this.dispatchEvent(
                 new CustomEvent("change", {
-                    detail: { value: flatRecord }
+                    detail: {value: flatRecord}
                 })
             );
-            notifyRecordUpdateAvailable([{ recordId: result.id }]);
+            notifyRecordUpdateAvailable([{recordId: result.id}]);
             this.formAttributes.editMode = false;
 
             return flatRecord;
@@ -320,8 +321,8 @@ export default class RecordForm extends LightningElement {
         }
     }
 
-    @wire(getObjectInfo, { objectApiName: "$objectApiName" })
-    describeObjectInfo({ error, data }) {
+    @wire(getObjectInfo, {objectApiName: "$objectApiName"})
+    describeObjectInfo({error, data}) {
         if (data) {
             this.objectInfo = JSON.parse(JSON.stringify(data));
             if (!this.recordTypeName) {
@@ -334,10 +335,10 @@ export default class RecordForm extends LightningElement {
     }
 
     @wire(graphql, {
-        query: RECORD_TYPE_QUERY,
+        query    : RECORD_TYPE_QUERY,
         variables: "$recordTypeVariables"
     })
-    fetchRecordType({ data, errors }) {
+    fetchRecordType({data, errors}) {
         if (data) {
             const recordType = data.uiapi.query.RecordType.edges.find(
                 (rt) => rt.node.SobjectType.value === this.objectApiName
@@ -349,14 +350,14 @@ export default class RecordForm extends LightningElement {
     }
 
     get recordTypeVariables() {
-        return this.recordTypeName ? { developerName: this.recordTypeName } : undefined;
+        return this.recordTypeName ? {developerName: this.recordTypeName} : undefined;
     }
 
     @wire(getPicklistValuesByRecordType, {
         objectApiName: "$objectApiName",
-        recordTypeId: "$recordTypeId"
+        recordTypeId : "$recordTypeId"
     })
-    describePicklistValues({ error, data }) {
+    describePicklistValues({error, data}) {
         if (data) {
             this.picklistValues = JSON.parse(JSON.stringify(data.picklistFieldValues));
             this.spinner = false;
@@ -377,7 +378,7 @@ export default class RecordForm extends LightningElement {
 
                 this._derivedFields = [
                     ...this._derivedFields,
-                    ...getFieldsToRetrieve(this.objectInfo, fieldInfo, fieldName)
+                    ...getFieldsToRetrieve(this.objectInfo, fieldInfo, fieldName, this.isPersonAccount)
                 ];
                 this.recalculateOptionalFields();
 
@@ -385,13 +386,14 @@ export default class RecordForm extends LightningElement {
                 ev.target.formAttributes = this.formAttributes;
                 ev.target.connectField({
                     fieldInfo,
-                    objectInfo: this.objectInfo,
+                    objectInfo              : this.objectInfo,
                     recordTypePicklistValues: this.picklistValues,
-                    formAttributes: this.formAttributes
+                    formAttributes          : this.formAttributes
                 });
             }
         } catch (e) {
-            console.error("recordForm.onFieldConnected", e.message);
+            console.error("recordForm.onFieldConnected", ev.target.field, e.message, e.stack);
+            // console.log('onFieldConnected.objectInfo', JSON.stringify(this.objectInfo, null, 2));
         }
     }
 
@@ -421,9 +423,9 @@ export default class RecordForm extends LightningElement {
     async cancelEdit() {
         if (!this.disableConfirmDiscard && this.isDirty()) {
             const confirmed = await LightningConfirm.open({
-                label: "Discard Changes?",
+                label  : "Discard Changes?",
                 message: "You have unsaved changes. Are you sure you want to discard them?",
-                theme: "warning"
+                theme  : "warning"
             });
             if (!confirmed) {
                 return;
@@ -433,7 +435,7 @@ export default class RecordForm extends LightningElement {
         if (this._editModeSnapshot) {
             this.dispatchEvent(
                 new CustomEvent("change", {
-                    detail: { value: { ...this._editModeSnapshot } }
+                    detail: {value: {...this._editModeSnapshot}}
                 })
             );
         }
@@ -453,8 +455,8 @@ export default class RecordForm extends LightningElement {
         }
     }
 
-    @wire(getRecord, { recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields" })
-    fetchRecord({ error, data }) {
+    @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields"})
+    fetchRecord({error, data}) {
         if (data) {
             if (data.recordTypeId) {
                 this.recordTypeId = data.recordTypeId;

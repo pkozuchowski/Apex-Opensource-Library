@@ -5,15 +5,7 @@
             density={formAttributes.density}
             show-edit-trigger={showInlineEditTrigger}
     >
-        <lightning-input
-                label={label}
-                type="text"
-                read-only="true"
-                class="slds-form-element_readonly"
-                variant={inputVariant}
-                required={typeAttributes.salutationRequired}
-                value={nameValue}
-        ></lightning-input>
+        <lightning-formatted-text value={nameValue}></lightning-formatted-text>
     </c-record-form-field-output>
 
     <div lwc:else onchange={handleFieldChange}>

@@ -15,7 +15,8 @@ export class LightningTextAreaExt extends LightningTextExt {
 }
 
 export class LightningRichTextExt extends LightningTextExt {
-    connectFieldExt() {
+    connectFieldExt(data) {
+        super.connectFieldExt(data);
         this.formats = this.formats || [
             "font",
             "size",

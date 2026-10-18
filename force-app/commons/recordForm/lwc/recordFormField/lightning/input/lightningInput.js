@@ -8,12 +8,12 @@ export class LightningInputExt {
 
     connectFieldExt({fieldInfo}) {
         this.fieldInfo = fieldInfo;
-        this.label = this.label ?? fieldInfo.label;
+        this.label = this.label ?? fieldInfo?.label;
     }
 
     get attributes() {
         return {
-            label         : this.label || this.fieldInfo.label,
+            label         : this.label || this.fieldInfo?.label,
             readOnly      : this.isReadOnly,
             required      : this.required,
             variant       : this.inputVariant,
@@ -76,24 +76,32 @@ export class LightningCheckboxExt extends LightningInputExt {
 }
 
 export class LightningNumberExt extends LightningInputExt {
-    connectFieldExt({fieldInfo}) {
+    connectFieldExt(data) {
+        super.connectFieldExt(data);
+        const {fieldInfo} = data;
         const DEFAULT_FORMATTER = {
             Currency: "currency",
             Percent : "percent-fixed"
         };
         this.formatter = this.formatter || DEFAULT_FORMATTER[fieldInfo.dataType] || "decimal";
         this.step = this.step || (1 / Math.pow(10, fieldInfo.scale)).toString();
+        this.scale = fieldInfo.scale;
     }
 
     get attributes() {
         return {
             ...super.attributes,
-            type                     : this.isReadOnly ? "number" : (this.type ?? "number"),
+            type                     : this.isReadOnly ? "text" : (this.type ?? "number"),
             formatter                : this.formatter,
             messageWhenRangeOverflow : this.messageWhenRangeOverflow,
             messageWhenRangeUnderflow: this.messageWhenRangeUnderflow,
             messageWhenStepMismatch  : this.messageWhenStepMismatch,
-            step                     : this.step
+            step                     : this.step,
+            value                    : this.isReadOnly
+                ? this.fieldValue != null && this.fieldValue !== ""
+                    ? Number(this.fieldValue).toFixed(this.scale)
+                    : ""
+                : this.fieldValue
         };
     }
 }

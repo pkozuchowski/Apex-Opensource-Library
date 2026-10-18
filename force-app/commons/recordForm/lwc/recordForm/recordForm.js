@@ -302,6 +302,11 @@ export default class RecordForm extends LightningElement {
     @api async submit(ev) {
         ev?.preventDefault();
         ev?.stopPropagation();
+
+        if (!this.reportValidity().valid) {
+            return undefined;
+        }
+
         this.spinner = true;
         try {
             const isCreate = !this.record?.Id;

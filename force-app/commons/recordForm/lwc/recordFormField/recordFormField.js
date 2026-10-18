@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
-import {api} from 'lwc';
-import {extendCtrl} from "./extensions";
-import emptyTemplate from './recordFormField.html';
+import { api } from "lwc";
+import { extendCtrl } from "./extensions";
+import emptyTemplate from "./recordFormField.html";
 import RecordFormComponent from "c/recordFormComponent";
 
 export default class RecordFormField extends RecordFormComponent {
-    static renderMode = 'light';
+    static renderMode = "light";
     @api field;
     @api typeAttributes = {};
 
@@ -67,7 +67,7 @@ export default class RecordFormField extends RecordFormComponent {
             extendCtrl(this, data);
             this.connectFieldExt(data);
         } catch (e) {
-            console.error('RecordFormField.connectField', e.message);
+            console.error("RecordFormField.connectField", e.message);
         }
     }
 

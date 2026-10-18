@@ -1,12 +1,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
-import {api, LightningElement, track, wire} from 'lwc';
-import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectInfoApi";
-import {createRecord, getRecord, notifyRecordUpdateAvailable, updateRecord} from 'lightning/uiRecordApi';
-import {getFieldsToRetrieve, getFlatRecord, getUpdatableFields, overrideFieldLabels, validate} from "./recordFormUtils";
+import { api, LightningElement, track, wire } from "lwc";
+import { getObjectInfo, getPicklistValuesByRecordType } from "lightning/uiObjectInfoApi";
+import { createRecord, getRecord, notifyRecordUpdateAvailable, updateRecord } from "lightning/uiRecordApi";
+import {
+    getFieldsToRetrieve,
+    getFlatRecord,
+    getUpdatableFields,
+    overrideFieldLabels,
+    validate
+} from "./recordFormUtils";
 
-
-import {gql, graphql} from 'lightning/graphql';
+import { gql, graphql } from "lightning/graphql";
 // Use bellow for offline capabilities
 // import {gql, graphql} from 'lightning/uiGraphQLApi';
 
@@ -16,16 +21,16 @@ const RECORD_TYPE_QUERY = gql`
     query getRecordType($developerName: String) {
         uiapi {
             query {
-                RecordType(
-                    where: {
-                        DeveloperName: {eq: $developerName}
-                    }
-                ) {
+                RecordType(where: { DeveloperName: { eq: $developerName } }) {
                     edges {
                         node {
-                            Id,
-                            DeveloperName {value}
-                            SobjectType {value}
+                            Id
+                            DeveloperName {
+                                value
+                            }
+                            SobjectType {
+                                value
+                            }
                         }
                     }
                 }
@@ -66,12 +71,12 @@ export default class RecordForm extends LightningElement {
 
     @track
     formAttributes = {
-        density        : "comfy",
-        designSystem   : "lightning",
+        density: "comfy",
+        designSystem: "lightning",
         isPersonAccount: false,
-        inlineEdit     : true,
-        editMode       : false
-    }
+        inlineEdit: true,
+        editMode: false
+    };
 
     /**
      * Form density variant.
@@ -79,9 +84,13 @@ export default class RecordForm extends LightningElement {
      * @type {string}
      */
     @api
-    get density() {return this.formAttributes.density;}
+    get density() {
+        return this.formAttributes.density;
+    }
 
-    set density(value) {this.formAttributes.density = value;}
+    set density(value) {
+        this.formAttributes.density = value;
+    }
 
     /**
      * Whether the record is a Person Account. Controls whether the `Name` field renders
@@ -89,9 +98,13 @@ export default class RecordForm extends LightningElement {
      * @type {boolean}
      */
     @api
-    get isPersonAccount() {return this.formAttributes.isPersonAccount;}
+    get isPersonAccount() {
+        return this.formAttributes.isPersonAccount;
+    }
 
-    set isPersonAccount(value) {this.formAttributes.isPersonAccount = value;}
+    set isPersonAccount(value) {
+        this.formAttributes.isPersonAccount = value;
+    }
 
     /**
      * When true (the default), editable fields show a pencil icon while the form is
@@ -99,9 +112,13 @@ export default class RecordForm extends LightningElement {
      * @type {boolean}
      */
     @api
-    get inlineEdit() {return this.formAttributes.inlineEdit;}
+    get inlineEdit() {
+        return this.formAttributes.inlineEdit;
+    }
 
-    set inlineEdit(value) {this.formAttributes.inlineEdit = value;}
+    set inlineEdit(value) {
+        this.formAttributes.inlineEdit = value;
+    }
 
     /**
      * Current edit mode of the form, independent of `inlineEdit`. Defaults to false
@@ -112,11 +129,13 @@ export default class RecordForm extends LightningElement {
      * @type {boolean}
      */
     @api
-    get editMode() {return this.formAttributes.editMode;}
+    get editMode() {
+        return this.formAttributes.editMode;
+    }
 
     set editMode(value) {
         if (value && !this.formAttributes.editMode) {
-            this._editModeSnapshot = {...this._record};
+            this._editModeSnapshot = { ...this._record };
         }
         this.formAttributes.editMode = value;
     }
@@ -128,11 +147,12 @@ export default class RecordForm extends LightningElement {
      * @type {Array<string>}
      */
     @api
-    get optionalFields() {return this._optionalFields;}
+    get optionalFields() {
+        return this._optionalFields;
+    }
 
     set optionalFields(value) {
-        this._optionalFields = typeof value === 'string' ?
-            value.split(',') : value ?? [];
+        this._optionalFields = typeof value === "string" ? value.split(",") : (value ?? []);
         this.recalculateOptionalFields();
     }
 
@@ -141,18 +161,22 @@ export default class RecordForm extends LightningElement {
      * @type {Object}
      */
     @api
-    get record() {return this._record;}
+    get record() {
+        return this._record;
+    }
 
-    set record(value) {this.setValues('record', value);}
+    set record(value) {
+        this.setValues("record", value);
+    }
 
     setValues(property, value) {
         this[`_${property}`] = value;
-        this.fields.forEach(field => field[property] = value);
+        this.fields.forEach((field) => (field[property] = value));
     }
 
     recalculateOptionalFields() {
-        const extraFields = this._optionalFields.map(
-            field => field.includes('.') ? field : `${this.objectApiName}.${field}`
+        const extraFields = this._optionalFields.map((field) =>
+            field.includes(".") ? field : `${this.objectApiName}.${field}`
         );
         this.computedOptionalFields = [...new Set([...extraFields, ...this._derivedFields])];
     }
@@ -175,9 +199,7 @@ export default class RecordForm extends LightningElement {
      * @type {boolean}
      */
     get isLoaded() {
-        return this.objectInfo
-            && this.picklistValues
-            && this.record;
+        return this.objectInfo && this.picklistValues && this.record;
     }
 
     /**
@@ -187,8 +209,7 @@ export default class RecordForm extends LightningElement {
      */
     @api
     reportValidityForField(field) {
-        this.fields.filter(cmp => cmp.field === field)
-            .forEach(cmp => cmp.reportValidity());
+        this.fields.filter((cmp) => cmp.field === field).forEach((cmp) => cmp.reportValidity());
     }
 
     /**
@@ -199,8 +220,7 @@ export default class RecordForm extends LightningElement {
      */
     @api
     setCustomValidityForField(field, message) {
-        this.fields.filter(cmp => cmp.field === field)
-            .forEach(cmp => cmp.setCustomValidity(message));
+        this.fields.filter((cmp) => cmp.field === field).forEach((cmp) => cmp.setCustomValidity(message));
     }
 
     /**
@@ -210,8 +230,7 @@ export default class RecordForm extends LightningElement {
      */
     @api
     checkValidityForField(field) {
-        this.fields.filter(cmp => cmp.field === field)
-            .forEach(cmp => cmp.checkValidity());
+        this.fields.filter((cmp) => cmp.field === field).forEach((cmp) => cmp.checkValidity());
     }
 
     /**
@@ -219,7 +238,7 @@ export default class RecordForm extends LightningElement {
      * @returns {boolean}
      */
     @api reportValidity() {
-        return validate(this.fields, field => field?.reportValidity())
+        return validate(this.fields, (field) => field?.reportValidity());
     }
 
     /**
@@ -227,7 +246,7 @@ export default class RecordForm extends LightningElement {
      * @returns {boolean}
      */
     @api checkValidity() {
-        return validate(this.fields, field => field?.checkValidity())
+        return validate(this.fields, (field) => field?.checkValidity());
     }
 
     /**
@@ -246,17 +265,19 @@ export default class RecordForm extends LightningElement {
 
             const recordInput = {
                 fields: fieldsToUpdate,
-                ...(isCreate ? {apiName: this.objectApiName} : {})
+                ...(isCreate ? { apiName: this.objectApiName } : {})
             };
 
             const action = isCreate ? createRecord : updateRecord;
             const result = await action(recordInput);
             const flatRecord = getFlatRecord(result);
 
-            this.dispatchEvent(new CustomEvent('change', {
-                detail: {value: flatRecord}
-            }));
-            notifyRecordUpdateAvailable([{recordId: result.id}]);
+            this.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: { value: flatRecord }
+                })
+            );
+            notifyRecordUpdateAvailable([{ recordId: result.id }]);
             this.formAttributes.editMode = false;
 
             return flatRecord;
@@ -268,8 +289,8 @@ export default class RecordForm extends LightningElement {
         }
     }
 
-    @wire(getObjectInfo, {objectApiName: '$objectApiName'})
-    describeObjectInfo({error, data}) {
+    @wire(getObjectInfo, { objectApiName: "$objectApiName" })
+    describeObjectInfo({ error, data }) {
         if (data) {
             this.objectInfo = JSON.parse(JSON.stringify(data));
             if (!this.recordTypeName) {
@@ -277,18 +298,18 @@ export default class RecordForm extends LightningElement {
             }
             overrideFieldLabels(this.labelOverrides, this.objectInfo);
         } else if (error) {
-            console.error('Error fetching object info', error.message);
+            console.error("Error fetching object info", error.message);
         }
-    };
+    }
 
     @wire(graphql, {
-        query    : RECORD_TYPE_QUERY,
-        variables: '$recordTypeVariables'
+        query: RECORD_TYPE_QUERY,
+        variables: "$recordTypeVariables"
     })
-    fetchRecordType({data, errors}) {
+    fetchRecordType({ data, errors }) {
         if (data) {
             const recordType = data.uiapi.query.RecordType.edges.find(
-                rt => rt.node.SobjectType.value === this.objectApiName
+                (rt) => rt.node.SobjectType.value === this.objectApiName
             );
             this.recordTypeId = recordType?.node?.Id ?? MASTER_RECORD_TYPE;
         } else if (errors) {
@@ -297,23 +318,21 @@ export default class RecordForm extends LightningElement {
     }
 
     get recordTypeVariables() {
-        return this.recordTypeName ?
-            {developerName: this.recordTypeName}
-            : undefined;
+        return this.recordTypeName ? { developerName: this.recordTypeName } : undefined;
     }
 
     @wire(getPicklistValuesByRecordType, {
         objectApiName: "$objectApiName",
-        recordTypeId : "$recordTypeId",
+        recordTypeId: "$recordTypeId"
     })
-    describePicklistValues({error, data}) {
+    describePicklistValues({ error, data }) {
         if (data) {
             this.picklistValues = JSON.parse(JSON.stringify(data.picklistFieldValues));
             this.spinner = false;
         } else if (error) {
-            console.error('Error fetching picklist values', error.message);
+            console.error("Error fetching picklist values", error.message);
         }
-    };
+    }
 
     onFieldConnected(ev) {
         try {
@@ -333,17 +352,15 @@ export default class RecordForm extends LightningElement {
 
                 ev.target.record = this._record;
                 ev.target.formAttributes = this.formAttributes;
-                ev.target.connectField(
-                    {
-                        fieldInfo,
-                        objectInfo              : this.objectInfo,
-                        recordTypePicklistValues: this.picklistValues,
-                        formAttributes          : this.formAttributes
-                    }
-                );
+                ev.target.connectField({
+                    fieldInfo,
+                    objectInfo: this.objectInfo,
+                    recordTypePicklistValues: this.picklistValues,
+                    formAttributes: this.formAttributes
+                });
             }
         } catch (e) {
-            console.error('recordForm.onFieldConnected', e.message);
+            console.error("recordForm.onFieldConnected", e.message);
         }
     }
 
@@ -357,9 +374,11 @@ export default class RecordForm extends LightningElement {
         ev.preventDefault();
         ev.stopPropagation();
         if (this._editModeSnapshot) {
-            this.dispatchEvent(new CustomEvent('change', {
-                detail: {value: {...this._editModeSnapshot}}
-            }));
+            this.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: { value: { ...this._editModeSnapshot } }
+                })
+            );
         }
         this.formAttributes.editMode = false;
     }
@@ -370,20 +389,22 @@ export default class RecordForm extends LightningElement {
         this.submit();
     }
 
-    @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: '$computedOptionalFields'})
-    fetchRecord({error, data}) {
+    @wire(getRecord, { recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields" })
+    fetchRecord({ error, data }) {
         if (data) {
             if (data.recordTypeId) {
                 this.recordTypeId = data.recordTypeId;
             }
 
-            this.dispatchEvent(new CustomEvent('change', {
-                detail: {
-                    value: Object.assign(getFlatRecord(data), this.record)
-                }
-            }));
+            this.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: {
+                        value: Object.assign(getFlatRecord(data), this.record)
+                    }
+                })
+            );
         } else if (error) {
-            console.error('Error fetching record', error?.message, error);
+            console.error("Error fetching record", error?.message, error);
         }
     }
 }

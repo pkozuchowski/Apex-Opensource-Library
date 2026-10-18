@@ -1,15 +1,17 @@
 <template>
-    <c-record-form-field-output lwc:if={isReadOnly} label={label}
-                                density={formAttributes.density}>
+    <c-record-form-field-output lwc:if={isReadOnly} label={label} density={formAttributes.density}>
         <lightning-formatted-text value={fieldValue}></lightning-formatted-text>
-        <c-record-form-field-edit-trigger lwc:if={showInlineEditTrigger}
-                                          label={label}></c-record-form-field-edit-trigger>
+        <c-record-form-field-edit-trigger
+            lwc:if={showInlineEditTrigger}
+            label={label}
+        ></c-record-form-field-edit-trigger>
     </c-record-form-field-output>
 
     <lightning-textarea
-            lwc:else
-            lwc:spread={attributes}
-            lwc:ref="input"
-            class={classes}
-            onchange={handleFieldChange}></lightning-textarea>
+        lwc:else
+        lwc:spread={attributes}
+        lwc:ref="input"
+        class={classes}
+        onchange={handleFieldChange}
+    ></lightning-textarea>
 </template>

@@ -2,12 +2,16 @@
     <div class="slds-is-relative">
         <lightning-spinner lwc:if={spinner} alternative-text="Loading" size="medium"></lightning-spinner>
 
-        <form lwc:if={isLoaded} class={formClasses} role="list"
-              onfieldconnected={onFieldConnected}
-              onedit={onFieldEdit}
-              oncancel={handleFooterCancel}
-              onsave={handleFooterSave}
-              onsubmit={submit}>
+        <form
+            lwc:if={isLoaded}
+            class={formClasses}
+            role="list"
+            onfieldconnected={onFieldConnected}
+            onedit={onFieldEdit}
+            oncancel={handleFooterCancel}
+            onsave={handleFooterSave}
+            onsubmit={submit}
+        >
             <slot></slot>
 
             <slot name="footer">

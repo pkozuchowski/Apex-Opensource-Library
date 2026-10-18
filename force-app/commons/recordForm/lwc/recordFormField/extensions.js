@@ -6,55 +6,55 @@ import {
     LightningNumberExt,
     LightningPhoneExt,
     LightningTextExt,
-    LightningTimeExt, LightningUrlExt
+    LightningTimeExt,
+    LightningUrlExt
 } from "./lightning/input/lightningInput";
 import LightningAddress from "./lightning/address/lightningAddress";
-import {LightningMultiPicklistExt, LightningPicklist} from "./lightning/picklist/lightningPicklist";
-import {LightningRichTextExt, LightningTextAreaExt} from "./lightning/textArea/lightningTextarea";
-import {LightningReferenceExt} from "./lightning/lookup/lightningRecordPicker";
-import {LightningName} from "./lightning/name/lightningName";
-
+import { LightningMultiPicklistExt, LightningPicklist } from "./lightning/picklist/lightningPicklist";
+import { LightningRichTextExt, LightningTextAreaExt } from "./lightning/textArea/lightningTextarea";
+import { LightningReferenceExt } from "./lightning/lookup/lightningRecordPicker";
+import { LightningName } from "./lightning/name/lightningName";
 
 const EXTENSIONS = {
-    "lightning": {
-        'String'       : LightningTextExt,
-        'Boolean'      : LightningCheckboxExt,
-        'Int'          : LightningNumberExt,
-        'Double'       : LightningNumberExt,
-        'Currency'     : LightningNumberExt,
-        'Percent'      : LightningNumberExt,
-        'Date'         : LightningDateExt,
-        'DateTime'     : LightningDateTimeExt,
-        'Time'         : LightningTimeExt,
-        'Email'        : LightningEmailExt,
-        'Phone'        : LightningPhoneExt,
-        'Url'          : LightningUrlExt,
-        'PlainTextArea': LightningTextAreaExt,
-        'RichTextArea' : LightningRichTextExt,
-        'Reference'    : LightningReferenceExt,
-        'Picklist'     : LightningPicklist,
-        'MultiPicklist': LightningMultiPicklistExt,
-        'Address'      : LightningAddress,
-        'PersonName'   : LightningName,
+    lightning: {
+        String: LightningTextExt,
+        Boolean: LightningCheckboxExt,
+        Int: LightningNumberExt,
+        Double: LightningNumberExt,
+        Currency: LightningNumberExt,
+        Percent: LightningNumberExt,
+        Date: LightningDateExt,
+        DateTime: LightningDateTimeExt,
+        Time: LightningTimeExt,
+        Email: LightningEmailExt,
+        Phone: LightningPhoneExt,
+        Url: LightningUrlExt,
+        PlainTextArea: LightningTextAreaExt,
+        RichTextArea: LightningRichTextExt,
+        Reference: LightningReferenceExt,
+        Picklist: LightningPicklist,
+        MultiPicklist: LightningMultiPicklistExt,
+        Address: LightningAddress,
+        PersonName: LightningName
     }
-}
+};
 
 /**
  * Extends RecordFormField instance with custom methods and properties based on field type
  */
-export function extendCtrl(cmp, {fieldInfo, formAttributes}) {
+export function extendCtrl(cmp, { fieldInfo, formAttributes }) {
     try {
         const designSystem = formAttributes.designSystem ?? "lightning";
         let extensionName = fieldInfo.dataType;
-        if (extensionName === 'TextArea') extensionName = fieldInfo.extraTypeInfo;
-        if (fieldInfo.apiName === "Name" && formAttributes.isPersonAccount) extensionName = 'PersonName';
+        if (extensionName === "TextArea") extensionName = fieldInfo.extraTypeInfo;
+        if (fieldInfo.apiName === "Name" && formAttributes.isPersonAccount) extensionName = "PersonName";
 
         const extension = EXTENSIONS[designSystem][extensionName];
         if (extension) {
             extendInstance(cmp, extension.prototype);
         }
     } catch (e) {
-        console.error('extensions.js extendCtrl', e.message);
+        console.error("extensions.js extendCtrl", e.message);
     }
 }
 
@@ -63,7 +63,7 @@ export function extendCtrl(cmp, {fieldInfo, formAttributes}) {
  */
 function extendInstance(cmp, source) {
     // accept either a class/constructor or a prototype object
-    const proto = (typeof source === 'function') ? source.prototype : source;
+    const proto = typeof source === "function" ? source.prototype : source;
     if (!proto) return cmp;
 
     // collect prototype chain from root (excluding Object.prototype) to the provided prototype

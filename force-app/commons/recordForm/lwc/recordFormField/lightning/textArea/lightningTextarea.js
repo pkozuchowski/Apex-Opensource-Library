@@ -1,6 +1,6 @@
-import {LightningTextExt} from "../input/lightningInput";
-import lightningTextarea from './lightningTextarea.html';
-import lightningRichText from './lightningRichText.html';
+import { LightningTextExt } from "../input/lightningInput";
+import lightningTextarea from "./lightningTextarea.html";
+import lightningRichText from "./lightningRichText.html";
 
 export class LightningTextAreaExt extends LightningTextExt {
     get attributes() {
@@ -15,10 +15,23 @@ export class LightningTextAreaExt extends LightningTextExt {
 }
 
 export class LightningRichTextExt extends LightningTextExt {
-
     connectFieldExt() {
-        this.formats = this.formats || ['font', 'size', 'bold', 'italic', 'underline', 'strike', 'list',
-            'indent', 'align', 'link', 'image', 'clean', 'header', 'color'];
+        this.formats = this.formats || [
+            "font",
+            "size",
+            "bold",
+            "italic",
+            "underline",
+            "strike",
+            "list",
+            "indent",
+            "align",
+            "link",
+            "image",
+            "clean",
+            "header",
+            "color"
+        ];
     }
 
     renderExt() {
@@ -28,8 +41,8 @@ export class LightningRichTextExt extends LightningTextExt {
     get attributes() {
         return {
             ...super.attributes,
-            formats          : this.formats,
-            labelVisible     : true,
+            formats: this.formats,
+            labelVisible: true,
             shareWithEntityId: this.record?.Id
         };
     }

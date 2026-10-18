@@ -10,44 +10,44 @@ export class LightningName {
         return lightningName;
     }
 
-    connectFieldExt({objectInfo, recordTypePicklistValues}) {
+    connectFieldExt({ objectInfo, recordTypePicklistValues }) {
         this.salutation = objectInfo.fields.Salutation;
         this.firstName = objectInfo.fields.FirstName;
         this.lastName = objectInfo.fields.LastName;
         this.salutationOptions = this.options || [
-            {label: "--None--", value: ""},
+            { label: "--None--", value: "" },
             ...recordTypePicklistValues.Salutation.values
         ];
     }
 
     get salutationAttributes() {
         return {
-            name   : this.salutation.apiName,
-            label  : this.salutation.label,
-            value  : this.salutationValue,
+            name: this.salutation.apiName,
+            label: this.salutation.label,
+            value: this.salutationValue,
             variant: this.inputVariant,
             options: this.salutationOptions,
-            ...this.typeAttributes.Salutation,
+            ...this.typeAttributes.Salutation
         };
     }
 
     get firstNameAttributes() {
         return {
-            name   : this.firstName.apiName,
-            label  : this.firstName.label,
-            value  : this.firstNameValue,
+            name: this.firstName.apiName,
+            label: this.firstName.label,
+            value: this.firstNameValue,
             variant: this.inputVariant,
-            ...this.typeAttributes.FirstName,
+            ...this.typeAttributes.FirstName
         };
     }
 
     get lastNameAttributes() {
         return {
-            name   : this.lastName.apiName,
-            label  : this.lastName.label,
-            value  : this.lastNameValue,
+            name: this.lastName.apiName,
+            label: this.lastName.label,
+            value: this.lastNameValue,
             variant: this.inputVariant,
-            ...this.typeAttributes.LastName,
+            ...this.typeAttributes.LastName
         };
     }
 
@@ -69,6 +69,6 @@ export class LightningName {
 
     getEventValue(event) {
         const field = event.target.name;
-        return {[field]: event.detail.value};
+        return { [field]: event.detail.value };
     }
 }

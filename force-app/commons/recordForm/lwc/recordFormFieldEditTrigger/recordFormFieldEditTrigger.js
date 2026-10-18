@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
-import {api, LightningElement} from 'lwc';
+import { api, LightningElement } from "lwc";
 
 export default class RecordFormFieldEditTrigger extends LightningElement {
     @api label;
@@ -12,6 +12,6 @@ export default class RecordFormFieldEditTrigger extends LightningElement {
     handleClick(event) {
         event.preventDefault();
         event.stopPropagation();
-        this.dispatchEvent(new CustomEvent('edit', {bubbles: true, composed: true}));
+        this.dispatchEvent(new CustomEvent("edit", { bubbles: true, composed: true }));
     }
 }

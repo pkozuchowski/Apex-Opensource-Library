@@ -7,8 +7,8 @@
  *   - fields: {Object} Map of field names to their individual validation status
  */
 export function validate(fields, validationFn) {
-    const result = {valid: true, fields: {}};
-    fields.forEach(component => {
+    const result = { valid: true, fields: {} };
+    fields.forEach((component) => {
         const validity = validationFn(component);
         result.valid = result.valid && (validity ?? true);
         result.fields[component.field] = validity;
@@ -26,7 +26,7 @@ export function validate(fields, validationFn) {
 export function getUpdatableFields(record = {}, objectInfo = {}, isCreate) {
     const fields = {};
 
-    Object.keys(record).forEach(fieldName => {
+    Object.keys(record).forEach((fieldName) => {
         const info = objectInfo.fields[fieldName];
         if (!info) return;
 
@@ -38,7 +38,6 @@ export function getUpdatableFields(record = {}, objectInfo = {}, isCreate) {
 
     return fields;
 }
-
 
 /**
  * Overrides field labels in the object metadata with custom labels.
@@ -84,14 +83,13 @@ export function getFieldsToRetrieve(objectInfo, fieldInfo, fieldName) {
         const fieldsToRetrieve = [`${objectInfo.apiName}.${fieldName}`];
 
         if (fieldInfo.compound) {
-            Object.values(objectInfo.fields)
-                .forEach(compoundField => {
-                    if (compoundField.compoundFieldName === fieldName) {
-                        fieldsToRetrieve.push(`${objectInfo.apiName}.${compoundField.apiName}`)
-                    }
-                });
+            Object.values(objectInfo.fields).forEach((compoundField) => {
+                if (compoundField.compoundFieldName === fieldName) {
+                    fieldsToRetrieve.push(`${objectInfo.apiName}.${compoundField.apiName}`);
+                }
+            });
         }
-        return fieldsToRetrieve
+        return fieldsToRetrieve;
     } else {
         console.warn(`Field ${fieldName} not found in object ${this.objectApiName}`);
         return [];

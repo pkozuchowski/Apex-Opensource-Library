@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
-import {api, LightningElement} from "lwc";
+import { api, LightningElement } from "lwc";
 
 export default class RecordFormComponent extends LightningElement {
-    static renderMode = 'light';
+    static renderMode = "light";
 
     @api field;
     @api record;
@@ -19,25 +19,30 @@ export default class RecordFormComponent extends LightningElement {
     updateable;
 
     connectedCallback() {
-        this.dispatchEvent(new CustomEvent('fieldconnected', {
-            detail : {},
-            bubbles: true, composed: true
-        }));
+        this.dispatchEvent(
+            new CustomEvent("fieldconnected", {
+                detail: {},
+                bubbles: true,
+                composed: true
+            })
+        );
     }
 
     @api
-    connectField({fieldInfo, objectInfo}) {
+    connectField({ fieldInfo, objectInfo }) {
         try {
             this.label = this.label ?? fieldInfo.label;
             this.fieldLevelHelp = fieldInfo.inlineHelpText;
             this.controllerName = fieldInfo.controllerName;
             this.required = this.required ?? fieldInfo.required;
-            this.updateable = (fieldInfo.updateable || (fieldInfo.compound
-                && Object
-                    .values(objectInfo.fields)
-                    .some(field => field.compoundFieldName === fieldInfo.apiName && field.updateable)));
+            this.updateable =
+                fieldInfo.updateable ||
+                (fieldInfo.compound &&
+                    Object.values(objectInfo.fields).some(
+                        (field) => field.compoundFieldName === fieldInfo.apiName && field.updateable
+                    ));
         } catch (e) {
-            console.error('connectField Cmp', fieldInfo, e.message, e.stack);
+            console.error("connectField Cmp", fieldInfo, e.message, e.stack);
         }
     }
 
@@ -60,19 +65,21 @@ export default class RecordFormComponent extends LightningElement {
         try {
             event.preventDefault();
             event.stopPropagation();
-            this.dispatchEvent(new CustomEvent('change', {
-                detail : {
-                    value: this.getEventValue(event)
-                },
-                bubbles: true,
-            }));
+            this.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: {
+                        value: this.getEventValue(event)
+                    },
+                    bubbles: true
+                })
+            );
         } catch (e) {
-            console.error('RecordFormField.handleChange', e.message);
+            console.error("RecordFormField.handleChange", e.message);
         }
     }
 
     getEventValue(event) {
-        return ({[this.field]: event.detail.value});
+        return { [this.field]: event.detail.value };
     }
 
     get isReadOnly() {
@@ -80,10 +87,7 @@ export default class RecordFormComponent extends LightningElement {
     }
 
     get showInlineEditTrigger() {
-        return this.formAttributes.inlineEdit
-            && !this.formAttributes.editMode
-            && this.updateable
-            && !this.readOnly;
+        return this.formAttributes.inlineEdit && !this.formAttributes.editMode && this.updateable && !this.readOnly;
     }
 
     get fieldValue() {
@@ -99,15 +103,14 @@ export default class RecordFormComponent extends LightningElement {
     }
 
     get inputVariant() {
-        return this.variant || (this.formAttributes.density === "comfy" ?
-            "label-stacked" : "label-inline");
+        return this.variant || (this.formAttributes.density === "comfy" ? "label-stacked" : "label-inline");
     }
 
     get formElementClasses() {
         const density = this.formAttributes.density;
         return {
-            "slds-form-element_stacked"   : density === "comfy",
-            "slds-form-element_horizontal": density === "compact",
+            "slds-form-element_stacked": density === "comfy",
+            "slds-form-element_horizontal": density === "compact"
         };
     }
 }

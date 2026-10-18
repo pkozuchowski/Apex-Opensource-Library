@@ -2,15 +2,17 @@
     <!--Two inputs to switch flawlessly between read-only and editable modes
     when LWC does not support type changes-->
     <div lwc:if={isReadOnly} class="slds-grid slds-grid_vertical-align-center">
-        <lightning-input lwc:ref="input"
-                         lwc:spread={attributes}
-                         class={classes}></lightning-input>
-        <c-record-form-field-edit-trigger lwc:if={showInlineEditTrigger}
-                                          label={label}></c-record-form-field-edit-trigger>
+        <lightning-input lwc:ref="input" lwc:spread={attributes} class={classes}></lightning-input>
+        <c-record-form-field-edit-trigger
+            lwc:if={showInlineEditTrigger}
+            label={label}
+        ></c-record-form-field-edit-trigger>
     </div>
-    <lightning-input lwc:else
-                     lwc:ref="input"
-                     lwc:spread={attributes}
-                     class={classes}
-                     onchange={handleFieldChange}></lightning-input>
+    <lightning-input
+        lwc:else
+        lwc:ref="input"
+        lwc:spread={attributes}
+        class={classes}
+        onchange={handleFieldChange}
+    ></lightning-input>
 </template>

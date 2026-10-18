@@ -1,5 +1,5 @@
-import LightningRecordPicker from './lightningRecordPicker.html';
-import {LightningInputExt} from "../input/lightningInput";
+import LightningRecordPicker from "./lightningRecordPicker.html";
+import { LightningInputExt } from "../input/lightningInput";
 
 /**
  * For a polymorphic lookup, `fieldInfo.referenceToInfos` isn't guaranteed to come back
@@ -7,9 +7,7 @@ import {LightningInputExt} from "../input/lightningInput";
  * Sorting by API name at least makes the un-overridden default deterministic.
  */
 function getDefaultReferenceToApiName(fieldInfo) {
-    return [...fieldInfo.referenceToInfos]
-        .map(info => info.apiName)
-        .sort()[0];
+    return [...fieldInfo.referenceToInfos].map((info) => info.apiName).sort()[0];
 }
 
 export class LightningReferenceExt extends LightningInputExt {
@@ -32,7 +30,6 @@ export class LightningReferenceExt extends LightningInputExt {
     }
 
     getEventValue(event) {
-        return {[this.field]: event.detail.recordId};
+        return { [this.field]: event.detail.recordId };
     }
-
 }

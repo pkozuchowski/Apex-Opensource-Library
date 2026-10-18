@@ -327,7 +327,6 @@ Then this component can be used in the form:
 | `formClass`        | CSS class to apply to the form.                                                        |
 | `labelOverrides`   | Object with field names as keys and custom labels as values.                           |
 | `designSystem`     | Design System to use for rendering the form. Defaults to "lightning".                  |
-| `readOnly`         | If true, all fields are read-only.                                                     |
 | `isPersonAccount`  | If true, the `Name` field renders as a compound Person Name field. Not auto-detected, see [Person Accounts](#person-accounts). |
 | `optionalFields`   | Extra fields to retrieve from the record, besides the ones rendered by child field components. |
 | `inlineEdit`       | Defaults to true. Adds a pencil icon to editable fields while the form is in view mode. See [Inline Edit](#inline-edit). |
@@ -354,13 +353,13 @@ Then this component can be used in the form:
 | `field`          | `string`  | API name of the field this component represents (e.g. `"Name"`, `"OwnerId"`). Used to read the value from `record` and to build the change payload. |
 | `record`         | `object`  | Plain record object in shape `{ [fieldApiName]: value }`. The component reads current value from it. Set by record form.                            |
 | `fieldLevelHelp` | `string`  | Help text displayed for the field (typically sourced from the field's inline help text).                                                            |
-| `readOnly`       | `boolean` | Forces the component into read-only mode. If not provided, the component can inherit read-only behavior from `formAttributes`.                      |
+| `readOnly`       | `boolean` | Forces this field into permanent read-only mode, regardless of the form's `editMode`.                                                                |
 | `disabled`       | `boolean` | Disables user interaction with the field (visible, but not editable/interactable).                                                                  |
 | `required`       | `boolean` | Marks the field as required. If not provided, it can default from field metadata.                                                                   |
 | `validity`       | `object`  | Validity state for the underlying input. Shape depends on the input implementation used by the field type/extension.                                |
 | `variant`        | `string`  | Label layout variant (commonly `"label-inline"` or `"label-stacked"`). If not provided, it can be derived from `formAttributes.density`.            |
 | `designSystem`   | `string`  | Design system selector used to determine rendering behavior (e.g. Lightning vs custom design systems).                                              |
-| `formAttributes` | `object`  | Form-level configuration passed down to fields (e.g. `density`, `readOnly`, etc.). Used as defaults when a field-level attribute is not set.        |
+| `formAttributes` | `object`  | Form-level configuration passed down to fields (e.g. `density`, `editMode`, etc.). Used as defaults when a field-level attribute is not set.        |
 
 ### Methods
 | Method                       | Description                                |
@@ -393,6 +392,8 @@ from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-
   values from when edit mode was last entered.
 - Changed: `isPersonAccount` is now a plain attribute set by the consumer, instead of being auto-detected.
 - Changed: once a record with a `recordId` has loaded, its actual Record Type Id overrides the name/default-resolved one.
+- Removed: the form-level `readOnly` attribute - it was equivalent to `editMode={false}` with `inlineEdit={false}` and no way to flip it.
+  The field-level `read-only` attribute on `c-record-form-field` is unaffected.
 - Removed: `RecordFormCtrl` Apex class. Record Type resolution by developer name now uses a GraphQL query (`lightning/graphql`) instead of a SOQL
   query via Apex - see [Record Type Support](#record-type-support).
 

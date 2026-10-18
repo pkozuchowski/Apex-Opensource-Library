@@ -67,22 +67,11 @@ export default class RecordForm extends LightningElement {
     @track
     formAttributes = {
         density        : "comfy",
-        readOnly       : false,
         designSystem   : "lightning",
         isPersonAccount: false,
         inlineEdit     : true,
         editMode       : false
     }
-
-
-    /**
-     * Whether the form fields should be read-only.
-     * @type {boolean}
-     */
-    @api
-    get readOnly() {return this.formAttributes.readOnly;}
-
-    set readOnly(value) {this.formAttributes.readOnly = value;}
 
     /**
      * Form density variant.

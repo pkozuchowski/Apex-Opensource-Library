@@ -9,7 +9,10 @@
               onsave={handleFooterSave}
               onsubmit={submit}>
             <slot></slot>
-            <c-record-form-footer lwc:if={showFormFooter}></c-record-form-footer>
+
+            <slot name="footer">
+                <c-record-form-footer lwc:if={showFormFooter}></c-record-form-footer>
+            </slot>
         </form>
     </div>
 </template>

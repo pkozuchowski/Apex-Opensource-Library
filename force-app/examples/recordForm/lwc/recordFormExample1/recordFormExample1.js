@@ -6,7 +6,7 @@ export default class Preview extends LightningElement {
     @track account = {};
     @track opportunity;
     show = "123"
-    readOnly = false;
+    editMode = false;
     labelOverrides = {
         "Name": "Client Name",
     }
@@ -15,7 +15,7 @@ export default class Preview extends LightningElement {
     condition = false;
 
     edit() {
-        this.readOnly = !this.readOnly;
+        this.editMode = !this.editMode;
     }
 
     changeDensity() {

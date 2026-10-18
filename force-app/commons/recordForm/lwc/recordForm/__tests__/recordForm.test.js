@@ -39,16 +39,14 @@ describe('c-record-form', () => {
     });
 
     describe('attribute passthrough', () => {
-        it('reflects readOnly, density, isPersonAccount, inlineEdit and hideFooter', () => {
+        it('reflects density, isPersonAccount, inlineEdit and hideFooter', () => {
             const element = createRecordForm({
-                readOnly       : true,
                 density        : 'compact',
                 isPersonAccount: true,
                 inlineEdit     : true,
                 hideFooter     : true
             });
 
-            expect(element.readOnly).toBe(true);
             expect(element.density).toBe('compact');
             expect(element.isPersonAccount).toBe(true);
             expect(element.inlineEdit).toBe(true);

@@ -17,7 +17,7 @@
                         record-type-name="Enterprise"
                         record={account}
                         label-overrides={labelOverrides}
-                        read-only={readOnly}
+                        edit-mode={editMode}
                         density={density}
                         onchange={onRecordChange}>
                     <c-record-form-field read-only field="OwnerId"></c-record-form-field>
@@ -29,7 +29,6 @@
                         <c-record-form-field field="Rating"></c-record-form-field>
                         <c-record-form-field field="Website"></c-record-form-field>
                     </template>
-                    <lightning-button type="submit" label="Submit"></lightning-button>
                 </c-record-form>
             </lightning-layout-item>
         </lightning-layout>

@@ -156,14 +156,38 @@ already `false` by default). To get the older "plain, always editable, no pencil
 ```
 
 ## Cancel/Save Footer
-By default, Record Form renders a standard docked footer with Cancel and Save buttons, similar to the standard Salesforce record
-layout footer, shown whenever the form is in edit mode. Set `hide-footer` to hide it (e.g. if you provide your own
-`lightning-button type="submit"` instead).
+By default, Record Form renders a `c-record-form-footer` - a standard docked footer with Cancel and Save buttons, similar to the standard
+Salesforce record layout footer - into its `footer` slot, shown whenever the form is in edit mode. Set `hide-footer` to hide it entirely (e.g.
+if you provide your own `lightning-button type="submit"` instead).
 
 - **Save** calls `submit()`.
 - **Cancel** reverts fields to their values from when edit mode was last entered (not to the latest unsaved edits, and not necessarily to the
   record as last loaded from the server - if the record was already edited and saved once in the same session, Cancel on a later edit only
   reverts that later edit).
+
+### Customizing the footer
+The button labels default to "Cancel" and "Save" and can be overridden on the default footer itself, by slotting in your own
+`c-record-form-footer` with `cancel-label`/`save-label` set:
+```html
+<c-record-form object-api-name="Account" record={account} onchange={onRecordChange}>
+    <c-record-form-field field="Name"></c-record-form-field>
+    <c-record-form-footer slot="footer" cancel-label="Discard" save-label="Update"></c-record-form-footer>
+</c-record-form>
+```
+The `footer` slot is overrideable, so you can replace it entirely with your own markup - e.g. extra actions alongside Cancel/Save, or a
+completely different layout:
+```html
+<c-record-form object-api-name="Account" record={account} onchange={onRecordChange}>
+    <c-record-form-field field="Name"></c-record-form-field>
+    <div slot="footer" class="slds-docked-form-footer">
+        <lightning-button variant="neutral" label="Discard" onclick={handleDiscard}></lightning-button>
+        <lightning-button variant="brand" label="Update" onclick={handleUpdate}></lightning-button>
+    </div>
+</c-record-form>
+```
+Note: content you provide for the `footer` slot replaces the default footer entirely, including its `editMode`/`hideFooter` visibility logic -
+when overriding the slot, you're responsible for showing/hiding your own markup (e.g. by binding its visibility to the same property you pass
+as `edit-mode`).
 
 ## Field Anatomy and Extensions
 
@@ -380,6 +404,22 @@ from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-
 | `options`        | `array`  | Array of picklist values to present instead of the ones from the field metadata.   |
 | `optionsFilter`  | `array`  | Subset of picklist values to display, from options or record type picklist values. |
 
+## Record Form Footer
+The default content of the form's `footer` slot - see [Cancel/Save Footer](#cancelsave-footer). Dispatches bubbling `cancel`/`save` events,
+handled by Record Form itself; not meant to be used outside of a `c-record-form`.
+
+### Attributes
+| Attribute     | Type     | Description                      |
+|---------------|----------|----------------------------------|
+| `cancelLabel` | `string` | Label for the Cancel button. Defaults to `"Cancel"`. |
+| `saveLabel`   | `string` | Label for the Save button. Defaults to `"Save"`.     |
+
+### Events
+| Event    | Description                                                        |
+|----------|---------------------------------------------------------------------|
+| `cancel` | Bubbling event, fired on click. Record Form reverts fields to their edit-mode-entry values and exits edit mode. |
+| `save`   | Bubbling event, fired on click. Record Form calls `submit()`.       |
+
 ---
 # Change Log
 
@@ -388,8 +428,9 @@ from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-
 - Added: `editMode` attribute (defaults to false) to read or set the form's current edit mode programmatically, independently of `inlineEdit`.
 - Added: `inlineEdit` attribute (defaults to true) - adds a pencil icon to editable fields while in view mode; clicking one switches the whole
   form to edit mode.
-- Added: Cancel/Save footer, shown by default whenever the form is in edit mode; hide it with `hideFooter`. Cancel reverts fields to their
-  values from when edit mode was last entered.
+- Added: Cancel/Save footer (`c-record-form-footer`), rendered into an overrideable `footer` slot, shown by default whenever the form is in
+  edit mode. Hide it with `hideFooter`, or override the `footer` slot entirely. Button labels are configurable via `cancelLabel`/`saveLabel`
+  on `c-record-form-footer`, defaulting to "Cancel"/"Save". Cancel reverts fields to their values from when edit mode was last entered.
 - Changed: `isPersonAccount` is now a plain attribute set by the consumer, instead of being auto-detected.
 - Changed: once a record with a `recordId` has loaded, its actual Record Type Id overrides the name/default-resolved one.
 - Removed: the form-level `readOnly` attribute - it was equivalent to `editMode={false}` with `inlineEdit={false}` and no way to flip it.

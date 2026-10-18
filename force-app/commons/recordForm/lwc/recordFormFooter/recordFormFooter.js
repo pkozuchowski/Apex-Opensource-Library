@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
-import {LightningElement} from 'lwc';
+import {api, LightningElement} from 'lwc';
 
 export default class RecordFormFooter extends LightningElement {
+    @api cancelLabel = 'Cancel';
+    @api saveLabel = 'Save';
 
     handleCancel(event) {
         event.preventDefault();

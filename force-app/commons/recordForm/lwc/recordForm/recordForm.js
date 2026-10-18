@@ -223,7 +223,7 @@ export default class RecordForm extends LightningElement {
      */
     @api
     reportValidityForField(field) {
-        this.fields.filter((cmp) => cmp.field === field).forEach((cmp) => cmp.reportValidity());
+        return this.fields.filter((cmp) => cmp.field === field).forEach((cmp) => cmp.reportValidity());
     }
 
     /**
@@ -234,7 +234,7 @@ export default class RecordForm extends LightningElement {
      */
     @api
     setCustomValidityForField(field, message) {
-        this.fields.filter((cmp) => cmp.field === field).forEach((cmp) => cmp.setCustomValidity(message));
+        return this.fields.filter((cmp) => cmp.field === field).forEach((cmp) => cmp.setCustomValidity(message));
     }
 
     /**

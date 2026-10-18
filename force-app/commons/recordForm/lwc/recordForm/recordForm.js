@@ -66,7 +66,9 @@ export default class RecordForm extends LightningElement {
         density        : "comfy",
         readOnly       : false,
         designSystem   : "lightning",
-        isPersonAccount: false
+        isPersonAccount: false,
+        inlineEdit     : false,
+        editMode       : false
     }
 
 
@@ -98,6 +100,27 @@ export default class RecordForm extends LightningElement {
     get isPersonAccount() {return this.formAttributes.isPersonAccount;}
 
     set isPersonAccount(value) {this.formAttributes.isPersonAccount = value;}
+
+    /**
+     * When true, editable fields start in read mode with a pencil icon; clicking it
+     * switches that field into edit mode.
+     * @type {boolean}
+     */
+    @api
+    get inlineEdit() {return this.formAttributes.inlineEdit;}
+
+    set inlineEdit(value) {this.formAttributes.inlineEdit = value;}
+
+/**
+     * Current edit mode of the form. When `inlineEdit` is on, this starts false
+     * (pencil icons shown) and can be set to true to switch the whole form into
+     * edit mode, either by clicking a pencil icon or programmatically.
+     * @type {boolean}
+     */
+    @api
+    get editMode() {return this.formAttributes.editMode;}
+
+    set editMode(value) {this.formAttributes.editMode = value;}
 
     /**
      * Extra fields to retrieve from the record in addition to the fields rendered by
@@ -226,6 +249,7 @@ export default class RecordForm extends LightningElement {
                 detail: {value: flatRecord}
             }));
             notifyRecordUpdateAvailable([{recordId: result.id}]);
+            this.formAttributes.editMode = false;
 
             return flatRecord;
         } catch (err) {
@@ -315,6 +339,29 @@ export default class RecordForm extends LightningElement {
         }
     }
 
+    onFieldEdit(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        this.formAttributes.editMode = true;
+    }
+
+    handleFooterCancel(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (this._pristineRecord) {
+            this.dispatchEvent(new CustomEvent('change', {
+                detail: {value: {...this._pristineRecord}}
+            }));
+        }
+        this.formAttributes.editMode = false;
+    }
+
+    handleFooterSave(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        this.submit();
+    }
+
     @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: '$computedOptionalFields'})
     fetchRecord({error, data}) {
         if (data) {
@@ -322,6 +369,7 @@ export default class RecordForm extends LightningElement {
                 this.recordTypeId = data.recordTypeId;
             }
 
+            this._pristineRecord = getFlatRecord(data);
             this.dispatchEvent(new CustomEvent('change', {
                 detail: {
                     value: Object.assign(getFlatRecord(data), this.record)

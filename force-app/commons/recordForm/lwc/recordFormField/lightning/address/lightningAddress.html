@@ -3,6 +3,8 @@
     <c-record-form-field-output lwc:if={isReadOnly} label={label}
                                 density={formAttributes.density}>
         <lightning-formatted-address lwc:spread={attributes}></lightning-formatted-address>
+        <c-record-form-field-edit-trigger lwc:if={showInlineEditTrigger}
+                                          label={label}></c-record-form-field-edit-trigger>
     </c-record-form-field-output>
 
     <lightning-input-address lwc:if={isEditMode}

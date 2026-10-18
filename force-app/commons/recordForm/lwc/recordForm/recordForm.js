@@ -169,7 +169,9 @@ export default class RecordForm extends LightningElement {
     }
 
     set optionalFields(value) {
-        this._optionalFields = typeof value === "string" ? value.split(",") : (value ?? []);
+        this._optionalFields = (typeof value === "string" ? value.split(",") : (value ?? []))
+            .map((field) => field.trim())
+            .filter(Boolean);
         this.recalculateOptionalFields();
     }
 

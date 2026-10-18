@@ -65,6 +65,7 @@ export default class RecordForm extends LightningElement {
     _optionalFields = [];
     _derivedFields = [];
     computedOptionalFields = [];
+    isSubmitting = false;
 
     /**Hides the Cancel/Save footer, which is shown by default.*/
     @api hideFooter = false;
@@ -301,10 +302,11 @@ export default class RecordForm extends LightningElement {
         ev?.preventDefault();
         ev?.stopPropagation();
 
-        if (!this.reportValidity().valid) {
+        if (this.isSubmitting || !this.reportValidity().valid) {
             return undefined;
         }
 
+        this.isSubmitting = true;
         this.spinner = true;
         try {
             const isCreate = !this.record?.Id;
@@ -334,6 +336,7 @@ export default class RecordForm extends LightningElement {
             throw err;
         } finally {
             this.spinner = false;
+            this.isSubmitting = false;
         }
     }
 

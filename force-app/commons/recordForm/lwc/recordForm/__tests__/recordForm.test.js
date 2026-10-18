@@ -387,6 +387,29 @@ describe("c-record-form", () => {
             expect(notifyRecordUpdateAvailable).toHaveBeenCalled();
             expect(element.editMode).toBe(false);
         });
+
+        it("ignores rapid repeated Save clicks while the first save is pending", async () => {
+            let resolveCreateRecord;
+            createRecord.mockReturnValueOnce(
+                new Promise((resolve) => {
+                    resolveCreateRecord = resolve;
+                })
+            );
+            const element = createRecordForm({ recordId: undefined, editMode: true });
+            loadForm();
+            await Promise.resolve();
+
+            element.record = { Name: "New" };
+            const footer = element.shadowRoot.querySelector("c-record-form-footer");
+            footer.dispatchEvent(new CustomEvent("save", { bubbles: true, composed: true }));
+            footer.dispatchEvent(new CustomEvent("save", { bubbles: true, composed: true }));
+
+            expect(createRecord).toHaveBeenCalledTimes(1);
+
+            resolveCreateRecord({ id: RECORD_ID, fields: { Name: { value: "New" } } });
+            await flushPromises();
+            expect(element.editMode).toBe(false);
+        });
     });
 
     describe("Keyboard shortcuts", () => {

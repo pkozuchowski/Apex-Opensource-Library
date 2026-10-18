@@ -190,7 +190,12 @@ export default class RecordForm extends LightningElement {
 
     setValues(property, value) {
         this[`_${property}`] = value;
-        this.fields.forEach((field) => (field[property] = value));
+        this.getConnectedFields().forEach((field) => (field[property] = value));
+    }
+
+    getConnectedFields() {
+        this.fields = this.fields.filter((field) => field.isConnected !== false);
+        return this.fields;
     }
 
     recalculateOptionalFields() {
@@ -228,7 +233,7 @@ export default class RecordForm extends LightningElement {
      */
     @api
     reportValidityForField(field) {
-        return this.fields.find((cmp) => cmp.field === field)?.reportValidity();
+        return this.getConnectedFields().find((cmp) => cmp.field === field)?.reportValidity();
     }
 
     /**
@@ -239,7 +244,7 @@ export default class RecordForm extends LightningElement {
      */
     @api
     setCustomValidityForField(field, message) {
-        this.fields.find((cmp) => cmp.field === field)?.setCustomValidity(message);
+        this.getConnectedFields().find((cmp) => cmp.field === field)?.setCustomValidity(message);
     }
 
     /**
@@ -249,7 +254,7 @@ export default class RecordForm extends LightningElement {
      */
     @api
     checkValidityForField(field) {
-        return this.fields.find((cmp) => cmp.field === field)?.checkValidity();
+        return this.getConnectedFields().find((cmp) => cmp.field === field)?.checkValidity();
     }
 
     /**
@@ -257,7 +262,7 @@ export default class RecordForm extends LightningElement {
      * @returns {boolean}
      */
     @api reportValidity() {
-        return validate(this.fields, (field) => field?.reportValidity());
+        return validate(this.getConnectedFields(), (field) => field?.reportValidity());
     }
 
     /**
@@ -265,7 +270,7 @@ export default class RecordForm extends LightningElement {
      * @returns {boolean}
      */
     @api checkValidity() {
-        return validate(this.fields, (field) => field?.checkValidity());
+        return validate(this.getConnectedFields(), (field) => field?.checkValidity());
     }
 
     /**
@@ -407,7 +412,10 @@ export default class RecordForm extends LightningElement {
             ev.stopPropagation();
 
             if (ev.target.connectField) {
-                this.fields.push(ev.target);
+                this.getConnectedFields();
+                if (!this.fields.includes(ev.target)) {
+                    this.fields.push(ev.target);
+                }
                 const fieldName = ev.target.field;
                 const fieldInfo = this.objectInfo.fields[fieldName];
 

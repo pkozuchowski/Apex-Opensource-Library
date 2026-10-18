@@ -203,6 +203,28 @@ describe("c-record-form", () => {
         });
     });
 
+    describe("connected field lifecycle", () => {
+        it("ignores and removes fields after they disconnect", async () => {
+            const element = createRecordForm();
+            loadForm();
+            await Promise.resolve();
+
+            const form = element.shadowRoot.querySelector("form");
+            const staleField = connectFakeField(form, "Name", {
+                isConnected: true,
+                reportValidity: jest.fn(() => false)
+            });
+
+            expect(element.reportValidity().valid).toBe(false);
+
+            staleField.isConnected = false;
+            staleField.reportValidity.mockClear();
+            expect(element.reportValidity().valid).toBe(true);
+            expect(staleField.reportValidity).not.toHaveBeenCalled();
+            expect(element.reportValidityForField("Name")).toBeUndefined();
+        });
+    });
+
     describe("Record Type Id resolution", () => {
         it("the record's own Record Type Id takes precedence over the name-based GraphQL lookup, regardless of wire order", async () => {
             const element = createRecordForm({ recordTypeName: "Enterprise" });

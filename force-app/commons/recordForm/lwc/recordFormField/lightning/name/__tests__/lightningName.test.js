@@ -56,3 +56,16 @@ describe("LightningName validity aggregation", () => {
         expect(cmp.refs.salutation.setCustomValidity).not.toHaveBeenCalled();
     });
 });
+
+describe("LightningName salutation rendering", () => {
+    it.each([null, undefined])("renders an empty salutation when the value is %s", (salutation) => {
+        const cmp = Object.create(LightningName.prototype);
+        cmp.salutation = { apiName: "Salutation" };
+        cmp.firstName = { apiName: "FirstName" };
+        cmp.lastName = { apiName: "LastName" };
+        cmp.getField = (field) => ({ Salutation: salutation, FirstName: "Alex", LastName: "Example" })[field];
+
+        expect(cmp.salutationValue).toBe("");
+        expect(cmp.nameValue).toBe("Alex Example");
+    });
+});

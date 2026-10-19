@@ -60,19 +60,19 @@ export class LightningName {
     }
 
     get nameValue() {
-        return `${this.salutationValue} ${this.firstNameValue || ""} ${this.lastNameValue || ""}`.trim();
+        return `${this.salutationValue} ${this.firstNameValue} ${this.lastNameValue}`.trim();
     }
 
     get salutationValue() {
-        return this.getField(this.salutation.apiName);
+        return this.getField(this.salutation.apiName) ?? "";
     }
 
     get firstNameValue() {
-        return this.getField(this.firstName.apiName);
+        return this.getField(this.firstName.apiName) ?? "";
     }
 
     get lastNameValue() {
-        return this.getField(this.lastName.apiName);
+        return this.getField(this.lastName.apiName) ?? "";
     }
 
     getEventValue(event) {

@@ -216,7 +216,7 @@ describe("c-record-form", () => {
             const expectedRecord = {
                 Id: RECORD_ID,
                 Name: "Acme",
-                recordTypeId: "012xx0000000001AAA"
+                RecordTypeId: "012xx0000000001AAA"
             };
             expect(element.record).toEqual(expectedRecord);
             expect(field.record).toEqual(expectedRecord);
@@ -316,11 +316,11 @@ describe("c-record-form", () => {
             await Promise.resolve();
 
             expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000002AAA");
-            expect(element.record.recordTypeId).toBe("012000000000002AAA");
-            expect(field.record.recordTypeId).toBe("012000000000002AAA");
+            expect(element.record.RecordTypeId).toBe("012000000000002AAA");
+            expect(field.record.RecordTypeId).toBe("012000000000002AAA");
             expect(changeHandler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    detail: {value: expect.objectContaining({recordTypeId: "012000000000002AAA"})}
+                    detail: {value: expect.objectContaining({RecordTypeId: "012000000000002AAA"})}
                 })
             );
         });
@@ -349,7 +349,7 @@ describe("c-record-form", () => {
             await Promise.resolve();
 
             expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000002AAA");
-            expect(element.record.recordTypeId).toBe("012000000000002AAA");
+            expect(element.record.RecordTypeId).toBe("012000000000002AAA");
         });
 
         it("uses the record's own Record Type Id when no record type name is provided", async () => {
@@ -365,7 +365,7 @@ describe("c-record-form", () => {
             await Promise.resolve();
 
             expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000001AAA");
-            expect(element.record.recordTypeId).toBe("012000000000001AAA");
+            expect(element.record.RecordTypeId).toBe("012000000000001AAA");
         });
     });
 

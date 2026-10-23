@@ -386,8 +386,7 @@ export default class RecordForm extends LightningElement {
             );
             this.recordTypeId = recordType?.node?.Id ?? MASTER_RECORD_TYPE;
 
-            if (this.record && this.record.recordTypeId !== this.recordTypeId) {
-                this.record.RecordTypeId = this.recordTypeId;
+            if (this.record && this.record.RecordTypeId !== this.recordTypeId) {
                 this.dispatchRecordChange({...this.record, RecordTypeId: this.recordTypeId});
             }
         } else if (errors) {
@@ -417,11 +416,14 @@ export default class RecordForm extends LightningElement {
         if (data) {
             const flatRecord = Object.assign(getFlatRecord(data), this.record);
 
-            if (this.recordTypeName && data.recordTypeId !== this.recordTypeId) {
+            // When a Record Type is queried by name, it takes precedence over the
+            // record's own Record Type Id; otherwise, take it from the record.
+            if (this.recordTypeName) {
                 flatRecord.RecordTypeId = this.recordTypeId;
+            } else if (data.recordTypeId) {
+                this.recordTypeId = data.recordTypeId;
             }
 
-            this.record = flatRecord;
             this.dispatchRecordChange(flatRecord);
         } else if (error) {
             console.error("Error fetching record", error?.message, error);

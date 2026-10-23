@@ -77,6 +77,7 @@ export function getFlatRecord(recordRepresentation) {
         flatRecord[field] = recordRepresentation.fields[field].value;
     }
     flatRecord.Id = recordRepresentation.id;
+    flatRecord.RecordTypeId = recordRepresentation.recordTypeId;
 
     return flatRecord;
 }

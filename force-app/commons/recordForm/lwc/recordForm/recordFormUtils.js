@@ -109,3 +109,22 @@ export function getFieldsToRetrieve(objectInfo, fieldInfo, fieldName, isPersonAc
         return [];
     }
 }
+
+/**
+ * Extracts and deduplicates user-facing messages from an LDS/UI API error.
+ * @param {Object} error - Error returned by a Lightning Data Service/UI API operation
+ * @returns {string} Combined messages, or a generic fallback when none are available
+ */
+export function getErrorMessage(error) {
+    const body = error?.body;
+    const messages = [
+        body?.message,
+        ...(body?.output?.errors ?? []).map((item) => item.message),
+        ...Object.values(body?.output?.fieldErrors ?? {}).flat().map((item) => item.message),
+        error?.message
+    ]
+        .filter((message) => typeof message === "string" && message.trim())
+        .map((message) => message.trim());
+
+    return [...new Set(messages)].join("; ") || "An unexpected error occurred while saving the record.";
+}

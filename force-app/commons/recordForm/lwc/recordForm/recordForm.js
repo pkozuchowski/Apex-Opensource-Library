@@ -4,6 +4,7 @@ import {api, LightningElement, track, wire} from "lwc";
 import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectInfoApi";
 import {createRecord, getRecord, notifyRecordUpdateAvailable, updateRecord} from "lightning/uiRecordApi";
 import {
+    getErrorMessage,
     getFieldsToRetrieve,
     getFlatRecord,
     getUpdatableFields,
@@ -40,34 +41,6 @@ const RECORD_TYPE_QUERY = gql`
         }
     }
 `;
-
-function getErrorMessage(error) {
-    const messages = [];
-    const addMessage = (message) => {
-        if (typeof message === "string" && message.trim() && !messages.includes(message.trim())) {
-            messages.push(message.trim());
-        }
-    };
-    const body = error?.body;
-
-    if (typeof body === "string") {
-        addMessage(body);
-    } else if (Array.isArray(body)) {
-        body.forEach((item) => addMessage(item?.message));
-    } else if (body && typeof body === "object") {
-        addMessage(body.message);
-        (body.pageErrors ?? []).forEach((item) => addMessage(item?.message));
-
-        const output = body.output;
-        (output?.errors ?? []).forEach((item) => addMessage(item?.message));
-        Object.values(output?.fieldErrors ?? {}).forEach((fieldErrors) =>
-            fieldErrors.forEach((item) => addMessage(item?.message))
-        );
-    }
-
-    addMessage(error?.message);
-    return messages.join("; ") || "An unexpected error occurred while saving the record.";
-}
 
 /**
  * Lightning Web Component form wrapper that handles record wiring, field setup,
@@ -228,6 +201,22 @@ export default class RecordForm extends LightningElement {
         return this.fields;
     }
 
+    handleFieldChange(ev) {
+        const changedFields = ev.detail?.value;
+        if (changedFields && typeof changedFields === "object") {
+            this.record = {...this.record, ...changedFields};
+        }
+    }
+
+    dispatchRecordChange(value) {
+        this.record = value;
+        this.dispatchEvent(
+            new CustomEvent("change", {
+                detail: {value}
+            })
+        );
+    }
+
     recalculateOptionalFields() {
         const extraFields = this._optionalFields.map((field) =>
             field.includes(".") ? field : `${this.objectApiName}.${field}`
@@ -350,11 +339,7 @@ export default class RecordForm extends LightningElement {
             const result = await action(recordInput);
             const flatRecord = getFlatRecord(result);
 
-            this.dispatchEvent(
-                new CustomEvent("change", {
-                    detail: {value: flatRecord}
-                })
-            );
+            this.dispatchRecordChange(flatRecord);
             await notifyRecordUpdateAvailable([{recordId: result.id}]);
             this.formAttributes.editMode = false;
             this._editModeSnapshot = undefined;
@@ -396,13 +381,15 @@ export default class RecordForm extends LightningElement {
     })
     fetchRecordType({data, errors}) {
         if (data) {
-            if (this._recordTypeIdFromRecord) {
-                return; // the record's own Record Type Id takes precedence - see fetchRecord
-            }
             const recordType = data.uiapi.query.RecordType.edges.find(
                 (rt) => rt.node.SobjectType.value === this.objectApiName
             );
             this.recordTypeId = recordType?.node?.Id ?? MASTER_RECORD_TYPE;
+
+            if (this.record && this.record.recordTypeId !== this.recordTypeId) {
+                this.record.RecordTypeId = this.recordTypeId;
+                this.dispatchRecordChange({...this.record, RecordTypeId: this.recordTypeId});
+            }
         } else if (errors) {
             console.error(`Error fetching record type ${this.objectApiName}.${this.recordTypeName}`, errors);
         }
@@ -428,19 +415,14 @@ export default class RecordForm extends LightningElement {
     @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields"})
     fetchRecord({error, data}) {
         if (data) {
-            if (data.recordTypeId) {
-                this._recordTypeIdFromRecord = true;
-                this.recordTypeId = data.recordTypeId;
+            const flatRecord = Object.assign(getFlatRecord(data), this.record);
+
+            if (this.recordTypeName && data.recordTypeId !== this.recordTypeId) {
+                flatRecord.RecordTypeId = this.recordTypeId;
             }
 
-            const flatRecord = Object.assign(getFlatRecord(data), this.record);
-            this.dispatchEvent(
-                new CustomEvent("change", {
-                    detail: {
-                        value: flatRecord
-                    }
-                })
-            );
+            this.record = flatRecord;
+            this.dispatchRecordChange(flatRecord);
         } else if (error) {
             console.error("Error fetching record", error?.message, error);
         }
@@ -498,6 +480,21 @@ export default class RecordForm extends LightningElement {
     }
 
     /**
+     * Handles keydown events on the form.
+     * Escape key cancels edit mode.
+     * @param {KeyboardEvent} ev - The keydown event.
+     */
+    async handleKeyDown(ev) {
+        if (!this.formAttributes.editMode) {
+            return;
+        }
+        if (ev.key === "Escape") {
+            ev.preventDefault();
+            await this.cancelEdit();
+        }
+    }
+
+    /**
      * Reverts fields to their edit-mode-entry values and exits edit mode. If dirty
      * and `disableConfirmDiscard` is not set, asks for confirmation first.
      * @returns {Promise<void>}
@@ -515,23 +512,9 @@ export default class RecordForm extends LightningElement {
         }
 
         if (this._editModeSnapshot) {
-            this.dispatchEvent(
-                new CustomEvent("change", {
-                    detail: {value: {...this._editModeSnapshot}}
-                })
-            );
+            this.dispatchRecordChange({...this._editModeSnapshot});
         }
         this.formAttributes.editMode = false;
         this._editModeSnapshot = undefined;
-    }
-
-    async handleKeyDown(ev) {
-        if (!this.formAttributes.editMode) {
-            return;
-        }
-        if (ev.key === "Escape") {
-            ev.preventDefault();
-            await this.cancelEdit();
-        }
     }
 }

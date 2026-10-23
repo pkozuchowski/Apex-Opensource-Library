@@ -173,6 +173,59 @@ describe("c-record-form", () => {
         });
     });
 
+    describe("record changes", () => {
+        it("updates its record from field changes without a consumer change handler", async () => {
+            const element = createRecordForm({
+                record: { Id: RECORD_ID, Name: "Original" },
+                editMode: true
+            });
+            loadForm();
+            await Promise.resolve();
+
+            const form = element.shadowRoot.querySelector("form");
+            const field = connectFakeField(form, "Name");
+            form.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: { value: { Name: "Changed" } },
+                    bubbles: true
+                })
+            );
+
+            expect(element.record).toEqual({ Id: RECORD_ID, Name: "Changed" });
+            expect(field.record).toEqual({ Id: RECORD_ID, Name: "Changed" });
+            expect(element.isDirty()).toBe(true);
+        });
+
+        it("stores and propagates the fetched record type id", async () => {
+            const element = createRecordForm();
+            loadForm();
+            await Promise.resolve();
+
+            const form = element.shadowRoot.querySelector("form");
+            const field = connectFakeField(form, "Name");
+            const changeHandler = jest.fn();
+            element.addEventListener("change", changeHandler);
+
+            getRecord.emit({
+                id: RECORD_ID,
+                recordTypeId: "012xx0000000001AAA",
+                fields: { Name: { value: "Acme" } }
+            });
+            await Promise.resolve();
+
+            const expectedRecord = {
+                Id: RECORD_ID,
+                Name: "Acme",
+                recordTypeId: "012xx0000000001AAA"
+            };
+            expect(element.record).toEqual(expectedRecord);
+            expect(field.record).toEqual(expectedRecord);
+            expect(changeHandler).toHaveBeenCalledWith(
+                expect.objectContaining({ detail: { value: expectedRecord } })
+            );
+        });
+    });
+
     describe("single-field validity methods", () => {
         it("reportValidityForField/checkValidityForField return the field's actual validity", async () => {
             const element = createRecordForm();
@@ -236,12 +289,12 @@ describe("c-record-form", () => {
     });
 
     describe("Record Type Id resolution", () => {
-        it("the record's own Record Type Id takes precedence over the name-based GraphQL lookup, regardless of wire order", async () => {
+        it("the name-based GraphQL lookup takes precedence when the record resolves first", async () => {
             const element = createRecordForm({ recordTypeName: "Enterprise" });
             loadForm();
             await Promise.resolve();
+            const field = connectFakeField(element.shadowRoot.querySelector("form"), "Name");
 
-            // The record's own getRecord wire resolves first, with its true Record Type Id.
             getRecord.emit({
                 id: RECORD_ID,
                 recordTypeId: "012000000000001AAA",
@@ -249,8 +302,8 @@ describe("c-record-form", () => {
             });
             await Promise.resolve();
 
-            // The GraphQL name-based lookup resolves afterward (the two wires are
-            // independent/unordered) - it must NOT clobber the already-known value.
+            const changeHandler = jest.fn();
+            element.addEventListener("change", changeHandler);
             graphql.emit({
                 uiapi: {
                     query: {
@@ -262,7 +315,57 @@ describe("c-record-form", () => {
             });
             await Promise.resolve();
 
+            expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000002AAA");
+            expect(element.record.recordTypeId).toBe("012000000000002AAA");
+            expect(field.record.recordTypeId).toBe("012000000000002AAA");
+            expect(changeHandler).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    detail: {value: expect.objectContaining({recordTypeId: "012000000000002AAA"})}
+                })
+            );
+        });
+
+        it("the name-based GraphQL lookup takes precedence when it resolves before the record", async () => {
+            const element = createRecordForm({ recordTypeName: "Enterprise" });
+            loadForm();
+            await Promise.resolve();
+
+            graphql.emit({
+                uiapi: {
+                    query: {
+                        RecordType: {
+                            edges: [{ node: { Id: "012000000000002AAA", SobjectType: { value: "Account" } } }]
+                        }
+                    }
+                }
+            });
+            await Promise.resolve();
+
+            getRecord.emit({
+                id: RECORD_ID,
+                recordTypeId: "012000000000001AAA",
+                fields: { Name: { value: "Acme" } }
+            });
+            await Promise.resolve();
+
+            expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000002AAA");
+            expect(element.record.recordTypeId).toBe("012000000000002AAA");
+        });
+
+        it("uses the record's own Record Type Id when no record type name is provided", async () => {
+            const element = createRecordForm();
+            loadForm();
+            await Promise.resolve();
+
+            getRecord.emit({
+                id: RECORD_ID,
+                recordTypeId: "012000000000001AAA",
+                fields: { Name: { value: "Acme" } }
+            });
+            await Promise.resolve();
+
             expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000001AAA");
+            expect(element.record.recordTypeId).toBe("012000000000001AAA");
         });
     });
 
@@ -308,8 +411,7 @@ describe("c-record-form", () => {
             element.editMode = true; // snapshot taken here: {Id, Name: 'Before edit'}
             await Promise.resolve();
 
-            // Simulate the user typing into a field after entering edit mode - the
-            // consumer's onchange handler would merge this into the bound record.
+            // Simulate an unsaved field edit after entering edit mode.
             element.record = { Id: RECORD_ID, Name: "Typed but unsaved" };
 
             const changeHandler = jest.fn();

@@ -1,15 +1,19 @@
 <!-- Record Form Record Id -->
 <template>
-    <c-record-form object-api-name="Opportunity"
-                   record-id="006KM0000033GIAYA2"
-                   record={opportunity}
-                   onchange={onOpportunityChange}>
-
-        <c-record-form-field field="OwnerId"></c-record-form-field>
-        <c-record-form-field field="IsPrivate"></c-record-form-field>
-        <c-record-form-field field="Amount"></c-record-form-field>
-        <c-record-form-field field="CloseDate"></c-record-form-field>
-        <c-record-form-field field="NextStep"></c-record-form-field>
-        <c-record-form-field field="StageName"></c-record-form-field>
-    </c-record-form>
+    <template lwc:if={recordId}>
+        <c-record-form object-api-name="Opportunity" record-id={recordId}>
+            <c-record-form-field field="OwnerId"></c-record-form-field>
+            <c-record-form-field field="IsPrivate"></c-record-form-field>
+            <c-record-form-field field="Amount"></c-record-form-field>
+            <c-record-form-field field="CloseDate"></c-record-form-field>
+            <c-record-form-field field="NextStep"></c-record-form-field>
+            <c-record-form-field field="StageName"></c-record-form-field>
+        </c-record-form>
+    </template>
+    <template lwc:elseif={errorMessage}>
+        <div class="slds-text-color_error" role="alert">{errorMessage}</div>
+    </template>
+    <template lwc:else>
+        <lightning-spinner alternative-text="Loading Opportunity"></lightning-spinner>
+    </template>
 </template>

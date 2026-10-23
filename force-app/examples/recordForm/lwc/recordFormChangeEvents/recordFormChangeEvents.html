@@ -1,0 +1,24 @@
+<template>
+    <lightning-card title="Record Form Change Events" icon-name="standard:account">
+        <div class="slds-p-horizontal_medium">
+            <p class="slds-m-bottom_small">
+                Change a field to see the partial change payload. Save the form to see the full saved record payload.
+            </p>
+            <c-record-form object-api-name="Account" record={account} edit-mode onchange={handleRecordChange}>
+                <c-record-form-field field="Name"></c-record-form-field>
+                <c-record-form-field field="Website"></c-record-form-field>
+                <c-record-form-field field="Type"></c-record-form-field>
+                <c-record-form-field field="BillingAddress"></c-record-form-field>
+            </c-record-form>
+
+            <div class="slds-m-top_medium">
+                <p class="slds-text-title_bold">Last onchange detail.value</p>
+                <pre class="slds-box slds-m-top_x-small">{lastChange}</pre>
+            </div>
+            <div class="slds-m-top_medium">
+                <p class="slds-text-title_bold">Current full record</p>
+                <pre class="slds-box slds-m-top_x-small">{accountJson}</pre>
+            </div>
+        </div>
+    </lightning-card>
+</template>

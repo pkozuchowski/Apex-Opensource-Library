@@ -173,6 +173,8 @@ The form's current mode is exposed as the `editMode` attribute, defaulting to `f
 - Set programmatically from outside the form, e.g. from an external "Edit" button: `this.refs.recordForm.editMode = true;`
 - Switched on by clicking a pencil icon, when `inlineEdit` is also on (the default - see below).
 - Switched off automatically after a successful `submit()`, or by clicking Cancel on the footer.
+- Emits a bubbling, composed `editmodechange` event whenever its mode changes after connection. `event.detail.editMode` is `true` in edit mode and
+  `false` in view mode.
 
 ## Inline Edit
 `inlineEdit` defaults to `true`: editable fields show a pencil icon while the form is in view mode (`editMode` is `false`, also the default).
@@ -423,6 +425,11 @@ Then this component can be used in the form:
 | `setCustomValidityForField(fieldName, message)` | sets custom validity for a specific field.                                                                                      |
 | `isDirty()`                                     | True if the record changed since edit mode was last entered. See [Checking for unsaved changes](#checking-for-unsaved-changes). |
 
+### Events
+| Event             | Description                                                                                             |
+|-------------------|---------------------------------------------------------------------------------------------------------|
+| `editmodechange`  | Bubbling, composed event emitted on mode changes after connection. `detail.editMode` is the new boolean state. |
+
 ## Record Form Component
 
 ### Attributes
@@ -492,6 +499,7 @@ handled by Record Form itself; not meant to be used outside of a `c-record-form`
   relying on the field's unordered `referenceToInfos` list; the un-overridden fallback is now also resolved deterministically.
 - Added: `lookupFilter` attribute on `c-record-form-field`, passed through to `lightning-record-picker`'s `filter` attribute.
 - Added: `isDirty()` method to check whether the record has changed since edit mode was last entered.
+- Added: bubbling, composed `editmodechange` event to observe edit-mode changes.
 - Added: Escape keyboard shortcuts for Cancel while in edit mode.
 - Added: confirmation dialog before discarding unsaved changes on Cancel (via `lightning/confirm`); disable with `disableConfirmDiscard`.
 - Added: an error toast when saving fails, including messages from UI API record-level and field-level errors.

@@ -14,7 +14,6 @@
         <template lwc:else>
             <lightning-button slot="actions" label="Edit" onclick={edit}></lightning-button>
         </template>
-
         <lightning-layout>
             <lightning-layout-item
                 padding="horizontal-small"
@@ -45,6 +44,7 @@
                     edit-mode={editMode}
                     density={density}
                     onchange={onRecordChange}
+                    oneditmodechange={handleFormEditModeChange}
                 >
                     <div class="slds-grid slds-wrap slds-gutters">
                         <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">

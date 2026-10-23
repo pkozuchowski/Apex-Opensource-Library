@@ -154,10 +154,21 @@ export default class RecordForm extends LightningElement {
     }
 
     set editMode(value) {
-        if (value && !this.formAttributes.editMode) {
+        const nextValue = Boolean(value);
+        const previousValue = this.formAttributes.editMode;
+        if (nextValue && !previousValue) {
             this._editModeSnapshot = {...this._record};
         }
-        this.formAttributes.editMode = value;
+        this.formAttributes.editMode = nextValue;
+        if (previousValue !== nextValue && this.isConnected) {
+            this.dispatchEvent(
+                new CustomEvent("editmodechange", {
+                    detail: {editMode: nextValue},
+                    bubbles: true,
+                    composed: true
+                })
+            );
+        }
     }
 
     /**
@@ -341,7 +352,7 @@ export default class RecordForm extends LightningElement {
 
             this.dispatchRecordChange(flatRecord);
             await notifyRecordUpdateAvailable([{recordId: result.id}]);
-            this.formAttributes.editMode = false;
+            this.editMode = false;
             this._editModeSnapshot = undefined;
 
             return flatRecord;
@@ -516,7 +527,7 @@ export default class RecordForm extends LightningElement {
         if (this._editModeSnapshot) {
             this.dispatchRecordChange({...this._editModeSnapshot});
         }
-        this.formAttributes.editMode = false;
+        this.editMode = false;
         this._editModeSnapshot = undefined;
     }
 }

@@ -25,6 +25,10 @@ export default class RecordFormAdvancedFeatures extends LightningElement {
         this.editMode = true;
     }
 
+    handleFormEditModeChange(event) {
+        this.editMode = event.detail.editMode;
+    }
+
     handleDensityChange(event) {
         this.density = event.target.checked ? "compact" : "comfy";
     }

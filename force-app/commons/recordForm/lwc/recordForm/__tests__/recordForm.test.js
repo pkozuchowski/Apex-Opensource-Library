@@ -126,10 +126,28 @@ describe("c-record-form", () => {
             expect(element.editMode).toBe(false);
         });
 
+        it("dispatches a bubbling editmodechange event only when the mode changes", () => {
+            const element = createRecordForm();
+            const modeChangeHandler = jest.fn();
+            element.addEventListener("editmodechange", modeChangeHandler);
+
+            element.editMode = true;
+            element.editMode = true;
+            element.editMode = false;
+
+            expect(modeChangeHandler).toHaveBeenCalledTimes(2);
+            expect(modeChangeHandler.mock.calls[0][0].detail).toEqual({ editMode: true });
+            expect(modeChangeHandler.mock.calls[0][0].bubbles).toBe(true);
+            expect(modeChangeHandler.mock.calls[0][0].composed).toBe(true);
+            expect(modeChangeHandler.mock.calls[1][0].detail).toEqual({ editMode: false });
+        });
+
         it("switches on when a field dispatches a bubbling edit event (pencil click)", async () => {
             const element = createRecordForm();
             loadForm();
             await Promise.resolve();
+            const modeChangeHandler = jest.fn();
+            element.addEventListener("editmodechange", modeChangeHandler);
 
             // A real pencil click dispatches `edit` from deep inside a slotted field
             // component; the `<form>` is where recordForm actually listens for it
@@ -138,8 +156,11 @@ describe("c-record-form", () => {
             // behavior, not something recordForm.js needs this test to re-prove.
             const form = element.shadowRoot.querySelector("form");
             form.dispatchEvent(new CustomEvent("edit", { bubbles: true, composed: true }));
-
             expect(element.editMode).toBe(true);
+            expect(element.editMode).toBe(true);
+            expect(modeChangeHandler).toHaveBeenCalledWith(
+                expect.objectContaining({ detail: { editMode: true } })
+            );
         });
     });
 
@@ -165,11 +186,17 @@ describe("c-record-form", () => {
             const element = createRecordForm({ recordId: undefined, editMode: true });
             loadForm();
             await Promise.resolve();
+            const modeChangeHandler = jest.fn();
+            element.addEventListener("editmodechange", modeChangeHandler);
 
             element.record = { Name: "New" };
             await element.submit();
 
             expect(element.isDirty()).toBe(false);
+            expect(element.editMode).toBe(false);
+            expect(modeChangeHandler).toHaveBeenCalledWith(
+                expect.objectContaining({ detail: { editMode: false } })
+            );
         });
     });
 

@@ -174,7 +174,7 @@ describe("c-record-form", () => {
     });
 
     describe("record changes", () => {
-        it("updates its record from field changes without a consumer change handler", async () => {
+        it("updates its record and lets the parent handle bubbling field changes", async () => {
             const element = createRecordForm({
                 record: { Id: RECORD_ID, Name: "Original" },
                 editMode: true
@@ -184,16 +184,24 @@ describe("c-record-form", () => {
 
             const form = element.shadowRoot.querySelector("form");
             const field = connectFakeField(form, "Name");
+            const changeHandler = jest.fn();
+            element.addEventListener("change", changeHandler);
+
+            // Dispatch at the form boundary because jsdom does not fully model
+            // bubbling from a slotted child through the LWC shadow/slot tree.
             form.dispatchEvent(
                 new CustomEvent("change", {
                     detail: { value: { Name: "Changed" } },
-                    bubbles: true
+                    bubbles: true,
+                    composed: true
                 })
             );
 
             expect(element.record).toEqual({ Id: RECORD_ID, Name: "Changed" });
             expect(field.record).toEqual({ Id: RECORD_ID, Name: "Changed" });
             expect(element.isDirty()).toBe(true);
+            expect(changeHandler).toHaveBeenCalledTimes(1);
+            expect(changeHandler.mock.calls[0][0].detail).toEqual({ value: { Name: "Changed" } });
         });
 
         it("stores and propagates the fetched record type id", async () => {

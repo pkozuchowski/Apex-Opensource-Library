@@ -68,6 +68,9 @@ export default class RecordForm extends LightningElement {
     _derivedFields = [];
     computedOptionalFields = [];
     isSubmitting = false;
+    _recordTypeIdFromRecord;
+    _recordTypeIdFromName;
+    _resolvedRecordTypeName;
 
     /**Hides the Cancel/Save footer, which is shown by default.*/
     @api hideFooter = false;
@@ -204,7 +207,13 @@ export default class RecordForm extends LightningElement {
 
     setValues(property, value) {
         this[`_${property}`] = value;
-        this.getConnectedFields().forEach((field) => (field[property] = value));
+        if (property === "record") {
+            this.resolveRecordTypeId();
+            if (this.recordTypeId && this._record.RecordTypeId !== this.recordTypeId) {
+                this._record = {...this._record, RecordTypeId: this.recordTypeId};
+            }
+        }
+        this.getConnectedFields().forEach((field) => (field[property] = this[`_${property}`]));
     }
 
     getConnectedFields() {
@@ -229,10 +238,11 @@ export default class RecordForm extends LightningElement {
     }
 
     recalculateOptionalFields() {
+        const recordTypeField = this.objectApiName ? [`${this.objectApiName}.RecordTypeId`] : [];
         const extraFields = this._optionalFields.map((field) =>
             field.includes(".") ? field : `${this.objectApiName}.${field}`
         );
-        this.computedOptionalFields = [...new Set([...extraFields, ...this._derivedFields])];
+        this.computedOptionalFields = [...new Set([...recordTypeField, ...extraFields, ...this._derivedFields])];
     }
 
     get formClasses() {
@@ -346,6 +356,9 @@ export default class RecordForm extends LightningElement {
             this.spinner = true;
             const isCreate = !this.record?.Id;
             const fieldsToUpdate = getUpdatableFields(this.record, this.objectInfo, isCreate, this.isPersonAccount);
+            if (isCreate && this.recordTypeId) {
+                fieldsToUpdate.RecordTypeId = this.recordTypeId;
+            }
 
             const recordInput = {
                 fields: fieldsToUpdate,
@@ -383,9 +396,8 @@ export default class RecordForm extends LightningElement {
     describeObjectInfo({error, data}) {
         if (data) {
             this.objectInfo = JSON.parse(JSON.stringify(data));
-            if (!this.recordTypeName) {
-                this.recordTypeId = data.defaultRecordTypeId;
-            }
+            this.resolveRecordTypeId();
+            this.setValues("record", this.record);
             overrideFieldLabels(this.labelOverrides, this.objectInfo);
         } else if (error) {
             console.error("Error fetching object info", error.message);
@@ -401,9 +413,12 @@ export default class RecordForm extends LightningElement {
             const recordType = data.uiapi.query.RecordType.edges.find(
                 (rt) => rt.node.SobjectType.value === this.objectApiName
             );
-            this.recordTypeId = recordType?.node?.Id ?? MASTER_RECORD_TYPE;
+            this._resolvedRecordTypeName = this.recordTypeName;
+            this._recordTypeIdFromName = recordType?.node?.Id ?? MASTER_RECORD_TYPE;
+            const previousRecordTypeId = this.record?.RecordTypeId;
+            this.resolveRecordTypeId();
 
-            if (this.record && this.record.RecordTypeId !== this.recordTypeId) {
+            if (this.recordTypeId && this.record && previousRecordTypeId !== this.recordTypeId) {
                 this.dispatchRecordChange({...this.record, RecordTypeId: this.recordTypeId});
             }
         } else if (errors) {
@@ -428,17 +443,34 @@ export default class RecordForm extends LightningElement {
         }
     }
 
+
+    /**
+     * Resolves the record type in priority order: named type, current record type,
+     * then the object's default. A named type remains unresolved until GraphQL returns.
+     */
+    resolveRecordTypeId() {
+        if (this.recordTypeName) {
+            this.recordTypeId =
+                this._resolvedRecordTypeName === this.recordTypeName ? this._recordTypeIdFromName : undefined;
+        } else if (this.recordId) {
+            this.recordTypeId = this._recordTypeIdFromRecord || this.record?.RecordTypeId;
+        } else {
+            this.recordTypeId = this.record?.RecordTypeId ??
+                this.objectInfo?.defaultRecordTypeId ?? MASTER_RECORD_TYPE
+        }
+    }
+
     @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields"})
     fetchRecord({error, data}) {
         if (data) {
             const flatRecord = Object.assign(getFlatRecord(data), this.record);
 
-            // When a Record Type is queried by name, it takes precedence over the
-            // record's own Record Type Id; otherwise, take it from the record.
-            if (this.recordTypeName) {
+            this._recordTypeIdFromRecord = data.recordTypeId;
+            this.resolveRecordTypeId();
+            if (this.recordTypeId) {
                 flatRecord.RecordTypeId = this.recordTypeId;
-            } else if (data.recordTypeId) {
-                this.recordTypeId = data.recordTypeId;
+            } else if (this.recordTypeName) {
+                delete flatRecord.RecordTypeId;
             }
 
             this.dispatchRecordChange(flatRecord);

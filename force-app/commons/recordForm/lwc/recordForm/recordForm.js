@@ -163,8 +163,8 @@ export default class RecordForm extends LightningElement {
         if (previousValue !== nextValue && this.isConnected) {
             this.dispatchEvent(
                 new CustomEvent("editmodechange", {
-                    detail: {editMode: nextValue},
-                    bubbles: true,
+                    detail  : {editMode: nextValue},
+                    bubbles : true,
                     composed: true
                 })
             );
@@ -321,6 +321,12 @@ export default class RecordForm extends LightningElement {
         return false;
     }
 
+    async handleFooterSave(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        await this.submit(ev);
+    }
+
     /**
      * Submit the form by creating or updating the record.
      * Dispatches a `change` event with `detail.value` containing the flat record.
@@ -331,13 +337,13 @@ export default class RecordForm extends LightningElement {
         ev?.preventDefault();
         ev?.stopPropagation();
 
-        if (this.isSubmitting || !this.reportValidity().valid) {
-            return undefined;
-        }
-
-        this.isSubmitting = true;
-        this.spinner = true;
         try {
+            if (this.isSubmitting || !this.reportValidity().valid) {
+                return undefined;
+            }
+
+            this.isSubmitting = true;
+            this.spinner = true;
             const isCreate = !this.record?.Id;
             const fieldsToUpdate = getUpdatableFields(this.record, this.objectInfo, isCreate, this.isPersonAccount);
 
@@ -474,24 +480,6 @@ export default class RecordForm extends LightningElement {
         }
     }
 
-    onFieldEdit(ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        this.editMode = true;
-    }
-
-    async handleFooterCancel(ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        await this.cancelEdit();
-    }
-
-    async handleFooterSave(ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        await this.submit();
-    }
-
     /**
      * Handles keydown events on the form.
      * Escape key cancels edit mode.
@@ -505,6 +493,18 @@ export default class RecordForm extends LightningElement {
             ev.preventDefault();
             await this.cancelEdit();
         }
+    }
+
+    onFieldEdit(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        this.editMode = true;
+    }
+
+    async handleFooterCancel(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        await this.cancelEdit();
     }
 
     /**

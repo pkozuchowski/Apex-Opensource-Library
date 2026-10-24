@@ -39,6 +39,7 @@
                     record-id={recordId}
                     object-api-name="Account"
                     is-person-account
+                    record-type-name="PersonAccount"
                     record={account}
                     label-overrides={labelOverrides}
                     edit-mode={editMode}
@@ -58,6 +59,9 @@
                         </div>
                         <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
                             <c-record-form-field field="BillingAddress"></c-record-form-field>
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <c-record-form-record-json></c-record-form-record-json>
                         </div>
 
                         <c-if class="slds-col slds-size_1-of-1" value={account.LastName} equals="Test Account">

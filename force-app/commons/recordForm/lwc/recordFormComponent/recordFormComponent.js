@@ -48,17 +48,17 @@ export default class RecordFormComponent extends LightningElement {
 
     @api
     reportValidity() {
-        return this.refs.input?.reportValidity?.() ?? true;
+        return this.refs?.input?.reportValidity?.() ?? true;
     }
 
     @api
     setCustomValidity(message) {
-        return this.refs.input?.setCustomValidity?.(message);
+        return this.refs?.input?.setCustomValidity?.(message);
     }
 
     @api
     checkValidity() {
-        return this.refs.input?.checkValidity?.() ?? true;
+        return this.refs?.input?.checkValidity?.() ?? true;
     }
 
     handleFieldChange(event) {

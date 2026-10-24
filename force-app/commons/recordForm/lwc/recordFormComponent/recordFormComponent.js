@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
-import { api, LightningElement } from "lwc";
+import {api, LightningElement} from "lwc";
 
 export default class RecordFormComponent extends LightningElement {
     static renderMode = "light";
@@ -16,24 +16,30 @@ export default class RecordFormComponent extends LightningElement {
     @api formAttributes = {};
     controllerName;
     updateable;
+    disconnectFn;
 
     connectedCallback() {
         this.dispatchEvent(
             new CustomEvent("fieldconnected", {
-                detail: {},
-                bubbles: true,
+                detail  : {},
+                bubbles : true,
                 composed: true
             })
         );
     }
 
+    disconnectedCallback() {
+        this.disconnectFn && this.disconnectFn(this.field);
+    }
+
     @api
-    connectField({ fieldInfo, objectInfo }) {
+    connectField({fieldInfo, objectInfo, disconnectFn}) {
         try {
             this.label = this.label ?? fieldInfo.label;
             this.fieldLevelHelp = fieldInfo.inlineHelpText;
             this.controllerName = fieldInfo.controllerName;
             this.required = this.required ?? fieldInfo.required;
+            this.disconnectFn = disconnectFn;
             this.updateable =
                 fieldInfo.updateable ||
                 (fieldInfo.compound &&
@@ -66,7 +72,7 @@ export default class RecordFormComponent extends LightningElement {
             event.stopPropagation();
             this.dispatchEvent(
                 new CustomEvent("change", {
-                    detail: {
+                    detail : {
                         value: this.getEventValue(event)
                     },
                     bubbles: true
@@ -78,7 +84,7 @@ export default class RecordFormComponent extends LightningElement {
     }
 
     getEventValue(event) {
-        return { [this.field]: event.detail.value };
+        return {[this.field]: event.detail.value};
     }
 
     get isReadOnly() {
@@ -108,7 +114,7 @@ export default class RecordFormComponent extends LightningElement {
     get formElementClasses() {
         const density = this.formAttributes.density;
         return {
-            "slds-form-element_stacked": density === "comfy",
+            "slds-form-element_stacked"   : density === "comfy",
             "slds-form-element_horizontal": density === "compact"
         };
     }

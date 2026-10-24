@@ -267,6 +267,18 @@ this.dispatchEvent(new CustomEvent('fieldconnected'));
 Record Form listens to this and saves references to all connected fields and initializes them with the record, form attributes,
 field, object description and record type picklist values.
 
+When a field is disconnected and no other connected field component represents the same API name, Record Form removes it from its internal record. The `fielddisconnected` event also reaches the client component, with the field API name in `event.detail.field`.
+Listen on `c-record-form` to remove the field from the client-owned record as well:
+```js
+handleFieldDisconnected(event) {
+    const updatedRecord = { ...this.account };
+    delete updatedRecord[event.detail.field];
+    this.account = updatedRecord;
+}
+```
+Bind the handler with `onfielddisconnected={handleFieldDisconnected}` on `c-record-form`. This keeps the client-owned record in sync when
+a field is no longer rendered, so its value is not included in a subsequent update.
+
 Record Form calls `connectField` method on each field component:
 ```js
 @api

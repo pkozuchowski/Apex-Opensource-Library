@@ -472,12 +472,29 @@ export default class RecordForm extends LightningElement {
                     fieldInfo,
                     objectInfo              : this.objectInfo,
                     recordTypePicklistValues: this.picklistValues,
-                    formAttributes          : this.formAttributes
+                    formAttributes          : this.formAttributes,
+                    disconnectFn            : this.onFieldDisconnected.bind(this)
                 });
             }
         } catch (e) {
             console.error("recordForm.onFieldConnected", ev.target.field, e.message, e.stack);
         }
+    }
+
+    onFieldDisconnected(fieldApiName) {
+        if (typeof fieldApiName !== "string" || !fieldApiName) {
+            return;
+        }
+
+        // If there are still connected fields for this API name, do not remove it from the record.
+        if (this.getConnectedFields().some((field) => field.field === fieldApiName)) {
+            return;
+        }
+
+        const updatedRecord = {...this._record};
+        delete updatedRecord[fieldApiName];
+        this.record = updatedRecord;
+        this.dispatchEvent(new CustomEvent("fielddisconnected", {detail: {field: fieldApiName}}));
     }
 
     /**

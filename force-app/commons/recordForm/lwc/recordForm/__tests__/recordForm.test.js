@@ -321,6 +321,48 @@ describe("c-record-form", () => {
             expect(staleField.reportValidity).not.toHaveBeenCalled();
             expect(element.reportValidityForField("Name")).toBeUndefined();
         });
+
+        it("removes a disconnected field value from the record and edit-mode snapshot", async () => {
+            const element = createRecordForm({
+                record: { Id: RECORD_ID, Name: "Acme" },
+                editMode: true
+            });
+            loadForm();
+            await Promise.resolve();
+
+            const form = element.shadowRoot.querySelector("form");
+            const field = connectFakeField(form, "Name");
+            const disconnectFn = field.connectField.mock.calls[0][0].disconnectFn;
+            field.isConnected = false;
+            const disconnectedHandler = jest.fn();
+            element.addEventListener("fielddisconnected", disconnectedHandler);
+            disconnectFn("Name");
+            expect(element.record).toEqual({ Id: RECORD_ID });
+            expect(element.isDirty()).toBe(false);
+            expect(disconnectedHandler).toHaveBeenCalledWith(
+                expect.objectContaining({ detail: { field: "Name" } })
+            );
+
+            form.dispatchEvent(new CustomEvent("cancel", { bubbles: true, composed: true }));
+            await flushPromises();
+            expect(element.record).toEqual({ Id: RECORD_ID });
+        });
+
+        it("keeps a field value when another connected component represents the same field", async () => {
+            const element = createRecordForm({ record: { Id: RECORD_ID, Name: "Acme" } });
+            loadForm();
+            await Promise.resolve();
+
+            const form = element.shadowRoot.querySelector("form");
+            const disconnectedField = connectFakeField(form, "Name");
+            connectFakeField(form, "Name");
+            const disconnectFn = disconnectedField.connectField.mock.calls[0][0].disconnectFn;
+            disconnectedField.isConnected = false;
+
+            disconnectFn("Name");
+
+            expect(element.record).toEqual({ Id: RECORD_ID, Name: "Acme" });
+        });
     });
 
     describe("Record Type Id resolution", () => {

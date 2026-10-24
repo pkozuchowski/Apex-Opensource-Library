@@ -11,7 +11,6 @@ export default class RecordFormComponent extends LightningElement {
     @api readOnly;
     @api disabled;
     @api required;
-    @api validity;
     @api variant;
     @api designSystem;
     @api formAttributes = {};

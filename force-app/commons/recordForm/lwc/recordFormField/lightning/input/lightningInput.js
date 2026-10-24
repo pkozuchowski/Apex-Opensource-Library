@@ -21,7 +21,6 @@ export class LightningInputExt {
             disabled      : this.disabled,
             fieldLevelHelp: this.fieldLevelHelp,
             placeholder   : this.placeholder,
-            validity      : this.validity,
 
             messageWhenBadInput    : this.messageWhenBadInput,
             messageWhenValueMissing: this.messageWhenValueMissing,

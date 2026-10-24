@@ -65,7 +65,6 @@ export default class RecordFormField extends RecordFormComponent {
     @api timeStyle;
     @api timezone;
     @api type;
-    @api validity;
     @api variant;
 
     @api connectField(data) {

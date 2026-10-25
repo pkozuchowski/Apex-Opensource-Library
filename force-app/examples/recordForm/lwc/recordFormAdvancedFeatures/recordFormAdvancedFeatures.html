@@ -13,11 +13,8 @@
 
         <c-record-form
                 lwc:ref="recordForm"
-                record-id={recordId}
-                object-api-name="Account"
-                is-person-account
-                record-type-name="PersonAccount"
                 record={account}
+                object-api-name="Account"
                 label-overrides={labelOverrides}
                 edit-mode={editMode}
                 density={density}
@@ -25,9 +22,6 @@
                 oneditmodechange={handleFormEditModeChange}
         >
             <div class="slds-grid slds-wrap slds-gutters">
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                    <c-record-form-field field="OwnerId"></c-record-form-field>
-                </div>
                 <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
                     <c-record-form-field field="Name"></c-record-form-field>
                 </div>

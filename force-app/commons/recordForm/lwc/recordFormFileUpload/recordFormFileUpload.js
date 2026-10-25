@@ -15,9 +15,15 @@ const CONTENT_DOCUMENT_LINKS_QUERY = gql`
                             Id
                             ContentDocument {
                                 Id
-                                Title { value }
-                                FileExtension { value }
-                                ContentSize { value }
+                                Title {
+                                    value
+                                }
+                                FileExtension {
+                                    value
+                                }
+                                ContentSize {
+                                    value
+                                }
                             }
                         }
                     }
@@ -91,20 +97,12 @@ export default class RecordFormFileUpload extends RecordFormComponent {
         return this.pendingFiles.some(({status}) => status !== "complete");
     }
 
-    get allFilesUploaded() {
-        return this.showUploadSummary &&
-            this.uploadBatchTotal > 0 &&
-            this.completedUploadCount === this.uploadBatchTotal &&
-            this.pendingFiles.length === 0;
-    }
-
     get uploadSummary() {
         return `${this.completedUploadCount} of ${this.uploadBatchTotal} file${this.uploadBatchTotal === 1 ? "" : "s"} uploaded`;
     }
 
     handleFilesInputChange(event) {
         const notCompletedFiles = this.pendingFiles.filter(({status}) => status !== "complete");
-        console.log('handleFilesInputChange.event.detail.files', JSON.stringify(event.detail.files, null, 2));
         const newFiles = Array.from(event.detail.files ?? [], (file) => ({
             id    : this.nextFileId++,
             file,
@@ -124,22 +122,20 @@ export default class RecordFormFileUpload extends RecordFormComponent {
 
         /*In View Mode, start upload immediately*/
         if (newFiles.length > 0 && this.record?.Id && !this.formAttributes?.editMode && !this.disabled) {
-            setTimeout(() => this.startUpload(this.record.Id), 0);
+            this.startUpload(this.record.Id);
         }
     }
 
     async startUpload(recordId) {
         if (!recordId || this.disabled || this.isUploading || !this.filesNeedUpload) {
-            console.log('.startUpload return');
             return;
         }
-        console.log('start upload');
 
         this.isUploading = true;
         try {
+            await Promise.resolve();
             const rows = [...this.querySelectorAll("c-record-form-file-row[data-pending]")];
-            console.log('rows', rows);
-            return await Promise.all(rows.map((row) => row.upload(recordId)));
+            await Promise.all(rows.map((row) => row.upload(recordId)));
         } catch (uploadError) {
             this.showUploadError(uploadError);
         } finally {
@@ -149,12 +145,12 @@ export default class RecordFormFileUpload extends RecordFormComponent {
 
     handleFileStatusChange(event) {
         const file = event.detail.file;
-        if (file.status === 'complete') {
+        if (file.status === "complete") {
             this.uploadedFiles = [...this.uploadedFiles, file];
             this.pendingFiles = this.pendingFiles.filter((f) => f.id !== file.id);
             this.completedUploadCount += 1;
         } else {
-            this.pendingFiles = this.pendingFiles.map((old) => old.id === file.id ? file : old);
+            this.pendingFiles = this.pendingFiles.map(old => old.id === file.id ? file : old);
         }
     }
 

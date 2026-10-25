@@ -210,6 +210,7 @@ export default class RecordForm extends LightningElement {
         this._record = value ?? {};
         if (!this._recordTypeIdInitialized) {
             this.resolveRecordTypeId();
+            this._recordTypeIdInitialized = Boolean(this.recordTypeId);
         }
         if (this.recordTypeId && this._record.RecordTypeId !== this.recordTypeId) {
             this._record = {...this._record, RecordTypeId: this.recordTypeId};
@@ -281,10 +282,6 @@ export default class RecordForm extends LightningElement {
         return this.objectInfo && this.picklistValues;
     }
 
-    get hasAvailableRecordTypes() {
-        return this.objectInfo.fields.RecordTypeId;
-    }
-
     /**
      * Report validity for a single field component.
      * @param {string} field Field API name.
@@ -292,7 +289,9 @@ export default class RecordForm extends LightningElement {
      */
     @api
     reportValidityForField(field) {
-        return this.getConnectedFields().find((cmp) => cmp.field === field)?.reportValidity();
+        return this.getConnectedFields()
+            .find((cmp) => cmp.field === field)
+            ?.reportValidity();
     }
 
     /**
@@ -303,7 +302,9 @@ export default class RecordForm extends LightningElement {
      */
     @api
     setCustomValidityForField(field, message) {
-        this.getConnectedFields().find((cmp) => cmp.field === field)?.setCustomValidity(message);
+        this.getConnectedFields()
+            .find((cmp) => cmp.field === field)
+            ?.setCustomValidity(message);
     }
 
     /**
@@ -313,7 +314,9 @@ export default class RecordForm extends LightningElement {
      */
     @api
     checkValidityForField(field) {
-        return this.getConnectedFields().find((cmp) => cmp.field === field)?.checkValidity();
+        return this.getConnectedFields()
+            .find((cmp) => cmp.field === field)
+            ?.checkValidity();
     }
 
     /**
@@ -374,13 +377,13 @@ export default class RecordForm extends LightningElement {
             this.isSubmitting = true;
             this.spinner = true;
             const isCreate = !this.record?.Id;
-            const fieldsToUpdate = getUpdatableFields(this.record, this.objectInfo, isCreate, this.isPersonAccount);
-
-            if (!this.hasAvailableRecordTypes) {
-                delete fieldsToUpdate.RecordTypeId;
-            } else if (isCreate && this.recordTypeId) {
-                fieldsToUpdate.RecordTypeId = this.recordTypeId;
-            }
+            const fieldsToUpdate = getUpdatableFields(
+                this.record,
+                this.objectInfo,
+                isCreate,
+                this.isPersonAccount,
+                this.recordTypeId
+            );
 
             const recordInput = {
                 fields: fieldsToUpdate,
@@ -415,9 +418,7 @@ export default class RecordForm extends LightningElement {
     }
 
     async runPostSubmit({data, error}) {
-        const postSubmitFields = this.getConnectedFields().filter(
-            (field) => typeof field.postSubmit === "function"
-        );
+        const postSubmitFields = this.getConnectedFields().filter((field) => typeof field.postSubmit === "function");
         await Promise.all(postSubmitFields.map((field) => field.postSubmit({data, error})));
     }
 
@@ -472,7 +473,6 @@ export default class RecordForm extends LightningElement {
             console.error("Error fetching picklist values", error.message);
         }
     }
-
 
     /**
      * Resolves the record type in priority order: named type, current record type,

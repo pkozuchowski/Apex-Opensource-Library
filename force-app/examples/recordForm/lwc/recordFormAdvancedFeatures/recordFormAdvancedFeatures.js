@@ -1,7 +1,6 @@
 import { LightningElement, track, api } from "lwc";
 
 export default class RecordFormAdvancedFeatures extends LightningElement {
-    @api recordId = "";
     @track account = {};
     @track opportunity;
     show = "123";

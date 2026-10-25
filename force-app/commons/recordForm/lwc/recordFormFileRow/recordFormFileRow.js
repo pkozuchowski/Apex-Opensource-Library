@@ -111,7 +111,7 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
 
     set file(value) {
         this._file = {...value};
-        this.progress = value?.status === "complete" ? 100 : 0;
+        this.progress = value?.status === "complete" ? 100 : value?.status === "uploading" ? 20 : 0;
     }
 
     get sizeLabel() {
@@ -130,7 +130,7 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
     }
 
     get fileUrl() {
-        const documentId = this.contentDocumentId ?? this.file?.documentId ?? this.file?.contentDocumentId;
+        const documentId = this.file?.documentId;
         return documentId ? `/lightning/r/ContentDocument/${documentId}/view` : undefined;
     }
 
@@ -145,7 +145,7 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
     }
 
     get isNew() {
-        return this.file.status === "new";
+        return this.file.status === "new" || this.file.status === "error";
     }
 
     get isComplete() {
@@ -160,22 +160,22 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
     async upload(recordId) {
         if (this.file.status === "new" || this.file.status === "error") {
             this.file.status = "uploading";
-            this.progress = 0;
+            this.progress = 20;
             this.errorMessage = undefined;
             this.dispatchStatusChange();
             return this.uploadFileAndLink(recordId);
         }
+        return undefined;
     }
 
     async uploadFileAndLink(recordId) {
         try {
-            if (!this.file.contentDocumentId) {
+            if (!this.file.documentId) {
                 const result = await createContentDocumentAndVersion({
                     title   : this.file.title,
                     fileData: this.file.file
                 });
-                console.log('result', JSON.stringify(result, null, 2));
-                this.file.contentDocumentId = result.contentDocument.id;
+                this.file.documentId = result.contentDocument.id;
                 this.progress = 70;
             }
 
@@ -183,7 +183,7 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
                 apiName: "ContentDocumentLink",
                 fields : {
                     LinkedEntityId   : recordId,
-                    ContentDocumentId: this.file.contentDocumentId,
+                    ContentDocumentId: this.file.documentId,
                     ShareType        : "V"
                 }
             });
@@ -211,15 +211,15 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
 
     handleOpenFile(event) {
         event.preventDefault();
-        if (this.file.contentDocumentId) {
+        if (this.file.documentId) {
             this[NavigationMixin.Navigate]({
                 type      : "standard__namedPage",
                 attributes: {
                     pageName: "filePreview"
                 },
                 state     : {
-                    recordIds       : this.file.contentDocumentId,
-                    selectedRecordId: this.file.contentDocumentId
+                    recordIds       : this.file.documentId,
+                    selectedRecordId: this.file.documentId
                 }
             });
         }

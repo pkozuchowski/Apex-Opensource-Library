@@ -130,7 +130,7 @@ describe("c-record-form-file-upload", () => {
                                     Id: "06Axx0000000001AAA",
                                     ContentDocument: {
                                         Id: "069xx0000000001AAA",
-                                        Title: { value: "Zrzut ekranu 2026-09-03 145708" },
+                                        Title: { value: "Zrzut ekranu 2026-09-03 145708.png" },
                                         FileExtension: { value: "png" },
                                         ContentSize: { value: 123 }
                                     }
@@ -267,10 +267,7 @@ describe("c-record-form-file-upload", () => {
         expect(row.shadowRoot.querySelector("a").getAttribute("href")).toBe(
             `/lightning/r/ContentDocument/${CONTENT_DOCUMENT_ID}/view`
         );
-        expect(element.textContent).toContain("1 of 1 file uploaded");
-        expect(element.querySelector("lightning-button").label).toBe("Done");
 
-        element.querySelector("lightning-button").dispatchEvent(new CustomEvent("click"));
         await flushPromises();
 
         const uploadedRow = element.querySelector("c-record-form-file-row");
@@ -299,14 +296,8 @@ describe("c-record-form-file-upload", () => {
         );
         await flushPromises();
 
-        expect(element.textContent).toContain("1 of 1 file uploaded");
-        expect(element.querySelector("lightning-button").label).toBe("Done");
         expect(element.querySelector("c-record-form-file-row").file.contentDocumentId).toBe(CONTENT_DOCUMENT_ID);
-
-        element.querySelector("lightning-button").dispatchEvent(new CustomEvent("click"));
         await flushPromises();
-
-        expect(element.querySelector("lightning-button")).toBeNull();
         expect(element.querySelector("c-record-form-file-row").file.status).toBe("complete");
     });
 
@@ -320,23 +311,10 @@ describe("c-record-form-file-upload", () => {
             .mockResolvedValueOnce({ contentDocument: { id: "069xx0000000002AAA" } });
         createRecord.mockResolvedValue({});
         const element = createUploader(files, { multiple: true });
-        const uploadFinished = jest.fn();
-        element.addEventListener("uploadfinished", uploadFinished);
-
         await element.postSubmit({ data: { Id: RECORD_ID } });
 
         expect(createContentDocumentAndVersion).toHaveBeenCalledTimes(2);
         expect(createRecord).toHaveBeenCalledTimes(2);
-        expect(uploadFinished).toHaveBeenCalledWith(
-            expect.objectContaining({
-                detail: {
-                    files: [
-                        { name: "first.png", documentId: "069xx0000000001AAA" },
-                        { name: "second.png", documentId: "069xx0000000002AAA" }
-                    ]
-                }
-            })
-        );
     });
 
     it("does not upload files when no saved record is passed", async () => {

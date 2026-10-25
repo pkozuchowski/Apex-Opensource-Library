@@ -7,7 +7,7 @@
  *   - fields: {Object} Map of field names to their individual validation status
  */
 export function validate(fields, validationFn) {
-    const result = {valid: true, fields: {}};
+    const result = { valid: true, fields: {} };
     fields.forEach((component) => {
         const validity = validationFn(component);
         result.valid = result.valid && (validity ?? true);
@@ -22,9 +22,10 @@ export function validate(fields, validationFn) {
  * @param {Object} objectInfo - Object metadata containing field definitions (default: empty object)
  * @param {boolean} isCreate - Flag indicating if this is a create operation (true) or update operation (false)
  * @param {boolean} isPersonAccount - Flag indicating if this is a Person Account (true) or not (false)
+ * @param {string} recordTypeId - Resolved record type ID to include when creating a record
  * @returns {Object} Object containing only the fields that are createable/updateable, plus the Id field
  */
-export function getUpdatableFields(record = {}, objectInfo = {}, isCreate, isPersonAccount) {
+export function getUpdatableFields(record = {}, objectInfo = {}, isCreate, isPersonAccount, recordTypeId) {
     const fields = {};
 
     Object.keys(record).forEach((fieldName) => {
@@ -42,6 +43,12 @@ export function getUpdatableFields(record = {}, objectInfo = {}, isCreate, isPer
 
     if (isPersonAccount) {
         delete fields.Name;
+    }
+
+    if (objectInfo.fields?.RecordTypeId) {
+        fields.RecordTypeId = recordTypeId;
+    } else {
+        delete fields.RecordTypeId;
     }
 
     return fields;
@@ -140,7 +147,9 @@ export function getErrorMessage(error) {
     const messages = [
         body?.message,
         ...(body?.output?.errors ?? []).map((item) => item.message),
-        ...Object.values(body?.output?.fieldErrors ?? {}).flat().map((item) => item.message),
+        ...Object.values(body?.output?.fieldErrors ?? {})
+            .flat()
+            .map((item) => item.message),
         error?.message
     ]
         .filter((message) => typeof message === "string" && message.trim())

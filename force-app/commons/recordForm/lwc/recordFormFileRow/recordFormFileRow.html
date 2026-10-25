@@ -4,10 +4,10 @@
             <div class="slds-media slds-media_center">
                 <div aria-hidden="true" class="slds-media__figure">
                     <lightning-icon
-                        icon-name={iconName}
-                        size="medium"
-                        variant="inverse"
-                        alternative-text={iconName}
+                            icon-name={iconName}
+                            size="medium"
+                            variant="inverse"
+                            alternative-text={iconName}
                     ></lightning-icon>
                 </div>
                 <div class="slds-media__body">
@@ -21,35 +21,35 @@
         </div>
         <div class="slds-col slds-size_5-of-12 slds-p-horizontal_small">
             <lightning-progress-bar
-                value={progress}
-                size="medium"
-                variant="circular"
-                aria-label={progressLabel}
+                    value={progress}
+                    size="medium"
+                    variant="circular"
+                    aria-label={progressLabel}
             ></lightning-progress-bar>
         </div>
         <div class="slds-size_1-of-12 slds-text-align_center" aria-live="polite" aria-atomic="true">
             <lightning-icon
-                lwc:if={isComplete}
-                icon-name="utility:success"
-                size="small"
-                variant="success"
-                alternative-text="Upload complete"
+                    lwc:if={isComplete}
+                    icon-name="utility:success"
+                    size="small"
+                    variant="success"
+                    alternative-text="Upload complete"
             ></lightning-icon>
             <lightning-icon
-                lwc:if={isFailed}
-                icon-name="utility:error"
-                size="small"
-                variant="error"
-                alternative-text="Upload failed"
-                title={errorMessage}
+                    lwc:if={isFailed}
+                    icon-name="utility:error"
+                    size="small"
+                    variant="error"
+                    alternative-text="Upload failed"
+                    title={errorMessage}
             ></lightning-icon>
             <lightning-button-icon
-                lwc:if={isNew}
-                icon-name="utility:close"
-                variant="bare"
-                title="Remove file"
-                alternative-text="Remove file"
-                onclick={handleRemove}
+                    lwc:if={isNew}
+                    icon-name="utility:close"
+                    variant="bare"
+                    title="Remove file"
+                    alternative-text="Remove file"
+                    onclick={handleRemove}
             ></lightning-button-icon>
         </div>
     </div>

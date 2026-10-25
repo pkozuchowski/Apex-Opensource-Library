@@ -278,6 +278,38 @@ describe("c-record-form-file-upload", () => {
         expect(uploadedRow.shadowRoot.querySelector("lightning-button-icon")).toBeNull();
     });
 
+    it("moves completed uploads to uploaded files and Done dismisses the summary", async () => {
+        const file = new File(["image data"], "photo.png", { type: "image/png" });
+        const element = createUploader(file);
+        await flushPromises();
+
+        const row = element.querySelector("c-record-form-file-row");
+        row.dispatchEvent(
+            new CustomEvent("change", {
+                detail: {
+                    file: {
+                        ...row.file,
+                        contentDocumentId: CONTENT_DOCUMENT_ID,
+                        status: "complete"
+                    }
+                },
+                bubbles: true,
+                composed: true
+            })
+        );
+        await flushPromises();
+
+        expect(element.textContent).toContain("1 of 1 file uploaded");
+        expect(element.querySelector("lightning-button").label).toBe("Done");
+        expect(element.querySelector("c-record-form-file-row").file.contentDocumentId).toBe(CONTENT_DOCUMENT_ID);
+
+        element.querySelector("lightning-button").dispatchEvent(new CustomEvent("click"));
+        await flushPromises();
+
+        expect(element.querySelector("lightning-button")).toBeNull();
+        expect(element.querySelector("c-record-form-file-row").file.status).toBe("complete");
+    });
+
     it("uploads all selected files concurrently", async () => {
         const files = [
             new File(["first image"], "first.png", { type: "image/png" }),
@@ -323,6 +355,7 @@ describe("c-record-form-file-upload", () => {
         const element = createUploader(file);
 
         await expect(element.postSubmit({ data: { Id: RECORD_ID } })).resolves.toBeUndefined();
+        await flushPromises();
 
         expect(Toast.show).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -335,5 +368,10 @@ describe("c-record-form-file-upload", () => {
         const row = element.querySelector("c-record-form-file-row");
         expect(row.shadowRoot.textContent).toContain("photo.png");
         expect(row.shadowRoot.querySelector("lightning-button-icon")).not.toBeNull();
+        const errorIcon = Array.from(row.shadowRoot.querySelectorAll("lightning-icon")).find(
+            (icon) => icon.iconName === "utility:error"
+        );
+        expect(errorIcon).toBeDefined();
+        expect(errorIcon.variant).toBe("error");
     });
 });

@@ -1,34 +1,28 @@
 <template lwc:render-mode="light">
     <lightning-input
-        lwc:ref="input"
-        type="file"
-        name="fileUploader"
-        label={label}
-        multiple={multiple}
-        accept={accept}
-        disabled={isDisabled}
-        onchange={handleFilesInputChange}
+            lwc:ref="input"
+            type="file"
+            name="fileUploader"
+            label={label}
+            multiple={multiple}
+            accept={accept}
+            disabled={isDisabled}
+            onchange={handleFilesInputChange}
     ></lightning-input>
 
     <div class="slds-m-top_small">
-        <template for:each={existingAttachmentRows} for:item="file">
-            <c-record-form-file-row key={file.id} file={file} disabled></c-record-form-file-row>
-        </template>
-        <template for:each={completedUploadRows} for:item="file">
+        <template for:each={uploadedFiles} for:item="file">
             <c-record-form-file-row key={file.id} file={file} disabled></c-record-form-file-row>
         </template>
         <template for:each={pendingFiles} for:item="file">
             <c-record-form-file-row
-                key={file.id}
-                file={file}
-                disabled={isFileRowDisabled}
-                onremove={handleRemoveFile}
+                    key={file.id}
+                    file={file}
+                    disabled={isFileRowDisabled}
+                    data-pending="true"
+                    onremove={handleRemoveFile}
+                    onchange={handleFileStatusChange}
             ></c-record-form-file-row>
         </template>
-    </div>
-
-    <div lwc:if={allFilesUploaded} class="slds-grid slds-grid_align-spread slds-p-around_medium">
-        <span>{uploadSummary}</span>
-        <lightning-button label="Done" variant="brand" onclick={handleDone}></lightning-button>
     </div>
 </template>

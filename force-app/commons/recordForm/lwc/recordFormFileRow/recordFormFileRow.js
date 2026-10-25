@@ -1,50 +1,51 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
-import { api, LightningElement } from "lwc";
-import { NavigationMixin } from "lightning/navigation";
+import {api, LightningElement} from "lwc";
+import {NavigationMixin} from "lightning/navigation";
+import {createContentDocumentAndVersion, createRecord} from "lightning/uiRecordApi";
 
 const FILE_EXTENSION_ALIASES = {
-    aac: "audio",
-    aif: "audio",
+    aac : "audio",
+    aif : "audio",
     aiff: "audio",
-    avi: "video",
-    bmp: "image",
-    doc: "word",
+    avi : "video",
+    bmp : "image",
+    doc : "word",
     docm: "word",
     docx: "word",
-    dot: "word",
+    dot : "word",
     dotx: "word",
     flac: "audio",
-    gif: "image",
+    gif : "image",
     heic: "image",
     heif: "image",
     jpeg: "image",
-    jpg: "image",
-    m4a: "audio",
-    m4v: "video",
-    mkv: "video",
-    mov: "video",
-    mp3: "audio",
+    jpg : "image",
+    m4a : "audio",
+    m4v : "video",
+    mkv : "video",
+    mov : "video",
+    mp3 : "audio",
     mpeg: "video",
-    mpg: "video",
-    oga: "audio",
-    ogg: "audio",
-    png: "image",
-    pps: "slide",
+    mpg : "video",
+    oga : "audio",
+    ogg : "audio",
+    png : "image",
+    pps : "slide",
     ppsx: "slide",
     pptm: "ppt",
     pptx: "ppt",
-    tif: "image",
+    tif : "image",
     tiff: "image",
-    wav: "audio",
+    wav : "audio",
     webm: "video",
     webp: "image",
-    wma: "audio",
-    wmv: "video",
-    xls: "excel",
+    wma : "audio",
+    wmv : "video",
+    xls : "excel",
     xlsm: "excel",
     xlsx: "excel",
-    xlt: "excel",
+    xlt : "excel",
     xltx: "excel"
 };
 
@@ -99,18 +100,22 @@ const DOCTYPE_ICONS = new Set([
 
 export default class RecordFormFileRow extends NavigationMixin(LightningElement) {
     @api disabled = false;
-    @api file;
+    _file;
+    progress = 0;
+    errorMessage;
 
-    get fileDetails() {
-        return this.file?.file ?? this.file ?? {};
+    @api
+    get file() {
+        return this._file;
     }
 
-    get fileName() {
-        return this.fileDetails.name ?? "";
+    set file(value) {
+        this._file = {...value};
+        this.progress = value?.status === "complete" ? 100 : 0;
     }
 
     get sizeLabel() {
-        const size = this.fileDetails.size ?? 0;
+        const size = this.file?.size;
         if (size < 1024) {
             return `${size} B`;
         }
@@ -121,11 +126,11 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
     }
 
     get progressLabel() {
-        return `${this.fileName} upload progress is ${this.file?.progress ?? 0}%`;
+        return `${this.file.title} upload progress is ${this.progress}%`;
     }
 
     get fileUrl() {
-        const documentId = this.file?.documentId ?? this.file?.contentDocumentId;
+        const documentId = this.contentDocumentId ?? this.file?.documentId ?? this.file?.contentDocumentId;
         return documentId ? `/lightning/r/ContentDocument/${documentId}/view` : undefined;
     }
 
@@ -134,37 +139,93 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
     }
 
     get iconType() {
-        const extension = this.fileName.split(".").pop()?.toLowerCase();
+        const extension = this.file?.title?.split(".").pop()?.toLowerCase();
         const iconType = FILE_EXTENSION_ALIASES[extension] ?? extension;
         return DOCTYPE_ICONS.has(iconType) ? iconType : "unknown";
     }
 
-    get isComplete() {
-        return this.file?.status === "complete";
+    get isNew() {
+        return this.file.status === "new";
     }
 
-    get showRemoveButton() {
-        return !this.disabled && !this.isComplete;
+    get isComplete() {
+        return this.file.status === "complete";
+    }
+
+    get isFailed() {
+        return this.file.status === "error";
+    }
+
+    @api
+    async upload(recordId) {
+        if (this.file.status === "new" || this.file.status === "error") {
+            this.file.status = "uploading";
+            this.progress = 0;
+            this.errorMessage = undefined;
+            this.dispatchStatusChange();
+            return this.uploadFileAndLink(recordId);
+        }
+    }
+
+    async uploadFileAndLink(recordId) {
+        try {
+            if (!this.file.contentDocumentId) {
+                const result = await createContentDocumentAndVersion({
+                    title   : this.file.title,
+                    fileData: this.file.file
+                });
+                console.log('result', JSON.stringify(result, null, 2));
+                this.file.contentDocumentId = result.contentDocument.id;
+                this.progress = 70;
+            }
+
+            await createRecord({
+                apiName: "ContentDocumentLink",
+                fields : {
+                    LinkedEntityId   : recordId,
+                    ContentDocumentId: this.file.contentDocumentId,
+                    ShareType        : "V"
+                }
+            });
+
+            this.file.status = "complete";
+            this.progress = 100;
+            this.dispatchStatusChange();
+        } catch (error) {
+            this.file.status = "error";
+            this.errorMessage = error?.body?.message ?? error?.message ?? "Unable to upload this file.";
+            this.dispatchStatusChange();
+            throw error;
+        }
+    }
+
+    dispatchStatusChange() {
+        this.dispatchEvent(
+            new CustomEvent("change", {
+                detail  : {file: this.file},
+                bubbles : true,
+                composed: true
+            })
+        );
     }
 
     handleOpenFile(event) {
         event.preventDefault();
-        const documentId = this.file?.documentId ?? this.file?.contentDocumentId;
-        if (documentId) {
+        if (this.file.contentDocumentId) {
             this[NavigationMixin.Navigate]({
-                type: "standard__namedPage",
+                type      : "standard__namedPage",
                 attributes: {
                     pageName: "filePreview"
                 },
-                state: {
-                    recordIds: documentId,
-                    selectedRecordId: documentId
+                state     : {
+                    recordIds       : this.file.contentDocumentId,
+                    selectedRecordId: this.file.contentDocumentId
                 }
             });
         }
     }
 
     handleRemove() {
-        this.dispatchEvent(new CustomEvent("remove", { detail: { fileId: this.file.id } }));
+        this.dispatchEvent(new CustomEvent("remove", {detail: {fileId: this.file.id}}));
     }
 }

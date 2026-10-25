@@ -333,12 +333,16 @@ describe("c-record-form", () => {
             const form = element.shadowRoot.querySelector("form");
             const field = connectFakeField(form, "Name");
             const disconnectFn = field.connectField.mock.calls[0][0].disconnectFn;
+            await Promise.resolve();
+            expect(getRecord.getLastConfig().optionalFields).toContain("Account.Name");
             field.isConnected = false;
             const disconnectedHandler = jest.fn();
             element.addEventListener("fielddisconnected", disconnectedHandler);
             disconnectFn("Name");
+            await Promise.resolve();
             expect(element.record).toEqual({ Id: RECORD_ID });
             expect(element.isDirty()).toBe(false);
+            expect(getRecord.getLastConfig().optionalFields).not.toContain("Account.Name");
             expect(disconnectedHandler).toHaveBeenCalledWith(
                 expect.objectContaining({ detail: { field: "Name" } })
             );

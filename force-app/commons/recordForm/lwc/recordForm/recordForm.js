@@ -28,9 +28,6 @@ const RECORD_TYPE_QUERY = gql`
                     edges {
                         node {
                             Id
-                            DeveloperName {
-                                value
-                            }
                             SobjectType {
                                 value
                             }
@@ -65,7 +62,6 @@ export default class RecordForm extends LightningElement {
     recordTypeId;
     _record = {};
     _optionalFields = [];
-    _derivedFields = [];
     computedOptionalFields = [];
     isSubmitting = false;
     _recordTypeIdFromRecord;
@@ -202,18 +198,16 @@ export default class RecordForm extends LightningElement {
     }
 
     set record(value) {
-        this.setValues("record", value);
+        this.setRecord(value);
     }
 
-    setValues(property, value) {
-        this[`_${property}`] = value;
-        if (property === "record") {
-            this.resolveRecordTypeId();
-            if (this.recordTypeId && this._record.RecordTypeId !== this.recordTypeId) {
-                this._record = {...this._record, RecordTypeId: this.recordTypeId};
-            }
+    setRecord(value) {
+        this._record = value ?? {};
+        this.resolveRecordTypeId();
+        if (this.recordTypeId && this._record.RecordTypeId !== this.recordTypeId) {
+            this._record = {...this._record, RecordTypeId: this.recordTypeId};
         }
-        this.getConnectedFields().forEach((field) => (field[property] = this[`_${property}`]));
+        this.getConnectedFields().forEach((field) => (field.record = this._record));
     }
 
     getConnectedFields() {
@@ -242,7 +236,16 @@ export default class RecordForm extends LightningElement {
         const extraFields = this._optionalFields.map((field) =>
             field.includes(".") ? field : `${this.objectApiName}.${field}`
         );
-        this.computedOptionalFields = [...new Set([...recordTypeField, ...extraFields, ...this._derivedFields])];
+        const derivedFields =
+            this.objectInfo?.apiName === this.objectApiName
+                ? this.getConnectedFields().flatMap(({field}) => {
+                      const fieldInfo = this.objectInfo.fields[field];
+                      return fieldInfo
+                          ? getFieldsToRetrieve(this.objectInfo, fieldInfo, field, this.isPersonAccount)
+                          : [];
+                  })
+                : [];
+        this.computedOptionalFields = [...new Set([...recordTypeField, ...extraFields, ...derivedFields])];
     }
 
     get formClasses() {
@@ -259,11 +262,11 @@ export default class RecordForm extends LightningElement {
     }
 
     /**
-     * Form loads successfully when all required components are connected and picklist values are available.
+     * Whether object metadata and picklist values are ready to render the form.
      * @type {boolean}
      */
     get isLoaded() {
-        return this.objectInfo && this.picklistValues && this.record;
+        return this.objectInfo && this.picklistValues;
     }
 
     /**
@@ -396,8 +399,8 @@ export default class RecordForm extends LightningElement {
     describeObjectInfo({error, data}) {
         if (data) {
             this.objectInfo = JSON.parse(JSON.stringify(data));
-            this.resolveRecordTypeId();
-            this.setValues("record", this.record);
+            this.setRecord(this.record);
+            this.recalculateOptionalFields();
             overrideFieldLabels(this.labelOverrides, this.objectInfo);
         } else if (error) {
             console.error("Error fetching object info", error.message);
@@ -492,10 +495,6 @@ export default class RecordForm extends LightningElement {
                 const fieldName = ev.target.field;
                 const fieldInfo = this.objectInfo.fields[fieldName];
 
-                this._derivedFields = [
-                    ...this._derivedFields,
-                    ...getFieldsToRetrieve(this.objectInfo, fieldInfo, fieldName, this.isPersonAccount)
-                ];
                 this.recalculateOptionalFields();
 
                 ev.target.record = this._record;

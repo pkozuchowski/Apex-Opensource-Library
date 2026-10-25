@@ -405,8 +405,10 @@ Then this component can be used in the form:
 
 ## File Upload
 
-Use `c-record-form-file-upload` to select image files before saving. After a successful form save, the component uploads them with
-`createContentDocumentAndVersion` and links them to the saved record with `createRecord`. It forwards an `uploadfinished` event with the uploaded files.
+Use `c-record-form-file-upload` to select image files. For a saved record in view mode, files upload as soon as they are selected; in edit mode, they
+upload after a successful form save. The component uses `createContentDocumentAndVersion` and links files to the record with `createRecord`. It forwards
+an `uploadfinished` event with the uploaded files. In view mode without a saved record, file selection is disabled.
+Set `show-existing-attachments` to display existing attachments linked to the record through GraphQL (defaults to `false`); those rows show as complete, cannot be removed, and link to the file.
 The `label` attribute defaults to "Upload Files", `accept` defaults to `"image/*"`, `multiple` enables selecting multiple files, and `disabled` prevents
 selection and upload.
 

@@ -3,6 +3,8 @@
 import { createElement } from "lwc";
 import { createContentDocumentAndVersion, createRecord } from "lightning/uiRecordApi";
 import Toast from "lightning/toast";
+import { graphql } from "lightning/graphql";
+import { mockNavigate } from "lightning/navigation";
 import RecordFormFileUpload from "c/recordFormFileUpload";
 
 jest.mock("lightning/uiRecordApi", () => ({
@@ -19,6 +21,19 @@ jest.mock(
     { virtual: true }
 );
 
+jest.mock("lightning/navigation", () => {
+    const navigateSpy = jest.fn();
+    const navigateSymbol = Symbol("Navigate");
+    const NavigationMixin = (Base) =>
+        class extends Base {
+            [navigateSymbol](pageReference) {
+                navigateSpy(pageReference);
+            }
+        };
+    NavigationMixin.Navigate = navigateSymbol;
+    return { NavigationMixin, mockNavigate: navigateSpy };
+});
+
 const RECORD_ID = "001xx000003DGb2AAG";
 const CONTENT_DOCUMENT_ID = "069xx0000000001AAA";
 
@@ -33,7 +48,7 @@ describe("c-record-form-file-upload", () => {
 
     function createUploader(files, properties = {}) {
         const element = createElement("c-record-form-file-upload", { is: RecordFormFileUpload });
-        Object.assign(element, properties);
+        Object.assign(element, { formAttributes: { editMode: true }, ...properties });
         document.body.appendChild(element);
         const input = element.querySelector("lightning-input");
         const selectedFiles = Array.isArray(files) ? files : files ? [files] : [];
@@ -47,6 +62,7 @@ describe("c-record-form-file-upload", () => {
         expect(defaultInput.label).toBe("Upload Files");
         expect(defaultInput.multiple).toBe(false);
         expect(defaultInput.accept).toBeUndefined();
+        expect(defaultElement.showExistingAttachments).toBe(false);
 
         document.body.textContent = "";
         const element = createUploader([], {
@@ -79,6 +95,89 @@ describe("c-record-form-file-upload", () => {
         expect(input.setCustomValidity).toHaveBeenCalledWith("Select a valid image.");
     });
 
+    it("disables file selection in view mode when there is no saved record", () => {
+        const element = createUploader([], {
+            record: { Id: null },
+            formAttributes: { editMode: false }
+        });
+
+        expect(element.querySelector("lightning-input").disabled).toBe(true);
+        expect(element.querySelector("c-record-form-file-row")).toBeNull();
+    });
+
+    it("does not show or query existing attachments by default", async () => {
+        const element = createUploader([], { record: { Id: RECORD_ID } });
+        await flushPromises();
+
+        expect(element.showExistingAttachments).toBe(false);
+        expect(graphql.getLastConfig().variables).toEqual({ recordId: RECORD_ID, skipQuery: true });
+        expect(element.querySelector("c-record-form-file-row")).toBeNull();
+    });
+
+    it("displays existing attached files as complete rows without remove buttons", async () => {
+        const element = createUploader([], { record: { Id: RECORD_ID }, showExistingAttachments: true });
+        await flushPromises();
+
+        expect(graphql.getLastConfig().variables).toEqual({ recordId: RECORD_ID, skipQuery: false });
+
+        graphql.emit({
+            uiapi: {
+                query: {
+                    ContentDocumentLink: {
+                        edges: [
+                            {
+                                node: {
+                                    Id: "06Axx0000000001AAA",
+                                    ContentDocument: {
+                                        Id: "069xx0000000001AAA",
+                                        Title: { value: "Zrzut ekranu 2026-09-03 145708" },
+                                        FileExtension: { value: "png" },
+                                        ContentSize: { value: 123 }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        });
+        await flushPromises();
+
+        const row = element.querySelector("c-record-form-file-row");
+        expect(row.shadowRoot.textContent).toContain("Zrzut ekranu 2026-09-03 145708.png");
+        expect(row.shadowRoot.textContent).toContain("123 B");
+        expect(row.shadowRoot.querySelector("a").getAttribute("href")).toBe(
+            `/lightning/r/ContentDocument/069xx0000000001AAA/view`
+        );
+        expect(row.shadowRoot.querySelector("lightning-progress-bar").value).toBe(100);
+        const successIcon = Array.from(row.shadowRoot.querySelectorAll("lightning-icon")).find(
+            (icon) => icon.iconName === "utility:success"
+        );
+        expect(successIcon).toBeDefined();
+        expect(row.shadowRoot.querySelector("lightning-button-icon")).toBeNull();
+
+        const fileLink = row.shadowRoot.querySelector("a");
+        const clickEvent = new CustomEvent("click", { bubbles: true, cancelable: true });
+        fileLink.dispatchEvent(clickEvent);
+
+        expect(clickEvent.defaultPrevented).toBe(true);
+        expect(mockNavigate).toHaveBeenCalledWith({
+            type: "standard__namedPage",
+            attributes: { pageName: "filePreview" },
+            state: {
+                recordIds: "069xx0000000001AAA",
+                selectedRecordId: "069xx0000000001AAA"
+            }
+        });
+    });
+
+    it("skips the attachment query when the record ID is null", async () => {
+        createUploader([], { record: { Id: null }, showExistingAttachments: true });
+        await flushPromises();
+
+        expect(graphql.getLastConfig().variables).toEqual({ recordId: "", skipQuery: true });
+    });
+
     it("shows a removable file row before upload and removes it when clicked", async () => {
         const file = new File(["image data"], "photo.png", { type: "image/png" });
         const element = createUploader(file);
@@ -87,6 +186,7 @@ describe("c-record-form-file-upload", () => {
         let row = element.querySelector("c-record-form-file-row");
         expect(row.shadowRoot.textContent).toContain("photo.png");
         expect(row.shadowRoot.textContent).toContain("10 B");
+        expect(row.shadowRoot.querySelector("a")).toBeNull();
         const removeButton = row.shadowRoot.querySelector("lightning-button-icon");
         expect(removeButton).not.toBeNull();
 
@@ -95,6 +195,25 @@ describe("c-record-form-file-upload", () => {
 
         row = element.querySelector("c-record-form-file-row");
         expect(row).toBeNull();
+    });
+
+    it("starts uploading immediately when an existing record is in view mode", async () => {
+        createContentDocumentAndVersion.mockResolvedValueOnce({ contentDocument: { id: CONTENT_DOCUMENT_ID } });
+        createRecord.mockResolvedValueOnce({});
+        const file = new File(["image data"], "photo.png", { type: "image/png" });
+        const element = createUploader(file, {
+            record: { Id: RECORD_ID },
+            formAttributes: { editMode: false }
+        });
+        await flushPromises();
+
+        expect(createContentDocumentAndVersion).toHaveBeenCalledTimes(1);
+        expect(createRecord).toHaveBeenCalledTimes(1);
+        const row = element.querySelector("c-record-form-file-row");
+        expect(row.shadowRoot.querySelector("lightning-progress-bar").value).toBe(100);
+        expect(row.shadowRoot.querySelector("a").getAttribute("href")).toBe(
+            `/lightning/r/ContentDocument/${CONTENT_DOCUMENT_ID}/view`
+        );
     });
 
     it.each([
@@ -145,8 +264,18 @@ describe("c-record-form-file-upload", () => {
             (icon) => icon.iconName === "utility:success"
         );
         expect(successIcon).toBeDefined();
+        expect(row.shadowRoot.querySelector("a").getAttribute("href")).toBe(
+            `/lightning/r/ContentDocument/${CONTENT_DOCUMENT_ID}/view`
+        );
         expect(element.textContent).toContain("1 of 1 file uploaded");
         expect(element.querySelector("lightning-button").label).toBe("Done");
+
+        element.querySelector("lightning-button").dispatchEvent(new CustomEvent("click"));
+        await flushPromises();
+
+        const uploadedRow = element.querySelector("c-record-form-file-row");
+        expect(uploadedRow.shadowRoot.textContent).toContain("photo.png");
+        expect(uploadedRow.shadowRoot.querySelector("lightning-button-icon")).toBeNull();
     });
 
     it("uploads all selected files concurrently", async () => {

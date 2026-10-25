@@ -3,44 +3,46 @@
         <div class="slds-size_6-of-12">
             <div class="slds-media slds-media_center">
                 <div aria-hidden="true" class="slds-media__figure">
-                    <span class={iconContainerClass}>
-                        <lightning-icon
+                    <lightning-icon
                             icon-name={iconName}
-                            size="small"
+                            size="medium"
                             variant="inverse"
                             alternative-text={iconName}
-                        ></lightning-icon>
-                    </span>
+                    ></lightning-icon>
                 </div>
                 <div class="slds-media__body">
-                    <div class="slds-truncate" title={fileName}>{fileName}</div>
+                    <div class="slds-truncate">
+                        <a lwc:if={fileUrl} href={fileUrl} title={fileName}
+                           onclick={handleOpenFile}>{fileName}</a>
+                        <span lwc:else>{fileName}</span>
+                    </div>
                     <span class="slds-text-color_weak slds-text-body_small">{sizeLabel}</span>
                 </div>
             </div>
         </div>
         <div class="slds-col slds-size_5-of-12 slds-p-horizontal_small">
             <lightning-progress-bar
-                value={file.progress}
-                size="medium"
-                variant="circular"
-                aria-label={progressLabel}
+                    value={file.progress}
+                    size="medium"
+                    variant="circular"
+                    aria-label={progressLabel}
             ></lightning-progress-bar>
         </div>
         <div class="slds-size_1-of-12 slds-text-align_center" aria-live="polite" aria-atomic="true">
             <lightning-icon
-                lwc:if={isComplete}
-                icon-name="utility:success"
-                size="small"
-                variant="success"
-                alternative-text="Upload complete"
+                    lwc:if={isComplete}
+                    icon-name="utility:success"
+                    size="small"
+                    variant="success"
+                    alternative-text="Upload complete"
             ></lightning-icon>
             <lightning-button-icon
-                lwc:elseif={showRemoveButton}
-                icon-name="utility:close"
-                variant="bare"
-                title="Remove file"
-                alternative-text="Remove file"
-                onclick={handleRemove}
+                    lwc:elseif={showRemoveButton}
+                    icon-name="utility:close"
+                    variant="bare"
+                    title="Remove file"
+                    alternative-text="Remove file"
+                    onclick={handleRemove}
             ></lightning-button-icon>
         </div>
     </div>

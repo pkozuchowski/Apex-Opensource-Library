@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
 import { api, LightningElement } from "lwc";
+import { NavigationMixin } from "lightning/navigation";
 
 const FILE_EXTENSION_ALIASES = {
     aac: "audio",
@@ -96,28 +97,50 @@ const DOCTYPE_ICONS = new Set([
     "zip"
 ]);
 
-export default class RecordFormFileRow extends LightningElement {
+export default class RecordFormFileRow extends NavigationMixin(LightningElement) {
     @api disabled = false;
     @api file;
 
+    get fileDetails() {
+        return this.file?.file ?? this.file ?? {};
+    }
+
     get fileName() {
-        return this.file?.file?.name ?? "";
+        return this.fileDetails.name ?? "";
     }
 
     get sizeLabel() {
-        return this.formatFileSize(this.file?.file?.size ?? 0);
+        return this.formatFileSize(this.fileDetails.size ?? 0);
     }
 
     get progressLabel() {
         return `${this.fileName} upload progress is ${this.file?.progress ?? 0}%`;
     }
 
-    get iconName() {
-        return `doctype:${this.iconType}`;
+    get fileUrl() {
+        const documentId = this.file?.documentId ?? this.file?.contentDocumentId;
+        return documentId ? `/lightning/r/ContentDocument/${documentId}/view` : undefined;
     }
 
-    get iconContainerClass() {
-        return `slds-icon_container slds-icon-standard-${this.iconType}`;
+    handleOpenFile(event) {
+        event.preventDefault();
+        const documentId = this.file?.documentId ?? this.file?.contentDocumentId;
+        if (documentId) {
+            this[NavigationMixin.Navigate]({
+                type: "standard__namedPage",
+                attributes: {
+                    pageName: "filePreview"
+                },
+                state: {
+                    recordIds: documentId,
+                    selectedRecordId: documentId
+                }
+            });
+        }
+    }
+
+    get iconName() {
+        return `doctype:${this.iconType}`;
     }
 
     get iconType() {

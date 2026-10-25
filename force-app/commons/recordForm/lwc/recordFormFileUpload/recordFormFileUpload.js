@@ -1,35 +1,117 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
-import {api} from "lwc";
+import {api, wire} from "lwc";
 import Toast from "lightning/toast";
+import {gql, graphql} from "lightning/graphql";
 import RecordFormComponent from "c/recordFormComponent";
 import {createFileVersion, linkFileToRecord} from "./recordFormFileUploadService";
+
+const CONTENT_DOCUMENT_LINKS_QUERY = gql`
+    query ContentDocumentLinks($recordId: ID!, $skipQuery: Boolean!) {
+        uiapi {
+            query {
+                ContentDocumentLink(where: { LinkedEntityId: { eq: $recordId } }) @skip(if: $skipQuery) {
+                    edges {
+                        node {
+                            Id
+                            ContentDocument {
+                                Id
+                                Title {
+                                    value
+                                }
+                                FileExtension {
+                                    value
+                                }
+                                ContentSize {
+                                    value
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+`;
 
 export default class RecordFormFileUpload extends RecordFormComponent {
     @api accept;
     @api label = "Upload Files";
     @api multiple = false;
+    @api showExistingAttachments = false;
     pendingFiles = [];
+    existingFiles = [];
+    completedFiles = [];
     isUploading = false;
     nextFileId = 0;
+
+    @wire(graphql, {query: CONTENT_DOCUMENT_LINKS_QUERY, variables: "$contentDocumentLinkVariables"})
+    wiredContentDocumentLinks({data, errors}) {
+        if (errors?.length) {
+            if (this.showExistingAttachments && this.record?.Id) {
+                this.showAttachmentLoadError(errors);
+            }
+            return;
+        }
+        if (data) {
+            if (!this.showExistingAttachments || !this.record?.Id) {
+                return;
+            }
+            const edges = data.uiapi?.query?.ContentDocumentLink?.edges ?? [];
+            this.existingFiles = edges.map(({node}) => this.mapExistingFile(node));
+        }
+    }
+
+    get contentDocumentLinkVariables() {
+        const recordId = this.record?.Id;
+        return {
+            recordId : recordId ?? "",
+            skipQuery: !this.showExistingAttachments || !recordId
+        };
+    }
+
+    mapExistingFile(node) {
+        const contentDocument = node.ContentDocument;
+        const title = contentDocument.Title?.value ?? "";
+        const fileExtension = contentDocument.FileExtension?.value;
+        const fileName =
+            fileExtension && !title.toLowerCase().endsWith(`.${fileExtension.toLowerCase()}`)
+                ? `${title}.${fileExtension}`
+                : title;
+
+        return {
+            id        : `existing-${contentDocument.Id}`,
+            documentId: contentDocument.Id,
+            name      : fileName,
+            size      : contentDocument.ContentSize?.value ?? 0,
+            progress  : 100,
+            status    : "complete"
+        };
+    }
 
     @api
     async postSubmit({data}) {
         if (data?.Id && !this.disabled && this.pendingFiles.some(({status}) => status !== "complete")) {
-            this.isUploading = true;
-            try {
-                await this.uploadSelectedFiles(data.Id);
-            } catch (uploadError) {
-                this.showUploadError(uploadError);
-            } finally {
-                this.isUploading = false;
-            }
+            await this.startUpload(data.Id);
         }
     }
 
-    @api connectField({}) {}
+    @api connectField() {}
+
+    get existingAttachmentRows() {
+        return this.showExistingAttachments && this.record?.Id ? this.existingFiles : [];
+    }
+
+    get completedUploadRows() {
+        const existingDocumentIds = new Set(this.existingAttachmentRows.map(({documentId}) => documentId));
+        return this.completedFiles.filter(({documentId}) => !existingDocumentIds.has(documentId));
+    }
 
     get isDisabled() {
+        return this.disabled || this.isUploading || (!this.formAttributes?.editMode && !this.record?.Id);
+    }
+
+    get isFileRowDisabled() {
         return this.disabled || this.isUploading;
     }
 
@@ -44,6 +126,9 @@ export default class RecordFormFileUpload extends RecordFormComponent {
     }
 
     handleFilesInputChange(event) {
+        if (this.isDisabled) {
+            return;
+        }
         const completedFiles = this.pendingFiles.filter(({status}) => status === "complete");
         const newFiles = Array.from(event.detail.files ?? [], (file) => ({
             id      : this.nextFileId++,
@@ -52,10 +137,13 @@ export default class RecordFormFileUpload extends RecordFormComponent {
             status  : "ready"
         }));
         this.pendingFiles = [...completedFiles, ...newFiles];
+        if (newFiles.length > 0 && this.record?.Id && !this.formAttributes?.editMode && !this.disabled) {
+            this.startUpload(this.record.Id);
+        }
     }
 
     handleRemoveFile(event) {
-        if (this.isDisabled) {
+        if (this.isFileRowDisabled) {
             return;
         }
         const fileId = event.detail.fileId;
@@ -66,7 +154,43 @@ export default class RecordFormFileUpload extends RecordFormComponent {
     }
 
     handleDone() {
+        const existingDocumentIds = new Set([
+            ...this.existingFiles.map(({documentId}) => documentId),
+            ...this.completedFiles.map(({documentId}) => documentId)
+        ]);
+        const uploadedFiles = this.pendingFiles
+            .filter(({status}) => status === "complete")
+            .filter(({contentDocumentId}) => !existingDocumentIds.has(contentDocumentId))
+            .map(({contentDocumentId, file}) => ({
+                id        : `existing-${contentDocumentId}`,
+                documentId: contentDocumentId,
+                name      : file.name,
+                size      : file.size,
+                progress  : 100,
+                status    : "complete"
+            }));
+        this.completedFiles = [...this.completedFiles, ...uploadedFiles];
         this.pendingFiles = [];
+    }
+
+    async startUpload(recordId) {
+        if (
+            !recordId ||
+            this.disabled ||
+            this.isUploading ||
+            !this.pendingFiles.some(({status}) => status !== "complete")
+        ) {
+            return;
+        }
+
+        this.isUploading = true;
+        try {
+            await this.uploadSelectedFiles(recordId);
+        } catch (uploadError) {
+            this.showUploadError(uploadError);
+        } finally {
+            this.isUploading = false;
+        }
     }
 
     async uploadSelectedFiles(recordId) {
@@ -89,6 +213,7 @@ export default class RecordFormFileUpload extends RecordFormComponent {
         if (uploadedFiles.length > 0) {
             this.dispatchUploadFinished(uploadedFiles);
         }
+
         if (!this.pendingFiles.some(({status}) => status !== "complete")) {
             this.refs.input.value = null;
         }
@@ -136,6 +261,18 @@ export default class RecordFormFileUpload extends RecordFormComponent {
             {
                 label  : "File upload failed",
                 message: error?.body?.message ?? error?.message ?? "Unable to upload the selected file.",
+                variant: "error"
+            },
+            this
+        );
+    }
+
+    showAttachmentLoadError(errors) {
+        console.error("Error fetching files attached to record", errors);
+        Toast.show(
+            {
+                label  : "Unable to load attached files",
+                message: errors.map(({message}) => message).join("; "),
                 variant: "error"
             },
             this

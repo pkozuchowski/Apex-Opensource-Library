@@ -11,11 +11,17 @@
     ></lightning-input>
 
     <div class="slds-m-top_small">
+        <template for:each={existingAttachmentRows} for:item="file">
+            <c-record-form-file-row key={file.id} file={file} disabled></c-record-form-file-row>
+        </template>
+        <template for:each={completedUploadRows} for:item="file">
+            <c-record-form-file-row key={file.id} file={file} disabled></c-record-form-file-row>
+        </template>
         <template for:each={pendingFiles} for:item="file">
             <c-record-form-file-row
                 key={file.id}
                 file={file}
-                disabled={isDisabled}
+                disabled={isFileRowDisabled}
                 onremove={handleRemoveFile}
             ></c-record-form-file-row>
         </template>

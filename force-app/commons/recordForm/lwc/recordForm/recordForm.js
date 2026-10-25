@@ -19,7 +19,6 @@ import {gql, graphql} from "lightning/graphql";
 import LightningConfirm from "lightning/confirm";
 import Toast from "lightning/toast";
 
-const MASTER_RECORD_TYPE = "012000000000000AAA";
 // SObjectType filter is not supported
 const RECORD_TYPE_QUERY = gql`
     query getRecordType($developerName: String) {
@@ -252,11 +251,11 @@ export default class RecordForm extends LightningElement {
         const derivedFields =
             this.objectInfo?.apiName === this.objectApiName
                 ? this.getConnectedFields().flatMap(({field}) => {
-                      const fieldInfo = this.objectInfo.fields[field];
-                      return fieldInfo
-                          ? getFieldsToRetrieve(this.objectInfo, fieldInfo, field, this.isPersonAccount)
-                          : [];
-                  })
+                    const fieldInfo = this.objectInfo.fields[field];
+                    return fieldInfo
+                        ? getFieldsToRetrieve(this.objectInfo, fieldInfo, field, this.isPersonAccount)
+                        : [];
+                })
                 : [];
         this.computedOptionalFields = [...new Set([...recordTypeField, ...extraFields, ...derivedFields])];
     }
@@ -280,6 +279,10 @@ export default class RecordForm extends LightningElement {
      */
     get isLoaded() {
         return this.objectInfo && this.picklistValues;
+    }
+
+    get hasAvailableRecordTypes() {
+        return this.objectInfo.fields.RecordTypeId;
     }
 
     /**
@@ -372,7 +375,10 @@ export default class RecordForm extends LightningElement {
             this.spinner = true;
             const isCreate = !this.record?.Id;
             const fieldsToUpdate = getUpdatableFields(this.record, this.objectInfo, isCreate, this.isPersonAccount);
-            if (isCreate && this.recordTypeId) {
+
+            if (!this.hasAvailableRecordTypes) {
+                delete fieldsToUpdate.RecordTypeId;
+            } else if (isCreate && this.recordTypeId) {
                 fieldsToUpdate.RecordTypeId = this.recordTypeId;
             }
 
@@ -438,7 +444,7 @@ export default class RecordForm extends LightningElement {
                 (rt) => rt.node.SobjectType.value === this.objectApiName
             );
             this._resolvedRecordTypeName = this.recordTypeName;
-            this._recordTypeIdFromName = recordType?.node?.Id ?? MASTER_RECORD_TYPE;
+            this._recordTypeIdFromName = recordType?.node?.Id ?? this.objectInfo?.defaultRecordTypeId;
             const previousRecordTypeId = this.record?.RecordTypeId;
             this.resolveRecordTypeId();
 
@@ -479,8 +485,7 @@ export default class RecordForm extends LightningElement {
         } else if (this.recordId) {
             this.recordTypeId = this._recordTypeIdFromRecord || this.record?.RecordTypeId;
         } else {
-            this.recordTypeId = this.record?.RecordTypeId ??
-                this.objectInfo?.defaultRecordTypeId ?? MASTER_RECORD_TYPE
+            this.recordTypeId = this.record?.RecordTypeId ?? this.objectInfo?.defaultRecordTypeId;
         }
     }
 

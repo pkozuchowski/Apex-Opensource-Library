@@ -29,7 +29,12 @@ const RECORD_ID = "001xx000003DGb2AAG";
 const OBJECT_INFO = {
     apiName: "Account",
     defaultRecordTypeId: "012000000000000AAA",
-    recordTypeInfos: {},
+    recordTypeInfos: {
+        "012000000000000AAA": { available: true, master: true },
+        "012000000000001AAA": { available: true, master: false },
+        "012000000000002AAA": { available: true, master: false },
+        "012000000000003AAA": { available: true, master: false }
+    },
     fields: {
         Name: { apiName: "Name", label: "Account Name", compound: false, updateable: true, createable: true }
     }
@@ -521,6 +526,29 @@ describe("c-record-form", () => {
                 apiName: "Account",
                 fields: { Name: "New", RecordTypeId: "012000000000001AAA" }
             });
+        });
+
+        it("omits RecordTypeId when the object has no available custom record types", async () => {
+            createRecord.mockResolvedValueOnce({
+                id: RECORD_ID,
+                fields: { Name: { value: "New" } }
+            });
+            const element = createRecordForm({ recordId: undefined, editMode: true });
+            getObjectInfo.emit({
+                ...OBJECT_INFO,
+                recordTypeInfos: { "012000000000000AAA": { available: true, master: true } }
+            });
+            getPicklistValuesByRecordType.emit(PICKLIST_VALUES);
+            await Promise.resolve();
+
+            element.record = { Name: "New" };
+            await element.submit();
+
+            expect(createRecord).toHaveBeenCalledWith({
+                apiName: "Account",
+                fields: { Name: "New" }
+            });
+            expect(element.record.RecordTypeId).toBe("012000000000000AAA");
         });
 
         it("uses an explicitly supplied record type for a new record", async () => {

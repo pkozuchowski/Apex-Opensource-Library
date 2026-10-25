@@ -389,7 +389,7 @@ export default class RecordForm extends LightningElement {
             await notifyRecordUpdateAvailable([{recordId: result.id}]);
             this.setEditMode(false);
             this._editModeSnapshot = undefined;
-
+            await this.runPostSubmit({data: flatRecord, error: undefined});
             return flatRecord;
         } catch (err) {
             console.error(err?.message ?? err);
@@ -406,6 +406,13 @@ export default class RecordForm extends LightningElement {
             this.spinner = false;
             this.isSubmitting = false;
         }
+    }
+
+    async runPostSubmit({data, error}) {
+        const postSubmitFields = this.getConnectedFields().filter(
+            (field) => typeof field.postSubmit === "function"
+        );
+        await Promise.all(postSubmitFields.map((field) => field.postSubmit({data, error})));
     }
 
     @wire(getObjectInfo, {objectApiName: "$objectApiName"})

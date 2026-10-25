@@ -163,6 +163,16 @@ const result = {
 ## Submitting Form
 Form can be submitted by calling `submit()` method on the form component or by using `lightning-button` with `type="submit"` inside the form.
 
+After a successful save, Record Form calls `postSubmit({data})` on each connected field that implements that method. It is not called when
+submission fails, including validation failures and save errors. `data` is the saved flat record.
+
+```js
+@api
+postSubmit({data}) {
+    // data contains the saved record, including its Id.
+}
+```
+
 Submit uses uiApi to create or update the createable/updateable fields on the record.
 On successful submitting, the form emits a change event with the updated/created record or throws an error.
 
@@ -393,6 +403,20 @@ Then this component can be used in the form:
 </c-record-form>
 ```
 
+## File Upload
+
+Use `c-record-form-file-upload` to select image files before saving. After a successful form save, the component uploads them with
+`createContentDocumentAndVersion` and links them to the saved record with `createRecord`. It forwards an `uploadfinished` event with the uploaded files.
+The `label` attribute defaults to "Upload Files", `accept` defaults to `"image/*"`, `multiple` enables selecting multiple files, and `disabled` prevents
+selection and upload.
+
+```html
+<c-record-form object-api-name="Account" edit-mode>
+    <c-record-form-field field="Name"></c-record-form-field>
+    <c-record-form-file-upload field="Id" label="Upload account images" multiple></c-record-form-file-upload>
+</c-record-form>
+```
+
 ## Considerations
 - If record fields are nested in other components, make sure to render the wrapper component in `light` mode.
 
@@ -522,6 +546,7 @@ Setting only `edit-mode={false}` shows view mode with pencil icons by default, a
 `read-only` attribute on `c-record-form-field` remains supported.
 
 - Added: `optionalFields` attribute to retrieve extra fields besides the ones rendered by child field components.
+- Added: `c-record-form-file-upload` for attaching files to the saved record; file uploads work offline.
 - Added: `editMode` attribute (defaults to false) to read or set the form's current edit mode programmatically, independently of `inlineEdit`.
 - Added: `inlineEdit` attribute (defaults to true) - adds a pencil icon to editable fields while in view mode; clicking one switches the whole
   form to edit mode.

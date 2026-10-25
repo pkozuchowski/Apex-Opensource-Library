@@ -824,6 +824,28 @@ describe("c-record-form", () => {
             expect(element.editMode).toBe(false);
         });
 
+        it("calls postSubmit on connected fields with the saved record", async () => {
+            createRecord.mockResolvedValueOnce({ id: RECORD_ID, fields: { Name: { value: "New" } } });
+            const element = createRecordForm({ recordId: undefined, editMode: true });
+            loadForm();
+            await Promise.resolve();
+            element.record = { Name: "New" };
+
+            const postSubmit = jest.fn();
+            const secondPostSubmit = jest.fn();
+            connectFakeField(element.shadowRoot.querySelector("form"), "Name", { postSubmit });
+            connectFakeField(element.shadowRoot.querySelector("form"), "Name", { postSubmit: secondPostSubmit });
+
+            await element.submit();
+
+            const result = {
+                data: expect.objectContaining({ Id: RECORD_ID, Name: "New" }),
+                error: undefined
+            };
+            expect(postSubmit).toHaveBeenCalledWith(result);
+            expect(secondPostSubmit).toHaveBeenCalledWith(result);
+        });
+
         it("shows UI API save errors in a toast and preserves the rejected promise", async () => {
             const error = {
                 body: {
@@ -841,10 +863,13 @@ describe("c-record-form", () => {
             loadForm();
             await Promise.resolve();
             element.record = { Name: "New" };
+            const postSubmit = jest.fn();
+            connectFakeField(element.shadowRoot.querySelector("form"), "Name", { postSubmit });
 
             const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
             try {
                 await expect(element.submit()).rejects.toBe(error);
+                expect(postSubmit).not.toHaveBeenCalled();
                 expect(Toast.show).toHaveBeenCalledWith(
                     expect.objectContaining({
                         label: "Save failed",

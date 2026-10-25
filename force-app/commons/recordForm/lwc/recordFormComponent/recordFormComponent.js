@@ -37,16 +37,16 @@ export default class RecordFormComponent extends LightningElement {
     @api
     connectField({fieldInfo, objectInfo, disconnectFn}) {
         try {
-            this.label = this.label ?? fieldInfo.label;
-            this.fieldLevelHelp = fieldInfo.inlineHelpText; // eslint-disable-line @lwc/lwc/no-api-reassignments
-            this.controllerName = fieldInfo.controllerName;
-            this.required = this.required ?? fieldInfo.required; // eslint-disable-line @lwc/lwc/no-api-reassignments
+            this.label = this.label ?? fieldInfo?.label;
+            this.fieldLevelHelp = fieldInfo?.inlineHelpText; // eslint-disable-line @lwc/lwc/no-api-reassignments
+            this.controllerName = fieldInfo?.controllerName;
+            this.required = this.required ?? fieldInfo?.required; // eslint-disable-line @lwc/lwc/no-api-reassignments
             this.disconnectFn = disconnectFn;
             this.updateable =
-                fieldInfo.updateable ||
-                (fieldInfo.compound &&
-                    Object.values(objectInfo.fields).some(
-                        (field) => field.compoundFieldName === fieldInfo.apiName && field.updateable
+                fieldInfo?.updateable ||
+                (fieldInfo?.compound &&
+                    Object.values(objectInfo?.fields ?? {}).some(
+                        (field) => field.compoundFieldName === fieldInfo?.apiName && field.updateable
                     ));
         } catch (e) {
             console.error("connectField Cmp", fieldInfo, e.message, e.stack);

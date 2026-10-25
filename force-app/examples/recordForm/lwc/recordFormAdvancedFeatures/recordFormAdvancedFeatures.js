@@ -48,6 +48,8 @@ export default class RecordFormAdvancedFeatures extends LightningElement {
 
     onRecordChange(ev) {
         this.account = ev.detail.value;
+        this.refs.recordForm.setCustomValidityForField("LastName", "");
+        this.refs.recordForm.setCustomValidityForField("Website", "");
         console.log("this.handleChange", JSON.stringify(ev.detail.value, null, 2));
     }
 
@@ -57,7 +59,6 @@ export default class RecordFormAdvancedFeatures extends LightningElement {
             "Website",
             "Enter a valid company website URL, such as https://example.com."
         );
-        this.refs.recordForm.reportValidityForField("Website");
         this.refs.recordForm.reportValidity();
     }
 }

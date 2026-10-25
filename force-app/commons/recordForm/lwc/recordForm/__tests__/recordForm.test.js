@@ -535,6 +535,20 @@ describe("c-record-form", () => {
             expect(element.record.RecordTypeId).toBe("012000000000002AAA");
         });
 
+        it("keeps the initially resolved record type when later record values differ", async () => {
+            const element = createRecordForm({
+                recordId: undefined,
+                record: { RecordTypeId: "012000000000002AAA" }
+            });
+            loadForm();
+            await Promise.resolve();
+
+            element.record = { RecordTypeId: "012000000000003AAA" };
+
+            expect(element.record.RecordTypeId).toBe("012000000000002AAA");
+            expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000002AAA");
+        });
+
         it("the name-based GraphQL lookup takes precedence when the record resolves first", async () => {
             const element = createRecordForm({ recordTypeName: "Enterprise" });
             loadForm();

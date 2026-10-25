@@ -62,6 +62,7 @@ export default class RecordForm extends LightningElement {
     picklistValues;
     recordTypeId;
     _record = {};
+    _recordTypeIdInitialized = false;
     _optionalFields = [];
     computedOptionalFields = [];
     isSubmitting = false;
@@ -207,9 +208,10 @@ export default class RecordForm extends LightningElement {
     }
 
     setRecord(value) {
-        console.log('setRecord', JSON.stringify(value, null, 2));
         this._record = value ?? {};
-        this.resolveRecordTypeId();
+        if (!this._recordTypeIdInitialized) {
+            this.resolveRecordTypeId();
+        }
         if (this.recordTypeId && this._record.RecordTypeId !== this.recordTypeId) {
             this._record = {...this._record, RecordTypeId: this.recordTypeId};
         }
@@ -410,6 +412,7 @@ export default class RecordForm extends LightningElement {
     describeObjectInfo({error, data}) {
         if (data) {
             this.objectInfo = JSON.parse(JSON.stringify(data));
+            this.resolveRecordTypeId();
             this.setRecord(this.record);
             this.recalculateOptionalFields();
             overrideFieldLabels(this.labelOverrides, this.objectInfo);

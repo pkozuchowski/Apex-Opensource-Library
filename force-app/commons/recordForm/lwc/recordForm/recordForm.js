@@ -40,7 +40,7 @@ const RECORD_TYPE_QUERY = gql`
 `;
 
 /**
- * Lightning Web Component form wrapper that handles record wiring, field setup,
+ * Lightning Web Component form a wrapper that handles record wiring, field setup,
  * validation, and create/update submission for a given SObject and record type.
  */
 export default class RecordForm extends LightningElement {
@@ -202,6 +202,7 @@ export default class RecordForm extends LightningElement {
     }
 
     setRecord(value) {
+        console.log('setRecord', JSON.stringify(value, null, 2));
         this._record = value ?? {};
         this.resolveRecordTypeId();
         if (this.recordTypeId && this._record.RecordTypeId !== this.recordTypeId) {
@@ -217,16 +218,21 @@ export default class RecordForm extends LightningElement {
 
     handleFieldChange(ev) {
         const changedFields = ev.detail?.value;
-        if (changedFields && typeof changedFields === "object") {
-            this.record = {...this.record, ...changedFields};
+        if (!changedFields || typeof changedFields !== "object" || Array.isArray(changedFields)) {
+            return;
         }
+
+        ev.stopPropagation();
+        this.dispatchRecordChange({...this._record, ...changedFields});
     }
 
     dispatchRecordChange(value) {
         this.record = value;
         this.dispatchEvent(
             new CustomEvent("change", {
-                detail: {value}
+                detail  : {value: {...this._record}},
+                bubbles : true,
+                composed: true
             })
         );
     }
@@ -342,7 +348,7 @@ export default class RecordForm extends LightningElement {
 
     /**
      * Submit the form by creating or updating the record.
-     * Dispatches a `change` event with `detail.value` containing the flat record.
+     * Dispatches a `change` event with `detail.value` containing the full flat record.
      * @param {Event} ev Optional submit event to cancel.
      * @returns {Promise<Object>} The saved flat record.
      */
@@ -524,7 +530,12 @@ export default class RecordForm extends LightningElement {
 
         const updatedRecord = {...this._record};
         delete updatedRecord[fieldApiName];
-        this.record = updatedRecord;
+        if (this._editModeSnapshot) {
+            this._editModeSnapshot = {...this._editModeSnapshot};
+            delete this._editModeSnapshot[fieldApiName];
+        }
+        this.dispatchRecordChange(updatedRecord);
+        this.recalculateOptionalFields();
         this.dispatchEvent(new CustomEvent("fielddisconnected", {detail: {field: fieldApiName}}));
     }
 

@@ -18,9 +18,9 @@ similar to `lightning-record-edit-form`, but the form and the fields are highly 
 
 The form component operates on a plain record object (`{field: value}`), optionally passed from the parent via `record` - see
 [Controlled vs Self-Contained Usage](#controlled-vs-self-contained-usage). Field changes are merged into the form's internal record and passed
-to its fields. Field components dispatch bubbling `change` events containing only the changed fields; Record Form handles these to update its
-internal record, and a parent listener on `c-record-form` can handle them as well. Record Form also dispatches `change` events containing the full
-record when it synchronizes a record, such as after fetching a `record-id`, resolving `record-type-name`, saving, or cancelling.
+to its fields. Record Form consumes field components' `change` events and emits its own bubbling, composed `change` event with the full record
+in `event.detail.value`. This snapshot is emitted after field edits and whenever the form synchronizes the record, including after fetching a
+`record-id`, resolving `record-type-name`, saving, cancelling, or removing a disconnected field.
 
 The form fields attributes are defaulted from field definition metadata - label,
 record field value, field type, picklist options, requiredness, read-only state, etc.
@@ -59,14 +59,13 @@ export default class MyAccountForm extends LightningElement {
     optionalFields = ["Industry", "AnnualRevenue"];
 
     onRecordChange(ev) {
-        Object.assign(this.account, ev.detail.value);
+        this.account = ev.detail.value;
     }
 }
 ```
 
-The form's `onchange` handler can receive both field-originated `change` events, whose `detail.value` contains only changed fields, and
-form-originated `change` events, whose `detail.value` contains the full record. The example's `Object.assign` merges either payload into its
-tracked `account`.
+The form's `onchange` handler always receives the full record in `detail.value`, including after a field is removed. Replace the parent record
+with this snapshot rather than merging it, so keys removed from the form are removed from the parent record as well.
 
 ![recordForm1.png](/img/recordForm1.png)
 
@@ -74,8 +73,8 @@ tracked `account`.
 Both `record` and `onchange` are optional. Record Form keeps its own internal record state regardless of whether a `record` is passed in,
 so it can be used in two ways:
 - **Parent-synchronized** - pass `record` and handle `onchange` to keep an external record (e.g. on the parent component) in sync with the form,
-  as in the example above. The handler receives partial updates from field changes as well as full-record updates from the form. This is useful
-  when the parent needs to read or react to field values, e.g. to conditionally render fields or pass the record to other components.
+  as in the example above. The handler receives the full record after field changes and form synchronization. This is useful when the parent
+  needs to read or react to field values, e.g. to conditionally render fields or pass the record to other components.
 - **Self-contained** - omit `record`/`onchange` entirely and let the form manage its record internally from field changes until `submit()` is
   called. This is enough for a simple "create a record" form:
 ```html
@@ -267,17 +266,10 @@ this.dispatchEvent(new CustomEvent('fieldconnected'));
 Record Form listens to this and saves references to all connected fields and initializes them with the record, form attributes,
 field, object description and record type picklist values.
 
-When a field is disconnected and no other connected field component represents the same API name, Record Form removes it from its internal record. The `fielddisconnected` event also reaches the client component, with the field API name in `event.detail.field`.
-Listen on `c-record-form` to remove the field from the client-owned record as well:
-```js
-handleFieldDisconnected(event) {
-    const updatedRecord = { ...this.account };
-    delete updatedRecord[event.detail.field];
-    this.account = updatedRecord;
-}
-```
-Bind the handler with `onfielddisconnected={handleFieldDisconnected}` on `c-record-form`. This keeps the client-owned record in sync when
-a field is no longer rendered, so its value is not included in a subsequent update.
+When a field is disconnected and no other connected field component represents the same API name, Record Form removes it from its internal
+record and emits the updated full-record `change` event. A parent that replaces its record from `event.detail.value` stays synchronized without
+special handling. Record Form also emits `fielddisconnected`, with the field API name in `event.detail.field`, for consumers that need to react
+specifically to a field being removed.
 
 Record Form calls `connectField` method on each field component:
 ```js
@@ -323,16 +315,16 @@ getEventValue(event)
 }
 ```
 
-The field's `change` event bubbles to Record Form, which merges the changed fields into its internal record and passes the updated record down to
-its fields. Handling the event does not stop its propagation, so a parent listener on `c-record-form` can also receive the same field-change event
-and its partial `detail.value`. Separately, Record Form dispatches its own `change` event with the full record when it synchronizes a record,
-such as after fetching a `record-id`, resolving `record-type-name`, saving, or cancelling.
+The field's `change` event bubbles to Record Form, which consumes it, merges the changed fields into its internal record, and passes the updated
+record down to its fields. Record Form then dispatches a bubbling, composed `change` event from the form component with the full record in
+`detail.value`. This is the only `change` event parent listeners receive for a field edit; form synchronization and field removal also emit the
+full-record event.
 ```js
 export default class MyAccountForm extends LightningElement {
     @track account = {};
 
     onRecordChange(ev) {
-        Object.assign(this.account, ev.detail.value);
+        this.account = ev.detail.value;
     }
 }
 ```
@@ -438,9 +430,11 @@ Then this component can be used in the form:
 | `isDirty()`                                     | True if the record changed since edit mode was last entered. See [Checking for unsaved changes](#checking-for-unsaved-changes). |
 
 ### Events
-| Event             | Description                                                                                             |
-|-------------------|---------------------------------------------------------------------------------------------------------|
-| `editmodechange`  | Bubbling, composed event emitted on mode changes after connection. `detail.editMode` is the new boolean state. |
+| Event              | Description                                                                                                                                      |
+|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| `change`           | Bubbling, composed event emitted after field changes and record synchronization. `detail.value` is a full record snapshot.                       |
+| `fielddisconnected`| Event emitted when a field is removed and no other connected field represents it. `detail.field` contains the field API name.                   |
+| `editmodechange`   | Bubbling, composed event emitted on mode changes after connection. `detail.editMode` is the new boolean state.                                   |
 
 ## Record Form Component
 

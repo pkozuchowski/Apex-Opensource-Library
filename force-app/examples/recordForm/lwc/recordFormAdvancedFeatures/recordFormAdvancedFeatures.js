@@ -44,14 +44,8 @@ export default class RecordFormAdvancedFeatures extends LightningElement {
     }
 
     onRecordChange(ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        try {
-            Object.assign(this.account, ev.detail.value);
-            console.log("this.handleChange", JSON.stringify(ev.detail.value, null, 2));
-        } catch (e) {
-            console.log(e, e.message, e.detail);
-        }
+        this.account = ev.detail.value;
+        console.log("this.handleChange", JSON.stringify(ev.detail.value, null, 2));
     }
 
     showFields = true;

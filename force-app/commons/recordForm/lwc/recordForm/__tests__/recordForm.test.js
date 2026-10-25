@@ -158,9 +158,7 @@ describe("c-record-form", () => {
             form.dispatchEvent(new CustomEvent("edit", { bubbles: true, composed: true }));
             expect(element.editMode).toBe(true);
             expect(element.editMode).toBe(true);
-            expect(modeChangeHandler).toHaveBeenCalledWith(
-                expect.objectContaining({ detail: { editMode: true } })
-            );
+            expect(modeChangeHandler).toHaveBeenCalledWith(expect.objectContaining({ detail: { editMode: true } }));
         });
     });
 
@@ -194,14 +192,12 @@ describe("c-record-form", () => {
 
             expect(element.isDirty()).toBe(false);
             expect(element.editMode).toBe(false);
-            expect(modeChangeHandler).toHaveBeenCalledWith(
-                expect.objectContaining({ detail: { editMode: false } })
-            );
+            expect(modeChangeHandler).toHaveBeenCalledWith(expect.objectContaining({ detail: { editMode: false } }));
         });
     });
 
     describe("record changes", () => {
-        it("updates its record and lets the parent handle bubbling field changes", async () => {
+        it("updates its record and emits a full-record change instead of bubbling the field change", async () => {
             const element = createRecordForm({
                 record: { Id: RECORD_ID, Name: "Original" },
                 editMode: true
@@ -228,7 +224,12 @@ describe("c-record-form", () => {
             expect(field.record).toEqual({ Id: RECORD_ID, Name: "Changed" });
             expect(element.isDirty()).toBe(true);
             expect(changeHandler).toHaveBeenCalledTimes(1);
-            expect(changeHandler.mock.calls[0][0].detail).toEqual({ value: { Name: "Changed" } });
+            expect(changeHandler.mock.calls[0][0].detail).toEqual({
+                value: { Id: RECORD_ID, Name: "Changed" }
+            });
+            expect(changeHandler.mock.calls[0][0].target).toBe(element);
+            expect(changeHandler.mock.calls[0][0].bubbles).toBe(true);
+            expect(changeHandler.mock.calls[0][0].composed).toBe(true);
         });
 
         it("stores and propagates the fetched record type id", async () => {
@@ -255,9 +256,7 @@ describe("c-record-form", () => {
             };
             expect(element.record).toEqual(expectedRecord);
             expect(field.record).toEqual(expectedRecord);
-            expect(changeHandler).toHaveBeenCalledWith(
-                expect.objectContaining({ detail: { value: expectedRecord } })
-            );
+            expect(changeHandler).toHaveBeenCalledWith(expect.objectContaining({ detail: { value: expectedRecord } }));
         });
     });
 
@@ -337,15 +336,17 @@ describe("c-record-form", () => {
             expect(getRecord.getLastConfig().optionalFields).toContain("Account.Name");
             field.isConnected = false;
             const disconnectedHandler = jest.fn();
+            const changeHandler = jest.fn();
             element.addEventListener("fielddisconnected", disconnectedHandler);
+            element.addEventListener("change", changeHandler);
             disconnectFn("Name");
             await Promise.resolve();
             expect(element.record).toEqual({ Id: RECORD_ID });
             expect(element.isDirty()).toBe(false);
             expect(getRecord.getLastConfig().optionalFields).not.toContain("Account.Name");
-            expect(disconnectedHandler).toHaveBeenCalledWith(
-                expect.objectContaining({ detail: { field: "Name" } })
-            );
+            expect(disconnectedHandler).toHaveBeenCalledWith(expect.objectContaining({ detail: { field: "Name" } }));
+            expect(changeHandler).toHaveBeenCalledTimes(1);
+            expect(changeHandler.mock.calls[0][0].detail).toEqual({ value: { Id: RECORD_ID } });
 
             form.dispatchEvent(new CustomEvent("cancel", { bubbles: true, composed: true }));
             await flushPromises();
@@ -436,7 +437,7 @@ describe("c-record-form", () => {
             expect(field.record.RecordTypeId).toBe("012000000000002AAA");
             expect(changeHandler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    detail: {value: expect.objectContaining({RecordTypeId: "012000000000002AAA"})}
+                    detail: { value: expect.objectContaining({ RecordTypeId: "012000000000002AAA" }) }
                 })
             );
         });

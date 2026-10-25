@@ -5,6 +5,7 @@ import { createElement } from "lwc";
 import RecordForm from "c/recordForm";
 import { getObjectInfo, getPicklistValuesByRecordType } from "lightning/uiObjectInfoApi";
 import { getRecord, createRecord, notifyRecordUpdateAvailable } from "lightning/uiRecordApi";
+import { getCompoundFields } from "../recordFormUtils";
 import { graphql } from "lightning/graphql";
 import LightningConfirm from "lightning/confirm";
 import Toast from "lightning/toast";
@@ -35,10 +36,76 @@ const OBJECT_INFO = {
 };
 
 const PICKLIST_VALUES = { picklistFieldValues: {} };
+const ADDRESS_OBJECT_INFO = {
+    ...OBJECT_INFO,
+    fields: {
+        ...OBJECT_INFO.fields,
+        BillingAddress: {
+            apiName: "BillingAddress",
+            label: "Billing Address",
+            compound: true,
+            updateable: true,
+            createable: true
+        },
+        BillingStreet: {
+            apiName: "BillingStreet",
+            compoundFieldName: "BillingAddress",
+            compoundComponentName: "Street",
+            updateable: true,
+            createable: true
+        },
+        BillingCity: {
+            apiName: "BillingCity",
+            compoundFieldName: "BillingAddress",
+            compoundComponentName: "City",
+            updateable: true,
+            createable: true
+        },
+        BillingState: {
+            apiName: "BillingState",
+            compoundFieldName: "BillingAddress",
+            compoundComponentName: "State",
+            updateable: true,
+            createable: true
+        },
+        BillingPostalCode: {
+            apiName: "BillingPostalCode",
+            compoundFieldName: "BillingAddress",
+            compoundComponentName: "PostalCode",
+            updateable: true,
+            createable: true
+        },
+        BillingCountry: {
+            apiName: "BillingCountry",
+            compoundFieldName: "BillingAddress",
+            compoundComponentName: "Country",
+            updateable: true,
+            createable: true
+        }
+    }
+};
 
 // LWC's async render/wire cycle needs a macrotask boundary in these tests.
 // eslint-disable-next-line @lwc/lwc/no-async-operation
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+describe("getCompoundFields", () => {
+    it("returns compound component API names and supports exclusions", () => {
+        expect(getCompoundFields(ADDRESS_OBJECT_INFO, "BillingAddress")).toEqual([
+            "BillingStreet",
+            "BillingCity",
+            "BillingState",
+            "BillingPostalCode",
+            "BillingCountry"
+        ]);
+        expect(getCompoundFields(ADDRESS_OBJECT_INFO, "BillingAddress", ["BillingCity"])).toEqual([
+            "BillingStreet",
+            "BillingState",
+            "BillingPostalCode",
+            "BillingCountry"
+        ]);
+    });
+});
 
 function createRecordForm(props = {}) {
     const element = createElement("c-record-form", { is: RecordForm });
@@ -354,6 +421,65 @@ describe("c-record-form", () => {
             form.dispatchEvent(new CustomEvent("cancel", { bubbles: true, composed: true }));
             await flushPromises();
             expect(element.record).toEqual({ Id: RECORD_ID });
+        });
+
+        it("removes all compound component values when an address field disconnects", async () => {
+            const record = {
+                Id: RECORD_ID,
+                BillingAddress: "One Main St",
+                BillingStreet: "One Main St",
+                BillingCity: "San Francisco",
+                BillingState: "CA",
+                BillingPostalCode: "94105",
+                BillingCountry: "US"
+            };
+            const element = createRecordForm({ record, editMode: true });
+            getObjectInfo.emit(ADDRESS_OBJECT_INFO);
+            getPicklistValuesByRecordType.emit(PICKLIST_VALUES);
+            await Promise.resolve();
+
+            const field = connectFakeField(element.shadowRoot.querySelector("form"), "BillingAddress");
+            const disconnectFn = field.connectField.mock.calls[0][0].disconnectFn;
+            field.isConnected = false;
+            disconnectFn("BillingAddress");
+
+            expect(element.record).toEqual({ Id: RECORD_ID });
+            expect(element.isDirty()).toBe(false);
+            const optionalFields = getRecord.getLastConfig().optionalFields;
+            [
+                "Account.BillingAddress",
+                "Account.BillingStreet",
+                "Account.BillingCity",
+                "Account.BillingState",
+                "Account.BillingPostalCode",
+                "Account.BillingCountry"
+            ].forEach((optionalField) => expect(optionalFields).not.toContain(optionalField));
+        });
+
+        it("preserves a compound component value while its individual field remains connected", async () => {
+            const record = {
+                Id: RECORD_ID,
+                BillingAddress: "One Main St",
+                BillingStreet: "One Main St",
+                BillingCity: "San Francisco",
+                BillingState: "CA"
+            };
+            const element = createRecordForm({ record });
+            getObjectInfo.emit(ADDRESS_OBJECT_INFO);
+            getPicklistValuesByRecordType.emit(PICKLIST_VALUES);
+            await Promise.resolve();
+
+            const form = element.shadowRoot.querySelector("form");
+            const addressField = connectFakeField(form, "BillingAddress");
+            connectFakeField(form, "BillingCity");
+            const disconnectFn = addressField.connectField.mock.calls[0][0].disconnectFn;
+            addressField.isConnected = false;
+            disconnectFn("BillingAddress");
+
+            expect(element.record).toEqual({
+                Id: RECORD_ID,
+                BillingCity: "San Francisco"
+            });
         });
 
         it("keeps a field value when another connected component represents the same field", async () => {

@@ -85,6 +85,26 @@ export function getFlatRecord(recordRepresentation) {
 }
 
 /**
+ * Retrieves the component field API names for a compound field.
+ * @param {Object} objectInfo - Object metadata containing field definitions
+ * @param {string} fieldName - Compound field API name
+ * @param {Iterable<string>} excluded - Component field API names to omit
+ * @returns {Array<string>} Component field API names, excluding any requested fields
+ */
+export function getCompoundFields(objectInfo, fieldName, excluded = []) {
+    const excludedFields = new Set(excluded);
+    const compoundFields = [];
+
+    for (const field of Object.values(objectInfo?.fields ?? {})) {
+        if (field.compoundFieldName === fieldName && !excludedFields.has(field.apiName)) {
+            compoundFields.push(field.apiName);
+        }
+    }
+
+    return compoundFields;
+}
+
+/**
  * Retrieves the list of fields to fetch for a given field, including compound field components if applicable.
  * For compound fields (like Address or Name), this function returns both the compound field itself
  * and all its component fields.
@@ -99,10 +119,8 @@ export function getFieldsToRetrieve(objectInfo, fieldInfo, fieldName, isPersonAc
             if (fieldInfo.extraTypeInfo === "SwitchablePersonName" && !isPersonAccount) {
                 //Do nothing
             } else {
-                Object.values(objectInfo.fields).forEach((compoundField) => {
-                    if (compoundField.compoundFieldName === fieldName) {
-                        fieldsToRetrieve.push(`${objectInfo.apiName}.${compoundField.apiName}`);
-                    }
+                getCompoundFields(objectInfo, fieldName).forEach((compoundField) => {
+                    fieldsToRetrieve.push(`${objectInfo.apiName}.${compoundField}`);
                 });
             }
         }

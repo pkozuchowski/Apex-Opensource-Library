@@ -4,6 +4,7 @@ import {api, LightningElement, track, wire} from "lwc";
 import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectInfoApi";
 import {createRecord, getRecord, notifyRecordUpdateAvailable, updateRecord} from "lightning/uiRecordApi";
 import {
+    getCompoundFields,
     getErrorMessage,
     getFieldsToRetrieve,
     getFlatRecord,
@@ -528,18 +529,22 @@ export default class RecordForm extends LightningElement {
         }
 
         // If there are still connected fields for this API name, do not remove it from the record.
-        if (this.getConnectedFields().some((field) => field.field === fieldApiName)) {
+        const connectedFieldNames = new Set(this.getConnectedFields().map((field) => field.field));
+        if (connectedFieldNames.has(fieldApiName)) {
             return;
         }
 
         const updatedRecord = {...this._record};
         delete updatedRecord[fieldApiName];
-        if (this._editModeSnapshot) {
-            this._editModeSnapshot = {...this._editModeSnapshot};
-            delete this._editModeSnapshot[fieldApiName];
+
+        const isCompoundField = this.objectInfo?.fields?.[fieldApiName]?.compound;
+        if (isCompoundField) {
+            for (const field of getCompoundFields(this.objectInfo, fieldApiName, connectedFieldNames)) {
+                delete updatedRecord[field];
+            }
         }
+
         this.dispatchRecordChange(updatedRecord);
-        this.recalculateOptionalFields();
         this.dispatchEvent(new CustomEvent("fielddisconnected", {detail: {field: fieldApiName}}));
     }
 

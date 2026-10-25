@@ -3,104 +3,56 @@
     <lightning-card title="Record Form Advanced Features" icon-name="standard:account">
         <template lwc:if={editMode}>
             <lightning-button slot="actions" label="Report Validity" onclick={reportValidity}></lightning-button>
-            <lightning-button
-                slot="actions"
-                label="Report Validity Website"
-                onclick={reportValidityWebsite}
-            ></lightning-button>
             <lightning-button slot="actions" label="Custom Validation" onclick={handleValidate}></lightning-button>
-            <lightning-button slot="actions" label="Toggle Extra Fields" onclick={showExtraFields}></lightning-button>
         </template>
         <template lwc:else>
             <lightning-button slot="actions" label="Edit" onclick={edit}></lightning-button>
         </template>
-        <lightning-layout>
-            <lightning-layout-item
-                padding="horizontal-small"
-                size="12"
-                small-device-size="12"
-                medium-device-size="12"
-                large-device-size="12"
-            >
-                <div class="slds-grid slds-gutters slds-p-horizontal_small slds-p-vertical_small">
-                    <div class="slds-col">
-                        <lightning-input
-                            type="toggle"
-                            label="Compact Density"
-                            checked={isCompactDensity}
-                            message-toggle-active="Compact"
-                            message-toggle-inactive="Comfy"
-                            onchange={handleDensityChange}
-                        ></lightning-input>
-                    </div>
+        <lightning-button slot="actions" label={densityButtonLabel} onclick={toggleDensity}></lightning-button>
+
+
+        <c-record-form
+                lwc:ref="recordForm"
+                record-id={recordId}
+                object-api-name="Account"
+                is-person-account
+                record-type-name="PersonAccount"
+                record={account}
+                label-overrides={labelOverrides}
+                edit-mode={editMode}
+                density={density}
+                onchange={onRecordChange}
+                oneditmodechange={handleFormEditModeChange}
+        >
+            <div class="slds-grid slds-wrap slds-gutters">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                    <c-record-form-field field="OwnerId"></c-record-form-field>
                 </div>
-                <c-record-form
-                    lwc:ref="recordForm"
-                    record-id={recordId}
-                    object-api-name="Account"
-                    is-person-account
-                    record-type-name="PersonAccount"
-                    record={account}
-                    label-overrides={labelOverrides}
-                    edit-mode={editMode}
-                    density={density}
-                    onchange={onRecordChange}
-                    oneditmodechange={handleFormEditModeChange}
-                >
-                    <div class="slds-grid slds-wrap slds-gutters">
-                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                            <c-record-form-field field="OwnerId"></c-record-form-field>
-                        </div>
-                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                            <c-record-form-field field="WorkOrder__c"></c-record-form-field>
-                        </div>
-                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                            <c-record-form-field field="Name"></c-record-form-field>
-                        </div>
-                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                            <c-record-form-field field="BillingAddress"></c-record-form-field>
-                        </div>
-                        <div class="slds-col slds-size_1-of-1">
-                            <c-record-form-record-json></c-record-form-record-json>
-                        </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                    <c-record-form-field field="Name"></c-record-form-field>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                    <c-record-form-field required field="Type"></c-record-form-field>
+                </div>
 
-                        <c-if class="slds-col slds-size_1-of-1" value={account.LastName} equals="Test Account">
-                            <div class="slds-grid slds-wrap slds-gutters">
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <c-record-form-field required field="Type"></c-record-form-field>
-                                </div>
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <c-record-form-field field="Rating"></c-record-form-field>
-                                </div>
-                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                    <c-record-form-field field="Website"></c-record-form-field>
-                                </div>
-                            </div>
-                        </c-if>
-
-                        <template lwc:if={showFields}>
-                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                <c-record-form-field field="Text_Area__c"></c-record-form-field>
-                            </div>
-                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                <c-record-form-field field="Number__c"></c-record-form-field>
-                            </div>
-                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                <c-record-form-field field="Multi__c"></c-record-form-field>
-                            </div>
-                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                <c-record-form-field required field="Datetime__c"></c-record-form-field>
-                            </div>
-                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                <c-record-form-field field="Rich__c"></c-record-form-field>
-                            </div>
-                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                                <c-record-form-field field="Checkbox__c"></c-record-form-field>
-                            </div>
-                        </template>
+                <template lwc:if={showProspectFields}>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                        <c-record-form-field field="BillingAddress"></c-record-form-field>
                     </div>
-                </c-record-form>
-            </lightning-layout-item>
-        </lightning-layout>
+
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                        <c-record-form-field field="Rating"></c-record-form-field>
+                    </div>
+
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                        <c-record-form-field field="Website"></c-record-form-field>
+                    </div>
+                </template>
+
+                <div class="slds-col slds-size_1-of-1">
+                    <c-record-form-record-json></c-record-form-record-json>
+                </div>
+            </div>
+        </c-record-form>
     </lightning-card>
 </template>

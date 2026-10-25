@@ -21,6 +21,14 @@ export default class RecordFormAdvancedFeatures extends LightningElement {
         return this.density === "compact";
     }
 
+    get densityButtonLabel() {
+        return this.isCompactDensity ? "Use Comfy Density" : "Use Compact Density";
+    }
+
+    get showProspectFields() {
+        return !!this.account.Type;
+    }
+
     edit() {
         this.editMode = true;
     }
@@ -29,17 +37,12 @@ export default class RecordFormAdvancedFeatures extends LightningElement {
         this.editMode = event.detail.editMode;
     }
 
-    handleDensityChange(event) {
-        this.density = event.target.checked ? "compact" : "comfy";
+    toggleDensity() {
+        this.density = this.isCompactDensity ? "comfy" : "compact";
     }
 
     reportValidity() {
         let reportValidity = this.refs.recordForm.reportValidity();
-        console.log("reportValidity", JSON.stringify(reportValidity, null, 2));
-    }
-
-    reportValidityWebsite() {
-        let reportValidity = this.refs.recordForm.reportValidityForField("Website");
         console.log("reportValidity", JSON.stringify(reportValidity, null, 2));
     }
 
@@ -48,14 +51,8 @@ export default class RecordFormAdvancedFeatures extends LightningElement {
         console.log("this.handleChange", JSON.stringify(ev.detail.value, null, 2));
     }
 
-    showFields = true;
-
-    showExtraFields() {
-        this.showFields = !this.showFields;
-    }
-
     handleValidate() {
-        this.refs.recordForm.setCustomValidityForField("Name", "Please enter the customer's business name.");
+        this.refs.recordForm.setCustomValidityForField("LastName", "Please enter the customer's business name.");
         this.refs.recordForm.setCustomValidityForField(
             "Website",
             "Enter a valid company website URL, such as https://example.com."

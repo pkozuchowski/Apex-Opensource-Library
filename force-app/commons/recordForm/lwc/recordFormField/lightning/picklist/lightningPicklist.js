@@ -29,11 +29,11 @@ export class LightningPicklist extends LightningInputExt {
     renderExt() {
         if (this.isReadOnly) {
             return lightningInput;
-        } else if (this.type === "radio-group") {
-            return lightningRadioGroup;
-        } else {
-            return lightningSelect;
         }
+        if (this.type === "radio-group") {
+            return lightningRadioGroup;
+        }
+        return lightningSelect;
     }
 
     get attributes() {
@@ -104,11 +104,11 @@ export class LightningMultiPicklistExt extends LightningPicklist {
     renderExt() {
         if (this.isReadOnly) {
             return lightningInput;
-        } else if (this.type === "checkbox-group") {
-            return lightningCheckboxGroup;
-        } else {
-            return lightningDuelingListbox;
         }
+        if (this.type === "checkbox-group") {
+            return lightningCheckboxGroup;
+        }
+        return lightningDuelingListbox;
     }
 
     get attributes() {

@@ -56,7 +56,7 @@ export function getUpdatableFields(record = {}, objectInfo = {}, isCreate, isPer
 export function overrideFieldLabels(labelOverrides, objectInfo) {
     if (labelOverrides) {
         for (const field in labelOverrides) {
-            if (objectInfo.fields[field]) {
+            if (Object.prototype.hasOwnProperty.call(labelOverrides, field) && objectInfo.fields[field]) {
                 objectInfo.fields[field].label = labelOverrides[field];
             }
         }
@@ -74,7 +74,9 @@ export function getFlatRecord(recordRepresentation) {
     const flatRecord = {};
 
     for (const field in recordRepresentation.fields) {
-        flatRecord[field] = recordRepresentation.fields[field].value;
+        if (Object.prototype.hasOwnProperty.call(recordRepresentation.fields, field)) {
+            flatRecord[field] = recordRepresentation.fields[field].value;
+        }
     }
     flatRecord.Id = recordRepresentation.id;
     flatRecord.RecordTypeId = recordRepresentation.recordTypeId;
@@ -105,10 +107,9 @@ export function getFieldsToRetrieve(objectInfo, fieldInfo, fieldName, isPersonAc
             }
         }
         return fieldsToRetrieve;
-    } else {
-        console.warn(`Field ${fieldName} not found in object ${objectInfo.apiName}`);
-        return [];
     }
+    console.warn(`Field ${fieldName} not found in object ${objectInfo.apiName}`);
+    return [];
 }
 
 /**

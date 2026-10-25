@@ -12,7 +12,7 @@ function createRecordFormFooter(props = {}) {
 
 describe("c-record-form-footer", () => {
     afterEach(() => {
-        document.body.innerHTML = "";
+        document.body.textContent = "";
     });
 
     it("defaults button labels to Cancel and Save", () => {

@@ -29,16 +29,18 @@ export default class RecordFormComponent extends LightningElement {
     }
 
     disconnectedCallback() {
-        this.disconnectFn && this.disconnectFn(this.field);
+        if (this.disconnectFn) {
+            this.disconnectFn(this.field);
+        }
     }
 
     @api
     connectField({fieldInfo, objectInfo, disconnectFn}) {
         try {
             this.label = this.label ?? fieldInfo.label;
-            this.fieldLevelHelp = fieldInfo.inlineHelpText;
+            this.fieldLevelHelp = fieldInfo.inlineHelpText; // eslint-disable-line @lwc/lwc/no-api-reassignments
             this.controllerName = fieldInfo.controllerName;
-            this.required = this.required ?? fieldInfo.required;
+            this.required = this.required ?? fieldInfo.required; // eslint-disable-line @lwc/lwc/no-api-reassignments
             this.disconnectFn = disconnectFn;
             this.updateable =
                 fieldInfo.updateable ||

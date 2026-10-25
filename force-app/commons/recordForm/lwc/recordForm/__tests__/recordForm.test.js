@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
+/* eslint-disable @lwc/lwc/no-unexpected-wire-adapter-usages */
 import { createElement } from "lwc";
 import RecordForm from "c/recordForm";
 import { getObjectInfo, getPicklistValuesByRecordType } from "lightning/uiObjectInfoApi";
@@ -35,6 +36,8 @@ const OBJECT_INFO = {
 
 const PICKLIST_VALUES = { picklistFieldValues: {} };
 
+// LWC's async render/wire cycle needs a macrotask boundary in these tests.
+// eslint-disable-next-line @lwc/lwc/no-async-operation
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 function createRecordForm(props = {}) {
@@ -70,7 +73,7 @@ function connectFakeField(form, fieldApiName, overrides = {}) {
 
 describe("c-record-form", () => {
     afterEach(() => {
-        document.body.innerHTML = "";
+        document.body.textContent = "";
         jest.clearAllMocks();
     });
 
@@ -100,7 +103,7 @@ describe("c-record-form", () => {
         });
 
         it("qualifies short optionalFields names with objectApiName for the record wire", async () => {
-            const element = createRecordForm({ optionalFields: ["Industry", "Account.AnnualRevenue"] });
+            createRecordForm({ optionalFields: ["Industry", "Account.AnnualRevenue"] });
             loadForm();
             await Promise.resolve();
 

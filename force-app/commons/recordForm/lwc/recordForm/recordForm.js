@@ -153,6 +153,10 @@ export default class RecordForm extends LightningElement {
     }
 
     set editMode(value) {
+        this.setEditMode(value);
+    }
+
+    setEditMode(value) {
         const nextValue = Boolean(value);
         const previousValue = this.formAttributes.editMode;
         if (nextValue && !previousValue) {
@@ -227,7 +231,7 @@ export default class RecordForm extends LightningElement {
     }
 
     dispatchRecordChange(value) {
-        this.record = value;
+        this.setRecord(value);
         this.dispatchEvent(
             new CustomEvent("change", {
                 detail  : {value: {...this._record}},
@@ -239,9 +243,9 @@ export default class RecordForm extends LightningElement {
 
     recalculateOptionalFields() {
         const recordTypeField = this.objectApiName ? [`${this.objectApiName}.RecordTypeId`] : [];
-        const extraFields = this._optionalFields.map((field) =>
-            field.includes(".") ? field : `${this.objectApiName}.${field}`
-        );
+        const extraFields = this._optionalFields.map((field) => {
+            return field.includes(".") ? field : `${this.objectApiName}.${field}`;
+        });
         const derivedFields =
             this.objectInfo?.apiName === this.objectApiName
                 ? this.getConnectedFields().flatMap(({field}) => {
@@ -380,7 +384,7 @@ export default class RecordForm extends LightningElement {
 
             this.dispatchRecordChange(flatRecord);
             await notifyRecordUpdateAvailable([{recordId: result.id}]);
-            this.editMode = false;
+            this.setEditMode(false);
             this._editModeSnapshot = undefined;
 
             return flatRecord;
@@ -557,7 +561,7 @@ export default class RecordForm extends LightningElement {
     onFieldEdit(ev) {
         ev.preventDefault();
         ev.stopPropagation();
-        this.editMode = true;
+        this.setEditMode(true);
     }
 
     async handleFooterCancel(ev) {
@@ -586,7 +590,7 @@ export default class RecordForm extends LightningElement {
         if (this._editModeSnapshot) {
             this.dispatchRecordChange({...this._editModeSnapshot});
         }
-        this.editMode = false;
+        this.setEditMode(false);
         this._editModeSnapshot = undefined;
     }
 }

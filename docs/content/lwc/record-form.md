@@ -494,6 +494,33 @@ handled by Record Form itself; not meant to be used outside of a `c-record-form`
 # Change Log
 
 ### 1.3.0
+
+#### Migration from 1.2.2 to 1.3.0
+
+`c-record-form` now emits the complete record snapshot in `change.detail.value`, rather than only changed fields. Replace parent records
+with the payload instead of merging it, so removed fields do not remain stale:
+
+```js
+// 1.2.2: detail.value contains only changed fields.
+this.account = { ...this.account, ...event.detail.value };
+
+// 1.3.0: detail.value contains the full record snapshot.
+this.account = event.detail.value;
+```
+
+The full-record event is also emitted when the form synchronizes its record, including after a field disconnects; do not assume every
+`change` event represents only a user edit. Consumers needing partial changes should calculate the diff locally.
+
+The form-level `read-only` attribute was removed and replaced by the `edit-mode` state. To preserve the old permanently read-only form
+behavior, replace `<c-record-form read-only>` with:
+
+```html
+<c-record-form edit-mode={false} inline-edit={false}>
+```
+
+Setting only `edit-mode={false}` shows view mode with pencil icons by default, allowing users to enter edit mode. The field-level
+`read-only` attribute on `c-record-form-field` remains supported.
+
 - Added: `optionalFields` attribute to retrieve extra fields besides the ones rendered by child field components.
 - Added: `editMode` attribute (defaults to false) to read or set the form's current edit mode programmatically, independently of `inlineEdit`.
 - Added: `inlineEdit` attribute (defaults to true) - adds a pencil icon to editable fields while in view mode; clicking one switches the whole

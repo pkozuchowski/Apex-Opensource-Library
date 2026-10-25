@@ -17,7 +17,7 @@ const FIRST_OPPORTUNITY_QUERY = gql`
     }
 `;
 
-export default class RecordFormRecordId extends LightningElement {
+export default class RecordFormUpdateOpportunity extends LightningElement {
     recordId;
     errorMessage;
 

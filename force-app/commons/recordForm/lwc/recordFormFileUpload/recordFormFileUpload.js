@@ -51,9 +51,7 @@ export default class RecordFormFileUpload extends RecordFormComponent {
             if (this.showExistingAttachments && this.record?.Id) {
                 this.showAttachmentLoadError(errors);
             }
-            return;
-        }
-        if (data) {
+        } else if (data) {
             if (!this.showExistingAttachments || !this.record?.Id) {
                 return;
             }

@@ -110,7 +110,14 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
     }
 
     get sizeLabel() {
-        return this.formatFileSize(this.fileDetails.size ?? 0);
+        const size = this.fileDetails.size ?? 0;
+        if (size < 1024) {
+            return `${size} B`;
+        }
+        if (size < 1024 * 1024) {
+            return `${Math.round(size / 1024)} KB`;
+        }
+        return `${(size / (1024 * 1024)).toFixed(1)} MB`;
     }
 
     get progressLabel() {
@@ -120,23 +127,6 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
     get fileUrl() {
         const documentId = this.file?.documentId ?? this.file?.contentDocumentId;
         return documentId ? `/lightning/r/ContentDocument/${documentId}/view` : undefined;
-    }
-
-    handleOpenFile(event) {
-        event.preventDefault();
-        const documentId = this.file?.documentId ?? this.file?.contentDocumentId;
-        if (documentId) {
-            this[NavigationMixin.Navigate]({
-                type: "standard__namedPage",
-                attributes: {
-                    pageName: "filePreview"
-                },
-                state: {
-                    recordIds: documentId,
-                    selectedRecordId: documentId
-                }
-            });
-        }
     }
 
     get iconName() {
@@ -157,17 +147,24 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
         return !this.disabled && !this.isComplete;
     }
 
-    handleRemove() {
-        this.dispatchEvent(new CustomEvent("remove", { detail: { fileId: this.file.id } }));
+    handleOpenFile(event) {
+        event.preventDefault();
+        const documentId = this.file?.documentId ?? this.file?.contentDocumentId;
+        if (documentId) {
+            this[NavigationMixin.Navigate]({
+                type: "standard__namedPage",
+                attributes: {
+                    pageName: "filePreview"
+                },
+                state: {
+                    recordIds: documentId,
+                    selectedRecordId: documentId
+                }
+            });
+        }
     }
 
-    formatFileSize(size) {
-        if (size < 1024) {
-            return `${size} B`;
-        }
-        if (size < 1024 * 1024) {
-            return `${Math.round(size / 1024)} KB`;
-        }
-        return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+    handleRemove() {
+        this.dispatchEvent(new CustomEvent("remove", { detail: { fileId: this.file.id } }));
     }
 }

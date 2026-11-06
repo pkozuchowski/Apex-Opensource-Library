@@ -27,6 +27,7 @@
 private class CalloutTest {
     private static HttpRequest request;
     private static Integer requests = 0;
+    private static Integer trackingHandlerExecutions = 0;
 
     /**
      * Callout configured with common actions for Acme APIs
@@ -110,6 +111,13 @@ private class CalloutTest {
             requests++;
             request = req;
             return response;
+        }
+    }
+
+    private class TrackingHandler implements Callout.Handler {
+        public Object handle(Callout c) {
+            trackingHandlerExecutions++;
+            return 'tracking handler response';
         }
     }
 
@@ -446,6 +454,43 @@ private class CalloutTest {
 
         Long elapsedTime = System.currentTimeMillis() - startTime;
         Assert.isTrue(elapsedTime >= sleepMs);
+    }
+
+    @IsTest
+    static void shouldContinueToNextHandlerWhenLegacyNullIsReturned() {
+        CalloutConditions match = new CalloutConditions();
+        CalloutHandlers action = new CalloutHandlers();
+        CalloutHandlersList handlers = new CalloutHandlersList();
+
+        handlers
+            .add(match.always(), action.returns(null))
+            .add(match.always(), action.returns('fallback response'));
+
+        Object response = handlers.execute(new Callout());
+
+        Assert.areEqual(
+            'fallback response',
+            response,
+            'Legacy null responses should preserve the previous fall-through behaviour'
+        );
+    }
+
+    @IsTest
+    static void shouldStopHandlerExecutionWhenExplicitNullIsReturned() {
+        trackingHandlerExecutions = 0;
+
+        CalloutConditions match = new CalloutConditions();
+        CalloutHandlers action = new CalloutHandlers();
+        CalloutHandlersList handlers = new CalloutHandlersList();
+
+        handlers
+            .add(match.always(), action.returnsNULL())
+            .add(match.always(), new TrackingHandler());
+
+        Object response = handlers.execute(new Callout());
+
+        Assert.isNull(response, 'Explicit null responses should return null');
+        Assert.areEqual(0, trackingHandlerExecutions, 'Handlers after explicit null should not execute');
     }
 
     private class CalloutExceptionMock implements HttpCalloutMock {

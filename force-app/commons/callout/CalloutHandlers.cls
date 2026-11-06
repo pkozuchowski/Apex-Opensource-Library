@@ -69,6 +69,13 @@ public virtual with sharing class CalloutHandlers {
     }
 
     /**
+     * Callout execute will return NULL
+     */
+    public Callout.Handler returnsNULL() {
+        return new ReturnNullHandler();
+    }
+
+    /**
      * Callout will deserialize response to given type and return as result from execute method.
      */
     public Callout.Handler returnJSON(Type apexType) {
@@ -156,6 +163,18 @@ public virtual with sharing class CalloutHandlers {
 
         public Object handle(Callout c) {
             return value;
+        }
+    }
+
+    public class Nil {}
+
+    /**
+     * Returns set value on given callouts condition
+     */
+    private class ReturnNullHandler implements Callout.Handler {
+
+        public Object handle(Callout c) {
+            return new Nil();
         }
     }
 

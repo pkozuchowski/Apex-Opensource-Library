@@ -1,24 +1,29 @@
 <template>
     <div class="slds-is-relative">
-        <lightning-spinner lwc:if={spinner} alternative-text="Loading" size="medium"></lightning-spinner>
+        <template lwc:if={objectApiName}>
+            <lightning-spinner lwc:if={spinner} alternative-text="Loading" size="medium"></lightning-spinner>
 
-        <form
-            lwc:if={isLoaded}
-            class={formClasses}
-            role="list"
-            onchange={handleFieldChange}
-            onfieldconnected={onFieldConnected}
-            onedit={onFieldEdit}
-            oncancel={handleFooterCancel}
-            onsave={handleFooterSave}
-            onsubmit={submit}
-            onkeydown={handleKeyDown}
-        >
-            <slot></slot>
+            <form
+                lwc:if={isLoaded}
+                class={formClasses}
+                role="list"
+                onchange={handleFieldChange}
+                onfieldconnected={onFieldConnected}
+                onedit={onFieldEdit}
+                oncancel={handleFooterCancel}
+                onsave={handleFooterSave}
+                onsubmit={submit}
+                onkeydown={handleKeyDown}
+            >
+                <slot></slot>
 
-            <slot name="footer">
-                <c-record-form-footer lwc:if={showFormFooter} docked></c-record-form-footer>
-            </slot>
-        </form>
+                <slot name="footer">
+                    <c-record-form-footer lwc:if={showFormFooter} docked></c-record-form-footer>
+                </slot>
+            </form>
+        </template>
+        <template lwc:else>
+            <div class="slds-text-color_error" role="alert">The object-api-name attribute is required.</div>
+        </template>
     </div>
 </template>

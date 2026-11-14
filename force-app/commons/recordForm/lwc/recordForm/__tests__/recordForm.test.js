@@ -175,6 +175,15 @@ describe("c-record-form", () => {
             expect(element.optionalFields).toEqual(["Rating"]);
         });
 
+        it("shows an error instead of loading when objectApiName is missing", async () => {
+            const element = createRecordForm({ objectApiName: undefined });
+            await flushPromises();
+
+            expect(element.shadowRoot.querySelector('[role="alert"]').textContent).toContain("object-api-name");
+            expect(element.shadowRoot.querySelector("lightning-spinner")).toBeNull();
+            expect(element.shadowRoot.querySelector("form")).toBeNull();
+        });
+
         it("qualifies short optionalFields names with objectApiName for the record wire", async () => {
             createRecordForm({ optionalFields: ["Industry", "Account.AnnualRevenue"] });
             loadForm();

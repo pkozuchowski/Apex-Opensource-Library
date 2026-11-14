@@ -366,6 +366,39 @@ describe("c-record-form", () => {
             expect(field.record).toEqual(expectedRecord);
             expect(changeHandler).toHaveBeenCalledWith(expect.objectContaining({ detail: { value: expectedRecord } }));
         });
+
+        it("preserves unsaved field changes when record data is fetched again in edit mode", async () => {
+            const element = createRecordForm();
+            loadForm();
+            await Promise.resolve();
+
+            getRecord.emit({
+                id: RECORD_ID,
+                recordTypeId: "012xx0000000001AAA",
+                fields: { Name: { value: "Original" } }
+            });
+            await Promise.resolve();
+
+            element.editMode = true;
+            const form = element.shadowRoot.querySelector("form");
+            form.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: { value: { Name: "Unsaved edit" } },
+                    bubbles: true,
+                    composed: true
+                })
+            );
+
+            getRecord.emit({
+                id: RECORD_ID,
+                recordTypeId: "012xx0000000001AAA",
+                fields: { Name: { value: "Refetched value" } }
+            });
+            await Promise.resolve();
+
+            expect(element.editMode).toBe(true);
+            expect(element.record.Name).toBe("Unsaved edit");
+        });
     });
 
     describe("single-field validity methods", () => {

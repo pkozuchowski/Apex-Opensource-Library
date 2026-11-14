@@ -254,7 +254,7 @@ export default class RecordForm extends LightningElement {
             return field.includes(".") ? field : `${this.objectApiName}.${field}`;
         });
         const derivedFields =
-            this.objectInfo?.apiName === this.objectApiName
+            this.objectInfo
                 ? this.getConnectedFields().flatMap(({field}) => {
                     const fieldInfo = this.objectInfo.fields[field];
                     return fieldInfo
@@ -262,7 +262,14 @@ export default class RecordForm extends LightningElement {
                         : [];
                 })
                 : [];
-        this.computedOptionalFields = [...new Set([...recordTypeField, ...extraFields, ...derivedFields])];
+
+        const next = [...new Set([...recordTypeField, ...extraFields, ...derivedFields])];
+        const current = this.computedOptionalFields;
+
+        // Avoid reassigning (and so refetching the wire) when the field set is unchanged.
+        if (next.length !== current.length || next.some((field, i) => field !== current[i])) {
+            this.computedOptionalFields = next;
+        }
     }
 
     get formClasses() {
@@ -496,17 +503,28 @@ export default class RecordForm extends LightningElement {
     @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields"})
     fetchRecord({error, data}) {
         if (data) {
-            const flatRecord = Object.assign(getFlatRecord(data), this.record);
+            const serverRecord = Object.assign(getFlatRecord(data), this.record);
+            const snapshot = this._editModeSnapshot;
+
+            // Keep unsaved edits: a refetch (e.g. triggered by newly connected fields)
+            // must not overwrite values the user changed since entering edit mode.
+            if (snapshot) {
+                for (const key of Object.keys(this._record)) {
+                    if (this._record[key] !== snapshot[key]) {
+                        serverRecord[key] = this._record[key];
+                    }
+                }
+            }
 
             this._recordTypeIdFromRecord = data.recordTypeId;
             this.resolveRecordTypeId();
             if (this.recordTypeId) {
-                flatRecord.RecordTypeId = this.recordTypeId;
+                serverRecord.RecordTypeId = this.recordTypeId;
             } else if (this.recordTypeName) {
-                delete flatRecord.RecordTypeId;
+                delete serverRecord.RecordTypeId;
             }
 
-            this.dispatchRecordChange(flatRecord);
+            this.dispatchRecordChange(serverRecord);
         } else if (error) {
             console.error("Error fetching record", error?.message, error);
         }

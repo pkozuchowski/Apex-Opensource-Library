@@ -67,6 +67,11 @@ export default class RecordFormField extends RecordFormComponent {
     @api type;
     @api variant;
 
+    /**
+     * Initialize this field and its extension using metadata supplied by Record Form.
+     * @param {Object} data Field metadata, object metadata, and form context.
+     * @returns {void}
+     */
     @api connectField(data) {
         try {
             super.connectField(data);

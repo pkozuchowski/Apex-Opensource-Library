@@ -104,11 +104,20 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
     progress = 0;
     errorMessage;
 
+    /**
+     * File metadata and upload state displayed by this row.
+     * @returns {Object} The current file state.
+     */
     @api
     get file() {
         return this._file;
     }
 
+    /**
+     * Set the file state and reset progress to match its status.
+     * @param {Object} value File metadata and upload state.
+     * @returns {void}
+     */
     set file(value) {
         this._file = {...value};
         this.progress = value?.status === "complete" ? 100 : value?.status === "uploading" ? 20 : 0;
@@ -156,6 +165,11 @@ export default class RecordFormFileRow extends NavigationMixin(LightningElement)
         return this.file.status === "error";
     }
 
+    /**
+     * Upload a new or failed file and link it to the given record.
+     * @param {string} recordId Salesforce record ID to link the file to.
+     * @returns {Promise<void>} Resolves after upload completes, or immediately if the file is not uploadable.
+     */
     @api
     async upload(recordId) {
         if (this.file.status === "new" || this.file.status === "error") {

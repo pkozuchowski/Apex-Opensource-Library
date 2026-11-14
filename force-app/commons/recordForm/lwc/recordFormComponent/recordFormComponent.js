@@ -34,6 +34,11 @@ export default class RecordFormComponent extends LightningElement {
         }
     }
 
+    /**
+     * Initialize field metadata and retain the callback used when this field disconnects.
+     * @param {Object} context Field and object metadata supplied by Record Form.
+     * @returns {void}
+     */
     @api
     connectField({fieldInfo, objectInfo, disconnectFn}) {
         try {
@@ -53,28 +58,61 @@ export default class RecordFormComponent extends LightningElement {
         }
     }
 
+    /**
+     * Called when Record Form enters edit mode, including when a field connects in edit mode.
+     * Override to perform edit-mode setup.
+     * @returns {void}
+     */
     @api
     onEnterEditMode() {}
 
+    /**
+     * Called when Record Form returns to view mode.
+     * Override to perform view-mode cleanup.
+     * @returns {void}
+     */
     @api
     onEnterViewMode() {}
 
+    /**
+     * Called and awaited after validation succeeds but before Record Form saves.
+     * Reject to prevent the save.
+     * @returns {Promise<void>|void}
+     */
     @api
     onBeforeSubmit() {}
 
+    /**
+     * Called and awaited after a successful save, before Record Form returns to view mode.
+     * Override to perform post-save work; overrides receive `{data}` with the saved flat record.
+     * @returns {Promise<void>|void}
+     */
     @api
     onAfterSubmit() {}
 
+    /**
+     * Report the validity of the component's input.
+     * @returns {boolean} Whether the input is valid; true if no input is available.
+     */
     @api
     reportValidity() {
         return this.refs?.input?.reportValidity?.() ?? true;
     }
 
+    /**
+     * Set a custom validation message on the component's input.
+     * @param {string} message Message to display when the input is invalid.
+     * @returns {void}
+     */
     @api
     setCustomValidity(message) {
         return this.refs?.input?.setCustomValidity?.(message);
     }
 
+    /**
+     * Check the validity of the component's input.
+     * @returns {boolean} Whether the input is valid; true if no input is available.
+     */
     @api
     checkValidity() {
         return this.refs?.input?.checkValidity?.() ?? true;

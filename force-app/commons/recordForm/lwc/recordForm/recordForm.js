@@ -374,7 +374,7 @@ export default class RecordForm extends LightningElement {
      * Submit the form by creating or updating the record.
      * Dispatches a `change` event with `detail.value` containing the full flat record.
      * @param {Event} ev Optional submit event to cancel.
-     * @returns {Promise<Object>} The saved flat record.
+     * @returns {Promise<Object|undefined>} The saved flat record, or undefined if validation fails or a save is in progress.
      */
     @api async submit(ev) {
         ev?.preventDefault();

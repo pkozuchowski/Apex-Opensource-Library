@@ -76,6 +76,11 @@ export default class RecordFormFileUpload extends RecordFormComponent {
         };
     }
 
+    /**
+     * Upload selected files after the form successfully saves the record.
+     * @param {{data?: Object}} result Submission result containing the saved record.
+     * @returns {Promise<void>} Resolves after upload attempts complete.
+     */
     @api
     async onAfterSubmit({data}) {
         if (data?.Id && !this.disabled && this.filesNeedUpload) {
@@ -83,8 +88,16 @@ export default class RecordFormFileUpload extends RecordFormComponent {
         }
     }
 
+    /**
+     * This component has no field value to initialize.
+     * @returns {void}
+     */
     @api connectField() {}
 
+    /**
+     * Remove any files that remain pending when the form returns to view mode.
+     * @returns {void}
+     */
     @api
     onEnterViewMode() {
         this.uploadBatchTotal -= this.pendingFiles.length;

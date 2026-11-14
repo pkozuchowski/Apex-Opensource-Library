@@ -54,6 +54,12 @@ export default class RecordFormComponent extends LightningElement {
     }
 
     @api
+    onEnterEditMode() {}
+
+    @api
+    onEnterViewMode() {}
+
+    @api
     reportValidity() {
         return this.refs?.input?.reportValidity?.() ?? true;
     }

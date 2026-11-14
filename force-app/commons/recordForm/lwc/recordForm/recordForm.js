@@ -164,14 +164,18 @@ export default class RecordForm extends LightningElement {
             this._editModeSnapshot = {...this._record};
         }
         this.formAttributes.editMode = nextValue;
-        if (previousValue !== nextValue && this.isConnected) {
-            this.dispatchEvent(
-                new CustomEvent("editmodechange", {
-                    detail  : {editMode: nextValue},
-                    bubbles : true,
-                    composed: true
-                })
-            );
+        if (previousValue !== nextValue) {
+            const callback = nextValue ? "onEnterEditMode" : "onEnterViewMode";
+            this.getConnectedFields().forEach((field) => field[callback]?.());
+            if (this.isConnected) {
+                this.dispatchEvent(
+                    new CustomEvent("editmodechange", {
+                        detail  : {editMode: nextValue},
+                        bubbles : true,
+                        composed: true
+                    })
+                );
+            }
         }
     }
 
@@ -532,6 +536,9 @@ export default class RecordForm extends LightningElement {
                     formAttributes          : this.formAttributes,
                     disconnectFn            : this.onFieldDisconnected.bind(this)
                 });
+                if (this.formAttributes.editMode) {
+                    ev.target.onEnterEditMode?.();
+                }
             }
         } catch (e) {
             console.error("recordForm.onFieldConnected", ev.target.field, e.message, e.stack);

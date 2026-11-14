@@ -294,6 +294,12 @@ connectField({fieldInfo, objectInfo, recordTypePicklistValues, formAttributes})
 ```
 Field components and extensions can override `connectField` method to customize initialization.
 
+### Reacting to Edit-Mode Changes
+Connected fields can override these public methods to react when the form changes mode:
+
+- `onEnterEditMode()` is called when the form enters edit mode and when a field connects while the form is already in edit mode.
+- `onEnterViewMode()` is called when the form returns to view mode, including after Cancel or Save.
+
 ### Handling Field Value Changes
 When a field value changes, the field component dispatches a `change` event with the changed fields.
 RecordFormComponent has a `handleFieldChange` utlity method that can be used in the HTML.
@@ -483,6 +489,8 @@ Set `show-existing-attachments` to display existing attachments linked to the re
 | `reportValidity()`           | Same as standard `lightning-input` method. |
 | `setCustomValidity(message)` | Same as standard `lightning-input` method. |
 | `checkValidity()`            | Same as standard `lightning-input` method. |
+| `onEnterEditMode()`          | Override to react when Record Form enters edit mode. |
+| `onEnterViewMode()`          | Override to react when Record Form returns to view mode. |
 
 ## Record Form Field (extends RecordFormComponent)
 

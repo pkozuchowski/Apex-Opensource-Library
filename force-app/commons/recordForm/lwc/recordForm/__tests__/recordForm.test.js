@@ -236,6 +236,38 @@ describe("c-record-form", () => {
             expect(element.editMode).toBe(true);
             expect(modeChangeHandler).toHaveBeenCalledWith(expect.objectContaining({ detail: { editMode: true } }));
         });
+
+        it("calls onEnterEditMode and onEnterViewMode on connected fields when the mode changes", async () => {
+            const element = createRecordForm();
+            loadForm();
+            await Promise.resolve();
+
+            const form = element.shadowRoot.querySelector("form");
+            const onEnterEditMode = jest.fn();
+            const onEnterViewMode = jest.fn();
+            connectFakeField(form, "Name", { onEnterEditMode, onEnterViewMode });
+
+            element.editMode = true;
+            element.editMode = true;
+            expect(onEnterEditMode).toHaveBeenCalledTimes(1);
+            expect(onEnterViewMode).not.toHaveBeenCalled();
+
+            element.editMode = false;
+            element.editMode = false;
+            expect(onEnterEditMode).toHaveBeenCalledTimes(1);
+            expect(onEnterViewMode).toHaveBeenCalledTimes(1);
+        });
+
+        it("calls onEnterEditMode when a field connects while the form starts in edit mode", async () => {
+            const element = createRecordForm({ editMode: true });
+            loadForm();
+            await Promise.resolve();
+
+            const onEnterEditMode = jest.fn();
+            connectFakeField(element.shadowRoot.querySelector("form"), "Name", { onEnterEditMode });
+
+            expect(onEnterEditMode).toHaveBeenCalledTimes(1);
+        });
     });
 
     describe("isDirty()", () => {
@@ -862,7 +894,8 @@ describe("c-record-form", () => {
 
             const postSubmit = jest.fn();
             const secondPostSubmit = jest.fn();
-            connectFakeField(element.shadowRoot.querySelector("form"), "Name", { postSubmit });
+            const onEnterViewMode = jest.fn();
+            connectFakeField(element.shadowRoot.querySelector("form"), "Name", { postSubmit, onEnterViewMode });
             connectFakeField(element.shadowRoot.querySelector("form"), "Name", { postSubmit: secondPostSubmit });
 
             await element.submit();
@@ -873,6 +906,7 @@ describe("c-record-form", () => {
             };
             expect(postSubmit).toHaveBeenCalledWith(result);
             expect(secondPostSubmit).toHaveBeenCalledWith(result);
+            expect(onEnterViewMode).toHaveBeenCalledTimes(1);
         });
 
         it("shows UI API save errors in a toast and preserves the rejected promise", async () => {

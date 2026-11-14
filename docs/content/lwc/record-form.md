@@ -117,6 +117,7 @@ type="submit"` inside the form - creates the record from the fields the user fil
 - Email
 - Phone
 - URL
+- File Upload
 
 ## Record Type Support
 Record Form supports the `"record-type-name"` attribute, which accepts the Record Type's Developer Name. When specified, the form resolves the
@@ -163,15 +164,8 @@ const result = {
 ## Submitting Form
 Form can be submitted by calling `submit()` method on the form component or by using `lightning-button` with `type="submit"` inside the form.
 
-After a successful save, Record Form calls `postSubmit({data})` on each connected field that implements that method. It is not called when
-submission fails, including validation failures and save errors. `data` is the saved flat record.
-
-```js
-@api
-postSubmit({data}) {
-    // data contains the saved record, including its Id.
-}
-```
+Connected fields can participate in the submission lifecycle through `onBeforeSubmit()` and `onAfterSubmit()`. See
+[Record Form Component Hooks](#record-form-component-hooks) for when these hooks are called and their arguments.
 
 Submit uses uiApi to create or update the createable/updateable fields on the record.
 On successful submitting, the form emits a change event with the updated/created record or throws an error.
@@ -284,7 +278,7 @@ specifically to a field being removed.
 Record Form calls `connectField` method on each field component:
 ```js
 @api
-connectField({fieldInfo, objectInfo, recordTypePicklistValues, formAttributes})
+connectField({fieldInfo, objectInfo, recordTypePicklistValues, formAttributes, disconnectFn})
 {
     this.label = this.label ?? fieldInfo.label;
     this.fieldLevelHelp = fieldInfo.inlineHelpText;
@@ -292,13 +286,29 @@ connectField({fieldInfo, objectInfo, recordTypePicklistValues, formAttributes})
     //...
 }
 ```
-Field components and extensions can override `connectField` method to customize initialization.
 
-### Reacting to Edit-Mode Changes
-Connected fields can override these public methods to react when the form changes mode:
+### Record Form Component Hooks
+Connected field components can override these public methods to respond to form mode changes and submission:
 
+- `connectField({fieldInfo, objectInfo, recordTypePicklistValues, formAttributes, disconnectFn})` is called when a field connects to initialize
+  its metadata and form context. Override it to customize initialization; call `super.connectField(...)` to preserve the base initialization.
 - `onEnterEditMode()` is called when the form enters edit mode and when a field connects while the form is already in edit mode.
 - `onEnterViewMode()` is called when the form returns to view mode, including after Cancel or Save.
+- `onBeforeSubmit()` is awaited after validation succeeds and before the record is saved. If it rejects, the save is not attempted.
+- `onAfterSubmit({data})` is awaited after a successful save and before the form returns to view mode. `data` is the saved flat record, including
+  its Id. This hook is not called when validation or saving fails.
+
+```js
+@api
+onBeforeSubmit() {
+    // Prepare the field before the record is saved.
+}
+
+@api
+onAfterSubmit({data}) {
+    // data contains the saved record, including its Id.
+}
+```
 
 ### Handling Field Value Changes
 When a field value changes, the field component dispatches a `change` event with the changed fields.
@@ -491,6 +501,8 @@ Set `show-existing-attachments` to display existing attachments linked to the re
 | `checkValidity()`            | Same as standard `lightning-input` method. |
 | `onEnterEditMode()`          | Override to react when Record Form enters edit mode. |
 | `onEnterViewMode()`          | Override to react when Record Form returns to view mode. |
+| `onBeforeSubmit()`           | Override to prepare this component before Record Form saves. |
+| `onAfterSubmit({data})`       | Override to react after a successful save. |
 
 ## Record Form Field (extends RecordFormComponent)
 

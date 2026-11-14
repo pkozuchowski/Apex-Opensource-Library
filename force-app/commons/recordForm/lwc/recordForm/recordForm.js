@@ -387,6 +387,7 @@ export default class RecordForm extends LightningElement {
 
             this.isSubmitting = true;
             this.spinner = true;
+            await this.runBeforeSubmit();
             const isCreate = !this.record?.Id;
             const fieldsToUpdate = getUpdatableFields(
                 this.record,
@@ -407,9 +408,12 @@ export default class RecordForm extends LightningElement {
 
             this.dispatchRecordChange(flatRecord);
             await notifyRecordUpdateAvailable([{recordId: result.id}]);
-            this.setEditMode(false);
-            this._editModeSnapshot = undefined;
-            await this.runPostSubmit({data: flatRecord, error: undefined});
+            try {
+                await this.runAfterSubmit({data: flatRecord});
+            } finally {
+                this.setEditMode(false);
+                this._editModeSnapshot = undefined;
+            }
             return flatRecord;
         } catch (err) {
             console.error(err?.message ?? err);
@@ -428,9 +432,14 @@ export default class RecordForm extends LightningElement {
         }
     }
 
-    async runPostSubmit({data, error}) {
-        const postSubmitFields = this.getConnectedFields().filter((field) => typeof field.postSubmit === "function");
-        await Promise.all(postSubmitFields.map((field) => field.postSubmit({data, error})));
+    async runBeforeSubmit() {
+        const fields = this.getConnectedFields().filter((field) => typeof field.onBeforeSubmit === "function");
+        await Promise.all(fields.map((field) => field.onBeforeSubmit()));
+    }
+
+    async runAfterSubmit({data}) {
+        const fields = this.getConnectedFields().filter((field) => typeof field.onAfterSubmit === "function");
+        await Promise.all(fields.map((field) => field.onAfterSubmit({data})));
     }
 
     @wire(getObjectInfo, {objectApiName: "$objectApiName"})

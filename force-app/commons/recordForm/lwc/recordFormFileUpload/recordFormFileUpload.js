@@ -77,13 +77,19 @@ export default class RecordFormFileUpload extends RecordFormComponent {
     }
 
     @api
-    async postSubmit({data}) {
+    async onAfterSubmit({data}) {
         if (data?.Id && !this.disabled && this.filesNeedUpload) {
             await this.startUpload(data.Id);
         }
     }
 
     @api connectField() {}
+
+    @api
+    onEnterViewMode() {
+        this.uploadBatchTotal -= this.pendingFiles.length;
+        this.pendingFiles = [];
+    }
 
     get isDisabled() {
         return this.disabled || this.isUploading || (!this.formAttributes?.editMode && !this.record?.Id);

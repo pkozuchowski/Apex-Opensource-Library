@@ -918,27 +918,45 @@ describe("c-record-form", () => {
             expect(element.editMode).toBe(false);
         });
 
-        it("calls postSubmit on connected fields with the saved record", async () => {
+        it("calls submit hooks before and after saving", async () => {
             createRecord.mockResolvedValueOnce({ id: RECORD_ID, fields: { Name: { value: "New" } } });
             const element = createRecordForm({ recordId: undefined, editMode: true });
             loadForm();
             await Promise.resolve();
             element.record = { Name: "New" };
 
-            const postSubmit = jest.fn();
-            const secondPostSubmit = jest.fn();
+            let resolveBeforeSubmit;
+            const onBeforeSubmit = jest.fn(
+                () =>
+                    new Promise((resolve) => {
+                        resolveBeforeSubmit = resolve;
+                    })
+            );
+            const onAfterSubmit = jest.fn();
+            const secondOnAfterSubmit = jest.fn();
             const onEnterViewMode = jest.fn();
-            connectFakeField(element.shadowRoot.querySelector("form"), "Name", { postSubmit, onEnterViewMode });
-            connectFakeField(element.shadowRoot.querySelector("form"), "Name", { postSubmit: secondPostSubmit });
+            connectFakeField(element.shadowRoot.querySelector("form"), "Name", {
+                onBeforeSubmit,
+                onAfterSubmit,
+                onEnterViewMode
+            });
+            connectFakeField(element.shadowRoot.querySelector("form"), "Name", { onAfterSubmit: secondOnAfterSubmit });
 
-            await element.submit();
+            const submitPromise = element.submit();
+            await Promise.resolve();
+            expect(createRecord).not.toHaveBeenCalled();
+            resolveBeforeSubmit();
+            await submitPromise;
 
             const result = {
-                data: expect.objectContaining({ Id: RECORD_ID, Name: "New" }),
-                error: undefined
+                data: expect.objectContaining({ Id: RECORD_ID, Name: "New" })
             };
-            expect(postSubmit).toHaveBeenCalledWith(result);
-            expect(secondPostSubmit).toHaveBeenCalledWith(result);
+            expect(onBeforeSubmit).toHaveBeenCalledTimes(1);
+            expect(onBeforeSubmit.mock.invocationCallOrder[0]).toBeLessThan(createRecord.mock.invocationCallOrder[0]);
+            expect(onAfterSubmit).toHaveBeenCalledWith(result);
+            expect(onAfterSubmit.mock.invocationCallOrder[0]).toBeGreaterThan(createRecord.mock.invocationCallOrder[0]);
+            expect(onAfterSubmit.mock.invocationCallOrder[0]).toBeLessThan(onEnterViewMode.mock.invocationCallOrder[0]);
+            expect(secondOnAfterSubmit).toHaveBeenCalledWith(result);
             expect(onEnterViewMode).toHaveBeenCalledTimes(1);
         });
 
@@ -959,13 +977,13 @@ describe("c-record-form", () => {
             loadForm();
             await Promise.resolve();
             element.record = { Name: "New" };
-            const postSubmit = jest.fn();
-            connectFakeField(element.shadowRoot.querySelector("form"), "Name", { postSubmit });
+            const onAfterSubmit = jest.fn();
+            connectFakeField(element.shadowRoot.querySelector("form"), "Name", { onAfterSubmit });
 
             const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
             try {
                 await expect(element.submit()).rejects.toBe(error);
-                expect(postSubmit).not.toHaveBeenCalled();
+                expect(onAfterSubmit).not.toHaveBeenCalled();
                 expect(Toast.show).toHaveBeenCalledWith(
                     expect.objectContaining({
                         label: "Save failed",
@@ -995,6 +1013,7 @@ describe("c-record-form", () => {
             footer.dispatchEvent(new CustomEvent("save", { bubbles: true, composed: true }));
             footer.dispatchEvent(new CustomEvent("save", { bubbles: true, composed: true }));
 
+            await flushPromises();
             expect(createRecord).toHaveBeenCalledTimes(1);
 
             resolveCreateRecord({ id: RECORD_ID, fields: { Name: { value: "New" } } });

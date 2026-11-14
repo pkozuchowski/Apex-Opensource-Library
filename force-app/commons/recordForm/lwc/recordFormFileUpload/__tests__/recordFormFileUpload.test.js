@@ -197,6 +197,19 @@ describe("c-record-form-file-upload", () => {
         expect(row).toBeNull();
     });
 
+    it("removes files that have not been uploaded when entering view mode", async () => {
+        const file = new File(["image data"], "photo.png", { type: "image/png" });
+        const element = createUploader(file);
+        await flushPromises();
+
+        expect(element.querySelector("c-record-form-file-row")).not.toBeNull();
+
+        element.onEnterViewMode();
+        await flushPromises();
+
+        expect(element.querySelector("c-record-form-file-row")).toBeNull();
+    });
+
     it("starts uploading immediately when an existing record is in view mode", async () => {
         createContentDocumentAndVersion.mockResolvedValueOnce({ contentDocument: { id: CONTENT_DOCUMENT_ID } });
         createRecord.mockResolvedValueOnce({});
@@ -249,7 +262,7 @@ describe("c-record-form-file-upload", () => {
         let row = element.querySelector("c-record-form-file-row");
         expect(row.shadowRoot.querySelector("lightning-button-icon")).not.toBeNull();
 
-        const uploadPromise = element.postSubmit({ data: { Id: RECORD_ID } });
+        const uploadPromise = element.onAfterSubmit({ data: { Id: RECORD_ID } });
         await flushPromises();
 
         expect(element.querySelector("lightning-input").disabled).toBe(true);
@@ -311,7 +324,7 @@ describe("c-record-form-file-upload", () => {
             .mockResolvedValueOnce({ contentDocument: { id: "069xx0000000002AAA" } });
         createRecord.mockResolvedValue({});
         const element = createUploader(files, { multiple: true });
-        await element.postSubmit({ data: { Id: RECORD_ID } });
+        await element.onAfterSubmit({ data: { Id: RECORD_ID } });
 
         expect(createContentDocumentAndVersion).toHaveBeenCalledTimes(2);
         expect(createRecord).toHaveBeenCalledTimes(2);
@@ -321,7 +334,7 @@ describe("c-record-form-file-upload", () => {
         const file = new File(["image data"], "photo.png", { type: "image/png" });
         const element = createUploader(file);
 
-        await element.postSubmit({ data: undefined });
+        await element.onAfterSubmit({ data: undefined });
 
         expect(createContentDocumentAndVersion).not.toHaveBeenCalled();
         expect(createRecord).not.toHaveBeenCalled();
@@ -332,7 +345,7 @@ describe("c-record-form-file-upload", () => {
         const file = new File(["image data"], "photo.png", { type: "image/png" });
         const element = createUploader(file);
 
-        await expect(element.postSubmit({ data: { Id: RECORD_ID } })).resolves.toBeUndefined();
+        await expect(element.onAfterSubmit({ data: { Id: RECORD_ID } })).resolves.toBeUndefined();
         await flushPromises();
 
         expect(Toast.show).toHaveBeenCalledWith(

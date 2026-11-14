@@ -419,6 +419,29 @@ Then this component can be used in the form:
 </c-record-form>
 ```
 
+## Collapsible Sections
+
+Use `c-record-form-section` to group fields into a collapsible section that looks like native layout section. Its default slot contains the fields, and `columns` controls their layout:
+`1` displays fields in one column, while `2` (the default) displays them in two columns. Sections are expanded by default; set `expanded={false}`
+to start one collapsed.
+
+Use the `title` attribute for plain text or provide custom title content in the named `title` slot. When both are provided, the slot content takes
+precedence.
+
+```html
+<c-record-form object-api-name="Account" record-id={recordId}>
+    <c-record-form-section title="Account Details" columns="2">
+        <c-record-form-field field="Name"></c-record-form-field>
+        <c-record-form-field field="Website"></c-record-form-field>
+    </c-record-form-section>
+
+    <c-record-form-section columns="1" expanded={false}>
+        <span slot="title">Additional <strong>Details</strong></span>
+        <c-record-form-field field="Phone"></c-record-form-field>
+    </c-record-form-section>
+</c-record-form>
+```
+
 ## File Upload
 
 Use `c-record-form-file-upload` to upload files to the record, also in mobile offline mode. For a saved record in view mode, files upload as soon as they are selected; in edit mode, they
@@ -517,6 +540,22 @@ from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-
 | `options-filter` | `array`  | Subset of picklist values to display, from options or record type picklist values.                                                                                                                                                                                              |
 | `lookup-object`  | `string` | For a polymorphic lookup (e.g. `OwnerId` -> `User` or `Group`), forces the record picker to search/display this object API name. Without it, the choice is resolved deterministically (alphabetically) from the field's reference-to objects, which may not be the one you want. |
 | `lookup-filter`  | `object` | For a lookup field, restricts the record picker's search results. Passed straight through to `lightning-record-picker`'s `filter` attribute.                                                                                                                                     |
+
+## Record Form Section
+Collapsible container for fields rendered inside a Record Form.
+
+### Attributes
+| Attribute  | Type      | Description                                                            |
+|------------|-----------|------------------------------------------------------------------------|
+| `title`    | `string`  | Fallback text when no content is provided in the named `title` slot.  |
+| `columns`  | `number`  | `1` for one column or `2` for two columns. Defaults to `2`.             |
+| `expanded` | `boolean` | Whether the section starts expanded. Defaults to `true`.               |
+
+### Slots
+| Slot      | Description                                                        |
+|-----------|--------------------------------------------------------------------|
+| (default) | Record form fields displayed in the section.                      |
+| `title`   | Custom title content; takes precedence over the `title` attribute. |
 
 ## Record Form Footer
 The default content of the form's `footer` slot - see [Cancel/Save Footer](#cancelsave-footer). Dispatches bubbling `cancel`/`save` events,

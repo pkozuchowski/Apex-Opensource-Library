@@ -1,0 +1,15 @@
+:host {
+    width: 100%;
+}
+
+.section-content {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--lwc-spacingLarge, 1.5rem);
+    padding-left: var(--lwc-spacingSmall, 0.75rem);
+    padding-right: var(--lwc-spacingSmall, 0.75rem);
+}
+
+.section-content[data-columns="1"] {
+    grid-template-columns: minmax(0, 1fr);
+}

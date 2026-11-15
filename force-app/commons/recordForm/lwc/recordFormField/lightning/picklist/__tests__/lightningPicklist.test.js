@@ -20,7 +20,8 @@ const RECORD_TYPE_PICKLIST_VALUES = {
 describe("LightningPicklist read-only display", () => {
     it("picklistLabel resolves the label for the current raw API value", () => {
         const cmp = Object.create(LightningPicklist.prototype);
-        cmp.recordTypePicklistValues = RECORD_TYPE_PICKLIST_VALUES;
+        cmp.field = "Rating";
+        cmp.picklistValues = { Rating: RECORD_TYPE_PICKLIST_VALUES };
         cmp.fieldValue = "Hot_Lead__c";
 
         expect(cmp.picklistLabel).toBe("Hot Lead");
@@ -28,7 +29,8 @@ describe("LightningPicklist read-only display", () => {
 
     it("picklistLabel falls back to the raw value when no matching option is found", () => {
         const cmp = Object.create(LightningPicklist.prototype);
-        cmp.recordTypePicklistValues = RECORD_TYPE_PICKLIST_VALUES;
+        cmp.field = "Rating";
+        cmp.picklistValues = { Rating: RECORD_TYPE_PICKLIST_VALUES };
         cmp.fieldValue = "Unmapped";
 
         expect(cmp.picklistLabel).toBe("Unmapped");
@@ -36,19 +38,34 @@ describe("LightningPicklist read-only display", () => {
 
     it("uses picklistLabel (not the raw value) for the read-only attributes.value", () => {
         const cmp = Object.create(LightningPicklist.prototype);
-        cmp.recordTypePicklistValues = RECORD_TYPE_PICKLIST_VALUES;
+        cmp.field = "Rating";
+        cmp.picklistValues = { Rating: RECORD_TYPE_PICKLIST_VALUES };
         cmp.fieldValue = "Hot_Lead__c";
         cmp.isReadOnly = true;
         cmp.label = "Rating"; // short-circuits LightningInputExt.attributes' `this.label || this.fieldInfo.label`
 
         expect(cmp.attributes.value).toBe("Hot Lead");
     });
+
+    it("uses updated picklist values after the attribute changes", () => {
+        const cmp = Object.create(LightningPicklist.prototype);
+        cmp.field = "Rating";
+        cmp.picklistValues = { Rating: RECORD_TYPE_PICKLIST_VALUES };
+        cmp.fieldValue = "Hot_Lead__c";
+
+        cmp.picklistValues = {
+            Rating: { values: [{ label: "Updated Lead", value: "Hot_Lead__c" }] }
+        };
+
+        expect(cmp.picklistLabel).toBe("Updated Lead");
+    });
 });
 
 describe("LightningMultiPicklistExt read-only display", () => {
     it("picklistLabel joins the labels for each selected raw value", () => {
         const cmp = Object.create(LightningMultiPicklistExt.prototype);
-        cmp.recordTypePicklistValues = RECORD_TYPE_PICKLIST_VALUES;
+        cmp.field = "Rating";
+        cmp.picklistValues = { Rating: RECORD_TYPE_PICKLIST_VALUES };
         cmp.fieldValue = "Hot_Lead__c;Cold";
 
         expect(cmp.picklistLabel).toBe("Hot Lead, Cold");
@@ -56,7 +73,8 @@ describe("LightningMultiPicklistExt read-only display", () => {
 
     it("picklistLabel is empty when there's no value", () => {
         const cmp = Object.create(LightningMultiPicklistExt.prototype);
-        cmp.recordTypePicklistValues = RECORD_TYPE_PICKLIST_VALUES;
+        cmp.field = "Rating";
+        cmp.picklistValues = { Rating: RECORD_TYPE_PICKLIST_VALUES };
         cmp.fieldValue = undefined;
 
         expect(cmp.picklistLabel).toBe("");

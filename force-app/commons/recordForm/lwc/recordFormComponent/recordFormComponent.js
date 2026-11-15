@@ -7,6 +7,7 @@ export default class RecordFormComponent extends LightningElement {
 
     @api field;
     @api record;
+    @api picklistValues;
     @api fieldLevelHelp;
     @api readOnly;
     @api disabled;

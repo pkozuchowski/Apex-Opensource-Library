@@ -410,6 +410,26 @@ describe("c-record-form", () => {
         });
     });
 
+    describe("picklist value propagation", () => {
+        it("sets picklist values on connected fields and updates them when values change", async () => {
+            const element = createRecordForm();
+            loadForm();
+            await Promise.resolve();
+
+            const field = connectFakeField(element.shadowRoot.querySelector("form"), "Name");
+            expect(field.picklistValues).toEqual(PICKLIST_VALUES.picklistFieldValues);
+            expect(field.connectField.mock.calls[0][0]).not.toHaveProperty("recordTypePicklistValues");
+
+            const nextPicklistValues = {
+                Name: { values: [{ label: "Updated", value: "Updated" }] }
+            };
+            getPicklistValuesByRecordType.emit({ picklistFieldValues: nextPicklistValues });
+            await Promise.resolve();
+
+            expect(field.picklistValues).toEqual(nextPicklistValues);
+        });
+    });
+
     describe("single-field validity methods", () => {
         it("reportValidityForField/checkValidityForField return the field's actual validity", async () => {
             const element = createRecordForm();
@@ -591,7 +611,7 @@ describe("c-record-form", () => {
             await Promise.resolve();
 
             expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000001AAA");
-            expect(element.record.RecordTypeId).toBe("012000000000001AAA");
+            expect(element.record.RecordTypeId).toBeUndefined();
 
             element.record = { Name: "New" };
             await element.submit();
@@ -623,7 +643,7 @@ describe("c-record-form", () => {
                 apiName: "Account",
                 fields: { Name: "New" }
             });
-            expect(element.record.RecordTypeId).toBe("012000000000000AAA");
+            expect(element.record.RecordTypeId).toBeUndefined();
         });
 
         it("uses an explicitly supplied record type for a new record", async () => {
@@ -638,7 +658,7 @@ describe("c-record-form", () => {
             expect(element.record.RecordTypeId).toBe("012000000000002AAA");
         });
 
-        it("keeps the initially resolved record type when later record values differ", async () => {
+        it("uses the latest record type supplied with record values", async () => {
             const element = createRecordForm({
                 recordId: undefined,
                 record: { RecordTypeId: "012000000000002AAA" }
@@ -647,12 +667,13 @@ describe("c-record-form", () => {
             await Promise.resolve();
 
             element.record = { RecordTypeId: "012000000000003AAA" };
+            await Promise.resolve();
 
-            expect(element.record.RecordTypeId).toBe("012000000000002AAA");
-            expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000002AAA");
+            expect(element.record.RecordTypeId).toBe("012000000000003AAA");
+            expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000003AAA");
         });
 
-        it("the name-based GraphQL lookup takes precedence when the record resolves first", async () => {
+        it("uses the latest record type when GraphQL resolves after the record", async () => {
             const element = createRecordForm({ recordTypeName: "Enterprise" });
             loadForm();
             await Promise.resolve();
@@ -688,7 +709,7 @@ describe("c-record-form", () => {
             );
         });
 
-        it("the name-based GraphQL lookup takes precedence when it resolves before the record", async () => {
+        it("uses the latest record type when the record resolves after GraphQL", async () => {
             const element = createRecordForm({ recordTypeName: "Enterprise" });
             loadForm();
             await Promise.resolve();
@@ -711,8 +732,8 @@ describe("c-record-form", () => {
             });
             await Promise.resolve();
 
-            expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000002AAA");
-            expect(element.record.RecordTypeId).toBe("012000000000002AAA");
+            expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe("012000000000001AAA");
+            expect(element.record.RecordTypeId).toBe("012000000000001AAA");
         });
 
         it("uses the record's own Record Type Id when no record type name is provided", async () => {
@@ -720,7 +741,7 @@ describe("c-record-form", () => {
             loadForm();
             await Promise.resolve();
 
-            expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).not.toBe(
+            expect(getPicklistValuesByRecordType.getLastConfig().recordTypeId).toBe(
                 OBJECT_INFO.defaultRecordTypeId
             );
 
@@ -735,7 +756,7 @@ describe("c-record-form", () => {
             expect(element.record.RecordTypeId).toBe("012000000000001AAA");
         });
 
-        it("does not let object info's default override a fetched record type", async () => {
+        it("does not use object info's default for an existing record", async () => {
             const element = createRecordForm();
             getRecord.emit({
                 id: RECORD_ID,
@@ -773,7 +794,7 @@ describe("c-record-form", () => {
             expect(element.shadowRoot.querySelector("form")).not.toBeNull();
         });
 
-        it("waits for a named record type instead of temporarily using the object default", async () => {
+        it("waits for the named record type instead of using the object's default", async () => {
             const element = createRecordForm({ recordTypeName: "Enterprise" });
             getObjectInfo.emit({ ...OBJECT_INFO, defaultRecordTypeId: "012000000000001AAA" });
             await Promise.resolve();

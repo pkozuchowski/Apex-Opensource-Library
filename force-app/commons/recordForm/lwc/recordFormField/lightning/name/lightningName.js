@@ -2,7 +2,6 @@ import lightningName from "./lightningName.html";
 
 export class LightningName {
     salutation = {};
-    salutationOptions = [];
     firstName = {};
     lastName = {};
 
@@ -10,13 +9,16 @@ export class LightningName {
         return lightningName;
     }
 
-    connectFieldExt({ objectInfo, recordTypePicklistValues }) {
+    connectFieldExt({ objectInfo }) {
         this.salutation = objectInfo.fields.Salutation;
         this.firstName = objectInfo.fields.FirstName;
         this.lastName = objectInfo.fields.LastName;
-        this.salutationOptions = this.options || [
+    }
+
+    get salutationOptions() {
+        return this.options || [
             { label: "--None--", value: "" },
-            ...recordTypePicklistValues.Salutation.values
+            ...(this.picklistValues?.Salutation?.values ?? [])
         ];
     }
 

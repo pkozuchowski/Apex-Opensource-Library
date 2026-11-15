@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Piotr Kożuchowski
-import {api, LightningElement, track, wire} from "lwc";
-import {getObjectInfo, getPicklistValuesByRecordType} from "lightning/uiObjectInfoApi";
-import {createRecord, getRecord, notifyRecordUpdateAvailable, updateRecord} from "lightning/uiRecordApi";
+import { api, LightningElement, track, wire } from "lwc";
+import { getObjectInfo, getPicklistValuesByRecordType } from "lightning/uiObjectInfoApi";
+import { createRecord, getRecord, notifyRecordUpdateAvailable, updateRecord } from "lightning/uiRecordApi";
 import {
     getCompoundFields,
     getErrorMessage,
@@ -13,7 +13,7 @@ import {
     validate
 } from "./recordFormUtils";
 
-import {gql, graphql} from "lightning/graphql";
+import { gql, graphql } from "lightning/graphql";
 // Use bellow for offline capabilities
 // import {gql, graphql} from 'lightning/uiGraphQLApi';
 import LightningConfirm from "lightning/confirm";
@@ -21,7 +21,7 @@ import Toast from "lightning/toast";
 
 // SObjectType filter is not supported
 const RECORD_TYPE_QUERY = gql`
-    query getRecordType($developerName: String) {
+    query getRecordType($developerName: String!) {
         uiapi {
             query {
                 RecordType(where: { DeveloperName: { eq: $developerName } }) {
@@ -44,30 +44,20 @@ const RECORD_TYPE_QUERY = gql`
  * validation, and create/update submission for a given SObject and record type.
  */
 export default class RecordForm extends LightningElement {
-    /**Object API Name*/
+    /**Object API Name. Required.*/
+    @api objectApiName = false;
+
     @api recordId;
-    @api formClass;
+    @api formClass = "";
 
     /**Record Type Developer Name*/
     @api recordTypeName;
 
     /** Map<Field, Label> of label overrides*/
     @api labelOverrides;
+
     /**Design system variant used by child fields.*/
     @api designSystem = "lightning";
-    fields = [];
-    spinner = true;
-    objectInfo;
-    picklistValues;
-    recordTypeId;
-    _record = {};
-    _recordTypeIdInitialized = false;
-    _optionalFields = [];
-    computedOptionalFields = [];
-    isSubmitting = false;
-    _recordTypeIdFromRecord;
-    _recordTypeIdFromName;
-    _resolvedRecordTypeName;
 
     /**Hides the Cancel/Save footer, which is shown by default.*/
     @api hideFooter = false;
@@ -75,28 +65,24 @@ export default class RecordForm extends LightningElement {
     /**Skips the "discard unsaved changes?" confirmation dialog on Cancel.*/
     @api disableConfirmDiscard = false;
 
+    fields = [];
+    spinner = true;
+    objectInfo;
+    _picklistValues;
+    recordTypeId;
+    _record = {};
+    _optionalFields = [];
+    computedOptionalFields = [];
+    isSubmitting = false;
+
     @track
     formAttributes = {
-        density        : "comfy",
-        designSystem   : "lightning",
+        density: "comfy",
+        designSystem: "lightning",
         isPersonAccount: false,
-        inlineEdit     : true,
-        editMode       : false
+        inlineEdit: true,
+        editMode: false
     };
-
-    /**
-     * API Name of the object to display.
-     * @type {string}
-     */
-    @api
-    get objectApiName() {
-        return this._objectApiName;
-    }
-
-    set objectApiName(value) {
-        this._objectApiName = value;
-        this.recalculateOptionalFields();
-    }
 
     /**
      * Form density variant.
@@ -161,7 +147,7 @@ export default class RecordForm extends LightningElement {
         const nextValue = Boolean(value);
         const previousValue = this.formAttributes.editMode;
         if (nextValue && !previousValue) {
-            this._editModeSnapshot = {...this._record};
+            this._editModeSnapshot = { ...this._record };
         }
         this.formAttributes.editMode = nextValue;
         if (previousValue !== nextValue) {
@@ -170,8 +156,8 @@ export default class RecordForm extends LightningElement {
             if (this.isConnected) {
                 this.dispatchEvent(
                     new CustomEvent("editmodechange", {
-                        detail  : {editMode: nextValue},
-                        bubbles : true,
+                        detail: { editMode: nextValue },
+                        bubbles: true,
                         composed: true
                     })
                 );
@@ -210,14 +196,20 @@ export default class RecordForm extends LightningElement {
         this.setRecord(value);
     }
 
+    get picklistValues() {
+        return this._picklistValues;
+    }
+
+    set picklistValues(value) {
+        this._picklistValues = value;
+        this.getConnectedFields().forEach((field) => (field.picklistValues = value));
+    }
+
     setRecord(value) {
         this._record = value ?? {};
-        if (!this._recordTypeIdInitialized) {
-            this.resolveRecordTypeId();
-            this._recordTypeIdInitialized = Boolean(this.recordTypeId);
-        }
-        if (this.recordTypeId && this._record.RecordTypeId !== this.recordTypeId) {
-            this._record = {...this._record, RecordTypeId: this.recordTypeId};
+
+        if (this._record.RecordTypeId) {
+            this.recordTypeId = this._record.RecordTypeId;
         }
         this.getConnectedFields().forEach((field) => (field.record = this._record));
     }
@@ -234,15 +226,15 @@ export default class RecordForm extends LightningElement {
         }
 
         ev.stopPropagation();
-        this.dispatchRecordChange({...this._record, ...changedFields});
+        this.dispatchRecordChange({ ...this._record, ...changedFields });
     }
 
     dispatchRecordChange(value) {
         this.setRecord(value);
         this.dispatchEvent(
             new CustomEvent("change", {
-                detail  : {value: {...this._record}},
-                bubbles : true,
+                detail: { value: { ...this._record } },
+                bubbles: true,
                 composed: true
             })
         );
@@ -253,15 +245,12 @@ export default class RecordForm extends LightningElement {
         const extraFields = this._optionalFields.map((field) => {
             return field.includes(".") ? field : `${this.objectApiName}.${field}`;
         });
-        const derivedFields =
-            this.objectInfo
-                ? this.getConnectedFields().flatMap(({field}) => {
-                    const fieldInfo = this.objectInfo.fields[field];
-                    return fieldInfo
-                        ? getFieldsToRetrieve(this.objectInfo, fieldInfo, field, this.isPersonAccount)
-                        : [];
-                })
-                : [];
+        const derivedFields = this.objectInfo
+            ? this.getConnectedFields().flatMap(({ field }) => {
+                  const fieldInfo = this.objectInfo.fields[field];
+                  return fieldInfo ? getFieldsToRetrieve(this.objectInfo, fieldInfo, field, this.isPersonAccount) : [];
+              })
+            : [];
 
         const next = [...new Set([...recordTypeField, ...extraFields, ...derivedFields])];
         const current = this.computedOptionalFields;
@@ -399,7 +388,7 @@ export default class RecordForm extends LightningElement {
 
             const recordInput = {
                 fields: fieldsToUpdate,
-                ...(isCreate ? {apiName: this.objectApiName} : {})
+                ...(isCreate ? { apiName: this.objectApiName } : {})
             };
 
             const action = isCreate ? createRecord : updateRecord;
@@ -407,9 +396,9 @@ export default class RecordForm extends LightningElement {
             const flatRecord = getFlatRecord(result);
 
             this.dispatchRecordChange(flatRecord);
-            await notifyRecordUpdateAvailable([{recordId: result.id}]);
+            await notifyRecordUpdateAvailable([{ recordId: result.id }]);
             try {
-                await this.runAfterSubmit({data: flatRecord});
+                await this.runAfterSubmit({ data: flatRecord });
             } finally {
                 this.setEditMode(false);
                 this._editModeSnapshot = undefined;
@@ -419,7 +408,7 @@ export default class RecordForm extends LightningElement {
             console.error(err?.message ?? err);
             Toast.show(
                 {
-                    label  : "Save failed",
+                    label: "Save failed",
                     message: getErrorMessage(err),
                     variant: "error"
                 },
@@ -437,17 +426,20 @@ export default class RecordForm extends LightningElement {
         await Promise.all(fields.map((field) => field.onBeforeSubmit()));
     }
 
-    async runAfterSubmit({data}) {
+    async runAfterSubmit({ data }) {
         const fields = this.getConnectedFields().filter((field) => typeof field.onAfterSubmit === "function");
-        await Promise.all(fields.map((field) => field.onAfterSubmit({data})));
+        await Promise.all(fields.map((field) => field.onAfterSubmit({ data })));
     }
 
-    @wire(getObjectInfo, {objectApiName: "$objectApiName"})
-    describeObjectInfo({error, data}) {
+    @wire(getObjectInfo, { objectApiName: "$objectApiName" })
+    describeObjectInfo({ error, data }) {
         if (data) {
             this.objectInfo = JSON.parse(JSON.stringify(data));
-            this.resolveRecordTypeId();
-            this.setRecord(this.record);
+
+            if (!this.recordTypeId && !this.recordTypeName) {
+                this.recordTypeId = data.defaultRecordTypeId;
+            }
+
             this.recalculateOptionalFields();
             overrideFieldLabels(this.labelOverrides, this.objectInfo);
         } else if (error) {
@@ -455,37 +447,34 @@ export default class RecordForm extends LightningElement {
         }
     }
 
-    @wire(graphql, {
-        query    : RECORD_TYPE_QUERY,
-        variables: "$recordTypeVariables"
-    })
-    fetchRecordType({data, errors}) {
+    @wire(graphql, {query: "$recordTypeQuery", variables: "$recordTypeVariables"})
+    fetchRecordType({ data, errors }) {
         if (data) {
             const recordType = data.uiapi.query.RecordType.edges.find(
                 (rt) => rt.node.SobjectType.value === this.objectApiName
             );
-            this._resolvedRecordTypeName = this.recordTypeName;
-            this._recordTypeIdFromName = recordType?.node?.Id ?? this.objectInfo?.defaultRecordTypeId;
-            const previousRecordTypeId = this.record?.RecordTypeId;
-            this.resolveRecordTypeId();
 
-            if (this.recordTypeId && this.record && previousRecordTypeId !== this.recordTypeId) {
-                this.dispatchRecordChange({...this.record, RecordTypeId: this.recordTypeId});
+            if (recordType) {
+                this.recordTypeId = recordType?.node?.Id;
+                this.dispatchRecordChange({ ...this.record, RecordTypeId: this.recordTypeId });
+            } else {
+                console.error(`Record type ${this.objectApiName}.${this.recordTypeName} not found`);
             }
         } else if (errors) {
             console.error(`Error fetching record type ${this.objectApiName}.${this.recordTypeName}`, errors);
         }
     }
 
-    get recordTypeVariables() {
-        return this.recordTypeName ? {developerName: this.recordTypeName} : undefined;
+    get recordTypeQuery() {
+        return this.recordTypeName ? RECORD_TYPE_QUERY : undefined;
     }
 
-    @wire(getPicklistValuesByRecordType, {
-        objectApiName: "$objectApiName",
-        recordTypeId : "$recordTypeId"
-    })
-    describePicklistValues({error, data}) {
+    get recordTypeVariables() {
+        return { developerName: this.recordTypeName };
+    }
+
+    @wire(getPicklistValuesByRecordType, { objectApiName: "$objectApiName", recordTypeId: "$recordTypeId" })
+    describePicklistValues({ error, data }) {
         if (data) {
             this.picklistValues = JSON.parse(JSON.stringify(data.picklistFieldValues));
             this.spinner = false;
@@ -494,26 +483,13 @@ export default class RecordForm extends LightningElement {
         }
     }
 
-    /**
-     * Resolves the record type in priority order: named type, current record type,
-     * then the object's default. A named type remains unresolved until GraphQL returns.
-     */
-    resolveRecordTypeId() {
-        if (this.recordTypeName) {
-            this.recordTypeId =
-                this._resolvedRecordTypeName === this.recordTypeName ? this._recordTypeIdFromName : undefined;
-        } else if (this.recordId) {
-            this.recordTypeId = this._recordTypeIdFromRecord || this.record?.RecordTypeId;
-        } else {
-            this.recordTypeId = this.record?.RecordTypeId ?? this.objectInfo?.defaultRecordTypeId;
-        }
-    }
-
-    @wire(getRecord, {recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields"})
-    fetchRecord({error, data}) {
+    @wire(getRecord, { recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields" })
+    fetchRecord({ error, data }) {
         if (data) {
-            const serverRecord = Object.assign(getFlatRecord(data), this.record);
+            const serverRecord = getFlatRecord(data);
             const snapshot = this._editModeSnapshot;
+            console.log("serverRecord 1", JSON.stringify(serverRecord, null, 2));
+            console.log("serverRecord 1 _record", JSON.stringify(this._record, null, 2));
 
             // Keep unsaved edits: a refetch (e.g. triggered by newly connected fields)
             // must not overwrite values the user changed since entering edit mode.
@@ -525,13 +501,13 @@ export default class RecordForm extends LightningElement {
                 }
             }
 
-            this._recordTypeIdFromRecord = data.recordTypeId;
-            this.resolveRecordTypeId();
-            if (this.recordTypeId) {
-                serverRecord.RecordTypeId = this.recordTypeId;
-            } else if (this.recordTypeName) {
-                delete serverRecord.RecordTypeId;
+            console.log("_editModeSnapshot", JSON.stringify(this._editModeSnapshot, null, 2));
+            console.log("serverRecord 2", JSON.stringify(serverRecord, null, 2));
+            console.log("data", JSON.stringify(data, null, 2));
+            if (data.recordTypeId) {
+                this.recordTypeId = data.recordTypeId;
             }
+            console.log("this.recordTypeId", this.recordTypeId);
 
             this.dispatchRecordChange(serverRecord);
         } else if (error) {
@@ -555,13 +531,13 @@ export default class RecordForm extends LightningElement {
                 this.recalculateOptionalFields();
 
                 ev.target.record = this._record;
+                ev.target.picklistValues = this.picklistValues;
                 ev.target.formAttributes = this.formAttributes;
                 ev.target.connectField({
                     fieldInfo,
-                    objectInfo              : this.objectInfo,
-                    recordTypePicklistValues: this.picklistValues,
-                    formAttributes          : this.formAttributes,
-                    disconnectFn            : this.onFieldDisconnected.bind(this)
+                    objectInfo: this.objectInfo,
+                    formAttributes: this.formAttributes,
+                    disconnectFn: this.onFieldDisconnected.bind(this)
                 });
                 if (this.formAttributes.editMode) {
                     ev.target.onEnterEditMode?.();
@@ -583,7 +559,7 @@ export default class RecordForm extends LightningElement {
             return;
         }
 
-        const updatedRecord = {...this._record};
+        const updatedRecord = { ...this._record };
         delete updatedRecord[fieldApiName];
 
         const isCompoundField = this.objectInfo?.fields?.[fieldApiName]?.compound;
@@ -594,7 +570,7 @@ export default class RecordForm extends LightningElement {
         }
 
         this.dispatchRecordChange(updatedRecord);
-        this.dispatchEvent(new CustomEvent("fielddisconnected", {detail: {field: fieldApiName}}));
+        this.dispatchEvent(new CustomEvent("fielddisconnected", { detail: { field: fieldApiName } }));
     }
 
     /**
@@ -632,9 +608,9 @@ export default class RecordForm extends LightningElement {
     async cancelEdit() {
         if (!this.disableConfirmDiscard && this.isDirty()) {
             const confirmed = await LightningConfirm.open({
-                label  : "Discard Changes?",
+                label: "Discard Changes?",
                 message: "You have unsaved changes. Are you sure you want to discard them?",
-                theme  : "warning"
+                theme: "warning"
             });
             if (!confirmed) {
                 return;
@@ -642,7 +618,7 @@ export default class RecordForm extends LightningElement {
         }
 
         if (this._editModeSnapshot) {
-            this.dispatchRecordChange({...this._editModeSnapshot});
+            this.dispatchRecordChange({ ...this._editModeSnapshot });
         }
         this.setEditMode(false);
         this._editModeSnapshot = undefined;

@@ -68,4 +68,21 @@ describe("LightningName salutation rendering", () => {
         expect(cmp.salutationValue).toBe("");
         expect(cmp.nameValue).toBe("Alex Example");
     });
+
+    it("recomputes salutation options when picklist values change", () => {
+        const cmp = Object.create(LightningName.prototype);
+        cmp.picklistValues = { Salutation: { values: [{ label: "Mr.", value: "Mr." }] } };
+
+        expect(cmp.salutationOptions).toEqual([
+            { label: "--None--", value: "" },
+            { label: "Mr.", value: "Mr." }
+        ]);
+
+        cmp.picklistValues = { Salutation: { values: [{ label: "Dr.", value: "Dr." }] } };
+
+        expect(cmp.salutationOptions).toEqual([
+            { label: "--None--", value: "" },
+            { label: "Dr.", value: "Dr." }
+        ]);
+    });
 });

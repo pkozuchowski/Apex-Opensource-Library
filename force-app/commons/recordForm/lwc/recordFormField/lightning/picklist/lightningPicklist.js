@@ -8,15 +8,13 @@ import lightningCheckboxGroup from "./lightningCheckboxGroup.html";
 const OPT_NONE = { label: "--None--", value: "" };
 
 export class LightningPicklist extends LightningInputExt {
-    recordTypePicklistValues;
     controlledFields;
 
     connectFieldExt(data) {
         super.connectFieldExt(data);
-        const { objectInfo, recordTypePicklistValues } = data;
+        const { objectInfo } = data;
         // Identify controlled fields
         this.controlledFields = {};
-        this.recordTypePicklistValues = recordTypePicklistValues[this.field];
 
         /*Clears dependent fields */
         Object.values(objectInfo.fields).forEach((field) => {
@@ -24,6 +22,10 @@ export class LightningPicklist extends LightningInputExt {
                 this.controlledFields[field.apiName] = "";
             }
         });
+    }
+
+    get recordTypePicklistValues() {
+        return this.picklistValues?.[this.field];
     }
 
     renderExt() {
@@ -96,8 +98,8 @@ export class LightningPicklist extends LightningInputExt {
 }
 
 export class LightningMultiPicklistExt extends LightningPicklist {
-    connectFieldExt({ fieldInfo, objectInfo, recordTypePicklistValues }) {
-        super.connectFieldExt({ fieldInfo, objectInfo, recordTypePicklistValues });
+    connectFieldExt({ fieldInfo, objectInfo }) {
+        super.connectFieldExt({ fieldInfo, objectInfo });
         this.multiple = true;
     }
 

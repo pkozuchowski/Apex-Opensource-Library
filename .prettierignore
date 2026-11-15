@@ -8,6 +8,3 @@
 .sf
 .vscode
 package-lock.json
-
-coverage/
-force-app/main/

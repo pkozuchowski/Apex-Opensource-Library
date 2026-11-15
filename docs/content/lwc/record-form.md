@@ -1,5 +1,6 @@
 # Record Form
-*Create customizable record forms easily.*
+
+_Create customizable record forms easily._
 
 [Source](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/commons/recordForm)
 [Recipes](https://github.com/pkozuchowski/Apex-Opensource-Library/tree/master/force-app/examples/recordForm)
@@ -11,6 +12,7 @@ sf project deploy start -d "force-app/commons/recordForm" -o sfdxOrg
 ```
 
 ---
+
 # Documentation
 
 The `recordForm` provides an easy way to display and edit Salesforce records,
@@ -31,17 +33,18 @@ and the type of inputs – for example, to render picklists as radio-buttons.
 There is also support for custom components and custom design systems other than Salesforce Lightning Design System.
 
 ## Example Usage
+
 ```html
-
-<c-record-form object-api-name="Account"
-               record-id="001KM00000KlMXkYAN"
-               record-type-name="PersonAccount"
-               is-person-account
-               optional-fields={optionalFields}
-               record={account}
-               density="compact"
-               onchange={onRecordChange}>
-
+<c-record-form
+    object-api-name="Account"
+    record-id="001KM00000KlMXkYAN"
+    record-type-name="PersonAccount"
+    is-person-account
+    optional-fields="{optionalFields}"
+    record="{account}"
+    density="compact"
+    onchange="{onRecordChange}"
+>
     <c-record-form-field read-only field="OwnerId"></c-record-form-field>
     <c-record-form-field field="Name"></c-record-form-field>
     <c-record-form-field field="PersonMailingAddress"></c-record-form-field>
@@ -51,6 +54,7 @@ There is also support for custom components and custom design systems other than
     <c-record-form-field field="MyPicklist__c" type="radio-group"></c-record-form-field>
 </c-record-form>
 ```
+
 By default the form above opens in view mode with pencil icons (`inlineEdit`/`editMode` defaults - see [Edit Mode](#edit-mode)).
 
 ```js
@@ -70,26 +74,29 @@ with this snapshot rather than merging it, so keys removed from the form are rem
 ![recordForm1.png](/img/recordForm1.png)
 
 ## Controlled vs Self-Contained Usage
+
 Both `record` and `onchange` are optional. Record Form keeps its own internal record state regardless of whether a `record` is passed in,
 so it can be used in two ways:
+
 - **Parent-synchronized** - pass `record` and handle `onchange` to keep an external record (e.g. on the parent component) in sync with the form,
   as in the example above. The handler receives the full record after field changes and form synchronization. This is useful when the parent
   needs to read or react to field values, e.g. to conditionally render fields or pass the record to other components.
 - **Self-contained** - omit `record`/`onchange` entirely and let the form manage its record internally from field changes until `submit()` is
   called. This is enough for a simple "create a record" form:
-```html
 
+```html
 <c-record-form object-api-name="Account">
     <c-record-form-field field="Name"></c-record-form-field>
     <c-record-form-field field="Website"></c-record-form-field>
 </c-record-form>
 ```
+
 Since no `record-id` is set, the fields start empty; since `editMode` defaults to `false`, the fields render read-only with pencil icons
 (see [Inline Edit](#inline-edit)) until the user clicks one to start editing. Calling `submit()` - e.g. from a `lightning-button
 type="submit"` inside the form - creates the record from the fields the user filled in.
 
-
 ## Supported Field Types
+
 - Person Name
 - Address
 - Lookup
@@ -120,6 +127,7 @@ type="submit"` inside the form - creates the record from the fields the user fil
 - File Upload
 
 ## Record Type Support
+
 Record Form supports the `"record-type-name"` attribute, which accepts the Record Type's Developer Name. When specified, the form resolves the
 matching Record Type Id via a GraphQL query (`lightning/graphql`) and uses it to determine picklist values. If not specified, it uses the object's
 default Record Type.
@@ -130,38 +138,43 @@ precedence over the Id on a loaded record. If the name does not match a Record T
 When no name is provided, a loaded record's own Record Type Id is used; otherwise, the object's default Record Type Id is used.
 
 ## Person Accounts
+
 Record Form does not auto-detect Person Accounts, since the `IsPersonAccount`/`IsPersonType` fields are only queryable when Person Accounts are enabled in
 the org, and are not exposed by the UI API. Instead, pass the `is-person-account` attribute explicitly when displaying a Person Account record, so that the
 `Name` field renders as a compound Person Name (Salutation/FirstName/LastName) field.
 
-
 ## Validation
 
 Each record-form-field supports the standard validation methods of `lightning-input`:
+
 - `reportValidity()`
 - `setCustomValidity(message)`
 - `checkValidity()`
 
 Additionally, Record Form has a number of methods which can be used in validation:
+
 - `reportValidityForField(fieldName)` - reports validity of a specific field.
 - `checkValidityForField(fieldName)` - checks validity of a specific field.
 - `setCustomValidityForField(fieldName, message)` - sets custom validity for a specific field.
 
 Bulk Methods:
+
 - `reportValidity()` - reports validity of all fields.
 - `checkValidity()` - checks validity of all fields.
 
 Bulk methods return an object with a validity state of all fields:
+
 ```js
 const result = {
-    valid : boolean,
+    valid: boolean,
     fields: {
         FieldApiName: boolean
     }
-}
+};
 ```
 
 ## Submitting Form
+
 Form can be submitted by calling `submit()` method on the form component or by using `lightning-button` with `type="submit"` inside the form.
 
 Connected fields can participate in the submission lifecycle through `onBeforeSubmit()` and `onAfterSubmit()`. See
@@ -171,7 +184,9 @@ Submit uses uiApi to create or update the createable/updateable fields on the re
 On successful submitting, the form emits a change event with the updated/created record or throws an error.
 
 ## Edit Mode
+
 The form's current mode is exposed as the `editMode` attribute, defaulting to `false` (view mode) - independently of `inlineEdit`. It can be:
+
 - Set declaratively up front, e.g. `edit-mode={true}` to start the form already editable.
 - Set programmatically from outside the form, e.g. from an external "Edit" button: `this.refs.recordForm.editMode = true;`
 - Switched on by clicking a pencil icon, when `inlineEdit` is also on (the default - see below).
@@ -180,17 +195,26 @@ The form's current mode is exposed as the `editMode` attribute, defaulting to `f
   `false` in view mode.
 
 ## Inline Edit
+
 `inlineEdit` defaults to `true`: editable fields show a pencil icon while the form is in view mode (`editMode` is `false`, also the default).
 Clicking any one pencil icon switches the **whole form** to edit mode at once - fields don't each track their own edit state.
 
 `inlineEdit` only controls the pencil icon affordance - it doesn't by itself put the form in view mode (that's `editMode`'s job, and it's
 already `false` by default). To get the older "plain, always editable, no pencils" behavior instead, disable both:
-```html
 
-<c-record-form object-api-name="Account" record-id={recordId} record={account} inline-edit={false} edit-mode={true} onchange={onRecordChange}>
+```html
+<c-record-form
+    object-api-name="Account"
+    record-id="{recordId}"
+    record="{account}"
+    inline-edit="{false}"
+    edit-mode="{true}"
+    onchange="{onRecordChange}"
+></c-record-form>
 ```
 
 ## Cancel/Save Footer
+
 By default, Record Form renders a `c-record-form-footer` - a standard docked footer with Cancel and Save buttons, similar to the standard
 Salesforce record layout footer - into its `footer` slot, shown whenever the form is in edit mode. Set `hide-footer` to hide it entirely (e.g.
 if you provide your own `lightning-button type="submit"` instead).
@@ -201,8 +225,10 @@ if you provide your own `lightning-button type="submit"` instead).
   reverts that later edit). If there are unsaved changes, it first asks for confirmation - see below.
 
 ### Checking for unsaved changes
+
 `isDirty()` compares the current record against its state from when edit mode was last entered, and returns `false` if edit mode was never
 entered:
+
 ```js
 if (this.refs.recordForm.isDirty()) {
     // warn before navigating away, disable a "Next" button, etc.
@@ -210,39 +236,45 @@ if (this.refs.recordForm.isDirty()) {
 ```
 
 ### Confirming before discarding changes
+
 Clicking Cancel (or pressing Escape - see [Keyboard Shortcuts](#keyboard-shortcuts)) while `isDirty()` is true opens a
 [`lightning/confirm`](https://developer.salesforce.com/docs/platform/lwc/guide/reference-lightning-confirm.html) dialog asking the user to
 confirm discarding their changes; declining leaves the form in edit mode with the changes intact. Set `disable-confirm-discard` to skip this
 and always discard silently, matching the pre-confirmation behavior.
 
 ### Customizing the footer
+
 The button labels default to "Cancel" and "Save" and can be overridden on the default footer itself, by slotting in your own
 `c-record-form-footer` with `cancel-label`/`save-label` set:
-```html
 
-<c-record-form object-api-name="Account" record={account} onchange={onRecordChange}>
+```html
+<c-record-form object-api-name="Account" record="{account}" onchange="{onRecordChange}">
     <c-record-form-field field="Name"></c-record-form-field>
     <c-record-form-footer slot="footer" cancel-label="Discard" save-label="Update"></c-record-form-footer>
 </c-record-form>
 ```
+
 The `footer` slot is overrideable, so you can replace it entirely with your own markup - e.g. extra actions alongside Cancel/Save, or a
 completely different layout:
-```html
 
-<c-record-form object-api-name="Account" record={account} onchange={onRecordChange}>
+```html
+<c-record-form object-api-name="Account" record="{account}" onchange="{onRecordChange}">
     <c-record-form-field field="Name"></c-record-form-field>
     <div slot="footer" class="slds-docked-form-footer">
-        <lightning-button variant="neutral" label="Discard" onclick={handleDiscard}></lightning-button>
-        <lightning-button variant="brand" label="Update" onclick={handleUpdate}></lightning-button>
+        <lightning-button variant="neutral" label="Discard" onclick="{handleDiscard}"></lightning-button>
+        <lightning-button variant="brand" label="Update" onclick="{handleUpdate}"></lightning-button>
     </div>
 </c-record-form>
 ```
+
 Note: content you provide for the `footer` slot replaces the default footer entirely, including its `editMode`/`hideFooter` visibility logic -
 when overriding the slot, you're responsible for showing/hiding your own markup (e.g. by binding its visibility to the same property you pass
 as `edit-mode`).
 
 ## Keyboard Shortcuts
+
 While the form is in edit mode:
+
 - **Escape** triggers the same action as clicking Cancel (including the discard confirmation, unless `disable-confirm-discard` is set).
 
 ## Field Anatomy and Extensions
@@ -250,21 +282,22 @@ While the form is in edit mode:
 ![recordFormField.png](/img/recordFormField.png)
 
 Each form field extends base `c-record-form-component` component:
+
 ```js
 import RecordFormComponent from "c/recordFormComponent";
 
-export default class RecordFormField extends RecordFormComponent {
-
-}
+export default class RecordFormField extends RecordFormComponent {}
 ```
 
 Base component provides a number of attributes, utility methods, validation methods and
 a framework for connecting the field to the form and handling the field value changes.
 
 ### Connecting Fields to the Form
+
 When component is connected (`connectedCallback`), it sends an event that bubbles up to the form:
+
 ```js
-this.dispatchEvent(new CustomEvent('fieldconnected'));
+this.dispatchEvent(new CustomEvent("fieldconnected"));
 ```
 
 Record Form listens to this and saves references to all connected fields and initializes them with the record, form attributes,
@@ -276,6 +309,7 @@ special handling. Record Form also emits `fielddisconnected`, with the field API
 specifically to a field being removed.
 
 Record Form calls `connectField` method on each field component:
+
 ```js
 @api
 connectField({fieldInfo, objectInfo, recordTypePicklistValues, formAttributes, disconnectFn})
@@ -288,6 +322,7 @@ connectField({fieldInfo, objectInfo, recordTypePicklistValues, formAttributes, d
 ```
 
 ### Record Form Component Hooks
+
 Connected field components can override these public methods to respond to form mode changes and submission:
 
 - `connectField({fieldInfo, objectInfo, recordTypePicklistValues, formAttributes, disconnectFn})` is called when a field connects to initialize
@@ -311,6 +346,7 @@ onAfterSubmit({data}) {
 ```
 
 ### Handling Field Value Changes
+
 When a field value changes, the field component dispatches a `change` event with the changed fields.
 RecordFormComponent has a `handleFieldChange` utlity method that can be used in the HTML.
 By default, it dispatches `change` event with `{[this.field]: event.detail.value}` payload,
@@ -320,24 +356,24 @@ Example implementations could look like this:
 
 ```js
 // text
-getEventValue(event)
+getEventValue(event);
 {
-    return {[this.field]: event.detail.value}
+    return { [this.field]: event.detail.value };
 }
 
 // checkbox
-getEventValue(event)
+getEventValue(event);
 {
-    return {[this.field]: event.detail.checked}
+    return { [this.field]: event.detail.checked };
 }
 
 //Multi field update:
-getEventValue(event)
+getEventValue(event);
 {
     return {
         Salutation: event.detail.salutation,
-        FirstName : event.detail.firstName
-    }
+        FirstName: event.detail.firstName
+    };
 }
 ```
 
@@ -345,6 +381,7 @@ The field's `change` event bubbles to Record Form, which consumes it, merges the
 record down to its fields. Record Form then dispatches a bubbling, composed `change` event from the form component with the full record in
 `detail.value`. This is the only `change` event parent listeners receive for a field edit; form synchronization and field removal also emit the
 full-record event.
+
 ```js
 export default class MyAccountForm extends LightningElement {
     @track account = {};
@@ -356,6 +393,7 @@ export default class MyAccountForm extends LightningElement {
 ```
 
 ### Extending Field Types
+
 Record Form Field provides a number of field types out of the box, but a new field types
 or new variants of existing ones can be easily created.
 
@@ -367,22 +405,20 @@ the field.
 Example Extension (TextArea):
 
 ```html
-
 <template>
     <!--ReadOnly TextArea-->
-    <c-record-form-field-output lwc:if={isReadOnly}
-                                label={label}
-                                density={formAttributes.density}>
-        <lightning-formatted-text value={fieldValue}></lightning-formatted-text>
+    <c-record-form-field-output lwc:if="{isReadOnly}" label="{label}" density="{formAttributes.density}">
+        <lightning-formatted-text value="{fieldValue}"></lightning-formatted-text>
     </c-record-form-field-output>
 
     <!--Editable TextArea-->
     <lightning-textarea
-            lwc:else
-            lwc:spread={attributes}
-            lwc:ref="input"
-            class={classes}
-            onchange={handleFieldChange}></lightning-textarea>
+        lwc:else
+        lwc:spread="{attributes}"
+        lwc:ref="input"
+        class="{classes}"
+        onchange="{handleFieldChange}"
+    ></lightning-textarea>
 </template>
 ```
 
@@ -402,18 +438,20 @@ export class LightningTextAreaExt extends LightningTextExt {
 ```
 
 ### Creating custom components
+
 To create custom components for a record form, you only need to extend `c-record-form-component`,
 override `connectField` method if needed and dispatch `change` event with changed field values.
 
 Then this component can be used in the form:
+
 ```html
-
-<c-record-form object-api-name="Account"
-               record-type-name="PersonAccount"
-               record={account}
-               density="compact"
-               onchange={onRecordChange}>
-
+<c-record-form
+    object-api-name="Account"
+    record-type-name="PersonAccount"
+    record="{account}"
+    density="compact"
+    onchange="{onRecordChange}"
+>
     <c-record-form-field field="Name"></c-record-form-field>
     <c-record-form-file-upload field="Id"></c-record-form-file-upload>
 </c-record-form>
@@ -429,13 +467,13 @@ Use the `title` attribute for plain text or provide custom title content in the 
 precedence.
 
 ```html
-<c-record-form object-api-name="Account" record-id={recordId}>
+<c-record-form object-api-name="Account" record-id="{recordId}">
     <c-record-form-section title="Account Details" columns="2">
         <c-record-form-field field="Name"></c-record-form-field>
         <c-record-form-field field="Website"></c-record-form-field>
     </c-record-form-section>
 
-    <c-record-form-section columns="1" expanded={false}>
+    <c-record-form-section columns="1" expanded="{false}">
         <span slot="title">Additional <strong>Details</strong></span>
         <c-record-form-field field="Phone"></c-record-form-field>
     </c-record-form-section>
@@ -445,7 +483,7 @@ precedence.
 ## File Upload
 
 Use `c-record-form-file-upload` to upload files to the record, also in mobile offline mode. For a saved record in view mode, files upload as soon as they are selected; in edit mode, they
-upload after a successful form save. The component uses `createContentDocumentAndVersion` and links files to the record with `createRecord`. 
+upload after a successful form save. The component uses `createContentDocumentAndVersion` and links files to the record with `createRecord`.
 
 In view mode without a saved record, file selection is disabled.
 Set `show-existing-attachments` to display existing attachments linked to the record through GraphQL (defaults to `false`); those rows show as complete, cannot be removed, and link to the file.
@@ -458,33 +496,38 @@ Set `show-existing-attachments` to display existing attachments linked to the re
 ```
 
 ## Considerations
+
 - If record fields are nested in other components, make sure to render the wrapper component in `light` mode.
 
 ---
+
 # Specification
 
 ## Record Form
+
 ### Attributes
-| Attribute               | Description                                                                                                                                              |
-|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `object-api-name`       | API Name of the object to display.                                                                                                                       |
-| `record-type-name`      | Record Type's Developer Name to use for picklist values, resolved via a GraphQL query.                                                                   |
-| `record-id`             | If provided, form fetches the record with fields on the form and emits `change` with the full record when it loads.                                      |
-| `record`                | Record object to display. Optional - see [Controlled vs Self-Contained Usage](#controlled-vs-self-contained-usage).                                      |
-| `density`               | Density of the form – "comfy", "compact".                                                                                                                |
-| `form-class`            | CSS class to apply to the form.                                                                                                                          |
-| `label-overrides`       | Object with field names as keys and custom labels as values.                                                                                             |
-| `design-system`         | Design System to use for rendering the form. Defaults to "lightning".                                                                                    |
-| `is-person-account`     | If true, the `Name` field renders as a compound Person Name field. Not auto-detected, see [Person Accounts](#person-accounts).                           |
-| `optional-fields`       | Extra fields to retrieve from the record, besides the ones rendered by child field components.                                                           |
-| `inline-edit`           | Defaults to true. Adds a pencil icon to editable fields while the form is in view mode. See [Inline Edit](#inline-edit).                                 |
-| `edit-mode`             | Current edit mode of the form, defaults to false. See [Edit Mode](#edit-mode). Can be read or set programmatically.                                      |
-| `hide-footer`           | If true, hides the default Cancel/Save footer (see [Cancel/Save Footer](#cancelsave-footer)).                                                            |
+
+| Attribute                 | Description                                                                                                                                              |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `object-api-name`         | API Name of the object to display.                                                                                                                       |
+| `record-type-name`        | Record Type's Developer Name to use for picklist values, resolved via a GraphQL query.                                                                   |
+| `record-id`               | If provided, form fetches the record with fields on the form and emits `change` with the full record when it loads.                                      |
+| `record`                  | Record object to display. Optional - see [Controlled vs Self-Contained Usage](#controlled-vs-self-contained-usage).                                      |
+| `density`                 | Density of the form – "comfy", "compact".                                                                                                                |
+| `form-class`              | CSS class to apply to the form.                                                                                                                          |
+| `label-overrides`         | Object with field names as keys and custom labels as values.                                                                                             |
+| `design-system`           | Design System to use for rendering the form. Defaults to "lightning".                                                                                    |
+| `is-person-account`       | If true, the `Name` field renders as a compound Person Name field. Not auto-detected, see [Person Accounts](#person-accounts).                           |
+| `optional-fields`         | Extra fields to retrieve from the record, besides the ones rendered by child field components.                                                           |
+| `inline-edit`             | Defaults to true. Adds a pencil icon to editable fields while the form is in view mode. See [Inline Edit](#inline-edit).                                 |
+| `edit-mode`               | Current edit mode of the form, defaults to false. See [Edit Mode](#edit-mode). Can be read or set programmatically.                                      |
+| `hide-footer`             | If true, hides the default Cancel/Save footer (see [Cancel/Save Footer](#cancelsave-footer)).                                                            |
 | `disable-confirm-discard` | If true, skips the "discard unsaved changes?" confirmation on Cancel. See [Confirming before discarding changes](#confirming-before-discarding-changes). |
 
 ### Methods
+
 | Method                                          | Description                                                                                                                     |
-|-------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `submit()`                                      | Creates/Updates the record.                                                                                                     |
 | `checkValidity()`                               | Checks validity of all fields.                                                                                                  |
 | `reportValidity()`                              | Reports validity of all fields.                                                                                                 |
@@ -494,87 +537,98 @@ Set `show-existing-attachments` to display existing attachments linked to the re
 | `isDirty()`                                     | True if the record changed since edit mode was last entered. See [Checking for unsaved changes](#checking-for-unsaved-changes). |
 
 ### Events
-| Event              | Description                                                                                                                                      |
-|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| `change`           | Bubbling, composed event emitted after field changes and record synchronization. `detail.value` is a full record snapshot.                       |
-| `fielddisconnected`| Event emitted when a field is removed and no other connected field represents it. `detail.field` contains the field API name.                   |
-| `editmodechange`   | Bubbling, composed event emitted on mode changes after connection. `detail.editMode` is the new boolean state.                                   |
+
+| Event               | Description                                                                                                                   |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `change`            | Bubbling, composed event emitted after field changes and record synchronization. `detail.value` is a full record snapshot.    |
+| `fielddisconnected` | Event emitted when a field is removed and no other connected field represents it. `detail.field` contains the field API name. |
+| `editmodechange`    | Bubbling, composed event emitted on mode changes after connection. `detail.editMode` is the new boolean state.                |
 
 ## Record Form Component
 
 ### Attributes
-| Attribute        | Type      | Description                                                                                                                                         |
-|------------------|-----------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `field`          | `string`  | API name of the field this component represents (e.g. `"Name"`, `"OwnerId"`). Used to read the value from `record` and to build the change payload. |
-| `record`         | `object`  | Plain record object in shape `{ [fieldApiName]: value }`. The component reads current value from it. Set by record form.                            |
-| `field-level-help` | `string`  | Help text displayed for the field (typically sourced from the field's inline help text).                                                          |
-| `read-only`        | `boolean` | Forces this field into permanent read-only mode, regardless of the form's `editMode`.                                                             |
-| `disabled`       | `boolean` | Disables user interaction with the field (visible, but not editable/interactable).                                                                  |
-| `required`       | `boolean` | Marks the field as required. If not provided, it can default from field metadata.                                                                   |
-| `validity`       | `object`  | Validity state for the underlying input. Shape depends on the input implementation used by the field type/extension.                                |
-| `variant`        | `string`  | Label layout variant (commonly `"label-inline"` or `"label-stacked"`). If not provided, it can be derived from `formAttributes.density`.            |
-| `design-system`  | `string`  | Design system selector used to determine rendering behavior (e.g. Lightning vs custom design systems).                                              |
-| `form-attributes` | `object` | Form-level configuration passed down to fields (e.g. `density`, `editMode`, etc.). Used as defaults when a field-level attribute is not set.          |
+
+| Attribute          | Type      | Description                                                                                                                                         |
+| ------------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `field`            | `string`  | API name of the field this component represents (e.g. `"Name"`, `"OwnerId"`). Used to read the value from `record` and to build the change payload. |
+| `record`           | `object`  | Plain record object in shape `{ [fieldApiName]: value }`. The component reads current value from it. Set by record form.                            |
+| `field-level-help` | `string`  | Help text displayed for the field (typically sourced from the field's inline help text).                                                            |
+| `read-only`        | `boolean` | Forces this field into permanent read-only mode, regardless of the form's `editMode`.                                                               |
+| `disabled`         | `boolean` | Disables user interaction with the field (visible, but not editable/interactable).                                                                  |
+| `required`         | `boolean` | Marks the field as required. If not provided, it can default from field metadata.                                                                   |
+| `validity`         | `object`  | Validity state for the underlying input. Shape depends on the input implementation used by the field type/extension.                                |
+| `variant`          | `string`  | Label layout variant (commonly `"label-inline"` or `"label-stacked"`). If not provided, it can be derived from `formAttributes.density`.            |
+| `design-system`    | `string`  | Design system selector used to determine rendering behavior (e.g. Lightning vs custom design systems).                                              |
+| `form-attributes`  | `object`  | Form-level configuration passed down to fields (e.g. `density`, `editMode`, etc.). Used as defaults when a field-level attribute is not set.        |
 
 ### Methods
-| Method                       | Description                                |
-|------------------------------|--------------------------------------------|
-| `reportValidity()`           | Same as standard `lightning-input` method. |
-| `setCustomValidity(message)` | Same as standard `lightning-input` method. |
-| `checkValidity()`            | Same as standard `lightning-input` method. |
-| `onEnterEditMode()`          | Override to react when Record Form enters edit mode. |
-| `onEnterViewMode()`          | Override to react when Record Form returns to view mode. |
+
+| Method                       | Description                                                  |
+| ---------------------------- | ------------------------------------------------------------ |
+| `reportValidity()`           | Same as standard `lightning-input` method.                   |
+| `setCustomValidity(message)` | Same as standard `lightning-input` method.                   |
+| `checkValidity()`            | Same as standard `lightning-input` method.                   |
+| `onEnterEditMode()`          | Override to react when Record Form enters edit mode.         |
+| `onEnterViewMode()`          | Override to react when Record Form returns to view mode.     |
 | `onBeforeSubmit()`           | Override to prepare this component before Record Form saves. |
-| `onAfterSubmit({data})`       | Override to react after a successful save. |
+| `onAfterSubmit({data})`      | Override to react after a successful save.                   |
 
 ## Record Form Field (extends RecordFormComponent)
 
 ### Attributes
+
 All attributes
 from [lightning-input](https://developer.salesforce.com/docs/platform/lightning-component-reference/guide/lightning-input.html?type=Specifications)
 
-| Attribute        | Type     | Description                                                                                                                                                                                                                                                                      |
-|------------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `type-attributes` | `object` | Additional attributes to apply to the underlying input element.                                                                                                                                                                                                                |
-| `options`        | `array`  | Array of picklist values to present instead of the ones from the field metadata.                                                                                                                                                                                                 |
-| `options-filter` | `array`  | Subset of picklist values to display, from options or record type picklist values.                                                                                                                                                                                              |
-| `lookup-object`  | `string` | For a polymorphic lookup (e.g. `OwnerId` -> `User` or `Group`), forces the record picker to search/display this object API name. Without it, the choice is resolved deterministically (alphabetically) from the field's reference-to objects, which may not be the one you want. |
-| `lookup-filter`  | `object` | For a lookup field, restricts the record picker's search results. Passed straight through to `lightning-record-picker`'s `filter` attribute.                                                                                                                                     |
+| Attribute         | Type     | Description                                                                                                                                                                                                                                                                      |
+| ----------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type-attributes` | `object` | Additional attributes to apply to the underlying input element.                                                                                                                                                                                                                  |
+| `options`         | `array`  | Array of picklist values to present instead of the ones from the field metadata.                                                                                                                                                                                                 |
+| `options-filter`  | `array`  | Subset of picklist values to display, from options or record type picklist values.                                                                                                                                                                                               |
+| `lookup-object`   | `string` | For a polymorphic lookup (e.g. `OwnerId` -> `User` or `Group`), forces the record picker to search/display this object API name. Without it, the choice is resolved deterministically (alphabetically) from the field's reference-to objects, which may not be the one you want. |
+| `lookup-filter`   | `object` | For a lookup field, restricts the record picker's search results. Passed straight through to `lightning-record-picker`'s `filter` attribute.                                                                                                                                     |
 
 ## Record Form Section
+
 Collapsible container for fields rendered inside a Record Form.
 
 ### Attributes
-| Attribute  | Type      | Description                                                            |
-|------------|-----------|------------------------------------------------------------------------|
-| `title`    | `string`  | Fallback text when no content is provided in the named `title` slot.  |
-| `columns`  | `number`  | `1` for one column or `2` for two columns. Defaults to `2`.             |
-| `expanded` | `boolean` | Whether the section starts expanded. Defaults to `true`.               |
+
+| Attribute  | Type      | Description                                                          |
+| ---------- | --------- | -------------------------------------------------------------------- |
+| `title`    | `string`  | Fallback text when no content is provided in the named `title` slot. |
+| `columns`  | `number`  | `1` for one column or `2` for two columns. Defaults to `2`.          |
+| `expanded` | `boolean` | Whether the section starts expanded. Defaults to `true`.             |
 
 ### Slots
+
 | Slot      | Description                                                        |
-|-----------|--------------------------------------------------------------------|
-| (default) | Record form fields displayed in the section.                      |
+| --------- | ------------------------------------------------------------------ |
+| (default) | Record form fields displayed in the section.                       |
 | `title`   | Custom title content; takes precedence over the `title` attribute. |
 
 ## Record Form Footer
+
 The default content of the form's `footer` slot - see [Cancel/Save Footer](#cancelsave-footer). Dispatches bubbling `cancel`/`save` events,
 handled by Record Form itself; not meant to be used outside of a `c-record-form`.
 
 ### Attributes
-| Attribute     | Type      | Description                                                |
-|---------------|-----------|------------------------------------------------------------|
+
+| Attribute      | Type      | Description                                                |
+| -------------- | --------- | ---------------------------------------------------------- |
 | `cancel-label` | `string`  | Label for the Cancel button. Defaults to `"Cancel"`.       |
 | `save-label`   | `string`  | Label for the Save button. Defaults to `"Save"`.           |
-| `docked`      | `boolean` | If true, the footer is docked to the bottom of the screen. |
+| `docked`       | `boolean` | If true, the footer is docked to the bottom of the screen. |
 
 ### Events
+
 | Event    | Description                                                                                                     |
-|----------|-----------------------------------------------------------------------------------------------------------------|
+| -------- | --------------------------------------------------------------------------------------------------------------- |
 | `cancel` | Bubbling event, fired on click. Record Form reverts fields to their edit-mode-entry values and exits edit mode. |
 | `save`   | Bubbling event, fired on click. Record Form calls `submit()`.                                                   |
 
 ---
+
 # Change Log
 
 ### 1.3.0
@@ -599,7 +653,7 @@ The form-level `read-only` attribute was removed and replaced by the `edit-mode`
 behavior, replace `<c-record-form read-only>` with:
 
 ```html
-<c-record-form edit-mode={false} inline-edit={false}>
+<c-record-form edit-mode="{false}" inline-edit="{false}"></c-record-form>
 ```
 
 Setting only `edit-mode={false}` shows view mode with pencil icons by default, allowing users to enter edit mode. The field-level
@@ -628,7 +682,7 @@ Setting only `edit-mode={false}` shows view mode with pencil icons by default, a
 - Removed: `RecordFormCtrl` Apex class. Record Type resolution by developer name now uses a GraphQL query (`lightning/graphql`) instead of a SOQL
   query via Apex - see [Record Type Support](#record-type-support).
 - Fix: Person Name field validation (`reportValidity()`/`checkValidity()`/`setCustomValidity()`) was a no-op - the Salutation/FirstName/LastName
-  inputs weren't tagged with `lwc:ref="input"`, so required Salutation/FirstName/LastName could never block submission.
+  inputs weren't tagged with `lwc:ref="input"`, so required Salutation/FirstName/LastName could never block submission.F
 - Fix: `reportValidityForField()`/`checkValidityForField()`/`setCustomValidityForField()` always returned `undefined` regardless of the
   field's actual validity.
 - Fix: `isDirty()` could report `true` immediately after a successful Save, since the edit-mode snapshot wasn't refreshed on save.
@@ -642,5 +696,6 @@ Setting only `edit-mode={false}` shows view mode with pencil icons by default, a
 - Fix: dynamically removed fields could remain registered and participate in validation.
 
 ### 1.2.2
+
 - Fix: Field validation methods after a field is repeatedly hidden and shown.
 - Fix: Fetch Record Type method when there are no record types except master.

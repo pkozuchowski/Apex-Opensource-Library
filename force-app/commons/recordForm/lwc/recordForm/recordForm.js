@@ -143,28 +143,6 @@ export default class RecordForm extends LightningElement {
         this.setEditMode(value);
     }
 
-    setEditMode(value) {
-        const nextValue = Boolean(value);
-        const previousValue = this.formAttributes.editMode;
-        if (nextValue && !previousValue) {
-            this._editModeSnapshot = { ...this._record };
-        }
-        this.formAttributes.editMode = nextValue;
-        if (previousValue !== nextValue) {
-            const callback = nextValue ? "onEnterEditMode" : "onEnterViewMode";
-            this.getConnectedFields().forEach((field) => field[callback]?.());
-            if (this.isConnected) {
-                this.dispatchEvent(
-                    new CustomEvent("editmodechange", {
-                        detail: { editMode: nextValue },
-                        bubbles: true,
-                        composed: true
-                    })
-                );
-            }
-        }
-    }
-
     /**
      * Extra fields to retrieve from the record in addition to the fields rendered by
      * child field components. Accepts short field names (qualified with `objectApiName`)
@@ -194,6 +172,239 @@ export default class RecordForm extends LightningElement {
 
     set record(value) {
         this.setRecord(value);
+    }
+
+    /**
+     * Report validity for a single field component.
+     * @param {string} field Field API name.
+     * @returns {boolean|undefined} - true if valid, false if invalid, undefined if not connected.
+     */
+    @api
+    reportValidityForField(field) {
+        return this.getConnectedFields()
+            .find((cmp) => cmp.field === field)
+            ?.reportValidity();
+    }
+
+    /**
+     * Set a custom validation message for a single field component.
+     * @param {string} field Field API name.
+     * @param {string} message Custom message to display.
+     * @returns {void}
+     */
+    @api
+    setCustomValidityForField(field, message) {
+        this.getConnectedFields()
+            .find((cmp) => cmp.field === field)
+            ?.setCustomValidity(message);
+    }
+
+    /**
+     * Check validity for a single field component.
+     * @param {string} field Field API name.
+     * @returns {boolean|undefined} - true if valid, false if invalid, undefined if not connected.
+     */
+    @api
+    checkValidityForField(field) {
+        return this.getConnectedFields()
+            .find((cmp) => cmp.field === field)
+            ?.checkValidity();
+    }
+
+    /**
+     * Report validity for all connected fields.
+     * @returns {boolean}
+     */
+    @api reportValidity() {
+        return validate(this.getConnectedFields(), (field) => field?.reportValidity());
+    }
+
+    /**
+     * Check validity for all connected fields.
+     * @returns {boolean}
+     */
+    @api checkValidity() {
+        return validate(this.getConnectedFields(), (field) => field?.checkValidity());
+    }
+
+    /**
+     * Whether the record has changed since edit mode was last entered.
+     * Returns false if edit mode was never entered (nothing to compare against).
+     * @returns {boolean}
+     */
+    @api isDirty() {
+        if (!this._editModeSnapshot) {
+            return false;
+        }
+        const keys = new Set([...Object.keys(this._editModeSnapshot), ...Object.keys(this._record)]);
+        for (const key of keys) {
+            if (this._editModeSnapshot[key] !== this._record[key]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Submit the form by creating or updating the record.
+     * Dispatches a `change` event with `detail.value` containing the full flat record.
+     * @param {Event} ev Optional submit event to cancel.
+     * @returns {Promise<Object|undefined>} The saved flat record, or undefined if validation fails or a save is in progress.
+     */
+    @api async submit(ev) {
+        ev?.preventDefault();
+        ev?.stopPropagation();
+
+        try {
+            if (this.isSubmitting || !this.reportValidity().valid) {
+                return undefined;
+            }
+
+            this.isSubmitting = true;
+            this.spinner = true;
+            await this.runBeforeSubmit();
+            const isCreate = !this.record?.Id;
+            const fieldsToUpdate = getUpdatableFields(
+                this.record,
+                this.objectInfo,
+                isCreate,
+                this.isPersonAccount,
+                this.recordTypeId
+            );
+
+            const recordInput = {
+                fields: fieldsToUpdate,
+                ...(isCreate ? { apiName: this.objectApiName } : {})
+            };
+
+            const action = isCreate ? createRecord : updateRecord;
+            const result = await action(recordInput);
+            const flatRecord = getFlatRecord(result);
+
+            this.dispatchRecordChange(flatRecord);
+            await notifyRecordUpdateAvailable([{ recordId: result.id }]);
+            try {
+                await this.runAfterSubmit({ data: flatRecord });
+            } finally {
+                this.setEditMode(false);
+                this._editModeSnapshot = undefined;
+            }
+            return flatRecord;
+        } catch (err) {
+            console.error(err?.message ?? err);
+            Toast.show(
+                {
+                    label: "Save failed",
+                    message: getErrorMessage(err),
+                    variant: "error"
+                },
+                this
+            );
+            throw err;
+        } finally {
+            this.spinner = false;
+            this.isSubmitting = false;
+        }
+    }
+
+    @wire(getObjectInfo, { objectApiName: "$objectApiName" })
+    describeObjectInfo({ error, data }) {
+        if (data) {
+            this.objectInfo = JSON.parse(JSON.stringify(data));
+
+            if (!this.recordTypeId && !this.recordTypeName) {
+                this.recordTypeId = data.defaultRecordTypeId;
+            }
+
+            this.recalculateOptionalFields();
+            overrideFieldLabels(this.labelOverrides, this.objectInfo);
+        } else if (error) {
+            console.error("Error fetching object info", error.message);
+        }
+    }
+
+    @wire(graphql, { query: "$recordTypeQuery", variables: "$recordTypeVariables" })
+    fetchRecordType({ data, errors }) {
+        if (data) {
+            const recordType = data.uiapi.query.RecordType.edges.find(
+                (rt) => rt.node.SobjectType.value === this.objectApiName
+            );
+
+            if (recordType) {
+                this.recordTypeId = recordType?.node?.Id;
+                this.dispatchRecordChange({ ...this.record, RecordTypeId: this.recordTypeId });
+            } else {
+                console.error(`Record type ${this.objectApiName}.${this.recordTypeName} not found`);
+            }
+        } else if (errors) {
+            console.error(`Error fetching record type ${this.objectApiName}.${this.recordTypeName}`, errors);
+        }
+    }
+
+    @wire(getPicklistValuesByRecordType, { objectApiName: "$objectApiName", recordTypeId: "$recordTypeId" })
+    describePicklistValues({ error, data }) {
+        if (data) {
+            this.picklistValues = JSON.parse(JSON.stringify(data.picklistFieldValues));
+            this.spinner = false;
+        } else if (error) {
+            console.error("Error fetching picklist values", error.message);
+        }
+    }
+
+    @wire(getRecord, { recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields" })
+    fetchRecord({ error, data }) {
+        if (data) {
+            const serverRecord = getFlatRecord(data);
+            const snapshot = this._editModeSnapshot;
+
+            // Keep unsaved edits: a refetch (e.g. triggered by newly connected fields)
+            // must not overwrite values the user changed since entering edit mode.
+            if (snapshot) {
+                for (const key of Object.keys(this._record)) {
+                    if (this._record[key] !== snapshot[key]) {
+                        serverRecord[key] = this._record[key];
+                    }
+                }
+            }
+
+            if (data.recordTypeId && this.recordTypeId !== data.recordTypeId) {
+                this.recordTypeId = data.recordTypeId;
+            }
+
+            this.dispatchRecordChange(serverRecord);
+        } else if (error) {
+            console.error("Error fetching record", error?.message, error);
+        }
+    }
+
+    get recordTypeQuery() {
+        return this.recordTypeName ? RECORD_TYPE_QUERY : undefined;
+    }
+
+    get recordTypeVariables() {
+        return { developerName: this.recordTypeName };
+    }
+
+    setEditMode(value) {
+        const nextValue = Boolean(value);
+        const previousValue = this.formAttributes.editMode;
+        if (nextValue && !previousValue) {
+            this._editModeSnapshot = { ...this._record };
+        }
+        this.formAttributes.editMode = nextValue;
+        if (previousValue !== nextValue) {
+            const callback = nextValue ? "onEnterEditMode" : "onEnterViewMode";
+            this.getConnectedFields().forEach((field) => field[callback]?.());
+            if (this.isConnected) {
+                this.dispatchEvent(
+                    new CustomEvent("editmodechange", {
+                        detail: { editMode: nextValue },
+                        bubbles: true,
+                        composed: true
+                    })
+                );
+            }
+        }
     }
 
     get picklistValues() {
@@ -282,143 +493,10 @@ export default class RecordForm extends LightningElement {
         return this.objectInfo && this.picklistValues;
     }
 
-    /**
-     * Report validity for a single field component.
-     * @param {string} field Field API name.
-     * @returns {boolean|undefined} - true if valid, false if invalid, undefined if not connected.
-     */
-    @api
-    reportValidityForField(field) {
-        return this.getConnectedFields()
-            .find((cmp) => cmp.field === field)
-            ?.reportValidity();
-    }
-
-    /**
-     * Set a custom validation message for a single field component.
-     * @param {string} field Field API name.
-     * @param {string} message Custom message to display.
-     * @returns {void}
-     */
-    @api
-    setCustomValidityForField(field, message) {
-        this.getConnectedFields()
-            .find((cmp) => cmp.field === field)
-            ?.setCustomValidity(message);
-    }
-
-    /**
-     * Check validity for a single field component.
-     * @param {string} field Field API name.
-     * @returns {boolean|undefined} - true if valid, false if invalid, undefined if not connected.
-     */
-    @api
-    checkValidityForField(field) {
-        return this.getConnectedFields()
-            .find((cmp) => cmp.field === field)
-            ?.checkValidity();
-    }
-
-    /**
-     * Report validity for all connected fields.
-     * @returns {boolean}
-     */
-    @api reportValidity() {
-        return validate(this.getConnectedFields(), (field) => field?.reportValidity());
-    }
-
-    /**
-     * Check validity for all connected fields.
-     * @returns {boolean}
-     */
-    @api checkValidity() {
-        return validate(this.getConnectedFields(), (field) => field?.checkValidity());
-    }
-
-    /**
-     * Whether the record has changed since edit mode was last entered.
-     * Returns false if edit mode was never entered (nothing to compare against).
-     * @returns {boolean}
-     */
-    @api isDirty() {
-        if (!this._editModeSnapshot) {
-            return false;
-        }
-        const keys = new Set([...Object.keys(this._editModeSnapshot), ...Object.keys(this._record)]);
-        for (const key of keys) {
-            if (this._editModeSnapshot[key] !== this._record[key]) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     async handleFooterSave(ev) {
         ev.preventDefault();
         ev.stopPropagation();
         await this.submit(ev);
-    }
-
-    /**
-     * Submit the form by creating or updating the record.
-     * Dispatches a `change` event with `detail.value` containing the full flat record.
-     * @param {Event} ev Optional submit event to cancel.
-     * @returns {Promise<Object|undefined>} The saved flat record, or undefined if validation fails or a save is in progress.
-     */
-    @api async submit(ev) {
-        ev?.preventDefault();
-        ev?.stopPropagation();
-
-        try {
-            if (this.isSubmitting || !this.reportValidity().valid) {
-                return undefined;
-            }
-
-            this.isSubmitting = true;
-            this.spinner = true;
-            await this.runBeforeSubmit();
-            const isCreate = !this.record?.Id;
-            const fieldsToUpdate = getUpdatableFields(
-                this.record,
-                this.objectInfo,
-                isCreate,
-                this.isPersonAccount,
-                this.recordTypeId
-            );
-
-            const recordInput = {
-                fields: fieldsToUpdate,
-                ...(isCreate ? { apiName: this.objectApiName } : {})
-            };
-
-            const action = isCreate ? createRecord : updateRecord;
-            const result = await action(recordInput);
-            const flatRecord = getFlatRecord(result);
-
-            this.dispatchRecordChange(flatRecord);
-            await notifyRecordUpdateAvailable([{ recordId: result.id }]);
-            try {
-                await this.runAfterSubmit({ data: flatRecord });
-            } finally {
-                this.setEditMode(false);
-                this._editModeSnapshot = undefined;
-            }
-            return flatRecord;
-        } catch (err) {
-            console.error(err?.message ?? err);
-            Toast.show(
-                {
-                    label: "Save failed",
-                    message: getErrorMessage(err),
-                    variant: "error"
-                },
-                this
-            );
-            throw err;
-        } finally {
-            this.spinner = false;
-            this.isSubmitting = false;
-        }
     }
 
     async runBeforeSubmit() {
@@ -429,90 +507,6 @@ export default class RecordForm extends LightningElement {
     async runAfterSubmit({ data }) {
         const fields = this.getConnectedFields().filter((field) => typeof field.onAfterSubmit === "function");
         await Promise.all(fields.map((field) => field.onAfterSubmit({ data })));
-    }
-
-    @wire(getObjectInfo, { objectApiName: "$objectApiName" })
-    describeObjectInfo({ error, data }) {
-        if (data) {
-            this.objectInfo = JSON.parse(JSON.stringify(data));
-
-            if (!this.recordTypeId && !this.recordTypeName) {
-                this.recordTypeId = data.defaultRecordTypeId;
-            }
-
-            this.recalculateOptionalFields();
-            overrideFieldLabels(this.labelOverrides, this.objectInfo);
-        } else if (error) {
-            console.error("Error fetching object info", error.message);
-        }
-    }
-
-    @wire(graphql, {query: "$recordTypeQuery", variables: "$recordTypeVariables"})
-    fetchRecordType({ data, errors }) {
-        if (data) {
-            const recordType = data.uiapi.query.RecordType.edges.find(
-                (rt) => rt.node.SobjectType.value === this.objectApiName
-            );
-
-            if (recordType) {
-                this.recordTypeId = recordType?.node?.Id;
-                this.dispatchRecordChange({ ...this.record, RecordTypeId: this.recordTypeId });
-            } else {
-                console.error(`Record type ${this.objectApiName}.${this.recordTypeName} not found`);
-            }
-        } else if (errors) {
-            console.error(`Error fetching record type ${this.objectApiName}.${this.recordTypeName}`, errors);
-        }
-    }
-
-    get recordTypeQuery() {
-        return this.recordTypeName ? RECORD_TYPE_QUERY : undefined;
-    }
-
-    get recordTypeVariables() {
-        return { developerName: this.recordTypeName };
-    }
-
-    @wire(getPicklistValuesByRecordType, { objectApiName: "$objectApiName", recordTypeId: "$recordTypeId" })
-    describePicklistValues({ error, data }) {
-        if (data) {
-            this.picklistValues = JSON.parse(JSON.stringify(data.picklistFieldValues));
-            this.spinner = false;
-        } else if (error) {
-            console.error("Error fetching picklist values", error.message);
-        }
-    }
-
-    @wire(getRecord, { recordId: "$recordId", fields: [], optionalFields: "$computedOptionalFields" })
-    fetchRecord({ error, data }) {
-        if (data) {
-            const serverRecord = getFlatRecord(data);
-            const snapshot = this._editModeSnapshot;
-            console.log("serverRecord 1", JSON.stringify(serverRecord, null, 2));
-            console.log("serverRecord 1 _record", JSON.stringify(this._record, null, 2));
-
-            // Keep unsaved edits: a refetch (e.g. triggered by newly connected fields)
-            // must not overwrite values the user changed since entering edit mode.
-            if (snapshot) {
-                for (const key of Object.keys(this._record)) {
-                    if (this._record[key] !== snapshot[key]) {
-                        serverRecord[key] = this._record[key];
-                    }
-                }
-            }
-
-            console.log("_editModeSnapshot", JSON.stringify(this._editModeSnapshot, null, 2));
-            console.log("serverRecord 2", JSON.stringify(serverRecord, null, 2));
-            console.log("data", JSON.stringify(data, null, 2));
-            if (data.recordTypeId) {
-                this.recordTypeId = data.recordTypeId;
-            }
-            console.log("this.recordTypeId", this.recordTypeId);
-
-            this.dispatchRecordChange(serverRecord);
-        } else if (error) {
-            console.error("Error fetching record", error?.message, error);
-        }
     }
 
     onFieldConnected(ev) {

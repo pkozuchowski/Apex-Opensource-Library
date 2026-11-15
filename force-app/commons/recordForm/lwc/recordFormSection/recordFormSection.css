@@ -13,3 +13,9 @@
 .section-content[data-columns="1"] {
     grid-template-columns: minmax(0, 1fr);
 }
+
+@media (max-width: 749px) {
+    .section-content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
